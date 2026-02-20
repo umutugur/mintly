@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grup Detayları - Finansal Paylaşım</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto dark:bg-background-dark shadow-xl bg-background-dark">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center justify-between bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 border-b border-primary/10 bg-background-dark/80">
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Ev Giderleri</h1>
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-200">settings</span>
+</button>
+</header>
+<!-- Group Summary Card -->
+<div class="p-4">
+<div class="relative overflow-hidden rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/20" style="background-color: #4211d4;">
+<!-- Abstract Pattern Background -->
+<div class="absolute right-0 top-0 h-full w-32 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" data-alt="Soyut geometrik beyaz desen"></div>
+<div class="flex flex-col gap-1">
+<span class="text-sm font-medium text-white/80">Grup Toplam Harcaması</span>
+<span class="text-3xl font-bold">₺2.450,00</span>
+</div>
+<div class="mt-6 flex items-center justify-between border-t border-white/20 pt-4">
+<div class="flex flex-col">
+<span class="text-xs text-white/70 uppercase tracking-wider">Senin Durumun</span>
+<span class="text-lg font-semibold">₺120,00 Borçlusun</span>
+</div>
+<button class="rounded-lg px-4 py-2 text-sm font-bold text-primary shadow-sm hover:bg-slate-50 transition-colors" style="color: #4211d4;">
+                        Detaylar
+                    </button>
+</div>
+</div>
+</div>
+<!-- Members Section -->
+<section class="mt-2">
+<div class="flex items-center justify-between px-4 mb-3">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Grup Üyeleri</h3>
+<button class="text-sm font-medium text-primary" style="color: #4211d4;">Tümünü Gör</button>
+</div>
+<div class="flex gap-4 overflow-x-auto px-4 pb-4 no-scrollbar">
+<!-- User (Me) -->
+<div class="flex min-w-[80px] flex-col items-center gap-2">
+<div class="relative">
+<div class="h-14 w-14 rounded-full border-2 border-primary/20 p-0.5">
+<img alt="Profil" class="h-full w-full rounded-full object-cover" data-alt="Gülümseyen erkek profil fotoğrafı" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRkzDyEz7sTN22ku7GzaeqE9g-1iMT_v9a1Xc4-tIqC2au0FAl7q_eL0hxGAOWBmy289r-qHxso06vOivNrj_AWAfoW-ebYLsER8WAX5JqkCnZUDUwFQGyaGpxchlagV4drRtEjXtJ3PaYOaobT-cYTChjGYECAUPLKzxzqtMnt4FVc4zBsn18nhXf0W1k-54ndhhm2z4tg9gYBZA3a05ICzUBx2vFU9a9kM01Eaj-zUiedKD2DUgyk-D0LlspbmuNh0O-quEXg813"/>
+</div>
+<div class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white ring-2 ring-white">!</div>
+</div>
+<div class="text-center">
+<p class="text-xs font-bold text-slate-900 dark:text-white leading-tight">Sen</p>
+<p class="text-[10px] font-medium text-red-500">-₺120</p>
+</div>
+</div>
+<!-- Member 1 -->
+<div class="flex min-w-[80px] flex-col items-center gap-2">
+<div class="h-14 w-14 rounded-full border-2 border-transparent p-0.5">
+<img alt="Profil" class="h-full w-full rounded-full object-cover" data-alt="Gülümseyen kadın profil fotoğrafı" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlUEuXTx88F2Oi6zjaAYMkeoBhLo7GUpAvZlqIvSv2GDtvGp6wTWXjz0PIxPpJvW_tn9td8Tto0VqAM72FTXoErR48qwuP6OEckQ8X4kPbxXq6I1T1zLK_xnlyoIgI3cTX0K8EoGh_pojf5Jbxl_9RDaK-0GCR9cPUQoGbRaIsDeNR7QKkqwrLzAA4matHYXsWnYIELPbPSC0j48H6Zspc7JsCKDj6DMw1EMmUSgHT6WiaV_1WSxAgW-PvsEffnrmTviYpnx56CM87"/>
+</div>
+<div class="text-center">
+<p class="text-xs font-medium text-slate-700 dark:text-slate-300 leading-tight">Ayşe</p>
+<p class="text-[10px] font-medium text-primary" style="color: #4211d4;">+₺450</p>
+</div>
+</div>
+<!-- Member 2 -->
+<div class="flex min-w-[80px] flex-col items-center gap-2">
+<div class="h-14 w-14 rounded-full border-2 border-transparent p-0.5">
+<img alt="Profil" class="h-full w-full rounded-full object-cover" data-alt="Gözlüklü erkek profil fotoğrafı" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwuiwbNN2d4agQUe10mJFLm-_76KGluu_Fqf2udf-vkhE9jf53I6P3K8edBj2jVwzjeVxLY9Skxfu8yN8Ro5IP8wt4u-bksUdkSImhU7C95NLOE5noolbBdGBXaic4atW8H_Yl-tXKcjAy7qPNApMc3Nxg1GAWgQ9O7e3Ncs--745NVYwTlVwwamUwvwFa_7jsFRigJ-FTSHVRD_JmtMtSSUCGjjVuJ9SkQe4WlKYR_ka3iGi9Qpfvn4fcPrzq0qJL-hiEScZzDM6a"/>
+</div>
+<div class="text-center">
+<p class="text-xs font-medium text-slate-700 dark:text-slate-300 leading-tight">Ahmet</p>
+<p class="text-[10px] font-medium text-slate-400">₺0</p>
+</div>
+</div>
+<!-- Member 3 -->
+<div class="flex min-w-[80px] flex-col items-center gap-2">
+<div class="h-14 w-14 rounded-full border-2 border-transparent p-0.5">
+<img alt="Profil" class="h-full w-full rounded-full object-cover" data-alt="Sakallı genç erkek profil fotoğrafı" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByJP6c9c_NgEA9SnyeLEuY3z7d4Khjl5MpekQ2M_46Ieo7Rz4kk7Wc0tcjeh_vsZTMIYGKzDERmq_lOALzhf1cg7Ch-sap8XQTtVKi8JHoxrhX0rkOJDs33lwVBi-TnAfFI53ndYEScq61t8ly0WdGkD9YWzi0mOA3O-jRER2SXdFo02QL4VV6RdP65V5xRIYil4hQFEnoCm380afWwmuOKQSMP3SJ1CutyKYyfQ2UUV_iQax_un6NaZQSjZEpxyi_JUiJqdRrw8T_"/>
+</div>
+<div class="text-center">
+<p class="text-xs font-medium text-slate-700 dark:text-slate-300 leading-tight">Mehmet</p>
+<p class="text-[10px] font-medium text-red-500">-₺330</p>
+</div>
+</div>
+<!-- Add Member Button -->
+<div class="flex min-w-[80px] flex-col items-center gap-2">
+<button class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-400">
+<span class="material-symbols-outlined">person_add</span>
+</button>
+<span class="text-[10px] font-medium text-slate-400 leading-tight uppercase tracking-tighter">Ekle</span>
+</div>
+</div>
+</section>
+<!-- Recent Activity -->
+<section class="flex-1 bg-background-light dark:bg-slate-900/50 rounded-t-3xl mt-4 px-4 pt-6 pb-32 shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Son Harcamalar</h3>
+<span class="material-symbols-outlined text-slate-400 text-xl">tune</span>
+</div>
+<div class="space-y-3">
+<!-- Expense Item 1 -->
+<div class="flex items-center gap-4 rounded-xl dark:bg-background-dark p-4 shadow-sm border border-primary/5">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<div class="flex flex-1 flex-col">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Market Alışverişi</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">Sen ödedin • 12 Ocak</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-white">₺450,00</p>
+<p class="text-[10px] text-primary font-medium" style="color: #4211d4;">Payın: ₺112</p>
+</div>
+</div>
+<!-- Expense Item 2 -->
+<div class="flex items-center gap-4 rounded-xl dark:bg-background-dark p-4 shadow-sm border border-primary/5">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex flex-1 flex-col">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Elektrik Faturası</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">Ayşe ödedi • 10 Ocak</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-white">₺1.200,00</p>
+<p class="text-[10px] text-red-500 font-medium">Borcun: ₺300</p>
+</div>
+</div>
+<!-- Expense Item 3 -->
+<div class="flex items-center gap-4 rounded-xl dark:bg-background-dark p-4 shadow-sm border border-primary/5">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600">
+<span class="material-symbols-outlined">home</span>
+</div>
+<div class="flex flex-1 flex-col">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white">Apartman Aidatı</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400">Mehmet ödedi • 5 Ocak</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-slate-900 dark:text-white">₺800,00</p>
+<p class="text-[10px] text-red-500 font-medium">Borcun: ₺200</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Actions -->
+<div class="fixed bottom-0 left-0 right-0 mx-auto max-w-md bg-white/90 dark:bg-background-dark/90 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 p-4 bg-background-dark/90">
+<div class="flex gap-3">
+<button class="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-primary px-4 py-3.5 text-sm font-bold text-primary hover:bg-primary/5 transition-all" style="border-color: #4211d4;">
+<span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+                    Borç Kapat
+                </button>
+<button class="flex-[1.5] flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all" style="background-color: #4211d4;">
+<span class="material-symbols-outlined text-xl">add</span>
+                    Gider Ekle
+                </button>
+</div>
+<!-- Bottom Navigation Bar Placeholder -->
+<nav class="mt-4 flex items-center justify-around">
+<a class="flex flex-col items-center gap-1 text-primary" href="#" style="color: #4211d4;">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-[10px] font-medium">Gruplar</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-medium">Harcamalar</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</nav>
+</div>
+</div>
+</body></html>

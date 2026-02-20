@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - App Design</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1142d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#0d111b] transition-colors duration-300">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- Header -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-primary/10">
+<button class="text-primary flex size-10 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-[#0d111b] dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Settings</h2>
+</div>
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- APPLICATION SETTINGS SECTION -->
+<h3 class="text-primary text-xs font-bold leading-tight tracking-widest px-6 pb-2 pt-6 uppercase opacity-80">Application Settings</h3>
+<div class="px-4 space-y-1">
+<!-- Language -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">translate</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Language</p>
+<p class="text-[#4c5f9a] dark:text-primary/60 text-xs font-normal">Select your preferred language</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#0d111b] dark:text-white/70 text-sm font-medium">English</span>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Currency -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Currency</p>
+<p class="text-[#4c5f9a] dark:text-primary/60 text-xs font-normal">TRY, USD, EUR</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#0d111b] dark:text-white/70 text-sm font-medium">USD</span>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Theme Mode -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Theme Mode</p>
+<p class="text-[#4c5f9a] dark:text-primary/60 text-xs font-normal">System, Light, Dark</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#0d111b] dark:text-white/70 text-sm font-medium">Dark</span>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Notifications -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Notifications</p>
+<p class="text-[#4c5f9a] dark:text-primary/60 text-xs font-normal">Email, Push, SMS</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- FINANCIAL SETTINGS SECTION -->
+<h3 class="text-primary text-xs font-bold leading-tight tracking-widest px-6 pb-2 pt-8 uppercase opacity-80">Financial Settings</h3>
+<div class="px-4 space-y-1">
+<!-- Subscription Plan -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">stars</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Subscription Plan</p>
+<p class="text-[#4c5f9a] dark:text-primary/60 text-xs font-normal">Manage your current plan</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Pro Plan</span>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Linked Bank Accounts -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Linked Bank Accounts</p>
+<p class="text-[#4c5f9a] dark:text-primary/60 text-xs font-normal">Manage connected accounts</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[#0d111b] dark:text-white/70 text-sm font-medium">2 Active</span>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- SUPPORT SECTION -->
+<h3 class="text-primary text-xs font-bold leading-tight tracking-widest px-6 pb-2 pt-8 uppercase opacity-80">Support</h3>
+<div class="px-4 space-y-1">
+<!-- Help Center -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[60px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">help</span>
+</div>
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Help Center</p>
+</div>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+<!-- Contact Us -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[60px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">support_agent</span>
+</div>
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Contact Us</p>
+</div>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+<!-- Terms & Privacy -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[60px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">gavel</span>
+</div>
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">Terms &amp; Privacy</p>
+</div>
+<span class="material-symbols-outlined text-[#4c5f9a] text-lg">chevron_right</span>
+</div>
+<!-- About the App -->
+<div class="flex items-center gap-4 bg-white dark:bg-primary/5 rounded-xl px-4 min-h-[60px] py-2 justify-between cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/10">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">info</span>
+</div>
+<p class="text-[#0d111b] dark:text-white text-base font-semibold leading-normal">About the App</p>
+</div>
+<span class="text-[#4c5f9a] dark:text-primary/60 text-xs font-medium">v2.4.0</span>
+</div>
+</div>
+<!-- Logout Button -->
+<div class="px-4 py-8">
+<button class="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-500/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">logout</span>
+                    Logout
+                </button>
+</div>
+</div>
+<!-- Bottom NavBar -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/80 dark:bg-background-dark/90 backdrop-blur-lg border-t border-primary/10 px-4 pb-6 pt-2 flex justify-around">
+<a class="flex flex-col items-center gap-1 text-[#4c5f9a] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Home</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#4c5f9a] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Wallet</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#4c5f9a] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Stats</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<p class="text-[10px] font-bold uppercase tracking-wider">Settings</p>
+</a>
+</div>
+</div>
+</body></html>

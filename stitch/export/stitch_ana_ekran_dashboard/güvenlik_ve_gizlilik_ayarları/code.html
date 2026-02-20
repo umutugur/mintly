@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Security &amp; Privacy Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<!-- Header Navigation -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button class="p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Security &amp; Privacy</h1>
+</div>
+<button class="p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl">help_outline</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 max-w-2xl mx-auto w-full px-4 py-6 space-y-8 pb-32">
+<!-- Security Overview Card -->
+<section class="bg-primary/5 border border-primary/20 rounded-xl p-5 flex items-center gap-4">
+<div class="bg-primary p-3 rounded-full text-white">
+<span class="material-symbols-outlined text-3xl">verified_user</span>
+</div>
+<div>
+<h2 class="text-lg font-semibold leading-tight">Security Score: Strong</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Your account is well protected. 2 of 3 recommended measures are active.</p>
+</div>
+</section>
+<!-- Access Control Section -->
+<section>
+<h3 class="text-primary font-bold text-xs uppercase tracking-widest px-1 mb-3">Access Control</h3>
+<div class="space-y-1 bg-white dark:bg-primary/5 rounded-xl overflow-hidden border border-slate-200 dark:border-primary/10">
+<!-- Biometric Toggle -->
+<div class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">fingerprint</span>
+</div>
+<div>
+<p class="font-medium">Biometric Login</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Use FaceID or Fingerprint to unlock</p>
+</div>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-full w-[27px] rounded-full bg-white shadow-md"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<!-- 2FA Toggle -->
+<div class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors border-t border-slate-100 dark:border-primary/5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">shield_lock</span>
+</div>
+<div>
+<p class="font-medium">Two-Factor Authentication</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Extra layer for logins &amp; transfers</p>
+</div>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-full w-[27px] rounded-full bg-white shadow-md"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<!-- Account Activity Link -->
+<a class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors border-t border-slate-100 dark:border-primary/5" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div>
+<p class="font-medium">Account Activity</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Review recent logins and devices</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Privacy & Data Section -->
+<section>
+<h3 class="text-primary font-bold text-xs uppercase tracking-widest px-1 mb-3">Data &amp; Privacy</h3>
+<div class="space-y-1 bg-white dark:bg-primary/5 rounded-xl overflow-hidden border border-slate-200 dark:border-primary/10">
+<!-- Data Sharing Preferences -->
+<div class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">share_reviews</span>
+</div>
+<div>
+<p class="font-medium">Third-party Sharing</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Manage partner access to your data</p>
+</div>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-full w-[27px] rounded-full bg-white shadow-md"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<!-- Download Data -->
+<button class="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors border-t border-slate-100 dark:border-primary/5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">download_for_offline</span>
+</div>
+<div class="text-left">
+<p class="font-medium text-slate-900 dark:text-white">Download Personal Data</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Request a copy of all stored info</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-sm">open_in_new</span>
+</button>
+<!-- Privacy Policy -->
+<a class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-primary/10 transition-colors border-t border-slate-100 dark:border-primary/5" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">policy</span>
+</div>
+<div>
+<p class="font-medium">Privacy Policy</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">How we manage and protect data</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Danger Zone -->
+<section>
+<div class="bg-red-500/5 border border-red-500/20 rounded-xl p-4">
+<h4 class="text-red-500 font-bold text-xs uppercase tracking-widest mb-4">Danger Zone</h4>
+<button class="w-full py-3 px-4 border border-red-500/30 text-red-500 rounded-lg font-medium hover:bg-red-500 hover:text-white transition-all">
+                    Delete Account and All Data
+                </button>
+<p class="text-center text-[10px] text-slate-500 mt-3 italic">This action is permanent and cannot be undone.</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full bg-white dark:bg-[#201933] border-t border-slate-200 dark:border-primary/20 pb-safe shadow-2xl z-20">
+<div class="flex items-center justify-around h-20 px-4">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">credit_card</span>
+<span class="text-[10px] font-medium">Cards</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-[10px] font-medium">Pay</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-[10px] font-medium">Invest</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+</nav>
+</body></html>

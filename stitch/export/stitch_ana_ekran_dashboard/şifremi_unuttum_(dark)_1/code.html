@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Forgot Password - Financial AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0a",
+                        "neutral-dark": "#1a1a1a",
+                        "border-dark": "#2d2d2d",
+                        "muted-text": "#a1a1aa"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-md mx-auto">
+<!-- Header Navigation -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<button aria-label="Go back" class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-start hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+</div>
+<!-- Typography Block -->
+<div class="px-6 pt-8 pb-4">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight pb-3">
+                Forgot Password
+            </h1>
+<p class="text-slate-600 dark:text-muted-text text-base font-normal leading-relaxed">
+                Enter your email address to receive a password reset link. We'll help you get back into your financial dashboard.
+            </p>
+</div>
+<!-- Email Input Field -->
+<div class="flex flex-col gap-4 px-6 py-6">
+<label class="flex flex-col gap-2">
+<span class="text-slate-900 dark:text-white text-sm font-medium leading-normal">Email Address</span>
+<div class="relative flex w-full items-stretch">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 dark:text-muted-text">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="form-input flex w-full rounded-lg border border-slate-200 dark:border-border-dark bg-white dark:bg-neutral-dark text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary h-14 pl-12 pr-4 placeholder:text-slate-400 dark:placeholder:text-muted-text/50 text-base font-normal transition-all" placeholder="name@company.com" type="email" value=""/>
+</div>
+</label>
+</div>
+<!-- Primary Action Button -->
+<div class="px-6 py-4 mt-auto sm:mt-0">
+<button class="group relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 bg-primary hover:bg-opacity-90 text-white text-base font-semibold leading-normal tracking-wide transition-all shadow-lg shadow-primary/20 active:scale-[0.98]">
+<span class="truncate">Send Reset Link</span>
+<span class="material-symbols-outlined ml-2 text-xl group-hover:translate-x-1 transition-transform">send</span>
+</button>
+</div>
+<!-- Security Badge/Footer -->
+<div class="flex flex-col items-center justify-center gap-4 px-6 py-8 mt-4">
+<div class="flex items-center gap-2 text-slate-400 dark:text-muted-text/60">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span class="text-xs font-medium uppercase tracking-widest">Secure Financial AI Encryption</span>
+</div>
+<div class="h-1 w-12 bg-slate-200 dark:bg-border-dark rounded-full"></div>
+</div>
+<!-- Background Decorative Element (Subtle Glow) -->
+<div class="fixed -z-10 top-0 right-0 w-64 h-64 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+<div class="fixed -z-10 bottom-0 left-0 w-96 h-96 bg-primary/10 blur-[150px] rounded-full pointer-events-none"></div>
+</div>
+</body></html>

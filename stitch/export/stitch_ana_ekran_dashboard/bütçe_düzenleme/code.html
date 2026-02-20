@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bütçeyi Düzenle</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "accent-green": "#22c55e",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3f3267;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-primary/20">
+<div class="flex items-center p-4 max-w-2xl mx-auto w-full">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-slate-200 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="ml-4 text-xl font-bold tracking-tight text-slate-900 dark:text-white">Bütçeyi Düzenle</h1>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto custom-scrollbar p-4 max-w-2xl mx-auto w-full space-y-6 pb-32">
+<div class="space-y-2">
+<h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-primary/60">Kategori Bazlı Limitler</h2>
+<p class="text-xs text-slate-400 dark:text-slate-500">Aylık harcama hedeflerinizi buradan güncelleyebilirsiniz.</p>
+</div>
+<!-- Category Grid -->
+<div class="grid gap-4">
+<!-- Market Category -->
+<div class="p-5 rounded-xl bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Market</h3>
+<p class="text-sm text-accent-green font-medium">Harcanan: 1.250 ₺</p>
+</div>
+</div>
+</div>
+<div class="relative group">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-primary/30 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:text-white outline-none transition-all placeholder:text-slate-400" placeholder="Limit belirle" type="number" value="2500"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₺</span>
+</div>
+</div>
+<!-- Ulaşım Category -->
+<div class="p-5 rounded-xl bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Ulaşım</h3>
+<p class="text-sm text-accent-green font-medium">Harcanan: 450 ₺</p>
+</div>
+</div>
+</div>
+<div class="relative group">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-primary/30 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:text-white outline-none transition-all placeholder:text-slate-400" placeholder="Limit belirle" type="number" value="1000"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₺</span>
+</div>
+</div>
+<!-- Eğlence Category -->
+<div class="p-5 rounded-xl bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined">movie</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Eğlence</h3>
+<p class="text-sm text-accent-green font-medium">Harcanan: 890 ₺</p>
+</div>
+</div>
+</div>
+<div class="relative group">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-primary/30 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:text-white outline-none transition-all placeholder:text-slate-400" placeholder="Limit belirle" type="number" value="1500"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₺</span>
+</div>
+</div>
+<!-- Faturalar Category -->
+<div class="p-5 rounded-xl bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-red-100 dark:bg-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Faturalar</h3>
+<p class="text-sm text-accent-green font-medium">Harcanan: 2.100 ₺</p>
+</div>
+</div>
+</div>
+<div class="relative group">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-primary/30 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:text-white outline-none transition-all placeholder:text-slate-400" placeholder="Limit belirle" type="number" value="3000"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₺</span>
+</div>
+</div>
+<!-- Diğer Category -->
+<div class="p-5 rounded-xl bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/20 shadow-sm">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-teal-100 dark:bg-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+<span class="material-symbols-outlined">category</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Diğer</h3>
+<p class="text-sm text-accent-green font-medium">Harcanan: 120 ₺</p>
+</div>
+</div>
+</div>
+<div class="relative group">
+<input class="w-full bg-slate-50 dark:bg-background-dark border border-slate-300 dark:border-primary/30 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary focus:border-primary dark:text-white outline-none transition-all placeholder:text-slate-400" placeholder="Limit belirle" type="number" value="500"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₺</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation & Action -->
+<div class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-xl border-t border-slate-200 dark:border-primary/20 px-4 pb-8 pt-4">
+<div class="max-w-2xl mx-auto w-full space-y-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                Değişiklikleri Kaydet
+            </button>
+<nav class="flex justify-around items-center pt-2">
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">wallet</span>
+<span class="text-[10px] font-medium">Bütçe</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">pie_chart</span>
+<span class="text-[10px] font-medium">Analiz</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</nav>
+</div>
+</div>
+</body></html>

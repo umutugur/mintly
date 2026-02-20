@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Getting Started - Personal Finance Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0c",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-dark text-gray-100 min-h-screen flex flex-col items-center">
+<div class="relative flex h-full min-h-screen w-full max-w-[480px] flex-col dark:bg-background-dark shadow-xl overflow-x-hidden bg-background-dark">
+<!-- Header -->
+<div class="flex items-center dark:bg-background-dark p-4 border-b border-primary/10 bg-background-dark">
+<div class="text-primary cursor-pointer p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl leading-none">arrow_back</span>
+</div>
+<h2 class="dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10 text-white">Getting Started</h2>
+</div>
+<!-- Hero Section -->
+<div class="px-4 py-6">
+<div class="relative flex flex-col justify-end overflow-hidden bg-primary rounded-xl min-h-[200px] group shadow-lg">
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+<img alt="Financial growth visualization" class="absolute inset-0 w-full h-full object-cover" data-alt="A stylized photo of a growing plant made of coins and money" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpgRGMga-yShqq2nhzBQSSqOMmUPc6nRkd6iYpROVhDS5Ogpt8w3LTfi5mkO-cbjtpm7T6JUblDBFNEz37eSlp2XSKMPTfNFKCQk82AIYVvIvG6MZJsf5bleMZYSpwGyR0YFSrzNeiRE1avcmr3FHJbLpLQc-J-ofnLLNL2JXINjc_VOP-h5UqH0RIyMDQXseERnY1ElI5SnQ9sTYSd670qFm0cXJAqV6qbTDGTxRT5pSe5nVbdoeq7Jvpio7xlCWf5bbafivEpm-M"/>
+<div class="relative z-20 p-6">
+<p class="text-white text-2xl font-bold leading-tight">Master Your Money with Smart Insights</p>
+<p class="text-white/80 text-sm mt-2">Follow this guide to set up your financial future in minutes.</p>
+</div>
+</div>
+</div>
+<!-- Features List with Stepper UI -->
+<div class="flex-1 px-4 space-y-2">
+<!-- Step 1 -->
+<div class="grid grid-cols-[48px_1fr] gap-x-4">
+<div class="flex flex-col items-center">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-white">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+<div class="w-0.5 bg-primary/20 grow my-2"></div>
+</div>
+<div class="pb-8">
+<h3 class="dark:text-white text-base font-bold text-white">1. Dashboard &amp; AI Insights</h3>
+<p class="dark:text-gray-400 text-sm mt-1 leading-relaxed text-gray-300">
+                        Monitor your daily balance and receive personalized financial tips from our advanced AI assistant.
+                    </p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="grid grid-cols-[48px_1fr] gap-x-4">
+<div class="flex flex-col items-center">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-white">
+<span class="material-symbols-outlined">document_scanner</span>
+</div>
+<div class="w-0.5 bg-primary/20 grow my-2"></div>
+</div>
+<div class="pb-8">
+<h3 class="dark:text-white text-base font-bold text-white">2. Smart Receipt Scanning</h3>
+<p class="dark:text-gray-400 text-sm mt-1 leading-relaxed text-gray-300">
+                        Snap a photo of any receipt. Our OCR technology automatically extracts data and logs your expenses instantly.
+                    </p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="grid grid-cols-[48px_1fr] gap-x-4">
+<div class="flex flex-col items-center">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-white">
+<span class="material-symbols-outlined">pie_chart</span>
+</div>
+<div class="w-0.5 bg-primary/20 grow my-2"></div>
+</div>
+<div class="pb-8">
+<h3 class="dark:text-white text-base font-bold text-white">3. Detailed Analytics</h3>
+<p class="dark:text-gray-400 text-sm mt-1 leading-relaxed text-gray-300">
+                        Deep dive into your spending habits with categorized monthly reports and interactive trend visualizations.
+                    </p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="grid grid-cols-[48px_1fr] gap-x-4">
+<div class="flex flex-col items-center">
+<div class="flex size-10 items-center justify-center rounded-lg bg-primary/20 text-white">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+<div class="pb-10">
+<h3 class="dark:text-white text-base font-bold text-white">4. Group Expenses &amp; Split</h3>
+<p class="dark:text-gray-400 text-sm mt-1 leading-relaxed text-gray-300">
+                        Create groups for shared living or trips. Share bills with friends and settle debts with one tap.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Footer / CTA -->
+<div class="sticky bottom-0 dark:bg-background-dark p-4 border-t border-primary/10 flex flex-col items-center gap-4 bg-background-dark">
+<!-- Progress Dots -->
+<div class="flex gap-2">
+<div class="h-1.5 w-6 rounded-full bg-primary"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-primary/20"></div>
+</div>
+<button class="w-full flex items-center justify-center rounded-xl h-14 bg-primary text-white text-base font-bold hover:bg-primary/90 transition-all active:scale-[0.98] shadow-lg shadow-primary/20">
+                Start Tracking Now
+            </button>
+<button class="text-sm font-medium hover:text-primary transition-colors pb-2">
+                Maybe later, skip for now
+            </button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gider Kaydet - AI Tarama</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1142d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanning-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #1142d4, transparent);
+            box-shadow: 0 0 15px 2px rgba(17, 66, 212, 0.5);
+            position: absolute;
+            width: 100%;
+            top: 20%;
+            left: 0;
+            z-index: 20;
+        }
+        .scanner-corner {
+            width: 40px;
+            height: 40px;
+            border-color: #1142d4;
+            position: absolute;
+            z-index: 30;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0d111b] antialiased">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Header -->
+<div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent text-white">
+<button class="flex size-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Gider Kaydet</h1>
+<button class="flex size-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+<span class="material-symbols-outlined text-yellow-400">flashlight_on</span>
+</button>
+</div>
+<!-- Camera Viewfinder Area -->
+<div class="relative flex-1 bg-neutral-900 overflow-hidden">
+<!-- Simulated Camera Feed Background -->
+<div class="absolute inset-0 z-0">
+<img alt="Close up shot of a store receipt on a wooden surface" class="h-full w-full object-cover opacity-80" data-alt="Store receipt on wooden table for scanning" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq1g7FFGy1dmmxfeJ2SKs9M36C9HUWNrlgLQHnQ06iYXzuSw5yWk8w2ABLA8cPqvUj9YUVX5y6K-7ZfkI5yZ-LpayhEokY1IyHAmpYkGX17LwDK_a9ohls7A_-bQ-D02ebPTAP20caIzvRNSBEE1wI-PQZf_tcWGwNJCHqZWG-V-gBJy6w4gzvzMZIYtbt-dAssew-fXYpqW3KS7nvS1FqzViruV-mEGJKE35X1CulE2D-81vqC68_c8TASXnswX01vhg0OCjsSgcs"/>
+</div>
+<!-- Scanning Overlays -->
+<div class="absolute inset-0 z-10 flex items-center justify-center p-8">
+<div class="relative h-full w-full max-w-sm border-2 border-white/20 rounded-xl overflow-hidden">
+<!-- Scanner Corners -->
+<div class="scanner-corner top-0 left-0 border-t-4 border-l-4 rounded-tl-xl"></div>
+<div class="scanner-corner top-0 right-0 border-t-4 border-r-4 rounded-tr-xl"></div>
+<div class="scanner-corner bottom-0 left-0 border-b-4 border-l-4 rounded-bl-xl"></div>
+<div class="scanner-corner bottom-0 right-0 border-b-4 border-r-4 rounded-br-xl"></div>
+<!-- Scanning Line -->
+<div class="scanning-line"></div>
+<!-- AI Highlighting Visuals -->
+<div class="absolute top-1/4 left-1/4 h-8 w-24 bg-primary/20 border border-primary/40 rounded flex items-center justify-center">
+<span class="text-[10px] text-white font-bold uppercase tracking-wider">Tutar Bekleniyor</span>
+</div>
+<div class="absolute bottom-1/3 right-10 h-10 w-32 bg-primary/40 border border-primary/60 rounded flex items-center justify-center backdrop-blur-sm">
+<span class="text-[10px] text-white font-bold uppercase tracking-wider">Tarih Tespit Edildi</span>
+</div>
+</div>
+</div>
+<!-- UI Overlay Labels -->
+<div class="absolute bottom-40 left-0 right-0 z-20 flex flex-col items-center gap-2 px-4 text-center">
+<div class="inline-flex items-center gap-2 rounded-full bg-black/60 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+<span class="relative flex h-2 w-2">
+<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+</span>
+                    AI Verileri Ayıklıyor...
+                </div>
+<p class="text-sm text-white/80 shadow-black drop-shadow-md">Belgeyi çerçeveye hizalayın ve sabit tutun</p>
+</div>
+</div>
+<!-- Floating Extracted Info Drawer -->
+<div class="absolute bottom-0 left-0 right-0 z-40">
+<div class="mx-auto w-full max-w-md translate-y-0 transform transition-transform duration-500 ease-out">
+<div class="rounded-t-3xl bg-white p-6 shadow-2xl ring-1 ring-black/5 dark:bg-background-dark">
+<!-- Drawer Handle -->
+<div class="mb-6 flex justify-center">
+<div class="h-1.5 w-12 rounded-full bg-neutral-200 dark:bg-neutral-800"></div>
+</div>
+<div class="mb-6 space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold tracking-tight text-[#0d111b] dark:text-white">Fatura Özeti</h2>
+<span class="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400">Başarılı</span>
+</div>
+<!-- Data Fields -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1 rounded-xl bg-background-light p-4 dark:bg-primary/10">
+<span class="text-xs font-medium text-primary/70 uppercase tracking-wide">Tutar</span>
+<span class="text-2xl font-black text-primary">250,00 TL</span>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-background-light p-4 dark:bg-primary/10">
+<span class="text-xs font-medium text-primary/70 uppercase tracking-wide">Son Ödeme</span>
+<span class="text-lg font-bold text-[#0d111b] dark:text-white">15.08.2024</span>
+</div>
+</div>
+<div class="flex items-center gap-3 rounded-xl border border-neutral-100 p-4 dark:border-neutral-800">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">category</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-neutral-500 uppercase">Kategori</span>
+<span class="font-semibold text-[#0d111b] dark:text-white">Market &amp; Gıda</span>
+</div>
+<span class="material-symbols-outlined ml-auto text-neutral-400">chevron_right</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex gap-3">
+<button class="flex flex-1 items-center justify-center gap-2 rounded-xl border border-neutral-200 py-4 text-base font-bold text-[#0d111b] transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:text-white dark:hover:bg-neutral-800">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+                            Düzenle
+                        </button>
+<button class="flex-[2] rounded-xl bg-primary py-4 text-base font-bold text-white shadow-lg shadow-primary/30 transition-opacity active:opacity-90">
+                            Onayla
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Camera Controls Navigation (Hidden under drawer usually, but part of standard UI) -->
+<div class="z-30 flex items-center justify-between bg-black/80 px-8 py-6 pb-10 text-white backdrop-blur-md">
+<button class="flex flex-col items-center gap-1 opacity-60">
+<span class="material-symbols-outlined">image</span>
+<span class="text-[10px]">Galeri</span>
+</button>
+<button class="flex size-16 items-center justify-center rounded-full border-4 border-white bg-transparent p-1 transition-transform active:scale-95">
+<div class="h-full w-full rounded-full bg-white"></div>
+</button>
+<button class="flex flex-col items-center gap-1 opacity-60">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px]">Geçmiş</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Component Replacement (Visual Mockup) -->
+<div class="fixed bottom-0 left-0 right-0 z-[60] flex items-center justify-around border-t border-neutral-200 bg-white px-2 py-3 dark:border-neutral-800 dark:bg-background-dark">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-400" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-medium">İşlemler</span>
+</a>
+<a class="relative -top-4 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-xl shadow-primary/40 ring-4 ring-white dark:ring-background-dark" href="#">
+<span class="material-symbols-outlined text-[32px]">scan_delete</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-400" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[10px] font-medium">Raporlar</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</div>
+</body></html>

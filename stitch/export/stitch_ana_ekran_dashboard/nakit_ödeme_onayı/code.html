@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1142d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<title>Ödeme Kaydedildi</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="flex items-center p-4 justify-between">
+<button class="text-primary/80 dark:text-primary/40 flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h2 class="text-[#0d111b] dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Ödeme Kaydedildi</h2>
+<div class="size-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="flex-1 flex flex-col items-center px-6 pt-10">
+<!-- Success Icon -->
+<div class="flex items-center justify-center bg-primary/10 dark:bg-primary/20 rounded-full p-6 mb-8">
+<span class="material-symbols-outlined text-primary !text-6xl font-bold">check</span>
+</div>
+<!-- Amount Display -->
+<div class="text-center mb-2">
+<h1 class="text-primary tracking-tight text-4xl font-extrabold leading-tight">120,00 TL</h1>
+</div>
+<!-- Status Message -->
+<div class="text-center mb-10 px-4">
+<p class="text-[#4c5f9a] dark:text-slate-400 text-base font-normal leading-relaxed">
+                    Nakit ödeme başarıyla kaydedildi ve bakiye dengelendi.
+                </p>
+</div>
+<!-- Transaction Details Card -->
+<div class="w-full bg-white dark:bg-background-dark/50 border border-primary/10 rounded-xl p-6 shadow-sm mb-10">
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-[#4c5f9a] dark:text-slate-400 text-sm font-medium">Alıcı</span>
+<span class="text-[#0d111b] dark:text-white text-sm font-semibold">Ahmet Yılmaz</span>
+</div>
+<div class="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
+<span class="text-[#4c5f9a] dark:text-slate-400 text-sm font-medium">Tarih</span>
+<span class="text-[#0d111b] dark:text-white text-sm font-semibold">24.05.2024</span>
+</div>
+<div class="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-4">
+<span class="text-[#4c5f9a] dark:text-slate-400 text-sm font-medium">Yöntem</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-base">payments</span>
+<span class="text-[#0d111b] dark:text-white text-sm font-semibold">Nakit</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full space-y-3 mt-auto pb-8">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                    Gruba Dön
+                </button>
+<button class="w-full bg-primary/10 hover:bg-primary/20 text-primary font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">history</span>
+                    İşlem Geçmişi
+                </button>
+</div>
+</main>
+<!-- Bottom Safe Area Decor -->
+<div class="h-4 bg-background-light dark:bg-background-dark"></div>
+</div>
+</body></html>

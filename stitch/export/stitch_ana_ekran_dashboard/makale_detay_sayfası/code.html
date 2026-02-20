@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="sticky top-0 z-50 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 p-4 justify-between">
+<div class="flex items-center gap-4">
+<button class="text-slate-900 dark:text-white hover:bg-primary/10 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined block">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">Makale Detayı</h2>
+</div>
+<button class="text-slate-900 dark:text-white hover:bg-primary/10 p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined block">share</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+<div class="max-w-2xl mx-auto">
+<!-- Hero Image Section -->
+<div class="px-4 py-6">
+<div class="w-full aspect-video bg-gradient-to-br from-primary/30 to-background-dark rounded-xl border border-primary/20 flex items-center justify-center overflow-hidden relative group" data-alt="Digital security shield with purple glowing accents">
+<span class="material-symbols-outlined text-primary text-7xl opacity-80 group-hover:scale-110 transition-transform duration-500">verified_user</span>
+<div class="absolute inset-0 bg-primary/5 mix-blend-overlay"></div>
+</div>
+</div>
+<!-- Article Header -->
+<article class="px-4 pb-8">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-3xl font-extrabold leading-tight mb-3">
+                    Hesabımı Nasıl Güvenli Tutabilirim?
+                </h1>
+<div class="flex flex-wrap items-center gap-3 text-slate-500 dark:text-primary/60 text-sm font-medium mb-8">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">schedule</span>
+<span>Okuma Süresi: 3 dk</span>
+</div>
+<span class="hidden sm:inline">•</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">calendar_today</span>
+<span>Son Güncelleme: 12 Ekim 2023</span>
+</div>
+</div>
+<!-- Rich Text Content -->
+<div class="prose prose-invert max-w-none space-y-6 text-slate-700 dark:text-slate-300 leading-relaxed">
+<p class="text-lg">
+                        Finansal verilerinizin güvenliği bizim için en öncelikli konudur. Yapay zeka destekli asistanınızın sunduğu avantajlardan tam anlamıyla faydalanırken, hesabınızın güvenliğini artırmak için aşağıdaki adımları uygulamanız kritik önem taşır.
+                    </p>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 pt-4">
+<span class="w-1 h-6 bg-primary rounded-full"></span>
+                        Güçlü Bir Şifre Oluşturun
+                    </h2>
+<p>
+                        Tahmin edilmesi kolay şifreler (doğum tarihi, "123456" vb.) yerine, büyük/küçük harf, rakam ve özel karakterlerden oluşan karmaşık şifreler tercih edin. Şifrenizi diğer platformlardan farklı tutun.
+                    </p>
+<div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r-lg my-6">
+<p class="text-sm italic font-medium">
+                            İpucu: Bir şifre yöneticisi kullanmak, karmaşık şifreleri hatırlama zahmetinden sizi kurtarırken güvenliğinizi en üst düzeye çıkarır.
+                        </p>
+</div>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 pt-4">
+<span class="w-1 h-6 bg-primary rounded-full"></span>
+                        İki Faktörlü Doğrulama (2FA)
+                    </h2>
+<p>
+                        2FA, hesabınıza giriş yapılırken şifrenizin yanı sıra telefonunuza gelen bir kodun da girilmesini gerektirir. Bu, şifreniz çalınsa bile hesabınızın korunmasını sağlar.
+                    </p>
+<ul class="space-y-3 list-none pl-0">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span>Uygulama bildirimlerini her zaman açık tutun.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span>Şüpheli giriş uyarılarını anında değerlendirin.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-1">check_circle</span>
+<span>Güvenli olmayan Wi-Fi ağlarından işlem yapmaktan kaçının.</span>
+</li>
+</ul>
+</div>
+<!-- Feedback Section -->
+<div class="mt-12 p-6 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20 text-center">
+<h3 class="text-slate-900 dark:text-white font-semibold mb-4">Bu makale yardımcı oldu mu?</h3>
+<div class="flex justify-center gap-4">
+<button class="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm">thumb_up</span>
+                            Evet
+                        </button>
+<button class="flex items-center gap-2 px-6 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full font-medium hover:bg-slate-300 dark:hover:bg-slate-700 transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm">thumb_down</span>
+                            Hayır
+                        </button>
+</div>
+</div>
+<!-- Related Articles -->
+<div class="mt-12 border-t border-primary/10 pt-8">
+<h3 class="text-slate-900 dark:text-white font-bold text-lg mb-6">İlgili Makaleler</h3>
+<div class="space-y-4">
+<a class="group flex items-center justify-between p-4 bg-background-light dark:bg-slate-900/50 hover:bg-primary/5 border border-primary/5 rounded-xl transition-all" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">lock_reset</span>
+</div>
+<div>
+<h4 class="text-slate-900 dark:text-slate-100 font-semibold group-hover:text-primary transition-colors">Şifremi Unuttum</h4>
+<p class="text-slate-500 text-xs mt-1">2 dk okuma</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+<a class="group flex items-center justify-between p-4 bg-background-light dark:bg-slate-900/50 hover:bg-primary/5 border border-primary/5 rounded-xl transition-all" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">security_update_good</span>
+</div>
+<div>
+<h4 class="text-slate-900 dark:text-slate-100 font-semibold group-hover:text-primary transition-colors">İki Faktörlü Doğrulama</h4>
+<p class="text-slate-500 text-xs mt-1">4 dk okuma</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- Bottom Navigation (Standard Component) -->
+<nav class="sticky bottom-0 border-t border-primary/10 bg-background-light dark:bg-[#1c1630] px-4 pb-4 pt-2 flex items-center justify-around z-50">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<p class="text-[10px] font-medium">Ana Sayfa</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+<p class="text-[10px] font-medium">Cüzdan</p>
+</a>
+<a class="flex flex-col items-center gap-1 bg-primary px-3 py-1 rounded-full text-white -mt-4 shadow-lg shadow-primary/30" href="#">
+<span class="material-symbols-outlined text-[24px]">smart_toy</span>
+<p class="text-[10px] font-medium">AI Asistan</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[24px]">pie_chart</span>
+<p class="text-[10px] font-medium">Analiz</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<p class="text-[10px] font-medium">Profil</p>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Harcama Gruplarım - Personal Finance App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }</script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .avatar-stack > *:not(:first-child) {
+            margin-left: -0.75rem;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Header -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 pt-6 pb-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-primary" style="color: #4211d4;">account_balance_wallet</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Harcama Gruplarım</h1>
+</div>
+<button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 bg-white dark:bg-slate-800 border-none rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 text-sm transition-all" placeholder="Grup ara..." type="text"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 py-4 space-y-4 overflow-y-auto pb-24">
+<!-- Group Card 1 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden group active:scale-[0.98] transition-transform">
+<div class="flex p-3 gap-4">
+<div class="w-24 h-24 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A modern house interior design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl7pxuoyuzRuwRmdf_U_ghP-d6HVegcU4kJn78coXzLSX03ykcj2lZP8JhHblyKyWx2C3bBLHWotQiFB0FFAm4iLFK8j_7yCIepFuwCJ680m3aS4UkNxvx9LwT49nwE5F41nG88smR6R-9lhqUYVCr49iezfZFkIZt2L7fMvHv2s4dBGsQdfR6ERZMaIhGocsnA_EA16cEvnQagAEdxkraxYFH9u2v14VYwEi291TuNoE-EY7f7H1mmFJrE9-G5JjIQhpgUTY132el"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<h3 class="font-bold text-lg truncate">Ev Giderleri</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">Toplam: 4.500,00 TL</p>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-sm font-semibold text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded">Borcun var: 120 TL</span>
+</div>
+</div>
+</div>
+<div class="px-3 pb-3 flex items-center justify-between border-t border-slate-50 dark:border-slate-700 mt-1 pt-3">
+<div class="flex avatar-stack">
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar one" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM_Z_tYIVF1C6MPR7xknrJiktM61r5e17eafwtVHTC5oDFDTViafUmhhsUaMTeNR7JkCqAj--zncruCZFY76I_Oud0kLR8J7yQ5u3YyiuwcauQE7P5J7S92jB4LX0J22zwOvLssasVtBx08E6ILzi40fF5NFvPIG8eMdQPDoi-sQSiFvHJVyvMQm4ZHrlcEYaL013V8fsgSwVO5RQZVizVzz7H-afwhoi0QvHSLc_OfHxfBIt02XOqzQL_KmoQj4TlozDgCSxGNrft"/>
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar two" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBtAglG4AE7pmLjODGxCvwBpG4ex7Sv9LYGLkWNleSORUwTz4lSN6HIbjSfLA3GMC9ZeCahq8tEwaW2fTfDqNLfHd25xN3FEOxX19buEUnas53IYsa54U4AKuURgrHCP3LT80-BptOa09WmSP-Ygu6cMn3RAXAdqbWU-PcOnJZxLKDXic853U3cXtNZMoAp6CMvP4VKD-Pa6Zjpb6C0pRIPWmixkLfVvRV-Kklggjua1n_Uou_KFcTPoqWwb40SurKtl4dNbSmEcZl"/>
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar three" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7uzbCywB9VLfiHfg4gyQKkA_Nj6XWansDQwNjRbVvEgYpZBVl3_N4V9LcZoe5rJp60kabwgfbXZkyCysF0EiL1-YJEu5EZRL_uQynbIWBq0ejYxbZ_2wQ_h7_m0Rsb_uKb1ZEQYcoEAf8Sig9-rCuZBa2xTSxGUs2jCpCuf-kXBG3jnbpaE8LtBBOB94_bp6vW8EUxlx7p5rMyKkeYwCuoyPl3TfY-ienP5y5juJee_A3GvEKGz47qkM07yn6CMl9Laj1K5cO_Bwi"/>
+<div class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800 bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">+2</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+<!-- Group Card 2 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden group active:scale-[0.98] transition-transform">
+<div class="flex p-3 gap-4">
+<div class="w-24 h-24 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Beautiful sunny beach tropical vacation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1MbGJyRJa86J73dmcY_xbv9NmqgpGGdSL6aGlKC22wciv4bWYO6P_vFJ3_ND9Yg-XwPq4Mv1ebKmKzgEEMHHLcLR7aYBoobHCMbAHnVoWsBLmpuLJw4iwylmIZ8qbRJpNFz6mIadRVzq_t6COO-csIpmZcHasIwgvoqWE8V4uM3brTO_HhkiKyP5h-w07YcC30aw-vk6h59N5GxSQF075Oa9xzbPBlu1o07eA4GSOOYoxTPHEfZrEcSr-DCTQLkuiSEvqI8ODLnH5"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<h3 class="font-bold text-lg truncate">Yaz Tatili</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">Toplam: 12.000,00 TL</p>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-sm font-semibold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">Sana borçlular: 850 TL</span>
+</div>
+</div>
+</div>
+<div class="px-3 pb-3 flex items-center justify-between border-t border-slate-50 dark:border-slate-700 mt-1 pt-3">
+<div class="flex avatar-stack">
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar four" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0YvvaCK3igll1czHIwyu1SSHDDYPjiB4KmMxhf-9FYLYVA5UtK3RYcTKv7yvWgiQPwLEPd5Vf3_6jjwVGdWEo9Za2Saz7rSZA7sVmPpyzn69HJac4xB2-Bv1xlzBzhLPyNoZSnhDd1UdhRDkqbF9j0eYQTCNXPOkiesQZ8FE_b46vjGgDUxCDWxo5AqMTADD_U8ov2TcYM5EqfR0NCNK3AHBa7HT1S-m0QRDHvU5taKKwazYjTM-IKCJRXh1T2w_3drexnaWpM72b"/>
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar five" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpvjolyr5wZDULWjdxINCWZZpP6_C4dmRcalYBzPd0OamWLVtRF7ITRyH5AAQzWDHG6N4zskO6dKst7vo3UGKPY0ujRmg-vaWPw_Sim-2yrD3sqauqSSADn-GA939u8gFuxcZYADzUstnKCkjyRMOMUj1hr9deKgGsWxbgGumQoRQenoQaZBd9CZiyxw5GtiBjyJmXosDLMT03seuRqNSajSVlGRzWjP-bv9JXBvPu0fWU6q2GMVxsBi_WneKWPS-Jj-wwUzfWHV4A"/>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+<!-- Group Card 3 -->
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden group active:scale-[0.98] transition-transform">
+<div class="flex p-3 gap-4">
+<div class="w-24 h-24 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Modern office workspace with team" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARvlzSaXysD_fxVXAkg4UdPxMvWcHxRHxAAfjpffQinPpYOr98MVKh0CVjp-slARiH8ky2uMqKtrcoDeHs8OtbMoXR3-bykLsuEgMOw4t1O2grX8b7_EdgYgq6lIDnoTmKhidzK-HeYb1AhdPWvamLGmi6-NSrTCqgp1DbLcrdcY28gb7gUrlHtZhjWwuFSTgLOnYeZ4d2MiRyIV_eb3p2L9cmamIn1pVDfGyIXLI9CaaILxo-Tz5x_-mkCqX4LzHp0DpPWxaOpoGu"/>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<h3 class="font-bold text-lg truncate">Ofis Ekibi</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">Toplam: 350,00 TL</p>
+</div>
+<div class="flex items-center justify-between mt-2">
+<span class="text-sm font-semibold text-slate-500 bg-slate-50 dark:bg-slate-700 px-2 py-0.5 rounded">Dengedesin</span>
+</div>
+</div>
+</div>
+<div class="px-3 pb-3 flex items-center justify-between border-t border-slate-50 dark:border-slate-700 mt-1 pt-3">
+<div class="flex avatar-stack">
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar six" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdYkEdQoWjFrgKDtVR-XlAX-1ORjI8_xemwLBlbOaaOlaDZT1d0qNY3mcvVY8hK49udC2si7PHvR9WyLOePl0T8aHnZ9qk3UCY9XBar7uwXR3d_mVOYZZZplom5KA7wevaQ-fgjruwByzkKYNzAxLbKUpgBl3WZ6wiWsNcvbT2V1NBvMGYlwUCIxEeeM5OPBhHxFPGKYkbiZwppg3FE88sA8fXir_c7FHY1WEeWPW7cmUyM8J-_KXECZwAglgbo6QHktDh1FDFcR9r"/>
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar seven" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAh61S3a_TadLuir3JF6R2dW5ZmBSZ_ckEeciRAGmJ6ozDb1AVjoocf2bRdOs-fVCxGcFWmvg4y5_rEGyl02oJB1_egI_niHNEzMJSDLBFIl85zA9TQjzzLPJzHggQJhs5UukRQJItGvAGvGJTl4fN_2GdVOdHZA1gJgjnBwCjRo4_mB77_e2YntaRhvyxOqDjzSNoGaoWCEgSGnchqxkqs8ekzxpZ3EGgFEgN-KK3NVlwV0hBtknxqWcZ1wBdM5HH0YNqeQpg4Zrvo"/>
+<img class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800" data-alt="User profile avatar eight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz8SC4ZVsLyXctLjvZAK9P6EfVp40yNvj8zOs1XwiXiHB2-s7zFJoi3O30Ooukpa_A-c7LQvP0U-_BiR5QfEQOm1OjjDP5TOSN2y_dubTE4YvurUH-BC7kH6M5JiFP4lWNQaonXfEEA7fn5G3pjGaSKWV5SRDu4i654YeCTkiJMwfSkb-RBzbzaD2DCtlW8mPAEE9KiTrMJYp3bWq0YlQhzC3q7uGT3qA0HG9SA2ROEpn1Xa4rfOR2-Kdp0u57uz9Pt3XnCyn0J_dQ"/>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed right-6 bottom-24 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-20" style="background-color: #4211d4;">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-3 z-30">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Panel</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#4211d4]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">group</span>
+<span class="text-[10px] font-bold">Gruplar</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-medium">Aktivite</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</div>
+</nav>
+</body></html>

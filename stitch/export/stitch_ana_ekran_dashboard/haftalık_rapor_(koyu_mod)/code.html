@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Health Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "accent-blue": "#3b82f6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0a",
+                        "card-dark": "#16161a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Financial Health</h1>
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Hero Health Score -->
+<section class="flex flex-col items-center py-8 px-4">
+<div class="relative flex items-center justify-center">
+<!-- Circular Progress Background -->
+<svg class="size-48 transform -rotate-90">
+<circle class="text-slate-200 dark:text-white/5" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-accent-blue" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-dasharray="552.92" stroke-dashoffset="99.5" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<!-- Score Content -->
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-5xl font-bold tracking-tighter">82</span>
+<span class="text-sm font-medium text-accent-blue tracking-widest uppercase">Excellent</span>
+</div>
+</div>
+<div class="mt-6 text-center">
+<p class="text-slate-500 dark:text-slate-400 text-sm max-w-xs">Your score is 12% higher than last month. You're in the top 5% of savers in your area.</p>
+<button class="mt-4 px-6 py-2 bg-primary text-white text-sm font-semibold rounded-full hover:opacity-90 transition-opacity">
+                    Improve Score
+                </button>
+</div>
+</section>
+<!-- Metrics Grid -->
+<section class="px-4 mb-8">
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-card-dark p-4 rounded-xl border border-white/5 flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-green-400 mb-1">savings</span>
+<span class="text-xs text-slate-400">Savings</span>
+<span class="text-sm font-bold">24%</span>
+</div>
+<div class="bg-card-dark p-4 rounded-xl border border-white/5 flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-orange-400 mb-1">credit_card</span>
+<span class="text-xs text-slate-400">DTI Ratio</span>
+<span class="text-sm font-bold">31%</span>
+</div>
+<div class="bg-card-dark p-4 rounded-xl border border-white/5 flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-accent-blue mb-1">trending_up</span>
+<span class="text-xs text-slate-400">Invested</span>
+<span class="text-sm font-bold">12%</span>
+</div>
+</div>
+</section>
+<!-- Future Predictions -->
+<section class="px-4 mb-8">
+<h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 ml-1">Future Predictions</h3>
+<div class="relative overflow-hidden bg-primary/10 rounded-xl border border-primary/30 p-5">
+<div class="flex justify-between items-start relative z-10">
+<div>
+<p class="text-slate-300 text-xs">Estimated Net Worth (12 mo)</p>
+<h4 class="text-2xl font-bold mt-1">$142,500.00</h4>
+<div class="flex items-center gap-1 text-green-400 text-xs mt-2">
+<span class="material-symbols-outlined text-sm">arrow_upward</span>
+<span>Projected +14% growth</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-3xl">query_stats</span>
+</div>
+<!-- Abstract Pattern Decoration -->
+<div class="absolute -right-4 -bottom-4 size-24 bg-primary/20 rounded-full blur-2xl"></div>
+</div>
+</section>
+<!-- AI Insights -->
+<section class="px-4 mb-8">
+<h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 ml-1">AI Smart Insights</h3>
+<div class="space-y-3">
+<!-- Insight Card 1 -->
+<div class="bg-card-dark p-4 rounded-xl border border-white/5 flex gap-4 items-start">
+<div class="size-10 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-orange-500">subscriptions</span>
+</div>
+<div>
+<h5 class="text-sm font-semibold">Subscription Creep</h5>
+<p class="text-xs text-slate-400 mt-1 leading-relaxed">Your subscription spend increased by 12% this month. We found 2 unused services you can cancel to save $34/mo.</p>
+</div>
+</div>
+<!-- Insight Card 2 -->
+<div class="bg-card-dark p-4 rounded-xl border border-white/5 flex gap-4 items-start">
+<div class="size-10 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-green-500">energy_savings_leaf</span>
+</div>
+<div>
+<h5 class="text-sm font-semibold">Utility Optimization</h5>
+<p class="text-xs text-slate-400 mt-1 leading-relaxed">Switching to a green energy provider could lower your monthly bill by approx. $15 based on your usage patterns.</p>
+</div>
+</div>
+<!-- Insight Card 3 -->
+<div class="bg-card-dark p-4 rounded-xl border border-white/5 flex gap-4 items-start">
+<div class="size-10 rounded-lg bg-accent-blue/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-accent-blue">auto_awesome</span>
+</div>
+<div>
+<h5 class="text-sm font-semibold">Next Step to 85</h5>
+<p class="text-xs text-slate-400 mt-1 leading-relaxed">Increasing your monthly investment by just $100 will boost your health score to 85 within 3 months.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Trend Chart Placeholder -->
+<section class="px-4 mb-8">
+<div class="bg-card-dark p-5 rounded-xl border border-white/5">
+<div class="flex justify-between items-center mb-6">
+<h5 class="text-sm font-semibold">Score History</h5>
+<span class="text-xs text-slate-400">Last 6 Months</span>
+</div>
+<div class="h-32 w-full flex items-end justify-between gap-2 px-2">
+<div class="w-full bg-white/5 rounded-t-sm h-[40%]"></div>
+<div class="w-full bg-white/5 rounded-t-sm h-[55%]"></div>
+<div class="w-full bg-white/5 rounded-t-sm h-[50%]"></div>
+<div class="w-full bg-white/5 rounded-t-sm h-[75%]"></div>
+<div class="w-full bg-white/5 rounded-t-sm h-[65%]"></div>
+<div class="w-full bg-accent-blue/80 rounded-t-sm h-[82%]"></div>
+</div>
+<div class="flex justify-between mt-2 px-1">
+<span class="text-[10px] text-slate-500 uppercase">Jan</span>
+<span class="text-[10px] text-slate-500 uppercase">Feb</span>
+<span class="text-[10px] text-slate-500 uppercase">Mar</span>
+<span class="text-[10px] text-slate-500 uppercase">Apr</span>
+<span class="text-[10px] text-slate-500 uppercase">May</span>
+<span class="text-[10px] text-white font-bold uppercase">Jun</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Component -->
+<nav class="fixed bottom-0 left-0 right-0 bg-background-dark/90 backdrop-blur-xl border-t border-white/10 px-4 pb-6 pt-2 z-50">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<a class="flex flex-col items-center gap-1 text-slate-500 p-2" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-white p-2" href="#">
+<span class="material-symbols-outlined fill-1">monitoring</span>
+<span class="text-[10px] font-medium">Health</span>
+</a>
+<div class="relative -top-6">
+<button class="bg-primary size-12 rounded-full shadow-lg shadow-primary/40 flex items-center justify-center text-white">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center gap-1 text-slate-500 p-2" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Budget</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 p-2" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+</nav>
+</body></html>

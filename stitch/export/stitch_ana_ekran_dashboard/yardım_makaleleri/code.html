@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Help Center - Personal Finance App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-primary/20">
+<div class="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Help Articles</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</div>
+</header>
+<main class="flex-1 max-w-md mx-auto w-full px-4 py-6">
+<!-- Search Bar -->
+<div class="mb-8">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3 bg-white dark:bg-primary/10 border border-slate-200 dark:border-primary/30 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm" placeholder="Search articles..." type="text"/>
+</div>
+</div>
+<!-- Article List -->
+<div class="space-y-2">
+<!-- Item 1 -->
+<a class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-primary/5 border border-transparent hover:border-primary/30 active:scale-[0.98] transition-all" href="#">
+<div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">person_remove</span>
+</div>
+<span class="flex-1 font-medium text-sm">How to delete my account?</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</a>
+<!-- Item 2 -->
+<a class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-primary/5 border border-transparent hover:border-primary/30 active:scale-[0.98] transition-all" href="#">
+<div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">shield_lock</span>
+</div>
+<span class="flex-1 font-medium text-sm">Is my financial data safe?</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</a>
+<!-- Item 3 -->
+<a class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-primary/5 border border-transparent hover:border-primary/30 active:scale-[0.98] transition-all" href="#">
+<div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">cancel</span>
+</div>
+<span class="flex-1 font-medium text-sm">How to cancel my subscription?</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</a>
+<!-- Item 4 -->
+<a class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-primary/5 border border-transparent hover:border-primary/30 active:scale-[0.98] transition-all" href="#">
+<div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<span class="flex-1 font-medium text-sm">How to connect a bank account?</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</a>
+<!-- Item 5 -->
+<a class="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-primary/5 border border-transparent hover:border-primary/30 active:scale-[0.98] transition-all" href="#">
+<div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">file_export</span>
+</div>
+<span class="flex-1 font-medium text-sm">How to export my data?</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</a>
+</div>
+<!-- Support CTA Section -->
+<div class="mt-12 p-6 rounded-2xl bg-gradient-to-br from-primary to-[#6d3ae0] text-white">
+<h3 class="text-lg font-bold mb-2">Still need help?</h3>
+<p class="text-white/80 text-xs mb-4">Our support team is available 24/7 to help with any questions you might have.</p>
+<button class="w-full py-3 bg-white text-primary font-semibold rounded-lg text-sm hover:bg-slate-100 transition-colors">
+                Contact Support
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="sticky bottom-0 bg-white dark:bg-[#1e1933] border-t border-slate-200 dark:border-primary/20 pb-safe-area">
+<div class="max-w-md mx-auto flex justify-between px-6 py-3">
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-medium">History</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">pie_chart</span>
+<span class="text-[10px] font-medium">Budget</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">help</span>
+<span class="text-[10px] font-medium">Support</span>
+</a>
+</div>
+</nav>
+</body></html>

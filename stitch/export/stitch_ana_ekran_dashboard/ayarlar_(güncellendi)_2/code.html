@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0d0d0d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }</script>
+<title>Ayarlar - Financial App</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0d111b] dark:text-white">
+<div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl border-x border-primary/10">
+<!-- Header -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 pb-4 justify-between border-b border-primary/5">
+<div class="text-primary flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 cursor-pointer">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-[#0d111b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Ayarlar</h2>
+</div>
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- Profile Quick View (Optional but enhances settings context) -->
+<div class="p-6 flex flex-col items-center">
+<div class="size-20 rounded-full bg-primary/10 flex items-center justify-center mb-3 border-2 border-primary/20">
+<span class="material-symbols-outlined text-primary text-4xl">account_circle</span>
+</div>
+<h3 class="font-bold text-lg">Mert Yılmaz</h3>
+<p class="text-sm text-primary/70">Premium Üye</p>
+</div>
+<!-- Application Settings Section -->
+<div class="px-4 py-2">
+<h3 class="text-primary text-xs font-bold uppercase tracking-widest px-2 pb-2">Application Settings</h3>
+<div class="bg-white dark:bg-[#121212] rounded-xl overflow-hidden shadow-lg border border-primary/20"><!-- Language -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-primary/20 cursor-pointer transition-colors border-b border-primary/10">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">language</span>
+</div>
+<div class="flex flex-col flex-1 justify-center">
+<p class="text-base font-semibold">Language</p>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-sm text-gray-400">English</span>
+<span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+</div>
+</div>
+<!-- Theme Mode -->
+<div class="flex items-center gap-4 px-4 py-4 border-b border-primary/10">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<p class="text-base font-semibold flex-1">Theme Mode</p>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border border-white/10 bg-gray-700 p-1 transition-colors has-[:checked]:bg-primary">
+<div class="h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 peer-checked:translate-x-5"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Notifications -->
+<div class="flex items-center gap-4 px-4 py-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<p class="text-base font-semibold flex-1">Notifications</p>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border border-white/10 bg-gray-700 p-1 transition-colors has-[:checked]:bg-primary">
+<div class="h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 peer-checked:translate-x-5"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div></div>
+</div>
+<!-- Privacy Section -->
+<div class="px-4 py-4">
+<h3 class="text-primary text-xs font-bold uppercase tracking-widest px-2 pb-2">Privacy</h3>
+<div class="bg-white dark:bg-[#121212] rounded-xl overflow-hidden shadow-lg border border-primary/20"><!-- Face ID -->
+<div class="flex items-center gap-4 px-4 py-4 border-b border-primary/10">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">fingerprint</span>
+</div>
+<p class="text-base font-semibold flex-1">Face ID / Fingerprint</p>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border border-white/10 bg-gray-700 p-1 transition-colors has-[:checked]:bg-primary">
+<div class="h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 peer-checked:translate-x-5"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Data Privacy -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-primary/20 cursor-pointer transition-colors">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div class="flex flex-col flex-1 justify-center">
+<p class="text-base font-semibold">Security &amp; Privacy</p><p class="text-xs text-gray-400">Güvenlik ve Gizlilik</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div></div>
+</div>
+<!-- Support Section -->
+<div class="px-4 py-2">
+<h3 class="text-primary text-xs font-bold uppercase tracking-widest px-2 pb-2">Support</h3>
+<div class="bg-white dark:bg-[#121212] rounded-xl overflow-hidden shadow-lg border border-primary/20"><!-- Language -->
+<div class="flex items-center gap-4 px-4 py-4 hover:bg-primary/20 cursor-pointer transition-colors border-b border-primary/10">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">language</span>
+</div>
+<div class="flex flex-col flex-1 justify-center">
+<p class="text-base font-semibold">Language</p>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-sm text-gray-400">English</span>
+<span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+</div>
+</div>
+<!-- Theme Mode -->
+<div class="flex items-center gap-4 px-4 py-4 border-b border-primary/10">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<p class="text-base font-semibold flex-1">Theme Mode</p>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border border-white/10 bg-gray-700 p-1 transition-colors has-[:checked]:bg-primary">
+<div class="h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 peer-checked:translate-x-5"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Notifications -->
+<div class="flex items-center gap-4 px-4 py-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<p class="text-base font-semibold flex-1">Notifications</p>
+<div class="shrink-0">
+<label class="relative flex h-7 w-12 cursor-pointer items-center rounded-full border border-white/10 bg-gray-700 p-1 transition-colors has-[:checked]:bg-primary">
+<div class="h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 peer-checked:translate-x-5"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div></div>
+</div>
+<!-- Log Out -->
+<div class="px-6 py-8">
+<button class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 font-semibold border border-red-200 dark:border-red-500/20 active:scale-95 transition-all">
+<span class="material-symbols-outlined">logout</span>
+                    Çıkış Yap
+                </button>
+<p class="text-center text-xs text-gray-400 mt-6">Versiyon 2.4.0 (Build 402)</p>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 flex w-full max-w-md border-t border-primary/20 bg-white/90 dark:bg-[#0d0d0d]/95 backdrop-blur-md px-4 pb-6 pt-2 z-20">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">house</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Cards</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">query_stats</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Activity</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">settings</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-wide">Settings</p>
+</a>
+</div>
+</div>
+</body></html>

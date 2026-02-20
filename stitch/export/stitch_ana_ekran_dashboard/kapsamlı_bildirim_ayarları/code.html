@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bildirim Ayarları - Finansal AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0a",
+                        "surface-dark": "#16161a",
+                        "border-dark": "#26262b",
+                        "text-muted": "#a1a1aa"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #26262b;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark overflow-x-hidden border-x border-slate-200 dark:border-border-dark shadow-2xl">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-slate-200 dark:border-border-dark">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Bildirim Ayarları</h2>
+</header>
+<main class="flex-1 overflow-y-auto custom-scrollbar pb-24">
+<!-- Master Toggle Section -->
+<div class="p-4">
+<div class="flex flex-col items-start justify-between gap-4 rounded-xl border border-primary/30 bg-primary/5 p-5 shadow-lg shadow-primary/5">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg text-white">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight">Genel Bildirimler</p>
+<p class="text-slate-500 dark:text-text-muted text-xs font-normal mt-0.5">Tüm uygulama uyarılarını tek bir yerden yönetin</p>
+</div>
+</div>
+<div class="w-full flex justify-end mt-2">
+<label class="relative flex h-[31px] w-[54px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300">
+<div class="h-[27px] w-[27px] rounded-full bg-white shadow-md transform transition-transform duration-200"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+<!-- spending Alerts Section -->
+<section class="mt-4">
+<div class="px-5 mb-2">
+<h3 class="text-primary text-[11px] font-bold leading-tight tracking-[0.1em] uppercase">Harcama Uyarıları</h3>
+</div>
+<div class="bg-white dark:bg-surface-dark border-y border-slate-200 dark:border-border-dark divide-y divide-slate-100 dark:divide-border-dark/50">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Yüksek Tutar Uyarıları</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Belirlenen limit üstü işlemlerde uyarı al</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">today</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Günlük Özet</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Her gün sonunda harcama raporu al</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Bütçe Sınırı Yaklaşımı</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Limitin %80'ine ulaşıldığında bildir</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</section><section class="mt-8">
+<div class="px-5 mb-2">
+<h3 class="text-primary text-[11px] font-bold leading-tight tracking-[0.1em] uppercase">FATURA VE ÖDEMELER</h3>
+</div>
+<div class="bg-white dark:bg-surface-dark border-y border-slate-200 dark:border-border-dark divide-y divide-slate-100 dark:divide-border-dark/50">
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Yaklaşan Faturalar</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Ödeme tarihi yaklaşan faturalar için bildirim</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">event_busy</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Gecikmiş Ödemeler</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Gecikmiş ödemeleriniz hakkında anında uyarı</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</section>
+<!-- Social Section -->
+<section class="mt-8">
+<div class="px-5 mb-2">
+<h3 class="text-primary text-[11px] font-bold leading-tight tracking-[0.1em] uppercase">Grup ve Sosyal</h3>
+</div>
+<div class="bg-white dark:bg-surface-dark border-y border-slate-200 dark:border-border-dark divide-y divide-slate-100 dark:divide-border-dark/50">
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">request_quote</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Yeni Borç İstekleri</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Arkadaşlardan gelen ödeme talepleri</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Grup Harcamaları</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Ortak gruplarda yeni bir harcama olduğunda</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Arkadaşlık İstekleri</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Yeni bağlantı kurma talepleri</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</section>
+<!-- AI Section -->
+<section class="mt-8">
+<div class="px-5 mb-2">
+<h3 class="text-primary text-[11px] font-bold leading-tight tracking-[0.1em] uppercase">HESAP GÜVENLİĞİ</h3>
+</div>
+<div class="bg-white dark:bg-surface-dark border-y border-slate-200 dark:border-border-dark divide-y divide-slate-100 dark:divide-border-dark/50">
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">login</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Yeni Giriş Uyarıları</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Yeni bir cihazdan giriş yapıldığında bildir</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">shield_alert</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Şüpheli Hareketler</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Olağandışı hesap hareketlerini takip et</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</section>
+<section class="mt-8">
+<div class="px-5 mb-2">
+<h3 class="text-primary text-[11px] font-bold leading-tight tracking-[0.1em] uppercase">ABONELİK YÖNETİMİ</h3>
+</div>
+<div class="bg-white dark:bg-surface-dark border-y border-slate-200 dark:border-border-dark divide-y divide-slate-100 dark:divide-border-dark/50">
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-border-dark shrink-0 size-11">
+<span class="material-symbols-outlined">auto_renew</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Ödeme Öncesi Hatırlatma</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Abonelik yenilenmeden önce haber ver</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</section><section class="mt-8">
+<div class="px-5 mb-2">
+<h3 class="text-primary text-[11px] font-bold leading-tight tracking-[0.1em] uppercase">AI ve Tavsiyeler</h3>
+</div>
+<div class="bg-white dark:bg-surface-dark border-y border-slate-200 dark:border-border-dark divide-y divide-slate-100 dark:divide-border-dark/50">
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">insights</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Yatırım Önerileri</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Piyasa verilerine dayalı AI tavsiyeleri</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="flex items-center gap-4 px-5 py-4 justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">analytics</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-sm font-semibold">Haftalık Finansal Rapor</p>
+<p class="text-slate-500 dark:text-text-muted text-xs">Harcama alışkanlıklarınızın detaylı analizi</p>
+</div>
+</div>
+<label class="relative flex h-[28px] w-[48px] cursor-pointer items-center rounded-full border-none bg-slate-300 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-[24px] w-[24px] rounded-full bg-white shadow-sm"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</section>
+</main>
+<!-- Navigation Bar -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md flex gap-2 border-t border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark px-4 pb-6 pt-2 z-20">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium leading-normal">Ana Sayfa</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<p class="text-[10px] font-medium leading-normal">Cüzdan</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 dark:text-text-muted hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">show_chart</span>
+<p class="text-[10px] font-medium leading-normal">Analiz</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<p class="text-[10px] font-medium leading-normal">Ayarlar</p>
+</a>
+</nav>
+</div>
+</body></html>

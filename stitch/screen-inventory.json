@@ -1,0 +1,1301 @@
+{
+  "generatedAt": "2026-02-17T14:02:00.784Z",
+  "sourceRoot": "stitch/export/stitch_ana_ekran_dashboard",
+  "totalScreens": 126,
+  "moduleCounts": [
+    {
+      "module": "dashboard",
+      "count": 7
+    },
+    {
+      "module": "transactions",
+      "count": 18
+    },
+    {
+      "module": "analytics",
+      "count": 20
+    },
+    {
+      "module": "split",
+      "count": 17
+    },
+    {
+      "module": "scan",
+      "count": 4
+    },
+    {
+      "module": "profile",
+      "count": 30
+    },
+    {
+      "module": "auth",
+      "count": 24
+    },
+    {
+      "module": "other",
+      "count": 6
+    }
+  ],
+  "screens": [
+    {
+      "index": 1,
+      "screenKey": "ai_tavsiyeleri_dark_1",
+      "folderName": "ai_tavsiyeleri_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ai_tavsiyeleri_(dark)_1",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 2,
+      "screenKey": "ai_tavsiyeleri_dark_2",
+      "folderName": "ai_tavsiyeleri_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ai_tavsiyeleri_(dark)_2",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 3,
+      "screenKey": "ai_tavsiyeleri_dark_3",
+      "folderName": "ai_tavsiyeleri_(dark)_3",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ai_tavsiyeleri_(dark)_3",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 4,
+      "screenKey": "ai_tavsiyeleri_1",
+      "folderName": "ai_tavsiyeleri_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ai_tavsiyeleri_1",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 5,
+      "screenKey": "ai_tavsiyeleri_2",
+      "folderName": "ai_tavsiyeleri_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ai_tavsiyeleri_2",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 6,
+      "screenKey": "ana_ekran_dashboard_1",
+      "folderName": "ana_ekran_(dashboard)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ana_ekran_(dashboard)_1",
+      "module": "dashboard",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 7,
+      "screenKey": "ana_ekran_dashboard_2",
+      "folderName": "ana_ekran_(dashboard)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ana_ekran_(dashboard)_2",
+      "module": "dashboard",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 8,
+      "screenKey": "arkadaslarim_dark_1",
+      "folderName": "arkadaşlarım_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/arkadaşlarım_(dark)_1",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 9,
+      "screenKey": "arkadaslarim_dark_2",
+      "folderName": "arkadaşlarım_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/arkadaşlarım_(dark)_2",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 10,
+      "screenKey": "arkadaslarim_1",
+      "folderName": "arkadaşlarım_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/arkadaşlarım_1",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 11,
+      "screenKey": "arkadaslarim_2",
+      "folderName": "arkadaşlarım_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/arkadaşlarım_2",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 12,
+      "screenKey": "ayarlar_bildirim_baglantili",
+      "folderName": "ayarlar_(bildirim_bağlantılı)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_(bildirim_bağlantılı)",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 13,
+      "screenKey": "ayarlar_dark_1",
+      "folderName": "ayarlar_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_(dark)_1",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 14,
+      "screenKey": "ayarlar_dark_2",
+      "folderName": "ayarlar_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_(dark)_2",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 15,
+      "screenKey": "ayarlar_destek_baglantili",
+      "folderName": "ayarlar_(destek_bağlantılı)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_(destek_bağlantılı)",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 16,
+      "screenKey": "ayarlar_guncellendi_1",
+      "folderName": "ayarlar_(güncellendi)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_(güncellendi)_1",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 17,
+      "screenKey": "ayarlar_guncellendi_2",
+      "folderName": "ayarlar_(güncellendi)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_(güncellendi)_2",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 18,
+      "screenKey": "ayarlar_1",
+      "folderName": "ayarlar_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_1",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 19,
+      "screenKey": "ayarlar_2",
+      "folderName": "ayarlar_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ayarlar_2",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 20,
+      "screenKey": "basarili_giris_yonlendirmesi",
+      "folderName": "başarılı_giriş_yönlendirmesi",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/başarılı_giriş_yönlendirmesi",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 21,
+      "screenKey": "bekleyen_istekler",
+      "folderName": "bekleyen_i̇stekler",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/bekleyen_i̇stekler",
+      "module": "other",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 22,
+      "screenKey": "bekleyen_istekler_dark",
+      "folderName": "bekleyen_i̇stekler_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/bekleyen_i̇stekler_(dark)",
+      "module": "other",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 23,
+      "screenKey": "bildirim_ayarlari_dark",
+      "folderName": "bildirim_ayarları_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/bildirim_ayarları_(dark)",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 24,
+      "screenKey": "borc_kapatma",
+      "folderName": "borç_kapatma",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 25,
+      "screenKey": "borc_kapatma_dark_1",
+      "folderName": "borç_kapatma_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma_(dark)_1",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 26,
+      "screenKey": "borc_kapatma_dark_2",
+      "folderName": "borç_kapatma_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma_(dark)_2",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 27,
+      "screenKey": "borc_kapatma_guncel",
+      "folderName": "borç_kapatma_(güncel)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma_(güncel)",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 28,
+      "screenKey": "borc_kapatma_rehberi",
+      "folderName": "borç_kapatma_rehberi",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma_rehberi",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 29,
+      "screenKey": "borc_kapatma_rehberi_dark_1",
+      "folderName": "borç_kapatma_rehberi_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma_rehberi_(dark)_1",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 30,
+      "screenKey": "borc_kapatma_rehberi_dark_2",
+      "folderName": "borç_kapatma_rehberi_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/borç_kapatma_rehberi_(dark)_2",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 31,
+      "screenKey": "butce_asimi_bildirimi",
+      "folderName": "bütçe_aşımı_bildirimi",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/bütçe_aşımı_bildirimi",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 32,
+      "screenKey": "butce_duzenleme",
+      "folderName": "bütçe_düzenleme",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/bütçe_düzenleme",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 33,
+      "screenKey": "butce_planlama",
+      "folderName": "bütçe_planlama",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/bütçe_planlama",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 34,
+      "screenKey": "dashboard_dark",
+      "folderName": "dashboard_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/dashboard_(dark)",
+      "module": "dashboard",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 35,
+      "screenKey": "dashboard_koyu_mod_1",
+      "folderName": "dashboard_(koyu_mod)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/dashboard_(koyu_mod)_1",
+      "module": "dashboard",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 36,
+      "screenKey": "dashboard_koyu_mod_2",
+      "folderName": "dashboard_(koyu_mod)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/dashboard_(koyu_mod)_2",
+      "module": "dashboard",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 37,
+      "screenKey": "dashboard_with_budget_widget",
+      "folderName": "dashboard_with_budget_widget",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/dashboard_with_budget_widget",
+      "module": "dashboard",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 38,
+      "screenKey": "dashboard_with_interactive_budget_widget",
+      "folderName": "dashboard_with_interactive_budget_widget",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/dashboard_with_interactive_budget_widget",
+      "module": "dashboard",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 39,
+      "screenKey": "detayli_ayarlar_paneli",
+      "folderName": "detaylı_ayarlar_paneli",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/detaylı_ayarlar_paneli",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 40,
+      "screenKey": "fatura_tarama_dark_1",
+      "folderName": "fatura_tarama_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/fatura_tarama_(dark)_1",
+      "module": "scan",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 41,
+      "screenKey": "fatura_tarama_dark_2",
+      "folderName": "fatura_tarama_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/fatura_tarama_(dark)_2",
+      "module": "scan",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 42,
+      "screenKey": "fatura_tarama_and_kayit_1",
+      "folderName": "fatura_tarama_&_kayıt_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/fatura_tarama_&_kayıt_1",
+      "module": "scan",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 43,
+      "screenKey": "fatura_tarama_and_kayit_2",
+      "folderName": "fatura_tarama_&_kayıt_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/fatura_tarama_&_kayıt_2",
+      "module": "scan",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 44,
+      "screenKey": "finansal_saglik_dark_1",
+      "folderName": "finansal_sağlık_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/finansal_sağlık_(dark)_1",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 45,
+      "screenKey": "finansal_saglik_dark_2",
+      "folderName": "finansal_sağlık_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/finansal_sağlık_(dark)_2",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 46,
+      "screenKey": "generated_screen",
+      "folderName": "generated_screen",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/generated_screen",
+      "module": "other",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 47,
+      "screenKey": "giris_dark",
+      "folderName": "giriş_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_(dark)",
+      "module": "auth",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 48,
+      "screenKey": "giris_yap_dark",
+      "folderName": "giriş_yap_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(dark)",
+      "module": "auth",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 49,
+      "screenKey": "giris_yap_goz_ikonlu",
+      "folderName": "giriş_yap_(göz_i̇konlu)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(göz_i̇konlu)",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 50,
+      "screenKey": "giris_yap_guncellendi_1",
+      "folderName": "giriş_yap_(güncellendi)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(güncellendi)_1",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 51,
+      "screenKey": "giris_yap_guncellendi_2",
+      "folderName": "giriş_yap_(güncellendi)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(güncellendi)_2",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 52,
+      "screenKey": "giris_yap_renk_guncellemesi",
+      "folderName": "giriş_yap_(renk_güncellemesi)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(renk_güncellemesi)",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 53,
+      "screenKey": "giris_yap_yeni_logo_1",
+      "folderName": "giriş_yap_(yeni_logo)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(yeni_logo)_1",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 54,
+      "screenKey": "giris_yap_yeni_logo_2",
+      "folderName": "giriş_yap_(yeni_logo)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/giriş_yap_(yeni_logo)_2",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 55,
+      "screenKey": "grup_detayi_dark_1",
+      "folderName": "grup_detayı_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/grup_detayı_(dark)_1",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 56,
+      "screenKey": "grup_detayi_dark_2",
+      "folderName": "grup_detayı_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/grup_detayı_(dark)_2",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 57,
+      "screenKey": "grup_detayi_1",
+      "folderName": "grup_detayı_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/grup_detayı_1",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 58,
+      "screenKey": "grup_detayi_2",
+      "folderName": "grup_detayı_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/grup_detayı_2",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 59,
+      "screenKey": "grup_harcamasi_ekle",
+      "folderName": "grup_harcaması_ekle",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/grup_harcaması_ekle",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 60,
+      "screenKey": "grup_harcamasi_ekle_dark",
+      "folderName": "grup_harcaması_ekle_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/grup_harcaması_ekle_(dark)",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 61,
+      "screenKey": "guncel_islem_gecmisi_borc_kapama_dahil",
+      "folderName": "güncel_i̇şlem_geçmişi_(borç_kapama_dahil)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/güncel_i̇şlem_geçmişi_(borç_kapama_dahil)",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 62,
+      "screenKey": "guncel_makale_detayi",
+      "folderName": "güncel_makale_detayı",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/güncel_makale_detayı",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 63,
+      "screenKey": "guncel_yardim_makaleleri",
+      "folderName": "güncel_yardım_makaleleri",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/güncel_yardım_makaleleri",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 64,
+      "screenKey": "guvenlik_ve_gizlilik_ayarlari",
+      "folderName": "güvenlik_ve_gizlilik_ayarları",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/güvenlik_ve_gizlilik_ayarları",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 65,
+      "screenKey": "haftalik_finansal_saglik_raporu_1",
+      "folderName": "haftalık_finansal_sağlık_raporu_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/haftalık_finansal_sağlık_raporu_1",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 66,
+      "screenKey": "haftalik_finansal_saglik_raporu_2",
+      "folderName": "haftalık_finansal_sağlık_raporu_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/haftalık_finansal_sağlık_raporu_2",
+      "module": "analytics",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 67,
+      "screenKey": "haftalik_rapor_koyu_mod",
+      "folderName": "haftalık_rapor_(koyu_mod)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/haftalık_rapor_(koyu_mod)",
+      "module": "analytics",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 68,
+      "screenKey": "harcama_analizi_koyu_mod_1",
+      "folderName": "harcama_analizi_(koyu_mod)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_analizi_(koyu_mod)_1",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 69,
+      "screenKey": "harcama_analizi_koyu_mod_2",
+      "folderName": "harcama_analizi_(koyu_mod)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_analizi_(koyu_mod)_2",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 70,
+      "screenKey": "harcama_analizi_detayi_1",
+      "folderName": "harcama_analizi_detayı_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_analizi_detayı_1",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 71,
+      "screenKey": "harcama_analizi_detayi_2",
+      "folderName": "harcama_analizi_detayı_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_analizi_detayı_2",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 72,
+      "screenKey": "harcama_gruplari_dark_1",
+      "folderName": "harcama_grupları_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_grupları_(dark)_1",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 73,
+      "screenKey": "harcama_gruplari_dark_2",
+      "folderName": "harcama_grupları_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_grupları_(dark)_2",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 74,
+      "screenKey": "harcama_gruplari_gelismis",
+      "folderName": "harcama_grupları_(gelişmiş)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_grupları_(gelişmiş)",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 75,
+      "screenKey": "harcama_gruplari_1",
+      "folderName": "harcama_grupları_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_grupları_1",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 76,
+      "screenKey": "harcama_gruplari_2",
+      "folderName": "harcama_grupları_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcama_grupları_2",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 77,
+      "screenKey": "harcamayi_bol",
+      "folderName": "harcamayı_böl",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcamayı_böl",
+      "module": "split",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 78,
+      "screenKey": "harcamayi_bol_dark",
+      "folderName": "harcamayı_böl_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/harcamayı_böl_(dark)",
+      "module": "split",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 79,
+      "screenKey": "hatali_giris_denemesi",
+      "folderName": "hatalı_giriş_denemesi",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/hatalı_giriş_denemesi",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 80,
+      "screenKey": "hesap_kilitlendi",
+      "folderName": "hesap_kilitlendi",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/hesap_kilitlendi",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 81,
+      "screenKey": "hos_geldiniz_onboarding_1",
+      "folderName": "hoş_geldiniz_(onboarding)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/hoş_geldiniz_(onboarding)_1",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 82,
+      "screenKey": "hos_geldiniz_onboarding_2",
+      "folderName": "hoş_geldiniz_(onboarding)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/hoş_geldiniz_(onboarding)_2",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 83,
+      "screenKey": "islem_detayi_dark_1",
+      "folderName": "i̇şlem_detayı_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_detayı_(dark)_1",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 84,
+      "screenKey": "islem_detayi_dark_2",
+      "folderName": "i̇şlem_detayı_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_detayı_(dark)_2",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 85,
+      "screenKey": "islem_detayi_1",
+      "folderName": "i̇şlem_detayı_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_detayı_1",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 86,
+      "screenKey": "islem_detayi_2",
+      "folderName": "i̇şlem_detayı_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_detayı_2",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 87,
+      "screenKey": "islem_gecmisi_dark_1",
+      "folderName": "i̇şlem_geçmişi_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_geçmişi_(dark)_1",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 88,
+      "screenKey": "islem_gecmisi_dark_2",
+      "folderName": "i̇şlem_geçmişi_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_geçmişi_(dark)_2",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 89,
+      "screenKey": "islem_gecmisi_dark_3",
+      "folderName": "i̇şlem_geçmişi_(dark)_3",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_geçmişi_(dark)_3",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 90,
+      "screenKey": "islem_gecmisi_detayi_1",
+      "folderName": "i̇şlem_geçmişi_detayı_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_geçmişi_detayı_1",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 91,
+      "screenKey": "islem_gecmisi_detayi_2",
+      "folderName": "i̇şlem_geçmişi_detayı_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/i̇şlem_geçmişi_detayı_2",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 92,
+      "screenKey": "kapsamli_bildirim_ayarlari",
+      "folderName": "kapsamlı_bildirim_ayarları",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kapsamlı_bildirim_ayarları",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 93,
+      "screenKey": "kayit_ol_dark_mode_1",
+      "folderName": "kayıt_ol_(dark_mode)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(dark_mode)_1",
+      "module": "auth",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 94,
+      "screenKey": "kayit_ol_dark_mode_2",
+      "folderName": "kayıt_ol_(dark_mode)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(dark_mode)_2",
+      "module": "auth",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 95,
+      "screenKey": "kayit_ol_goz_ikonlu",
+      "folderName": "kayıt_ol_(göz_i̇konlu)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(göz_i̇konlu)",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 96,
+      "screenKey": "kayit_ol_renk_guncellemesi",
+      "folderName": "kayıt_ol_(renk_güncellemesi)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(renk_güncellemesi)",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 97,
+      "screenKey": "kayit_ol_telefon_eklendi",
+      "folderName": "kayıt_ol_(telefon_eklendi)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(telefon_eklendi)",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 98,
+      "screenKey": "kayit_ol_yeni_logo_1",
+      "folderName": "kayıt_ol_(yeni_logo)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(yeni_logo)_1",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 99,
+      "screenKey": "kayit_ol_yeni_logo_2",
+      "folderName": "kayıt_ol_(yeni_logo)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/kayıt_ol_(yeni_logo)_2",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 100,
+      "screenKey": "makale_detay_sayfasi",
+      "folderName": "makale_detay_sayfası",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/makale_detay_sayfası",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 101,
+      "screenKey": "makale_detayi_birikim_yontemleri",
+      "folderName": "makale_detayı_-_birikim_yöntemleri",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/makale_detayı_-_birikim_yöntemleri",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 102,
+      "screenKey": "nakit_odeme_onayi",
+      "folderName": "nakit_ödeme_onayı",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/nakit_ödeme_onayı",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 103,
+      "screenKey": "nakit_odeme_onayi_dark",
+      "folderName": "nakit_ödeme_onayı_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/nakit_ödeme_onayı_(dark)",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 104,
+      "screenKey": "nasil_kullanilir",
+      "folderName": "nasıl_kullanılır?",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/nasıl_kullanılır?",
+      "module": "other",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 105,
+      "screenKey": "nasil_kullanilir_dark_1",
+      "folderName": "nasıl_kullanılır?_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/nasıl_kullanılır?_(dark)_1",
+      "module": "other",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 106,
+      "screenKey": "nasil_kullanilir_dark_2",
+      "folderName": "nasıl_kullanılır?_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/nasıl_kullanılır?_(dark)_2",
+      "module": "other",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 107,
+      "screenKey": "odeme_onayi",
+      "folderName": "ödeme_onayı",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ödeme_onayı",
+      "module": "transactions",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 108,
+      "screenKey": "odeme_onayi_dark",
+      "folderName": "ödeme_onayı_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/ödeme_onayı_(dark)",
+      "module": "transactions",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 109,
+      "screenKey": "profil_dark_1",
+      "folderName": "profil_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_(dark)_1",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 110,
+      "screenKey": "profil_dark_2",
+      "folderName": "profil_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_(dark)_2",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 111,
+      "screenKey": "profil_1",
+      "folderName": "profil_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_1",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 112,
+      "screenKey": "profil_2",
+      "folderName": "profil_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_2",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 113,
+      "screenKey": "profil_bilgilerini_duzenle",
+      "folderName": "profil_bilgilerini_düzenle",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_bilgilerini_düzenle",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 114,
+      "screenKey": "profil_duzenle_dark",
+      "folderName": "profil_düzenle_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_düzenle_(dark)",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 115,
+      "screenKey": "profil_duzenle_1",
+      "folderName": "profil_düzenle_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_düzenle_1",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 116,
+      "screenKey": "profil_duzenle_2",
+      "folderName": "profil_düzenle_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/profil_düzenle_2",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 117,
+      "screenKey": "sms_dogrulama_otp_1",
+      "folderName": "sms_doğrulama_(otp)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/sms_doğrulama_(otp)_1",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 118,
+      "screenKey": "sms_dogrulama_otp_2",
+      "folderName": "sms_doğrulama_(otp)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/sms_doğrulama_(otp)_2",
+      "module": "auth",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 119,
+      "screenKey": "sifremi_unuttum_dark_1",
+      "folderName": "şifremi_unuttum_(dark)_1",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/şifremi_unuttum_(dark)_1",
+      "module": "auth",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 120,
+      "screenKey": "sifremi_unuttum_dark_2",
+      "folderName": "şifremi_unuttum_(dark)_2",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/şifremi_unuttum_(dark)_2",
+      "module": "auth",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": false
+    },
+    {
+      "index": 121,
+      "screenKey": "yardim_makaleleri",
+      "folderName": "yardım_makaleleri",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/yardım_makaleleri",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 122,
+      "screenKey": "yardim_merkezi_yeni_kategori",
+      "folderName": "yardım_merkezi_-_yeni_kategori",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/yardım_merkezi_-_yeni_kategori",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 123,
+      "screenKey": "yardim_merkezi_guncellendi",
+      "folderName": "yardım_merkezi_güncellendi",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/yardım_merkezi_güncellendi",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 124,
+      "screenKey": "yardim_ve_destek_dark",
+      "folderName": "yardım_ve_destek_(dark)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/yardım_ve_destek_(dark)",
+      "module": "profile",
+      "isDark": true,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 125,
+      "screenKey": "yardim_ve_destek_light",
+      "folderName": "yardım_ve_destek_(light)",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/yardım_ve_destek_(light)",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    },
+    {
+      "index": 126,
+      "screenKey": "yatirim_ve_tasarruf_makaleleri",
+      "folderName": "yatırım_ve_tasarruf_makaleleri",
+      "folderPath": "stitch/export/stitch_ana_ekran_dashboard/yatırım_ve_tasarruf_makaleleri",
+      "module": "profile",
+      "isDark": false,
+      "hasScreenPng": true,
+      "hasCodeHtml": true
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Doğrulama Kodu - Finance App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ec5b13",
+              "background-light": "#f8f6f6",
+              "background-dark": "#221610",
+            },
+            fontFamily: {
+              "display": ["Public Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: "Public Sans", sans-serif;
+        }
+        /* Hide spin buttons for numeric inputs */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col items-center">
+<!-- Main Container -->
+<div class="relative flex h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl">
+<!-- Top Navigation Bar -->
+<div class="flex items-center p-4 pt-6 justify-between">
+<button aria-label="Geri" class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Doğrulama Kodu</h2>
+</div>
+<!-- Content Section -->
+<div class="flex flex-col px-6 pt-10">
+<h3 class="tracking-tight text-3xl font-bold leading-tight text-left pb-3">Güvenlik Doğrulaması</h3>
+<p class="text-slate-600 dark:text-slate-400 text-base font-normal leading-relaxed pb-8">
+                Lütfen <span class="font-semibold text-slate-900 dark:text-white">+90 5** *** 12 34</span> numaralı telefonunuza gönderilen 6 haneli kodu giriniz.
+            </p>
+<!-- OTP Input Group -->
+<div class="flex justify-between gap-2 py-4">
+<fieldset class="flex gap-2 w-full justify-between">
+<!-- Digit 1 -->
+<input class="flex h-14 w-12 sm:w-14 text-center text-xl font-bold rounded-xl border-2 border-primary/20 bg-white dark:bg-primary/5 focus:border-primary focus:ring-0 transition-all outline-none" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="number" value="4"/>
+<!-- Digit 2 -->
+<input class="flex h-14 w-12 sm:w-14 text-center text-xl font-bold rounded-xl border-2 border-primary/20 bg-white dark:bg-primary/5 focus:border-primary focus:ring-0 transition-all outline-none" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="number" value="8"/>
+<!-- Digit 3 -->
+<input class="flex h-14 w-12 sm:w-14 text-center text-xl font-bold rounded-xl border-2 border-primary/20 bg-white dark:bg-primary/5 focus:border-primary focus:ring-0 transition-all outline-none" inputmode="numeric" maxlength="1" pattern="[0-9]*" placeholder="-" type="number"/>
+<!-- Digit 4 -->
+<input class="flex h-14 w-12 sm:w-14 text-center text-xl font-bold rounded-xl border-2 border-primary/20 bg-white dark:bg-primary/5 focus:border-primary focus:ring-0 transition-all outline-none" inputmode="numeric" maxlength="1" pattern="[0-9]*" placeholder="-" type="number"/>
+<!-- Digit 5 -->
+<input class="flex h-14 w-12 sm:w-14 text-center text-xl font-bold rounded-xl border-2 border-primary/20 bg-white dark:bg-primary/5 focus:border-primary focus:ring-0 transition-all outline-none" inputmode="numeric" maxlength="1" pattern="[0-9]*" placeholder="-" type="number"/>
+<!-- Digit 6 -->
+<input class="flex h-14 w-12 sm:w-14 text-center text-xl font-bold rounded-xl border-2 border-primary/20 bg-white dark:bg-primary/5 focus:border-primary focus:ring-0 transition-all outline-none" inputmode="numeric" maxlength="1" pattern="[0-9]*" placeholder="-" type="number"/>
+</fieldset>
+</div>
+<!-- Timer Section -->
+<div class="flex flex-col items-center gap-4 py-8">
+<div class="flex gap-3">
+<div class="flex flex-col items-center gap-1">
+<div class="flex h-12 w-16 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+<p class="text-primary text-lg font-bold">00</p>
+</div>
+<p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Dakika</p>
+</div>
+<div class="flex items-center mb-5 text-primary font-bold text-xl">:</div>
+<div class="flex flex-col items-center gap-1">
+<div class="flex h-12 w-16 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+<p class="text-primary text-lg font-bold">58</p>
+</div>
+<p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Saniye</p>
+</div>
+</div>
+<button class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">refresh</span>
+                    Tekrar Kod Gönder
+                </button>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="mt-auto p-6 pb-10">
+<button class="w-full h-14 bg-primary hover:bg-primary/90 text-white text-lg font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span>Doğrula</span>
+<span class="material-symbols-outlined">verified_user</span>
+</button>
+<p class="text-center text-slate-500 text-xs mt-6 px-4">
+                Kodu almadıysanız lütfen spam klasörünüzü kontrol edin veya destek ekibiyle iletişime geçin.
+            </p>
+</div>
+<!-- Numeric Keypad Placeholder (Visual only for mobile feel) -->
+<div class="bg-white/5 backdrop-blur-sm border-t border-white/10 p-2 grid grid-cols-3 gap-1">
+<!-- Simulated keypad for layout visualization -->
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">1</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">2</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">3</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">4</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">5</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">6</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">7</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">8</div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">9</div>
+<div></div>
+<div class="flex h-12 items-center justify-center rounded-lg text-xl font-medium">0</div>
+<div class="flex h-12 items-center justify-center rounded-lg">
+<span class="material-symbols-outlined">backspace</span>
+</div>
+</div>
+</div>
+</body></html>

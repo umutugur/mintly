@@ -1,0 +1,5343 @@
+# Milestone 17 Full Updated Files
+
+## FILE: apps/api/src/server.ts
+```
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
+import { healthResponseSchema } from '@finsight/shared';
+import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+
+import { getConfig } from './config.js';
+import { connectMongo, disconnectMongo } from './db/mongo.js';
+import { ApiError, toErrorPayload } from './errors.js';
+import { registerAccountRoutes } from './routes/accounts.js';
+import { registerAnalyticsRoutes } from './routes/analytics.js';
+import { registerAiRoutes } from './routes/ai.js';
+import { registerAuthRoutes } from './routes/auth.js';
+import { registerBudgetRoutes } from './routes/budgets.js';
+import { registerCategoryRoutes } from './routes/categories.js';
+import { registerDashboardRoutes } from './routes/dashboard.js';
+import { registerExportRoutes } from './routes/export.js';
+import { registerMeRoute } from './routes/me.js';
+import { registerRecurringRoutes } from './routes/recurring.js';
+import { registerReportRoutes } from './routes/reports.js';
+import { registerTransactionRoutes } from './routes/transactions.js';
+import { registerTransferRoutes } from './routes/transfers.js';
+
+interface BuildServerOptions {
+  logger?: boolean;
+}
+
+function isAllowedOrigin(origin: string | undefined, allowedOrigins: Set<string>): boolean {
+  if (!origin) {
+    return true;
+  }
+
+  return allowedOrigins.has(origin);
+}
+
+export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
+  const config = getConfig();
+  const app = Fastify({
+    logger: options.logger ?? true,
+  });
+
+  const allowedOrigins = new Set(config.corsOrigins);
+
+  if (config.isProduction) {
+    app.register(helmet, {
+      global: true,
+    });
+  }
+
+  app.register(cors, {
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin, allowedOrigins)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error('Origin not allowed by CORS policy'), false);
+    },
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
+
+  app.register(rateLimit, {
+    global: true,
+    max: 300,
+    timeWindow: '1 minute',
+    errorResponseBuilder: (_request, context) => {
+      return {
+        error: {
+          code: 'RATE_LIMITED',
+          message: `Too many requests. Retry in ${Math.ceil(context.ttl / 1000)}s`,
+        },
+      };
+    },
+  });
+
+  app.addHook('onReady', async () => {
+    await connectMongo(config.mongoUri);
+  });
+
+  app.addHook('onClose', async () => {
+    await disconnectMongo();
+  });
+
+  app.addHook('onRequest', async (request) => {
+    request.requestStartedAt = Date.now();
+  });
+
+  app.addHook('onSend', async (request, reply, payload) => {
+    reply.header('x-request-id', request.id);
+    return payload;
+  });
+
+  app.addHook('onResponse', async (request, reply) => {
+    const durationMs = request.requestStartedAt
+      ? Date.now() - request.requestStartedAt
+      : undefined;
+
+    request.log.info(
+      {
+        requestId: request.id,
+        method: request.method,
+        url: request.url,
+        statusCode: reply.statusCode,
+        userId: request.user?.id ?? null,
+        durationMs,
+      },
+      'request completed',
+    );
+  });
+
+  app.setErrorHandler((error: FastifyError, request, reply) => {
+    if (error instanceof ApiError) {
+      reply
+        .status(error.statusCode)
+        .send(toErrorPayload({ code: error.code, message: error.message, details: error.details }));
+      return;
+    }
+
+    if (typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500) {
+      const message = config.isProduction ? 'Invalid request' : error.message;
+      reply
+        .status(error.statusCode)
+        .send(toErrorPayload({ code: 'REQUEST_ERROR', message }));
+      return;
+    }
+
+    request.log.error({ err: error }, 'unhandled server error');
+
+    reply.status(500).send(
+      toErrorPayload({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Unexpected server error',
+      }),
+    );
+  });
+
+  app.get('/health', async () => {
+    return healthResponseSchema.parse({
+      ok: true,
+      name: config.apiName,
+    });
+  });
+
+  registerAuthRoutes(app);
+  registerMeRoute(app);
+  registerAccountRoutes(app);
+  registerCategoryRoutes(app);
+  registerTransactionRoutes(app);
+  registerTransferRoutes(app);
+  registerRecurringRoutes(app);
+  registerDashboardRoutes(app);
+  registerAnalyticsRoutes(app);
+  registerAiRoutes(app);
+  registerReportRoutes(app);
+  registerBudgetRoutes(app);
+  registerExportRoutes(app);
+
+  return app;
+}
+```
+
+## FILE: apps/api/src/routes/ai.ts
+```
+import {
+  aiAdviceQuerySchema,
+  aiAdviceResponseSchema,
+  type AiAdviceQuery,
+  type AiAdviceResponse,
+} from '@finsight/shared';
+import type { FastifyInstance } from 'fastify';
+import type { Types } from 'mongoose';
+
+import { authenticate } from '../auth/middleware.js';
+import { ApiError } from '../errors.js';
+import { getMonthBoundaries } from '../lib/month.js';
+import { BudgetModel } from '../models/Budget.js';
+import { CategoryModel } from '../models/Category.js';
+import { TransactionModel } from '../models/Transaction.js';
+import { UserModel } from '../models/User.js';
+
+import { parseObjectId, parseQuery, requireUser } from './utils.js';
+
+function clampToPositive(value: number): number {
+  return value < 0 ? 0 : value;
+}
+
+function roundCurrency(value: number): number {
+  return Number(value.toFixed(2));
+}
+
+async function getUserBaseCurrency(userId: Types.ObjectId): Promise<string | null> {
+  const user = await UserModel.findById(userId).select('baseCurrency');
+
+  if (!user) {
+    throw new ApiError({
+      code: 'UNAUTHORIZED',
+      message: 'User not found',
+      statusCode: 401,
+    });
+  }
+
+  return user.baseCurrency ?? null;
+}
+
+export function registerAiRoutes(app: FastifyInstance): void {
+  app.get('/ai/advice', { preHandler: authenticate }, async (request) => {
+    const user = requireUser(request);
+    const userId = parseObjectId(user.id, 'userId');
+    const query = parseQuery<AiAdviceQuery>(aiAdviceQuerySchema, request.query);
+    const { start, endExclusive } = getMonthBoundaries(query.month, 'month');
+
+    const [currency, transactions, budgets] = await Promise.all([
+      getUserBaseCurrency(userId),
+      TransactionModel.find({
+        userId,
+        deletedAt: null,
+        kind: 'normal',
+        occurredAt: {
+          $gte: start,
+          $lt: endExclusive,
+        },
+      }).select('type amount categoryId'),
+      BudgetModel.find({
+        userId,
+        month: query.month,
+        deletedAt: null,
+      }).select('_id categoryId limitAmount'),
+    ]);
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    const expenseByCategoryId = new Map<string, number>();
+    for (const transaction of transactions) {
+      if (transaction.type === 'income') {
+        totalIncome += transaction.amount;
+        continue;
+      }
+
+      totalExpense += transaction.amount;
+      const categoryId = transaction.categoryId?.toString();
+      if (!categoryId) {
+        continue;
+      }
+      expenseByCategoryId.set(
+        categoryId,
+        (expenseByCategoryId.get(categoryId) ?? 0) + transaction.amount,
+      );
+    }
+
+    const categoryIds = new Set<string>();
+    for (const categoryId of expenseByCategoryId.keys()) {
+      categoryIds.add(categoryId);
+    }
+    for (const budget of budgets) {
+      categoryIds.add(budget.categoryId.toString());
+    }
+
+    const categories = categoryIds.size
+      ? await CategoryModel.find({
+          _id: { $in: Array.from(categoryIds).map((id) => parseObjectId(id, 'categoryId')) },
+          deletedAt: null,
+          $or: [{ userId }, { userId: null }],
+        }).select('_id name')
+      : [];
+
+    const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
+
+    let topExpenseCategory: AiAdviceResponse['topExpenseCategory'] = null;
+    for (const [categoryId, total] of expenseByCategoryId.entries()) {
+      if (!topExpenseCategory || total > topExpenseCategory.total) {
+        topExpenseCategory = {
+          categoryId,
+          name: categoryNameById.get(categoryId) ?? 'Unknown',
+          total: roundCurrency(total),
+        };
+      }
+    }
+
+    const budgetOverruns: AiAdviceResponse['budgetOverruns'] = [];
+    for (const budget of budgets) {
+      const categoryId = budget.categoryId.toString();
+      const spentAmount = expenseByCategoryId.get(categoryId) ?? 0;
+      if (spentAmount <= budget.limitAmount) {
+        continue;
+      }
+
+      const overAmount = spentAmount - budget.limitAmount;
+      budgetOverruns.push({
+        budgetId: budget.id,
+        categoryId,
+        categoryName: categoryNameById.get(categoryId) ?? 'Unknown',
+        limitAmount: roundCurrency(budget.limitAmount),
+        spentAmount: roundCurrency(spentAmount),
+        overAmount: roundCurrency(overAmount),
+      });
+    }
+    budgetOverruns.sort((a, b) => b.overAmount - a.overAmount);
+
+    const net = totalIncome - totalExpense;
+    const savingsRate = totalIncome > 0 ? net / totalIncome : 0;
+
+    const advice: AiAdviceResponse['advice'] = [];
+    const nextActions: string[] = [];
+
+    if (totalIncome === 0 && totalExpense === 0) {
+      advice.push({
+        title: 'Start tracking',
+        message: 'No transactions detected this month. Add your first income or expense to unlock insights.',
+        severity: 'info',
+      });
+      nextActions.push('Add at least three transactions this week for personalized insights.');
+    } else {
+      if (net < 0) {
+        advice.push({
+          title: 'Spending exceeds income',
+          message: 'Your net is negative for this month. Reduce variable expenses to restore positive cash flow.',
+          severity: 'warning',
+        });
+        nextActions.push('Set a weekly expense cap for discretionary spending.');
+      } else if (savingsRate >= 0.2) {
+        advice.push({
+          title: 'Healthy savings pace',
+          message: 'You are saving at least 20% of monthly income. Keep this pace to improve resilience.',
+          severity: 'success',
+        });
+      } else {
+        advice.push({
+          title: 'Moderate savings rate',
+          message: 'Your net is positive but savings rate is limited. Small cuts in top categories can improve it.',
+          severity: 'info',
+        });
+      }
+
+      if (topExpenseCategory && totalExpense > 0) {
+        const topShare = topExpenseCategory.total / totalExpense;
+        if (topShare >= 0.4) {
+          advice.push({
+            title: 'Expense concentration detected',
+            message: `${topExpenseCategory.name} drives ${Math.round(topShare * 100)}% of your expenses this month.`,
+            severity: 'warning',
+          });
+          nextActions.push(`Review ${topExpenseCategory.name} costs and reduce by 10% next month.`);
+        } else {
+          advice.push({
+            title: 'Balanced category mix',
+            message: 'No single category dominates your expenses. Keep monitoring recurring costs.',
+            severity: 'success',
+          });
+        }
+      }
+
+      if (budgetOverruns.length > 0) {
+        for (const overrun of budgetOverruns.slice(0, 2)) {
+          advice.push({
+            title: `Budget overrun: ${overrun.categoryName}`,
+            message: `You are over budget by ${roundCurrency(overrun.overAmount)} ${currency ?? ''}`.trim(),
+            severity: 'warning',
+          });
+          nextActions.push(`Pause non-essential ${overrun.categoryName} expenses until month-end.`);
+        }
+      } else {
+        advice.push({
+          title: 'Budgets on track',
+          message: 'No budget overruns detected for this month.',
+          severity: 'success',
+        });
+        nextActions.push('Keep current budget limits and review them at month-end.');
+      }
+    }
+
+    if (nextActions.length === 0) {
+      nextActions.push('Review your dashboard once a week to stay on track.');
+    }
+
+    return aiAdviceResponseSchema.parse({
+      month: query.month,
+      currency,
+      totalIncome: roundCurrency(clampToPositive(totalIncome)),
+      totalExpense: roundCurrency(clampToPositive(totalExpense)),
+      net: roundCurrency(net),
+      topExpenseCategory,
+      budgetOverruns,
+      advice,
+      nextActions,
+    });
+  });
+}
+
+```
+
+## FILE: apps/api/src/routes/reports.ts
+```
+import {
+  weeklyReportQuerySchema,
+  weeklyReportResponseSchema,
+  type WeeklyReportQuery,
+} from '@finsight/shared';
+import type { FastifyInstance } from 'fastify';
+
+import { authenticate } from '../auth/middleware.js';
+import { ApiError } from '../errors.js';
+import { getMonthBoundaries } from '../lib/month.js';
+import { BudgetModel } from '../models/Budget.js';
+import { CategoryModel } from '../models/Category.js';
+import { TransactionModel } from '../models/Transaction.js';
+import { UserModel } from '../models/User.js';
+
+import { parseObjectId, parseQuery, requireUser } from './utils.js';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function toDateOnlyUtc(value: Date): string {
+  const year = value.getUTCFullYear();
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(value.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function toMonthString(value: Date): string {
+  const year = value.getUTCFullYear();
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+function parseDateOnlyUtc(value: string): Date {
+  const [yearRaw, monthRaw, dayRaw] = value.split('-');
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    throw new ApiError({
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid weekStart date',
+      statusCode: 400,
+    });
+  }
+
+  return date;
+}
+
+function getCurrentWeekStartUtc(now = new Date()): Date {
+  const weekday = now.getUTCDay();
+  const offset = weekday === 0 ? -6 : 1 - weekday;
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + offset));
+}
+
+function clampScore(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+export function registerReportRoutes(app: FastifyInstance): void {
+  app.get('/reports/weekly', { preHandler: authenticate }, async (request) => {
+    const user = requireUser(request);
+    const userId = parseObjectId(user.id, 'userId');
+    const query = parseQuery<WeeklyReportQuery>(weeklyReportQuerySchema, request.query);
+
+    const weekStart = query.weekStart ? parseDateOnlyUtc(query.weekStart) : getCurrentWeekStartUtc();
+    const weekEndExclusive = new Date(weekStart.getTime() + 7 * DAY_MS);
+    const weekEndInclusive = new Date(weekEndExclusive.getTime() - DAY_MS);
+    const month = toMonthString(weekStart);
+    const { start: monthStart, endExclusive: monthEndExclusive } = getMonthBoundaries(month, 'month');
+
+    const [userDoc, weeklyTransactions, monthlyBudgets, monthExpenseRows] = await Promise.all([
+      UserModel.findById(userId).select('baseCurrency'),
+      TransactionModel.find({
+        userId,
+        deletedAt: null,
+        kind: 'normal',
+        occurredAt: {
+          $gte: weekStart,
+          $lt: weekEndExclusive,
+        },
+      }).select('type amount categoryId'),
+      BudgetModel.find({
+        userId,
+        month,
+        deletedAt: null,
+      }).select('_id categoryId limitAmount'),
+      TransactionModel.aggregate<{
+        _id: string;
+        spentAmount: number;
+      }>([
+        {
+          $match: {
+            userId,
+            deletedAt: null,
+            kind: 'normal',
+            type: 'expense',
+            occurredAt: {
+              $gte: monthStart,
+              $lt: monthEndExclusive,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: '$categoryId',
+            spentAmount: { $sum: '$amount' },
+          },
+        },
+      ]),
+    ]);
+
+    if (!userDoc) {
+      throw new ApiError({
+        code: 'UNAUTHORIZED',
+        message: 'User not found',
+        statusCode: 401,
+      });
+    }
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+    const weeklyExpenseByCategoryId = new Map<string, number>();
+    for (const transaction of weeklyTransactions) {
+      if (transaction.type === 'income') {
+        totalIncome += transaction.amount;
+        continue;
+      }
+
+      totalExpense += transaction.amount;
+      const categoryId = transaction.categoryId?.toString();
+      if (!categoryId) {
+        continue;
+      }
+
+      weeklyExpenseByCategoryId.set(
+        categoryId,
+        (weeklyExpenseByCategoryId.get(categoryId) ?? 0) + transaction.amount,
+      );
+    }
+
+    const spentByMonthCategoryId = new Map(
+      monthExpenseRows.map((row) => [String(row._id), row.spentAmount]),
+    );
+
+    const budgetCategoryIds = monthlyBudgets.map((budget) => budget.categoryId.toString());
+    const expenseCategoryIds = Array.from(weeklyExpenseByCategoryId.keys());
+    const categoryIds = Array.from(new Set([...budgetCategoryIds, ...expenseCategoryIds]));
+
+    const categories = categoryIds.length
+      ? await CategoryModel.find({
+          _id: { $in: categoryIds.map((id) => parseObjectId(id, 'categoryId')) },
+          deletedAt: null,
+          $or: [{ userId }, { userId: null }],
+        }).select('_id name')
+      : [];
+    const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
+
+    let topExpenseCategoryId: string | null = null;
+    let topExpenseAmount = 0;
+    for (const [categoryId, amount] of weeklyExpenseByCategoryId.entries()) {
+      if (amount > topExpenseAmount) {
+        topExpenseAmount = amount;
+        topExpenseCategoryId = categoryId;
+      }
+    }
+
+    const budgetOverruns = monthlyBudgets
+      .map((budget) => {
+        const categoryId = budget.categoryId.toString();
+        const spentAmount = spentByMonthCategoryId.get(categoryId) ?? 0;
+        const overAmount = spentAmount - budget.limitAmount;
+
+        return {
+          categoryId,
+          categoryName: categoryNameById.get(categoryId) ?? 'Unknown',
+          overAmount,
+        };
+      })
+      .filter((entry) => entry.overAmount > 0)
+      .sort((a, b) => b.overAmount - a.overAmount);
+
+    const net = totalIncome - totalExpense;
+    const savingsRate = totalIncome > 0 ? net / totalIncome : 0;
+    const expenseIncomeRatio = totalIncome > 0 ? totalExpense / totalIncome : totalExpense > 0 ? 999 : 0;
+
+    let score = 100;
+    score -= Math.min(36, budgetOverruns.length * 12);
+
+    if (expenseIncomeRatio > 0.9) {
+      score -= 15;
+      if (expenseIncomeRatio > 1) {
+        score -= 10;
+      }
+    }
+
+    if (savingsRate >= 0.2) {
+      score += 8;
+    } else if (savingsRate >= 0.1) {
+      score += 4;
+    } else if (totalIncome > 0 && savingsRate < 0.05) {
+      score -= 8;
+    }
+
+    if (net < 0) {
+      score -= 12;
+    }
+
+    const healthScore = clampScore(score);
+
+    let summaryText = 'Stable week. Keep monitoring spending patterns.';
+    if (healthScore >= 80) {
+      summaryText = 'Strong financial health this week with disciplined spending.';
+    } else if (healthScore < 60) {
+      summaryText = 'Financial pressure detected this week. Review budgets and reduce variable costs.';
+    }
+
+    const highlights: string[] = [
+      `Income this week: ${Math.round(totalIncome * 100) / 100}`,
+      `Expenses this week: ${Math.round(totalExpense * 100) / 100}`,
+      `Net this week: ${Math.round(net * 100) / 100}`,
+    ];
+
+    if (topExpenseCategoryId) {
+      highlights.push(
+        `Top expense category: ${categoryNameById.get(topExpenseCategoryId) ?? 'Unknown'} (${Math.round(topExpenseAmount * 100) / 100})`,
+      );
+    }
+
+    const riskFlags: string[] = [];
+    if (expenseIncomeRatio > 0.9) {
+      riskFlags.push('Expense to income ratio is above 90%.');
+    }
+    if (net < 0) {
+      riskFlags.push('Weekly net is negative.');
+    }
+    for (const overrun of budgetOverruns.slice(0, 3)) {
+      riskFlags.push(`Budget overrun in ${overrun.categoryName}.`);
+    }
+
+    if (riskFlags.length === 0) {
+      riskFlags.push('No major risk signals detected for this week.');
+    }
+
+    let nextWeekForecastText =
+      'Maintain current routine and review your dashboard mid-week for adjustments.';
+    if (healthScore >= 80) {
+      nextWeekForecastText =
+        'If this trend continues, next week should stay within budget with room to save more.';
+    } else if (healthScore < 60) {
+      nextWeekForecastText =
+        'Without spending adjustments, next week may increase budget pressure. Prioritize fixed essentials first.';
+    }
+
+    return weeklyReportResponseSchema.parse({
+      weekStart: toDateOnlyUtc(weekStart),
+      weekEnd: toDateOnlyUtc(weekEndInclusive),
+      currency: userDoc.baseCurrency ?? null,
+      healthScore,
+      summaryText,
+      highlights,
+      riskFlags,
+      nextWeekForecastText,
+    });
+  });
+}
+
+```
+
+## FILE: apps/api/test/auth.e2e.test.ts
+```
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import request from 'supertest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+import { AccountModel } from '../src/models/Account.js';
+import { BudgetModel } from '../src/models/Budget.js';
+import { CategoryModel } from '../src/models/Category.js';
+import { RefreshTokenModel } from '../src/models/RefreshToken.js';
+import { RecurringRunLogModel } from '../src/models/RecurringRunLog.js';
+import { RecurringRuleModel } from '../src/models/RecurringRule.js';
+import { TransactionModel } from '../src/models/Transaction.js';
+import { UserModel } from '../src/models/User.js';
+import { buildServer } from '../src/server.js';
+
+describe('Auth + Finance API', () => {
+  let mongo: MongoMemoryServer;
+  let app!: ReturnType<typeof buildServer>;
+
+  beforeAll(async () => {
+    mongo = await MongoMemoryServer.create();
+
+    process.env.MONGODB_URI = mongo.getUri();
+    process.env.JWT_ACCESS_SECRET = 'test-access-secret';
+    process.env.JWT_REFRESH_SECRET = 'test-refresh-secret';
+    process.env.ACCESS_TTL_MIN = '15';
+    process.env.REFRESH_TTL_DAYS = '30';
+    process.env.CRON_SECRET = 'test-cron-secret';
+    process.env.NODE_ENV = 'test';
+    process.env.CORS_ORIGINS = 'http://localhost:8089';
+
+    app = buildServer({ logger: false });
+    await app.ready();
+  }, 120000);
+
+  beforeEach(async () => {
+    await BudgetModel.deleteMany({});
+    await TransactionModel.deleteMany({});
+    await RecurringRunLogModel.deleteMany({});
+    await RecurringRuleModel.deleteMany({});
+    await CategoryModel.deleteMany({});
+    await AccountModel.deleteMany({});
+    await RefreshTokenModel.deleteMany({});
+    await UserModel.deleteMany({});
+  });
+
+  afterAll(async () => {
+    await app.close();
+
+    if (mongo) {
+      await mongo.stop();
+    }
+  }, 60000);
+
+  async function registerUser(email: string, name = 'Fin User') {
+    const response = await request(app.server).post('/auth/register').send({
+      email,
+      password: 'Password123',
+      name,
+    });
+
+    expect(response.status).toBe(201);
+    return response.body as {
+      accessToken: string;
+      refreshToken: string;
+      user: { id: string; email: string; name: string | null };
+    };
+  }
+
+  it('register -> login -> me success', async () => {
+    const registerResponse = await request(app.server).post('/auth/register').send({
+      email: 'user@example.com',
+      password: 'Password123',
+      name: 'Fin User',
+    });
+
+    expect(registerResponse.status).toBe(201);
+    expect(registerResponse.body.user.email).toBe('user@example.com');
+    expect(registerResponse.body.accessToken).toBeTypeOf('string');
+    expect(registerResponse.body.refreshToken).toBeTypeOf('string');
+
+    const loginResponse = await request(app.server).post('/auth/login').send({
+      email: 'user@example.com',
+      password: 'Password123',
+    });
+
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.body.user.email).toBe('user@example.com');
+
+    const meResponse = await request(app.server)
+      .get('/me')
+      .set('Authorization', `Bearer ${loginResponse.body.accessToken}`);
+
+    expect(meResponse.status).toBe(200);
+    expect(meResponse.body).toEqual({
+      user: {
+        id: loginResponse.body.user.id,
+        email: 'user@example.com',
+        name: 'Fin User',
+        baseCurrency: null,
+      },
+    });
+  });
+
+  it('allows creating multiple users without firebaseUid', async () => {
+    const firstUser = await request(app.server).post('/auth/register').send({
+      email: 'first-no-firebase@example.com',
+      password: 'Password123',
+      name: 'First User',
+    });
+    expect(firstUser.status).toBe(201);
+
+    const secondUser = await request(app.server).post('/auth/register').send({
+      email: 'second-no-firebase@example.com',
+      password: 'Password123',
+      name: 'Second User',
+    });
+    expect(secondUser.status).toBe(201);
+  });
+
+  it('returns invalid credentials on wrong password', async () => {
+    await request(app.server).post('/auth/register').send({
+      email: 'user@example.com',
+      password: 'Password123',
+      name: 'Fin User',
+    });
+
+    const response = await request(app.server).post('/auth/login').send({
+      email: 'user@example.com',
+      password: 'WrongPassword',
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      error: {
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password',
+      },
+    });
+  });
+
+  it('rotates refresh token and invalidates old refresh token', async () => {
+    await request(app.server).post('/auth/register').send({
+      email: 'user@example.com',
+      password: 'Password123',
+      name: 'Fin User',
+    });
+
+    const loginResponse = await request(app.server).post('/auth/login').send({
+      email: 'user@example.com',
+      password: 'Password123',
+    });
+
+    const oldRefreshToken = loginResponse.body.refreshToken as string;
+
+    const firstRefresh = await request(app.server).post('/auth/refresh').send({
+      refreshToken: oldRefreshToken,
+    });
+
+    expect(firstRefresh.status).toBe(200);
+    expect(firstRefresh.body.refreshToken).not.toBe(oldRefreshToken);
+
+    const reuseOldRefresh = await request(app.server).post('/auth/refresh').send({
+      refreshToken: oldRefreshToken,
+    });
+
+    expect(reuseOldRefresh.status).toBe(401);
+    expect(reuseOldRefresh.body).toEqual({
+      error: {
+        code: 'INVALID_REFRESH_TOKEN',
+        message: 'Refresh token is invalid or expired',
+      },
+    });
+  });
+
+  it('logout revokes refresh token', async () => {
+    await request(app.server).post('/auth/register').send({
+      email: 'user@example.com',
+      password: 'Password123',
+      name: 'Fin User',
+    });
+
+    const loginResponse = await request(app.server).post('/auth/login').send({
+      email: 'user@example.com',
+      password: 'Password123',
+    });
+
+    const refreshToken = loginResponse.body.refreshToken as string;
+
+    const logoutResponse = await request(app.server).post('/auth/logout').send({ refreshToken });
+
+    expect(logoutResponse.status).toBe(200);
+    expect(logoutResponse.body).toEqual({ ok: true });
+
+    const refreshAfterLogout = await request(app.server).post('/auth/refresh').send({ refreshToken });
+
+    expect(refreshAfterLogout.status).toBe(401);
+    expect(refreshAfterLogout.body).toEqual({
+      error: {
+        code: 'INVALID_REFRESH_TOKEN',
+        message: 'Refresh token is invalid or expired',
+      },
+    });
+  });
+
+  it('logout returns INVALID_REFRESH_TOKEN for malformed refresh token', async () => {
+    const response = await request(app.server).post('/auth/logout').send({
+      refreshToken: 'not-a-valid-jwt',
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error?.code).toBe('INVALID_REFRESH_TOKEN');
+  });
+
+  it('/me requires auth token', async () => {
+    const response = await request(app.server).get('/me');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Missing Authorization header',
+      },
+    });
+  });
+
+  it('first account creation sets user baseCurrency', async () => {
+    const session = await registerUser('base-currency-owner@example.com', 'Base Currency Owner');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const createAccount = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+
+    expect(createAccount.status).toBe(201);
+
+    const meResponse = await request(app.server).get('/me').set(authHeader);
+    expect(meResponse.status).toBe(200);
+    expect(meResponse.body.user.baseCurrency).toBe('USD');
+  });
+
+  it('creating second account with different currency fails', async () => {
+    const session = await registerUser('second-account-currency@example.com', 'Currency Guard');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const firstAccount = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Primary',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(firstAccount.status).toBe(201);
+
+    const secondAccount = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Secondary',
+      type: 'cash',
+      currency: 'EUR',
+    });
+
+    expect(secondAccount.status).toBe(400);
+    expect(secondAccount.body).toEqual({
+      error: {
+        code: 'BASE_CURRENCY_MISMATCH',
+        message: 'Account currency must match your base currency',
+      },
+    });
+  });
+
+  it('updating account currency to a different currency fails', async () => {
+    const session = await registerUser('update-currency-owner@example.com', 'Update Currency Owner');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const updateAccount = await request(app.server)
+      .patch(`/accounts/${account.body.id}`)
+      .set(authHeader)
+      .send({ currency: 'EUR' });
+
+    expect(updateAccount.status).toBe(400);
+    expect(updateAccount.body).toEqual({
+      error: {
+        code: 'BASE_CURRENCY_MISMATCH',
+        message: 'Account currency must match your base currency',
+      },
+    });
+  });
+
+  it('account CRUD', async () => {
+    const session = await registerUser('account-owner@example.com', 'Account Owner');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const createAccount = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Wallet',
+      type: 'cash',
+      currency: 'USD',
+    });
+
+    expect(createAccount.status).toBe(201);
+    expect(createAccount.body.name).toBe('Wallet');
+    const accountId = createAccount.body.id as string;
+
+    const listAccounts = await request(app.server).get('/accounts').set(authHeader);
+
+    expect(listAccounts.status).toBe(200);
+    expect(listAccounts.body.accounts).toHaveLength(1);
+    expect(listAccounts.body.accounts[0].id).toBe(accountId);
+
+    const updateAccount = await request(app.server).patch(`/accounts/${accountId}`).set(authHeader).send({
+      name: 'Main Wallet',
+      type: 'bank',
+    });
+
+    expect(updateAccount.status).toBe(200);
+    expect(updateAccount.body.name).toBe('Main Wallet');
+    expect(updateAccount.body.type).toBe('bank');
+
+    const deleteAccount = await request(app.server).delete(`/accounts/${accountId}`).set(authHeader);
+
+    expect(deleteAccount.status).toBe(200);
+    expect(deleteAccount.body).toEqual({ ok: true });
+
+    const listAfterDelete = await request(app.server).get('/accounts').set(authHeader);
+    expect(listAfterDelete.status).toBe(200);
+    expect(listAfterDelete.body.accounts).toHaveLength(0);
+  });
+
+  it('transaction CRUD', async () => {
+    const session = await registerUser('tx-owner@example.com', 'Tx Owner');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const accountResponse = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Checking',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(accountResponse.status).toBe(201);
+
+    const categoryResponse = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Groceries',
+      type: 'expense',
+      color: '#12AA34',
+      icon: 'cart',
+    });
+    expect(categoryResponse.status).toBe(201);
+
+    const createTx = await request(app.server).post('/transactions').set(authHeader).send({
+      accountId: accountResponse.body.id,
+      categoryId: categoryResponse.body.id,
+      type: 'expense',
+      amount: 45.5,
+      currency: 'USD',
+      description: 'Weekly grocery',
+      occurredAt: '2026-02-10T10:30:00.000Z',
+    });
+
+    expect(createTx.status).toBe(201);
+    expect(createTx.body.amount).toBe(45.5);
+    const transactionId = createTx.body.id as string;
+
+    const getTx = await request(app.server).get(`/transactions/${transactionId}`).set(authHeader);
+    expect(getTx.status).toBe(200);
+    expect(getTx.body.description).toBe('Weekly grocery');
+
+    const updateTx = await request(app.server).patch(`/transactions/${transactionId}`).set(authHeader).send({
+      amount: 50,
+      description: 'Weekly grocery updated',
+    });
+    expect(updateTx.status).toBe(200);
+    expect(updateTx.body.amount).toBe(50);
+    expect(updateTx.body.description).toBe('Weekly grocery updated');
+
+    const deleteTx = await request(app.server).delete(`/transactions/${transactionId}`).set(authHeader);
+    expect(deleteTx.status).toBe(200);
+    expect(deleteTx.body).toEqual({ ok: true });
+
+    const getAfterDelete = await request(app.server).get(`/transactions/${transactionId}`).set(authHeader);
+    expect(getAfterDelete.status).toBe(404);
+    expect(getAfterDelete.body.error.code).toBe('TRANSACTION_NOT_FOUND');
+  });
+
+  it('transaction listing supports pagination and filters', async () => {
+    const session = await registerUser('filter-owner@example.com', 'Filter Owner');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const accountA = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Primary',
+      type: 'bank',
+      currency: 'USD',
+    });
+    const accountB = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Cash',
+      type: 'cash',
+      currency: 'USD',
+    });
+    expect(accountA.status).toBe(201);
+    expect(accountB.status).toBe(201);
+
+    const expenseCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Coffee',
+      type: 'expense',
+      color: '#AA2211',
+      icon: 'cup',
+    });
+    const incomeCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#11AA44',
+      icon: 'banknote',
+    });
+    expect(expenseCategory.status).toBe(201);
+    expect(incomeCategory.status).toBe(201);
+
+    const txPayloads = [
+      {
+        accountId: accountA.body.id,
+        categoryId: expenseCategory.body.id,
+        type: 'expense',
+        amount: 8,
+        currency: 'USD',
+        description: 'Morning coffee',
+        occurredAt: '2026-02-11T08:00:00.000Z',
+      },
+      {
+        accountId: accountA.body.id,
+        categoryId: incomeCategory.body.id,
+        type: 'income',
+        amount: 1200,
+        currency: 'USD',
+        description: 'Monthly salary',
+        occurredAt: '2026-02-09T08:00:00.000Z',
+      },
+      {
+        accountId: accountB.body.id,
+        categoryId: expenseCategory.body.id,
+        type: 'expense',
+        amount: 20,
+        currency: 'USD',
+        description: 'Coffee beans',
+        occurredAt: '2026-02-12T08:00:00.000Z',
+      },
+    ];
+
+    for (const payload of txPayloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const expensePageOne = await request(app.server)
+      .get('/transactions')
+      .set(authHeader)
+      .query({ type: 'expense', limit: 1, page: 1 });
+
+    expect(expensePageOne.status).toBe(200);
+    expect(expensePageOne.body.transactions).toHaveLength(1);
+    expect(expensePageOne.body.pagination.total).toBe(2);
+    expect(expensePageOne.body.pagination.totalPages).toBe(2);
+    expect(expensePageOne.body.transactions[0].type).toBe('expense');
+
+    const byAccountAndDate = await request(app.server)
+      .get('/transactions')
+      .set(authHeader)
+      .query({
+        accountId: accountA.body.id,
+        from: '2026-02-10T00:00:00.000Z',
+        to: '2026-02-12T23:59:59.000Z',
+      });
+
+    expect(byAccountAndDate.status).toBe(200);
+    expect(byAccountAndDate.body.transactions).toHaveLength(1);
+    expect(byAccountAndDate.body.transactions[0].description).toBe('Morning coffee');
+
+    const bySearch = await request(app.server).get('/transactions').set(authHeader).query({ search: 'salary' });
+
+    expect(bySearch.status).toBe(200);
+    expect(bySearch.body.transactions).toHaveLength(1);
+    expect(bySearch.body.transactions[0].description).toBe('Monthly salary');
+  });
+
+  it('cannot access another user transaction (object-level auth)', async () => {
+    const owner = await registerUser('owner@example.com', 'Owner');
+    const ownerHeader = { Authorization: `Bearer ${owner.accessToken}` };
+    const attacker = await registerUser('attacker@example.com', 'Attacker');
+    const attackerHeader = { Authorization: `Bearer ${attacker.accessToken}` };
+
+    const ownerAccount = await request(app.server).post('/accounts').set(ownerHeader).send({
+      name: 'Owner Account',
+      type: 'bank',
+      currency: 'USD',
+    });
+    const ownerCategory = await request(app.server).post('/categories').set(ownerHeader).send({
+      name: 'Owner Expense',
+      type: 'expense',
+      color: '#334455',
+      icon: 'shield',
+    });
+
+    expect(ownerAccount.status).toBe(201);
+    expect(ownerCategory.status).toBe(201);
+
+    const ownerTransaction = await request(app.server).post('/transactions').set(ownerHeader).send({
+      accountId: ownerAccount.body.id,
+      categoryId: ownerCategory.body.id,
+      type: 'expense',
+      amount: 99,
+      currency: 'USD',
+      description: 'Private transaction',
+      occurredAt: '2026-02-12T08:00:00.000Z',
+    });
+    expect(ownerTransaction.status).toBe(201);
+
+    const transactionId = ownerTransaction.body.id as string;
+
+    const attackerGet = await request(app.server)
+      .get(`/transactions/${transactionId}`)
+      .set(attackerHeader);
+    expect(attackerGet.status).toBe(404);
+    expect(attackerGet.body.error.code).toBe('TRANSACTION_NOT_FOUND');
+
+    const attackerPatch = await request(app.server)
+      .patch(`/transactions/${transactionId}`)
+      .set(attackerHeader)
+      .send({ description: 'hacked' });
+    expect(attackerPatch.status).toBe(404);
+    expect(attackerPatch.body.error.code).toBe('TRANSACTION_NOT_FOUND');
+
+    const attackerDelete = await request(app.server)
+      .delete(`/transactions/${transactionId}`)
+      .set(attackerHeader);
+    expect(attackerDelete.status).toBe(404);
+    expect(attackerDelete.body.error.code).toBe('TRANSACTION_NOT_FOUND');
+  });
+
+  it('analytics summary returns month totals and top categories', async () => {
+    const session = await registerUser('analytics-summary@example.com', 'Analytics Summary');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const groceriesCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Groceries',
+      type: 'expense',
+      color: '#00AA44',
+      icon: 'cart',
+    });
+    const rentCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Rent',
+      type: 'expense',
+      color: '#AA0044',
+      icon: 'home',
+    });
+    const salaryCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#4455AA',
+      icon: 'wallet',
+    });
+
+    expect(groceriesCategory.status).toBe(201);
+    expect(rentCategory.status).toBe(201);
+    expect(salaryCategory.status).toBe(201);
+
+    const payloads = [
+      {
+        accountId: account.body.id,
+        categoryId: salaryCategory.body.id,
+        type: 'income',
+        amount: 3000,
+        currency: 'USD',
+        description: 'March salary',
+        occurredAt: '2026-03-01T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: groceriesCategory.body.id,
+        type: 'expense',
+        amount: 200,
+        currency: 'USD',
+        description: 'Groceries',
+        occurredAt: '2026-03-08T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: rentCategory.body.id,
+        type: 'expense',
+        amount: 1000,
+        currency: 'USD',
+        description: 'Rent',
+        occurredAt: '2026-03-05T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: groceriesCategory.body.id,
+        type: 'expense',
+        amount: 80,
+        currency: 'USD',
+        description: 'Outside month',
+        occurredAt: '2026-04-03T12:00:00.000Z',
+      },
+    ];
+
+    for (const payload of payloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const summary = await request(app.server)
+      .get('/analytics/summary')
+      .set(authHeader)
+      .query({ month: '2026-03' });
+
+    expect(summary.status).toBe(200);
+    expect(summary.body.month).toBe('2026-03');
+    expect(summary.body.currency).toBe('USD');
+    expect(summary.body.incomeTotal).toBe(3000);
+    expect(summary.body.expenseTotal).toBe(1200);
+    expect(summary.body.netTotal).toBe(1800);
+    expect(summary.body.transactionCount).toBe(3);
+
+    const groceries = summary.body.topCategories.find(
+      (category: { name: string }) => category.name === 'Groceries',
+    );
+    const salary = summary.body.topCategories.find(
+      (category: { name: string }) => category.name === 'Salary',
+    );
+
+    expect(groceries).toBeDefined();
+    expect(groceries.percent).toBeCloseTo((200 / 1200) * 100, 5);
+    expect(salary).toBeDefined();
+    expect(salary.percent).toBeCloseTo(100, 5);
+  });
+
+  it('analytics by-category returns grouped totals sorted desc', async () => {
+    const session = await registerUser('analytics-category@example.com', 'Analytics Category');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const coffeeCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Coffee',
+      type: 'expense',
+      color: '#663300',
+      icon: 'cup',
+    });
+    const travelCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Travel',
+      type: 'expense',
+      color: '#003366',
+      icon: 'plane',
+    });
+    expect(coffeeCategory.status).toBe(201);
+    expect(travelCategory.status).toBe(201);
+
+    const payloads = [
+      {
+        accountId: account.body.id,
+        categoryId: travelCategory.body.id,
+        type: 'expense',
+        amount: 900,
+        currency: 'USD',
+        description: 'Trip',
+        occurredAt: '2026-05-01T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: coffeeCategory.body.id,
+        type: 'expense',
+        amount: 20,
+        currency: 'USD',
+        description: 'Coffee #1',
+        occurredAt: '2026-05-02T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: coffeeCategory.body.id,
+        type: 'expense',
+        amount: 10,
+        currency: 'USD',
+        description: 'Coffee #2',
+        occurredAt: '2026-05-03T12:00:00.000Z',
+      },
+    ];
+
+    for (const payload of payloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const byCategory = await request(app.server)
+      .get('/analytics/by-category')
+      .set(authHeader)
+      .query({ month: '2026-05', type: 'expense' });
+
+    expect(byCategory.status).toBe(200);
+    expect(byCategory.body.month).toBe('2026-05');
+    expect(byCategory.body.type).toBe('expense');
+    expect(byCategory.body.currency).toBe('USD');
+    expect(byCategory.body.categories).toHaveLength(2);
+    expect(byCategory.body.categories[0].name).toBe('Travel');
+    expect(byCategory.body.categories[0].total).toBe(900);
+    expect(byCategory.body.categories[1].name).toBe('Coffee');
+    expect(byCategory.body.categories[1].total).toBe(30);
+    expect(byCategory.body.categories[1].count).toBe(2);
+  });
+
+  it('analytics trend includes zero-filled missing months', async () => {
+    const session = await registerUser('analytics-trend@example.com', 'Analytics Trend');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const salaryCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#11AA44',
+      icon: 'wallet',
+    });
+    const groceriesCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Groceries',
+      type: 'expense',
+      color: '#AA1144',
+      icon: 'cart',
+    });
+
+    expect(salaryCategory.status).toBe(201);
+    expect(groceriesCategory.status).toBe(201);
+
+    const payloads = [
+      {
+        accountId: account.body.id,
+        categoryId: salaryCategory.body.id,
+        type: 'income',
+        amount: 1000,
+        currency: 'USD',
+        description: 'January income',
+        occurredAt: '2026-01-15T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: groceriesCategory.body.id,
+        type: 'expense',
+        amount: 200,
+        currency: 'USD',
+        description: 'March expense',
+        occurredAt: '2026-03-15T12:00:00.000Z',
+      },
+    ];
+
+    for (const payload of payloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const trend = await request(app.server)
+      .get('/analytics/trend')
+      .set(authHeader)
+      .query({ from: '2026-01', to: '2026-03' });
+
+    expect(trend.status).toBe(200);
+    expect(trend.body.currency).toBe('USD');
+    expect(trend.body.points).toEqual([
+      {
+        month: '2026-01',
+        incomeTotal: 1000,
+        expenseTotal: 0,
+        netTotal: 1000,
+      },
+      {
+        month: '2026-02',
+        incomeTotal: 0,
+        expenseTotal: 0,
+        netTotal: 0,
+      },
+      {
+        month: '2026-03',
+        incomeTotal: 0,
+        expenseTotal: 200,
+        netTotal: -200,
+      },
+    ]);
+  });
+
+  it('ai advice returns rule-based insights and next actions', async () => {
+    const session = await registerUser('ai-advice@example.com', 'AI Advice');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const salaryCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#22AA55',
+      icon: 'wallet',
+    });
+    const foodCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Food',
+      type: 'expense',
+      color: '#AA5533',
+      icon: 'fork',
+    });
+    const travelCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Travel',
+      type: 'expense',
+      color: '#3355AA',
+      icon: 'bus',
+    });
+    expect(salaryCategory.status).toBe(201);
+    expect(foodCategory.status).toBe(201);
+    expect(travelCategory.status).toBe(201);
+
+    const budget = await request(app.server).post('/budgets').set(authHeader).send({
+      categoryId: foodCategory.body.id,
+      month: '2026-10',
+      limitAmount: 100,
+    });
+    expect(budget.status).toBe(201);
+
+    const payloads = [
+      {
+        accountId: account.body.id,
+        categoryId: salaryCategory.body.id,
+        type: 'income',
+        amount: 1000,
+        currency: 'USD',
+        description: 'Monthly salary',
+        occurredAt: '2026-10-01T09:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: foodCategory.body.id,
+        type: 'expense',
+        amount: 180,
+        currency: 'USD',
+        description: 'Food spending',
+        occurredAt: '2026-10-07T09:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: travelCategory.body.id,
+        type: 'expense',
+        amount: 120,
+        currency: 'USD',
+        description: 'Metro and taxi',
+        occurredAt: '2026-10-11T09:00:00.000Z',
+      },
+    ];
+
+    for (const payload of payloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const advice = await request(app.server)
+      .get('/ai/advice')
+      .set(authHeader)
+      .query({ month: '2026-10' });
+
+    expect(advice.status).toBe(200);
+    expect(advice.body.month).toBe('2026-10');
+    expect(advice.body.currency).toBe('USD');
+    expect(advice.body.totalIncome).toBe(1000);
+    expect(advice.body.totalExpense).toBe(300);
+    expect(advice.body.net).toBe(700);
+    expect(advice.body.topExpenseCategory?.name).toBe('Food');
+    expect(advice.body.budgetOverruns).toHaveLength(1);
+    expect(advice.body.budgetOverruns[0].categoryName).toBe('Food');
+    expect(advice.body.budgetOverruns[0].overAmount).toBe(80);
+    expect(advice.body.advice.length).toBeGreaterThan(0);
+    expect(advice.body.nextActions.length).toBeGreaterThan(0);
+  });
+
+  it('weekly report returns health score, highlights, risks and forecast', async () => {
+    const session = await registerUser('weekly-report@example.com', 'Weekly Report');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const incomeCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#22AA55',
+      icon: 'wallet',
+    });
+    const expenseCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Rent',
+      type: 'expense',
+      color: '#AA2255',
+      icon: 'home',
+    });
+    expect(incomeCategory.status).toBe(201);
+    expect(expenseCategory.status).toBe(201);
+
+    const budget = await request(app.server).post('/budgets').set(authHeader).send({
+      categoryId: expenseCategory.body.id,
+      month: '2026-11',
+      limitAmount: 500,
+    });
+    expect(budget.status).toBe(201);
+
+    const payloads = [
+      {
+        accountId: account.body.id,
+        categoryId: incomeCategory.body.id,
+        type: 'income',
+        amount: 1000,
+        currency: 'USD',
+        description: 'Income',
+        occurredAt: '2026-11-04T10:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: expenseCategory.body.id,
+        type: 'expense',
+        amount: 950,
+        currency: 'USD',
+        description: 'Rent and extras',
+        occurredAt: '2026-11-05T10:00:00.000Z',
+      },
+    ];
+
+    for (const payload of payloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const report = await request(app.server)
+      .get('/reports/weekly')
+      .set(authHeader)
+      .query({ weekStart: '2026-11-03' });
+
+    expect(report.status).toBe(200);
+    expect(report.body.weekStart).toBe('2026-11-03');
+    expect(report.body.weekEnd).toBe('2026-11-09');
+    expect(report.body.currency).toBe('USD');
+    expect(report.body.healthScore).toBeGreaterThanOrEqual(0);
+    expect(report.body.healthScore).toBeLessThanOrEqual(100);
+    expect(typeof report.body.summaryText).toBe('string');
+    expect(report.body.summaryText.length).toBeGreaterThan(0);
+    expect(report.body.highlights.length).toBeGreaterThan(0);
+    expect(report.body.riskFlags.length).toBeGreaterThan(0);
+    expect(typeof report.body.nextWeekForecastText).toBe('string');
+    expect(report.body.nextWeekForecastText.length).toBeGreaterThan(0);
+  });
+
+  it('budgets create and usage reflects month expense transactions', async () => {
+    const session = await registerUser('budget-usage@example.com', 'Budget Usage');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const expenseCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Dining',
+      type: 'expense',
+      color: '#CC5500',
+      icon: 'utensils',
+    });
+    expect(expenseCategory.status).toBe(201);
+
+    const budgetCreate = await request(app.server).post('/budgets').set(authHeader).send({
+      categoryId: expenseCategory.body.id,
+      month: '2026-06',
+      limitAmount: 100,
+    });
+
+    expect(budgetCreate.status).toBe(201);
+
+    const payloads = [
+      {
+        accountId: account.body.id,
+        categoryId: expenseCategory.body.id,
+        type: 'expense',
+        amount: 20,
+        currency: 'USD',
+        description: 'Meal 1',
+        occurredAt: '2026-06-02T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: expenseCategory.body.id,
+        type: 'expense',
+        amount: 35,
+        currency: 'USD',
+        description: 'Meal 2',
+        occurredAt: '2026-06-10T12:00:00.000Z',
+      },
+      {
+        accountId: account.body.id,
+        categoryId: expenseCategory.body.id,
+        type: 'expense',
+        amount: 12,
+        currency: 'USD',
+        description: 'Outside month',
+        occurredAt: '2026-07-02T12:00:00.000Z',
+      },
+    ];
+
+    for (const payload of payloads) {
+      const created = await request(app.server).post('/transactions').set(authHeader).send(payload);
+      expect(created.status).toBe(201);
+    }
+
+    const budgets = await request(app.server).get('/budgets').set(authHeader).query({ month: '2026-06' });
+
+    expect(budgets.status).toBe(200);
+    expect(budgets.body.budgets).toHaveLength(1);
+    expect(budgets.body.budgets[0].categoryName).toBe('Dining');
+    expect(budgets.body.budgets[0].spentAmount).toBe(55);
+    expect(budgets.body.budgets[0].remainingAmount).toBe(45);
+    expect(budgets.body.budgets[0].percentUsed).toBeCloseTo(55, 5);
+  });
+
+  it('cannot create budget for income category', async () => {
+    const session = await registerUser('budget-income@example.com', 'Budget Income');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+
+    const incomeCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#00AA44',
+      icon: 'wallet',
+    });
+    expect(incomeCategory.status).toBe(201);
+
+    const createBudget = await request(app.server).post('/budgets').set(authHeader).send({
+      categoryId: incomeCategory.body.id,
+      month: '2026-06',
+      limitAmount: 200,
+    });
+
+    expect(createBudget.status).toBe(400);
+    expect(createBudget.body).toEqual({
+      error: {
+        code: 'INVALID_BUDGET_CATEGORY',
+        message: 'Category must be an expense category',
+      },
+    });
+  });
+
+  it('budget routes enforce object-level authorization', async () => {
+    const owner = await registerUser('budget-owner@example.com', 'Budget Owner');
+    const ownerHeader = { Authorization: `Bearer ${owner.accessToken}` };
+    const attacker = await registerUser('budget-attacker@example.com', 'Budget Attacker');
+    const attackerHeader = { Authorization: `Bearer ${attacker.accessToken}` };
+
+    await request(app.server).post('/accounts').set(ownerHeader).send({
+      name: 'Owner Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+
+    const ownerCategory = await request(app.server).post('/categories').set(ownerHeader).send({
+      name: 'Owner Category',
+      type: 'expense',
+      color: '#2222AA',
+      icon: 'shield',
+    });
+    expect(ownerCategory.status).toBe(201);
+
+    const ownerBudget = await request(app.server).post('/budgets').set(ownerHeader).send({
+      categoryId: ownerCategory.body.id,
+      month: '2026-08',
+      limitAmount: 500,
+    });
+    expect(ownerBudget.status).toBe(201);
+
+    const patchByAttacker = await request(app.server)
+      .patch(`/budgets/${ownerBudget.body.id}`)
+      .set(attackerHeader)
+      .send({ limitAmount: 900 });
+    expect(patchByAttacker.status).toBe(404);
+    expect(patchByAttacker.body.error.code).toBe('BUDGET_NOT_FOUND');
+
+    const deleteByAttacker = await request(app.server)
+      .delete(`/budgets/${ownerBudget.body.id}`)
+      .set(attackerHeader);
+    expect(deleteByAttacker.status).toBe(404);
+    expect(deleteByAttacker.body.error.code).toBe('BUDGET_NOT_FOUND');
+
+    const attackerBudgets = await request(app.server)
+      .get('/budgets')
+      .set(attackerHeader)
+      .query({ month: '2026-08' });
+    expect(attackerBudgets.status).toBe(200);
+    expect(attackerBudgets.body.budgets).toEqual([]);
+  });
+
+  it('soft-deleted transaction is excluded from lists, analytics, and budget usage', async () => {
+    const session = await registerUser('soft-delete-tx@example.com', 'Soft Delete');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const category = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Food',
+      type: 'expense',
+      color: '#AA3311',
+      icon: 'utensils',
+    });
+    expect(category.status).toBe(201);
+
+    const budget = await request(app.server).post('/budgets').set(authHeader).send({
+      categoryId: category.body.id,
+      month: '2026-09',
+      limitAmount: 200,
+    });
+    expect(budget.status).toBe(201);
+
+    const createdTx = await request(app.server).post('/transactions').set(authHeader).send({
+      accountId: account.body.id,
+      categoryId: category.body.id,
+      type: 'expense',
+      amount: 60,
+      currency: 'USD',
+      description: 'Lunch',
+      occurredAt: '2026-09-07T12:00:00.000Z',
+    });
+    expect(createdTx.status).toBe(201);
+
+    const deleted = await request(app.server)
+      .delete(`/transactions/${createdTx.body.id}`)
+      .set(authHeader);
+    expect(deleted.status).toBe(200);
+
+    const activeList = await request(app.server).get('/transactions').set(authHeader);
+    expect(activeList.status).toBe(200);
+    expect(activeList.body.transactions).toHaveLength(0);
+
+    const includeDeletedList = await request(app.server)
+      .get('/transactions')
+      .set(authHeader)
+      .query({ includeDeleted: true });
+    expect(includeDeletedList.status).toBe(200);
+    expect(includeDeletedList.body.transactions).toHaveLength(1);
+
+    const analytics = await request(app.server)
+      .get('/analytics/summary')
+      .set(authHeader)
+      .query({ month: '2026-09' });
+    expect(analytics.status).toBe(200);
+    expect(analytics.body.expenseTotal).toBe(0);
+    expect(analytics.body.transactionCount).toBe(0);
+
+    const budgets = await request(app.server).get('/budgets').set(authHeader).query({ month: '2026-09' });
+    expect(budgets.status).toBe(200);
+    expect(budgets.body.budgets).toHaveLength(1);
+    expect(budgets.body.budgets[0].spentAmount).toBe(0);
+  });
+
+  it('creating a transfer creates paired in/out transactions', async () => {
+    const session = await registerUser('transfer-pair@example.com', 'Transfer Pair');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const [fromAccount, toAccount] = await Promise.all([
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Checking',
+        type: 'bank',
+        currency: 'USD',
+      }),
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Cash',
+        type: 'cash',
+        currency: 'USD',
+      }),
+    ]);
+
+    expect(fromAccount.status).toBe(201);
+    expect(toAccount.status).toBe(201);
+
+    const transfer = await request(app.server).post('/transfers').set(authHeader).send({
+      fromAccountId: fromAccount.body.id,
+      toAccountId: toAccount.body.id,
+      amount: 120.25,
+      occurredAt: '2026-09-08T09:00:00.000Z',
+      description: 'ATM cashout',
+    });
+
+    expect(transfer.status).toBe(201);
+    expect(transfer.body.groupId).toBeTypeOf('string');
+    expect(transfer.body.fromTransactionId).toBeTypeOf('string');
+    expect(transfer.body.toTransactionId).toBeTypeOf('string');
+
+    const transferList = await request(app.server)
+      .get('/transactions')
+      .set(authHeader)
+      .query({ kind: 'transfer', limit: 50, page: 1 });
+
+    expect(transferList.status).toBe(200);
+    expect(transferList.body.transactions).toHaveLength(2);
+
+    const directions = transferList.body.transactions.map(
+      (transaction: { transferDirection: string | null }) => transaction.transferDirection,
+    );
+    expect(directions).toContain('in');
+    expect(directions).toContain('out');
+
+    const groupIds = new Set(
+      transferList.body.transactions.map((transaction: { transferGroupId: string | null }) => transaction.transferGroupId),
+    );
+    expect(groupIds.size).toBe(1);
+  });
+
+  it('dashboard balances reflect transfer while total net stays unchanged', async () => {
+    const session = await registerUser('transfer-balance@example.com', 'Transfer Balance');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const [accountA, accountB] = await Promise.all([
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Bank',
+        type: 'bank',
+        currency: 'USD',
+      }),
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Wallet',
+        type: 'cash',
+        currency: 'USD',
+      }),
+    ]);
+    expect(accountA.status).toBe(201);
+    expect(accountB.status).toBe(201);
+
+    const incomeCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Salary',
+      type: 'income',
+      color: '#11AA44',
+      icon: 'wallet',
+    });
+    expect(incomeCategory.status).toBe(201);
+
+    const seedIncome = await request(app.server).post('/transactions').set(authHeader).send({
+      accountId: accountA.body.id,
+      categoryId: incomeCategory.body.id,
+      type: 'income',
+      amount: 500,
+      currency: 'USD',
+      description: 'Seed funds',
+      occurredAt: '2026-09-09T08:00:00.000Z',
+    });
+    expect(seedIncome.status).toBe(201);
+
+    const transfer = await request(app.server).post('/transfers').set(authHeader).send({
+      fromAccountId: accountA.body.id,
+      toAccountId: accountB.body.id,
+      amount: 200,
+      occurredAt: '2026-09-09T09:00:00.000Z',
+      description: 'Move to wallet',
+    });
+    expect(transfer.status).toBe(201);
+
+    const dashboard = await request(app.server).get('/dashboard/recent').set(authHeader);
+    expect(dashboard.status).toBe(200);
+    expect(dashboard.body.totalBalance).toBe(500);
+
+    const balanceMap = new Map(
+      dashboard.body.balances.map((entry: { accountId: string; balance: number }) => [
+        entry.accountId,
+        entry.balance,
+      ]),
+    );
+
+    expect(balanceMap.get(accountA.body.id)).toBe(300);
+    expect(balanceMap.get(accountB.body.id)).toBe(200);
+  });
+
+  it('cannot transfer between accounts owned by different users', async () => {
+    const owner = await registerUser('transfer-owner@example.com', 'Transfer Owner');
+    const ownerHeader = { Authorization: `Bearer ${owner.accessToken}` };
+    const otherUser = await registerUser('transfer-other@example.com', 'Transfer Other');
+    const otherHeader = { Authorization: `Bearer ${otherUser.accessToken}` };
+
+    const ownerAccount = await request(app.server).post('/accounts').set(ownerHeader).send({
+      name: 'Owner Account',
+      type: 'bank',
+      currency: 'USD',
+    });
+    const otherAccount = await request(app.server).post('/accounts').set(otherHeader).send({
+      name: 'Other Account',
+      type: 'bank',
+      currency: 'USD',
+    });
+
+    expect(ownerAccount.status).toBe(201);
+    expect(otherAccount.status).toBe(201);
+
+    const forbiddenTransfer = await request(app.server).post('/transfers').set(ownerHeader).send({
+      fromAccountId: ownerAccount.body.id,
+      toAccountId: otherAccount.body.id,
+      amount: 50,
+      occurredAt: '2026-09-10T12:00:00.000Z',
+    });
+
+    expect(forbiddenTransfer.status).toBe(404);
+    expect(forbiddenTransfer.body.error.code).toBe('ACCOUNT_NOT_FOUND');
+  });
+
+  it('weekly recurring rule generates one transaction and advances nextRunAt', async () => {
+    const session = await registerUser('recurring-weekly@example.com', 'Recurring Weekly');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    const category = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Utilities',
+      type: 'expense',
+      color: '#3344AA',
+      icon: 'bolt',
+    });
+    expect(account.status).toBe(201);
+    expect(category.status).toBe(201);
+
+    const createRule = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      accountId: account.body.id,
+      categoryId: category.body.id,
+      type: 'expense',
+      amount: 25,
+      description: 'Weekly utility',
+      cadence: 'weekly',
+      dayOfWeek: 1,
+      startAt: new Date().toISOString(),
+    });
+    expect(createRule.status).toBe(201);
+
+    const ruleId = createRule.body.id as string;
+    const dueAt = new Date(Date.now() - 60 * 1000);
+    await RecurringRuleModel.updateOne(
+      { _id: ruleId },
+      {
+        $set: {
+          nextRunAt: dueAt,
+          lastRunAt: null,
+          isPaused: false,
+        },
+      },
+    );
+
+    const runDue = await request(app.server)
+      .post('/recurring/run-due')
+      .set('x-cron-secret', 'test-cron-secret')
+      .send({});
+
+    expect(runDue.status).toBe(200);
+    expect(runDue.body.processedRuns).toBe(1);
+    expect(runDue.body.generatedTransactions).toBe(1);
+
+    const rule = await RecurringRuleModel.findById(ruleId);
+    expect(rule).toBeTruthy();
+    expect(rule?.lastRunAt?.toISOString()).toBe(dueAt.toISOString());
+    expect(rule?.nextRunAt.toISOString()).toBe(
+      new Date(dueAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    );
+
+    const generatedTransactions = await request(app.server)
+      .get('/transactions')
+      .set(authHeader)
+      .query({ kind: 'normal' });
+    expect(generatedTransactions.status).toBe(200);
+    expect(generatedTransactions.body.transactions).toHaveLength(1);
+  });
+
+  it('monthly recurring rule generates one transaction and advances to next month', async () => {
+    const session = await registerUser('recurring-monthly@example.com', 'Recurring Monthly');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    const category = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Subscription',
+      type: 'expense',
+      color: '#AA8844',
+      icon: 'card',
+    });
+    expect(account.status).toBe(201);
+    expect(category.status).toBe(201);
+
+    const createRule = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      accountId: account.body.id,
+      categoryId: category.body.id,
+      type: 'expense',
+      amount: 15,
+      description: 'Monthly plan',
+      cadence: 'monthly',
+      dayOfMonth: 1,
+      startAt: new Date().toISOString(),
+    });
+    expect(createRule.status).toBe(201);
+
+    const ruleId = createRule.body.id as string;
+    const now = new Date();
+    const dueAt = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, now.getUTCHours(), now.getUTCMinutes(), 0, 0),
+    );
+    await RecurringRuleModel.updateOne(
+      { _id: ruleId },
+      {
+        $set: {
+          nextRunAt: dueAt,
+          lastRunAt: null,
+          isPaused: false,
+        },
+      },
+    );
+
+    const runDue = await request(app.server)
+      .post('/recurring/run-due')
+      .set('x-cron-secret', 'test-cron-secret')
+      .send({});
+
+    expect(runDue.status).toBe(200);
+    expect(runDue.body.processedRuns).toBe(1);
+    expect(runDue.body.generatedTransactions).toBe(1);
+
+    const expectedNextRun = new Date(
+      Date.UTC(
+        dueAt.getUTCFullYear(),
+        dueAt.getUTCMonth() + 1,
+        1,
+        dueAt.getUTCHours(),
+        dueAt.getUTCMinutes(),
+        dueAt.getUTCSeconds(),
+        dueAt.getUTCMilliseconds(),
+      ),
+    );
+
+    const rule = await RecurringRuleModel.findById(ruleId);
+    expect(rule).toBeTruthy();
+    expect(rule?.lastRunAt?.toISOString()).toBe(dueAt.toISOString());
+    expect(rule?.nextRunAt.toISOString()).toBe(expectedNextRun.toISOString());
+  });
+
+  it('transfer recurring rule generates paired transactions', async () => {
+    const session = await registerUser('recurring-transfer@example.com', 'Recurring Transfer');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const [fromAccount, toAccount] = await Promise.all([
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Bank',
+        type: 'bank',
+        currency: 'USD',
+      }),
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Cash',
+        type: 'cash',
+        currency: 'USD',
+      }),
+    ]);
+
+    expect(fromAccount.status).toBe(201);
+    expect(toAccount.status).toBe(201);
+
+    const createRule = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'transfer',
+      fromAccountId: fromAccount.body.id,
+      toAccountId: toAccount.body.id,
+      amount: 40,
+      description: 'Weekly transfer',
+      cadence: 'weekly',
+      dayOfWeek: 2,
+      startAt: new Date().toISOString(),
+    });
+    expect(createRule.status).toBe(201);
+
+    const ruleId = createRule.body.id as string;
+    const dueAt = new Date(Date.now() - 60 * 1000);
+    await RecurringRuleModel.updateOne(
+      { _id: ruleId },
+      {
+        $set: {
+          nextRunAt: dueAt,
+          lastRunAt: null,
+          isPaused: false,
+        },
+      },
+    );
+
+    const runDue = await request(app.server)
+      .post('/recurring/run-due')
+      .set('x-cron-secret', 'test-cron-secret')
+      .send({});
+
+    expect(runDue.status).toBe(200);
+    expect(runDue.body.processedRuns).toBe(1);
+    expect(runDue.body.generatedTransactions).toBe(2);
+
+    const transfers = await request(app.server)
+      .get('/transactions')
+      .set(authHeader)
+      .query({ kind: 'transfer' });
+    expect(transfers.status).toBe(200);
+    expect(transfers.body.transactions).toHaveLength(2);
+  });
+
+  it('paused and soft-deleted recurring rules are not executed', async () => {
+    const session = await registerUser('recurring-paused@example.com', 'Recurring Paused');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    const category = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Bills',
+      type: 'expense',
+      color: '#7733AA',
+      icon: 'receipt',
+    });
+    expect(account.status).toBe(201);
+    expect(category.status).toBe(201);
+
+    const pausedRule = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      accountId: account.body.id,
+      categoryId: category.body.id,
+      type: 'expense',
+      amount: 20,
+      cadence: 'weekly',
+      dayOfWeek: 3,
+      startAt: new Date().toISOString(),
+    });
+    const deletedRule = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      accountId: account.body.id,
+      categoryId: category.body.id,
+      type: 'expense',
+      amount: 30,
+      cadence: 'weekly',
+      dayOfWeek: 4,
+      startAt: new Date().toISOString(),
+    });
+    expect(pausedRule.status).toBe(201);
+    expect(deletedRule.status).toBe(201);
+
+    const dueAt = new Date(Date.now() - 60 * 1000);
+    await RecurringRuleModel.updateOne(
+      { _id: pausedRule.body.id },
+      {
+        $set: {
+          nextRunAt: dueAt,
+          isPaused: true,
+        },
+      },
+    );
+    await RecurringRuleModel.updateOne(
+      { _id: deletedRule.body.id },
+      {
+        $set: {
+          nextRunAt: dueAt,
+          deletedAt: new Date(),
+          isPaused: false,
+        },
+      },
+    );
+
+    const runDue = await request(app.server)
+      .post('/recurring/run-due')
+      .set('x-cron-secret', 'test-cron-secret')
+      .send({});
+
+    expect(runDue.status).toBe(200);
+    expect(runDue.body.processedRules).toBe(0);
+    expect(runDue.body.processedRuns).toBe(0);
+    expect(runDue.body.generatedTransactions).toBe(0);
+
+    const txCount = await TransactionModel.countDocuments({});
+    expect(txCount).toBe(0);
+  });
+
+  it('exports transactions csv with expected headers and rows', async () => {
+    const session = await registerUser('export-csv@example.com', 'CSV Export');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const [bank, wallet] = await Promise.all([
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Bank',
+        type: 'bank',
+        currency: 'USD',
+      }),
+      request(app.server).post('/accounts').set(authHeader).send({
+        name: 'Wallet',
+        type: 'cash',
+        currency: 'USD',
+      }),
+    ]);
+    expect(bank.status).toBe(201);
+    expect(wallet.status).toBe(201);
+
+    const expenseCategory = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Groceries',
+      type: 'expense',
+      color: '#22AA66',
+      icon: 'cart',
+    });
+    expect(expenseCategory.status).toBe(201);
+
+    const normalTx = await request(app.server).post('/transactions').set(authHeader).send({
+      accountId: bank.body.id,
+      categoryId: expenseCategory.body.id,
+      type: 'expense',
+      amount: 35,
+      currency: 'USD',
+      description: 'Grocery run',
+      occurredAt: '2026-09-10T08:00:00.000Z',
+    });
+    expect(normalTx.status).toBe(201);
+
+    const transfer = await request(app.server).post('/transfers').set(authHeader).send({
+      fromAccountId: bank.body.id,
+      toAccountId: wallet.body.id,
+      amount: 20,
+      occurredAt: '2026-09-10T09:00:00.000Z',
+      description: 'Cash move',
+    });
+    expect(transfer.status).toBe(201);
+
+    const csvResponse = await request(app.server)
+      .get('/export/transactions.csv')
+      .set(authHeader)
+      .query({
+        from: '2026-09-01T00:00:00.000Z',
+        to: '2026-09-30T23:59:59.000Z',
+      });
+
+    expect(csvResponse.status).toBe(200);
+    expect(csvResponse.headers['content-type']).toContain('text/csv');
+
+    const lines = csvResponse.text.trim().split('\n');
+    expect(lines[0]).toBe(
+      'occurredAt,type,kind,accountName,categoryName,amount,currency,description',
+    );
+    expect(lines.length).toBeGreaterThan(1);
+    expect(csvResponse.text).toContain(',normal,');
+    expect(csvResponse.text).toContain(',transfer,');
+  });
+});
+```
+
+## FILE: packages/shared/src/schemas.ts
+```
+import { z } from 'zod';
+
+const emailSchema = z.string().trim().email().max(320);
+const passwordSchema = z.string().min(8).max(128);
+const currencySchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z]{3}$/, 'Currency must be a 3-letter ISO code');
+const monthStringSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Month must be YYYY-MM');
+const dateTimeStringSchema = z
+  .string()
+  .refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid datetime');
+const dateOnlyStringSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'Date must be YYYY-MM-DD');
+
+export const healthResponseSchema = z.object({
+  ok: z.literal(true),
+  name: z.literal('FinSight API'),
+});
+
+export const registerInputSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  name: z.string().trim().min(1).max(120).optional(),
+});
+
+export const loginInputSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1).max(128),
+});
+
+export const refreshInputSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+export const logoutInputSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
+export const authUserSchema = z.object({
+  id: z.string().min(1),
+  email: emailSchema,
+  name: z.string().nullable(),
+});
+
+export const authResponseSchema = z.object({
+  accessToken: z.string().min(1),
+  refreshToken: z.string().min(1),
+  user: authUserSchema,
+});
+
+export const meResponseSchema = z.object({
+  user: authUserSchema.extend({
+    baseCurrency: currencySchema.nullable(),
+  }),
+});
+
+export const logoutResponseSchema = z.object({
+  ok: z.literal(true),
+});
+
+export const accountTypeSchema = z.enum(['cash', 'bank', 'credit']);
+export const categoryTypeSchema = z.enum(['income', 'expense']);
+export const transactionTypeSchema = z.enum(['income', 'expense']);
+export const transactionKindSchema = z.enum(['normal', 'transfer']);
+export const transferDirectionSchema = z.enum(['out', 'in']);
+export const recurringCadenceSchema = z.enum(['weekly', 'monthly']);
+export const recurringKindSchema = z.enum(['normal', 'transfer']);
+
+export const accountSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(120),
+  type: accountTypeSchema,
+  currency: currencySchema,
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
+});
+
+export const accountListResponseSchema = z.object({
+  accounts: z.array(accountSchema),
+});
+
+export const accountCreateInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  type: accountTypeSchema,
+  currency: currencySchema,
+});
+
+export const accountUpdateInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    type: accountTypeSchema.optional(),
+    currency: currencySchema.optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field must be provided',
+  });
+
+export const categorySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(120),
+  type: categoryTypeSchema,
+  color: z.string().regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, 'Invalid color hex'),
+  icon: z.string().min(1).max(64).nullable(),
+  isSystem: z.boolean(),
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
+});
+
+export const categoryListResponseSchema = z.object({
+  categories: z.array(categorySchema),
+});
+
+export const categoryCreateInputSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  type: categoryTypeSchema,
+  color: z.string().regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, 'Invalid color hex'),
+  icon: z.string().trim().min(1).max(64).optional(),
+});
+
+export const transactionSchema = z.object({
+  id: z.string().min(1),
+  accountId: z.string().min(1),
+  categoryId: z.string().min(1).nullable(),
+  type: transactionTypeSchema,
+  kind: transactionKindSchema,
+  transferGroupId: z.string().min(1).nullable(),
+  transferDirection: transferDirectionSchema.nullable(),
+  relatedAccountId: z.string().min(1).nullable(),
+  amount: z.number().positive(),
+  currency: currencySchema,
+  description: z.string().max(500).nullable(),
+  occurredAt: dateTimeStringSchema,
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
+});
+
+export const transactionCreateInputSchema = z.object({
+  accountId: z.string().trim().min(1),
+  categoryId: z.string().trim().min(1),
+  type: transactionTypeSchema,
+  amount: z.number().positive(),
+  currency: currencySchema,
+  description: z.string().trim().max(500).optional(),
+  occurredAt: dateTimeStringSchema,
+});
+
+export const transactionUpdateInputSchema = z
+  .object({
+    accountId: z.string().trim().min(1).optional(),
+    categoryId: z.string().trim().min(1).optional(),
+    type: transactionTypeSchema.optional(),
+    amount: z.number().positive().optional(),
+    currency: currencySchema.optional(),
+    description: z.string().trim().max(500).nullable().optional(),
+    occurredAt: dateTimeStringSchema.optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field must be provided',
+  });
+
+export const transactionListQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    accountId: z.string().trim().min(1).optional(),
+    categoryId: z.string().trim().min(1).optional(),
+    type: transactionTypeSchema.optional(),
+    kind: transactionKindSchema.optional(),
+    currency: currencySchema.optional(),
+    from: dateTimeStringSchema.optional(),
+    to: dateTimeStringSchema.optional(),
+    search: z.string().trim().min(1).max(120).optional(),
+    includeDeleted: z.coerce.boolean().default(false),
+  })
+  .refine(
+    (value) => {
+      if (!value.from || !value.to) {
+        return true;
+      }
+
+      return new Date(value.from).getTime() <= new Date(value.to).getTime();
+    },
+    {
+      message: '`from` must be less than or equal to `to`',
+      path: ['from'],
+    },
+  );
+
+export const transactionListResponseSchema = z.object({
+  transactions: z.array(transactionSchema),
+  pagination: z.object({
+    page: z.number().int().min(1),
+    limit: z.number().int().min(1),
+    total: z.number().int().min(0),
+    totalPages: z.number().int().min(0),
+  }),
+});
+
+export const accountBalanceSchema = z.object({
+  accountId: z.string().min(1),
+  name: z.string().min(1).max(120),
+  type: accountTypeSchema,
+  currency: currencySchema,
+  balance: z.number(),
+});
+
+export const dashboardRecentResponseSchema = z.object({
+  recentTransactions: z.array(transactionSchema),
+  totalBalance: z.number(),
+  balances: z.array(accountBalanceSchema),
+});
+
+export const transferCreateInputSchema = z
+  .object({
+    fromAccountId: z.string().trim().min(1),
+    toAccountId: z.string().trim().min(1),
+    amount: z.number().positive(),
+    occurredAt: dateTimeStringSchema,
+    description: z.string().trim().max(500).optional(),
+  })
+  .refine((value) => value.fromAccountId !== value.toAccountId, {
+    message: '`fromAccountId` and `toAccountId` must differ',
+    path: ['toAccountId'],
+  });
+
+export const transferCreateResponseSchema = z.object({
+  groupId: z.string().min(1),
+  fromTransactionId: z.string().min(1),
+  toTransactionId: z.string().min(1),
+});
+
+export const analyticsSummaryQuerySchema = z.object({
+  month: monthStringSchema,
+});
+
+export const analyticsTopCategorySchema = z.object({
+  categoryId: z.string().min(1),
+  name: z.string().min(1).max(120),
+  type: categoryTypeSchema,
+  total: z.number().min(0),
+  percent: z.number().min(0),
+});
+
+export const analyticsSummaryResponseSchema = z.object({
+  month: monthStringSchema,
+  currency: currencySchema.nullable(),
+  incomeTotal: z.number().min(0),
+  expenseTotal: z.number().min(0),
+  netTotal: z.number(),
+  transactionCount: z.number().int().min(0),
+  topCategories: z.array(analyticsTopCategorySchema),
+});
+
+export const analyticsByCategoryQuerySchema = z.object({
+  month: monthStringSchema,
+  type: categoryTypeSchema,
+});
+
+export const analyticsByCategoryItemSchema = z.object({
+  categoryId: z.string().min(1),
+  name: z.string().min(1).max(120),
+  total: z.number().min(0),
+  count: z.number().int().min(0),
+});
+
+export const analyticsByCategoryResponseSchema = z.object({
+  month: monthStringSchema,
+  type: categoryTypeSchema,
+  currency: currencySchema.nullable(),
+  categories: z.array(analyticsByCategoryItemSchema),
+});
+
+export const analyticsTrendQuerySchema = z
+  .object({
+    from: monthStringSchema,
+    to: monthStringSchema,
+  })
+  .refine((value) => value.from <= value.to, {
+    message: '`from` must be less than or equal to `to`',
+    path: ['from'],
+  });
+
+export const analyticsTrendPointSchema = z.object({
+  month: monthStringSchema,
+  incomeTotal: z.number().min(0),
+  expenseTotal: z.number().min(0),
+  netTotal: z.number(),
+});
+
+export const analyticsTrendResponseSchema = z.object({
+  currency: currencySchema.nullable(),
+  points: z.array(analyticsTrendPointSchema),
+});
+
+export const aiAdviceSeveritySchema = z.enum(['info', 'warning', 'success']);
+
+export const aiAdviceQuerySchema = z.object({
+  month: monthStringSchema,
+});
+
+export const aiAdviceItemSchema = z.object({
+  title: z.string().min(1).max(140),
+  message: z.string().min(1).max(500),
+  severity: aiAdviceSeveritySchema,
+});
+
+export const aiAdviceBudgetOverrunSchema = z.object({
+  budgetId: z.string().min(1),
+  categoryId: z.string().min(1),
+  categoryName: z.string().min(1).max(120),
+  limitAmount: z.number().min(0),
+  spentAmount: z.number().min(0),
+  overAmount: z.number().min(0),
+});
+
+export const aiAdviceResponseSchema = z.object({
+  month: monthStringSchema,
+  currency: currencySchema.nullable(),
+  totalIncome: z.number().min(0),
+  totalExpense: z.number().min(0),
+  net: z.number(),
+  topExpenseCategory: z
+    .object({
+      categoryId: z.string().min(1),
+      name: z.string().min(1).max(120),
+      total: z.number().min(0),
+    })
+    .nullable(),
+  budgetOverruns: z.array(aiAdviceBudgetOverrunSchema),
+  advice: z.array(aiAdviceItemSchema),
+  nextActions: z.array(z.string().min(1).max(280)),
+});
+
+export const weeklyReportQuerySchema = z.object({
+  weekStart: dateOnlyStringSchema.optional(),
+});
+
+export const weeklyReportResponseSchema = z.object({
+  weekStart: dateOnlyStringSchema,
+  weekEnd: dateOnlyStringSchema,
+  currency: currencySchema.nullable(),
+  healthScore: z.number().int().min(0).max(100),
+  summaryText: z.string().min(1).max(500),
+  highlights: z.array(z.string().min(1).max(280)),
+  riskFlags: z.array(z.string().min(1).max(280)),
+  nextWeekForecastText: z.string().min(1).max(500),
+});
+
+export const budgetSchema = z.object({
+  id: z.string().min(1),
+  categoryId: z.string().min(1),
+  month: monthStringSchema,
+  limitAmount: z.number().positive(),
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
+});
+
+export const budgetListQuerySchema = z.object({
+  month: monthStringSchema,
+  includeDeleted: z.coerce.boolean().default(false),
+});
+
+export const budgetListItemSchema = z.object({
+  id: z.string().min(1),
+  categoryId: z.string().min(1),
+  categoryName: z.string().min(1).max(120),
+  month: monthStringSchema,
+  limitAmount: z.number().positive(),
+  spentAmount: z.number().min(0),
+  remainingAmount: z.number(),
+  percentUsed: z.number().min(0),
+});
+
+export const budgetListResponseSchema = z.object({
+  budgets: z.array(budgetListItemSchema),
+});
+
+export const budgetCreateInputSchema = z.object({
+  categoryId: z.string().trim().min(1),
+  month: monthStringSchema,
+  limitAmount: z.number().positive(),
+});
+
+export const budgetUpdateInputSchema = z.object({
+  limitAmount: z.number().positive(),
+});
+
+export const recurringRuleSchema = z.object({
+  id: z.string().min(1),
+  kind: recurringKindSchema,
+  accountId: z.string().min(1).nullable(),
+  categoryId: z.string().min(1).nullable(),
+  type: transactionTypeSchema.nullable(),
+  fromAccountId: z.string().min(1).nullable(),
+  toAccountId: z.string().min(1).nullable(),
+  amount: z.number().positive(),
+  description: z.string().max(500).nullable(),
+  cadence: recurringCadenceSchema,
+  dayOfWeek: z.number().int().min(0).max(6).nullable(),
+  dayOfMonth: z.number().int().min(1).max(28).nullable(),
+  startAt: dateTimeStringSchema,
+  endAt: dateTimeStringSchema.nullable(),
+  nextRunAt: dateTimeStringSchema,
+  lastRunAt: dateTimeStringSchema.nullable(),
+  isPaused: z.boolean(),
+  deletedAt: dateTimeStringSchema.nullable(),
+  createdAt: dateTimeStringSchema,
+  updatedAt: dateTimeStringSchema,
+});
+
+const recurringScheduleFieldsSchema = z
+  .object({
+    cadence: recurringCadenceSchema,
+    dayOfWeek: z.number().int().min(0).max(6).optional(),
+    dayOfMonth: z.number().int().min(1).max(28).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.cadence === 'weekly') {
+      if (value.dayOfWeek === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '`dayOfWeek` is required for weekly cadence',
+          path: ['dayOfWeek'],
+        });
+      }
+      return;
+    }
+
+    if (value.dayOfMonth === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '`dayOfMonth` is required for monthly cadence',
+        path: ['dayOfMonth'],
+      });
+    }
+  });
+
+const recurringBaseCreateSchema = z.object({
+  cadence: recurringCadenceSchema,
+  dayOfWeek: z.number().int().min(0).max(6).optional(),
+  dayOfMonth: z.number().int().min(1).max(28).optional(),
+  startAt: dateTimeStringSchema,
+  endAt: dateTimeStringSchema.optional(),
+  amount: z.number().positive(),
+  description: z.string().trim().max(500).optional(),
+});
+
+export const recurringCreateInputSchema = z
+  .discriminatedUnion('kind', [
+    recurringBaseCreateSchema.extend({
+      kind: z.literal('normal'),
+      accountId: z.string().trim().min(1),
+      categoryId: z.string().trim().min(1),
+      type: transactionTypeSchema,
+    }),
+    recurringBaseCreateSchema.extend({
+      kind: z.literal('transfer'),
+      fromAccountId: z.string().trim().min(1),
+      toAccountId: z.string().trim().min(1),
+    }),
+  ])
+  .and(recurringScheduleFieldsSchema);
+
+export const recurringUpdateInputSchema = z
+  .object({
+    amount: z.number().positive().optional(),
+    description: z.string().trim().max(500).nullable().optional(),
+    isPaused: z.boolean().optional(),
+    cadence: recurringCadenceSchema.optional(),
+    dayOfWeek: z.number().int().min(0).max(6).optional(),
+    dayOfMonth: z.number().int().min(1).max(28).optional(),
+    endAt: dateTimeStringSchema.nullable().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field must be provided',
+  })
+  .superRefine((value, ctx) => {
+    const cadence = value.cadence;
+    if (cadence === 'weekly' && value.dayOfWeek === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '`dayOfWeek` is required when setting weekly cadence',
+        path: ['dayOfWeek'],
+      });
+    }
+    if (cadence === 'monthly' && value.dayOfMonth === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '`dayOfMonth` is required when setting monthly cadence',
+        path: ['dayOfMonth'],
+      });
+    }
+  });
+
+export const recurringListQuerySchema = z.object({
+  month: monthStringSchema.optional(),
+  includeDeleted: z.coerce.boolean().default(false),
+});
+
+export const recurringListResponseSchema = z.object({
+  rules: z.array(recurringRuleSchema),
+});
+
+export const recurringRunDueResponseSchema = z.object({
+  processedRules: z.number().int().min(0),
+  processedRuns: z.number().int().min(0),
+  generatedTransactions: z.number().int().min(0),
+});
+
+export const exportTransactionsQuerySchema = z
+  .object({
+    from: dateTimeStringSchema.optional(),
+    to: dateTimeStringSchema.optional(),
+    accountId: z.string().trim().min(1).optional(),
+    type: transactionTypeSchema.optional(),
+    kind: transactionKindSchema.optional(),
+  })
+  .refine(
+    (value) => {
+      if (!value.from || !value.to) {
+        return true;
+      }
+      return new Date(value.from).getTime() <= new Date(value.to).getTime();
+    },
+    {
+      message: '`from` must be less than or equal to `to`',
+      path: ['from'],
+    },
+  );
+
+export const exportTransactionsCsvResponseSchema = z.string();
+
+export const apiErrorSchema = z.object({
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    details: z.unknown().optional(),
+  }),
+});
+
+export type HealthResponse = z.infer<typeof healthResponseSchema>;
+export type RegisterInput = z.infer<typeof registerInputSchema>;
+export type LoginInput = z.infer<typeof loginInputSchema>;
+export type RefreshInput = z.infer<typeof refreshInputSchema>;
+export type LogoutInput = z.infer<typeof logoutInputSchema>;
+export type AuthUser = z.infer<typeof authUserSchema>;
+export type AuthResponse = z.infer<typeof authResponseSchema>;
+export type MeResponse = z.infer<typeof meResponseSchema>;
+export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
+export type AccountType = z.infer<typeof accountTypeSchema>;
+export type CategoryType = z.infer<typeof categoryTypeSchema>;
+export type TransactionType = z.infer<typeof transactionTypeSchema>;
+export type TransactionKind = z.infer<typeof transactionKindSchema>;
+export type TransferDirection = z.infer<typeof transferDirectionSchema>;
+export type RecurringCadence = z.infer<typeof recurringCadenceSchema>;
+export type RecurringKind = z.infer<typeof recurringKindSchema>;
+export type Account = z.infer<typeof accountSchema>;
+export type AccountListResponse = z.infer<typeof accountListResponseSchema>;
+export type AccountCreateInput = z.infer<typeof accountCreateInputSchema>;
+export type AccountUpdateInput = z.infer<typeof accountUpdateInputSchema>;
+export type Category = z.infer<typeof categorySchema>;
+export type CategoryListResponse = z.infer<typeof categoryListResponseSchema>;
+export type CategoryCreateInput = z.infer<typeof categoryCreateInputSchema>;
+export type Transaction = z.infer<typeof transactionSchema>;
+export type TransactionCreateInput = z.infer<typeof transactionCreateInputSchema>;
+export type TransactionUpdateInput = z.infer<typeof transactionUpdateInputSchema>;
+export type TransactionListQuery = z.infer<typeof transactionListQuerySchema>;
+export type TransactionListResponse = z.infer<typeof transactionListResponseSchema>;
+export type AccountBalance = z.infer<typeof accountBalanceSchema>;
+export type DashboardRecentResponse = z.infer<typeof dashboardRecentResponseSchema>;
+export type TransferCreateInput = z.infer<typeof transferCreateInputSchema>;
+export type TransferCreateResponse = z.infer<typeof transferCreateResponseSchema>;
+export type AnalyticsSummaryQuery = z.infer<typeof analyticsSummaryQuerySchema>;
+export type AnalyticsTopCategory = z.infer<typeof analyticsTopCategorySchema>;
+export type AnalyticsSummaryResponse = z.infer<typeof analyticsSummaryResponseSchema>;
+export type AnalyticsByCategoryQuery = z.infer<typeof analyticsByCategoryQuerySchema>;
+export type AnalyticsByCategoryItem = z.infer<typeof analyticsByCategoryItemSchema>;
+export type AnalyticsByCategoryResponse = z.infer<typeof analyticsByCategoryResponseSchema>;
+export type AnalyticsTrendQuery = z.infer<typeof analyticsTrendQuerySchema>;
+export type AnalyticsTrendPoint = z.infer<typeof analyticsTrendPointSchema>;
+export type AnalyticsTrendResponse = z.infer<typeof analyticsTrendResponseSchema>;
+export type AiAdviceSeverity = z.infer<typeof aiAdviceSeveritySchema>;
+export type AiAdviceQuery = z.infer<typeof aiAdviceQuerySchema>;
+export type AiAdviceItem = z.infer<typeof aiAdviceItemSchema>;
+export type AiAdviceBudgetOverrun = z.infer<typeof aiAdviceBudgetOverrunSchema>;
+export type AiAdviceResponse = z.infer<typeof aiAdviceResponseSchema>;
+export type WeeklyReportQuery = z.infer<typeof weeklyReportQuerySchema>;
+export type WeeklyReportResponse = z.infer<typeof weeklyReportResponseSchema>;
+export type Budget = z.infer<typeof budgetSchema>;
+export type BudgetListQuery = z.infer<typeof budgetListQuerySchema>;
+export type BudgetListItem = z.infer<typeof budgetListItemSchema>;
+export type BudgetListResponse = z.infer<typeof budgetListResponseSchema>;
+export type BudgetCreateInput = z.infer<typeof budgetCreateInputSchema>;
+export type BudgetUpdateInput = z.infer<typeof budgetUpdateInputSchema>;
+export type RecurringRule = z.infer<typeof recurringRuleSchema>;
+export type RecurringCreateInput = z.infer<typeof recurringCreateInputSchema>;
+export type RecurringUpdateInput = z.infer<typeof recurringUpdateInputSchema>;
+export type RecurringListQuery = z.infer<typeof recurringListQuerySchema>;
+export type RecurringListResponse = z.infer<typeof recurringListResponseSchema>;
+export type RecurringRunDueResponse = z.infer<typeof recurringRunDueResponseSchema>;
+export type ExportTransactionsQuery = z.infer<typeof exportTransactionsQuerySchema>;
+export type ExportTransactionsCsvResponse = z.infer<typeof exportTransactionsCsvResponseSchema>;
+export type ApiErrorResponse = z.infer<typeof apiErrorSchema>;
+```
+
+## FILE: packages/shared/src/client.ts
+```
+import { z } from 'zod';
+
+import {
+  accountCreateInputSchema,
+  accountListResponseSchema,
+  accountSchema,
+  accountUpdateInputSchema,
+  analyticsByCategoryQuerySchema,
+  analyticsByCategoryResponseSchema,
+  analyticsSummaryQuerySchema,
+  analyticsSummaryResponseSchema,
+  analyticsTrendQuerySchema,
+  analyticsTrendResponseSchema,
+  aiAdviceQuerySchema,
+  aiAdviceResponseSchema,
+  apiErrorSchema,
+  authResponseSchema,
+  budgetCreateInputSchema,
+  budgetListQuerySchema,
+  budgetListResponseSchema,
+  budgetSchema,
+  budgetUpdateInputSchema,
+  categoryCreateInputSchema,
+  categoryListResponseSchema,
+  categorySchema,
+  dashboardRecentResponseSchema,
+  exportTransactionsCsvResponseSchema,
+  exportTransactionsQuerySchema,
+  healthResponseSchema,
+  logoutResponseSchema,
+  meResponseSchema,
+  recurringCreateInputSchema,
+  recurringListQuerySchema,
+  recurringListResponseSchema,
+  recurringRuleSchema,
+  recurringRunDueResponseSchema,
+  recurringUpdateInputSchema,
+  transferCreateInputSchema,
+  transferCreateResponseSchema,
+  transactionCreateInputSchema,
+  transactionListQuerySchema,
+  transactionListResponseSchema,
+  transactionSchema,
+  transactionUpdateInputSchema,
+  weeklyReportQuerySchema,
+  weeklyReportResponseSchema,
+  type Account,
+  type AccountCreateInput,
+  type AccountListResponse,
+  type AccountUpdateInput,
+  type AnalyticsByCategoryQuery,
+  type AnalyticsByCategoryResponse,
+  type AnalyticsSummaryQuery,
+  type AnalyticsSummaryResponse,
+  type AnalyticsTrendQuery,
+  type AnalyticsTrendResponse,
+  type AiAdviceQuery,
+  type AiAdviceResponse,
+  type AuthResponse,
+  type Budget,
+  type BudgetCreateInput,
+  type BudgetListQuery,
+  type BudgetListResponse,
+  type BudgetUpdateInput,
+  type Category,
+  type CategoryCreateInput,
+  type CategoryListResponse,
+  type DashboardRecentResponse,
+  type ExportTransactionsCsvResponse,
+  type ExportTransactionsQuery,
+  type HealthResponse,
+  type LoginInput,
+  type LogoutInput,
+  type MeResponse,
+  type RecurringCreateInput,
+  type RecurringListQuery,
+  type RecurringListResponse,
+  type RecurringRule,
+  type RecurringRunDueResponse,
+  type RecurringUpdateInput,
+  type RefreshInput,
+  type RegisterInput,
+  type TransferCreateInput,
+  type TransferCreateResponse,
+  type Transaction,
+  type TransactionCreateInput,
+  type TransactionListQuery,
+  type TransactionListResponse,
+  type TransactionUpdateInput,
+  type WeeklyReportQuery,
+  type WeeklyReportResponse,
+} from './schemas';
+
+type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+
+export interface ApiClientOptions {
+  baseUrl?: string;
+  fetchImpl?: FetchLike;
+}
+
+export interface NormalizedApiError {
+  code: string;
+  message: string;
+  details?: unknown;
+  status?: number;
+}
+
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  body?: unknown;
+  accessToken?: string;
+  query?: Record<string, unknown>;
+}
+
+export class ApiClientError extends Error {
+  public readonly code: string;
+  public readonly details?: unknown;
+  public readonly status: number;
+
+  constructor(params: { code: string; message: string; status: number; details?: unknown }) {
+    super(params.message);
+    this.code = params.code;
+    this.details = params.details;
+    this.status = params.status;
+    this.name = 'ApiClientError';
+  }
+}
+
+type ProcessLike = {
+  env?: Record<string, string | undefined>;
+};
+
+function readEnv(): Record<string, string | undefined> {
+  const processLike = (globalThis as { process?: ProcessLike }).process;
+  return processLike?.env ?? {};
+}
+
+function trimTrailingSlash(value: string): string {
+  return value.replace(/\/+$/, '');
+}
+
+function resolveBaseUrl(baseUrl?: string): string {
+  if (baseUrl && baseUrl.trim()) {
+    return trimTrailingSlash(baseUrl.trim());
+  }
+
+  const env = readEnv();
+  const resolved = env.EXPO_PUBLIC_API_BASE_URL ?? env.API_BASE_URL ?? 'http://localhost:4000';
+  return trimTrailingSlash(resolved);
+}
+
+async function readPayload(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function parseApiError(response: Response, payload: unknown): ApiClientError {
+  const parsed = apiErrorSchema.safeParse(payload);
+
+  if (parsed.success) {
+    return new ApiClientError({
+      code: parsed.data.error.code,
+      message: parsed.data.error.message,
+      details: parsed.data.error.details,
+      status: response.status,
+    });
+  }
+
+  return new ApiClientError({
+    code: 'API_REQUEST_FAILED',
+    message: `Request failed with status ${response.status}`,
+    details: payload,
+    status: response.status,
+  });
+}
+
+function buildPathWithQuery(path: string, query?: Record<string, unknown>): string {
+  if (!query) {
+    return path;
+  }
+
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        searchParams.append(key, String(entry));
+      }
+      continue;
+    }
+
+    searchParams.append(key, String(value));
+  }
+
+  const queryString = searchParams.toString();
+  if (!queryString) {
+    return path;
+  }
+
+  return `${path}?${queryString}`;
+}
+
+export function normalizeApiError(error: unknown): NormalizedApiError {
+  if (error instanceof ApiClientError) {
+    return {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      status: error.status,
+    };
+  }
+
+  if (error instanceof Error) {
+    return {
+      code: 'UNKNOWN_ERROR',
+      message: error.message,
+    };
+  }
+
+  return {
+    code: 'UNKNOWN_ERROR',
+    message: 'Unexpected error',
+  };
+}
+
+export class ApiClient {
+  private readonly baseUrl: string;
+  private readonly fetchImpl: FetchLike;
+
+  constructor(options: ApiClientOptions = {}) {
+    this.baseUrl = resolveBaseUrl(options.baseUrl);
+    this.fetchImpl = options.fetchImpl ?? ((input, init) => fetch(input, init));
+  }
+
+  async getHealth(): Promise<HealthResponse> {
+    return this.request('/health', healthResponseSchema);
+  }
+
+  async register(input: RegisterInput): Promise<AuthResponse> {
+    return this.request('/auth/register', authResponseSchema, {
+      method: 'POST',
+      body: input,
+    });
+  }
+
+  async login(input: LoginInput): Promise<AuthResponse> {
+    return this.request('/auth/login', authResponseSchema, {
+      method: 'POST',
+      body: input,
+    });
+  }
+
+  async refresh(input: RefreshInput): Promise<AuthResponse> {
+    return this.request('/auth/refresh', authResponseSchema, {
+      method: 'POST',
+      body: input,
+    });
+  }
+
+  async logout(input: LogoutInput): Promise<void> {
+    await this.request('/auth/logout', logoutResponseSchema, {
+      method: 'POST',
+      body: input,
+    });
+  }
+
+  async getMe(accessToken: string): Promise<MeResponse> {
+    return this.request('/me', meResponseSchema, {
+      method: 'GET',
+      accessToken,
+    });
+  }
+
+  async getAccounts(accessToken: string): Promise<AccountListResponse> {
+    return this.request('/accounts', accountListResponseSchema, {
+      method: 'GET',
+      accessToken,
+    });
+  }
+
+  async createAccount(input: AccountCreateInput, accessToken: string): Promise<Account> {
+    return this.request('/accounts', accountSchema, {
+      method: 'POST',
+      accessToken,
+      body: accountCreateInputSchema.parse(input),
+    });
+  }
+
+  async updateAccount(id: string, input: AccountUpdateInput, accessToken: string): Promise<Account> {
+    return this.request(`/accounts/${encodeURIComponent(id)}`, accountSchema, {
+      method: 'PATCH',
+      accessToken,
+      body: accountUpdateInputSchema.parse(input),
+    });
+  }
+
+  async deleteAccount(id: string, accessToken: string): Promise<void> {
+    await this.request(`/accounts/${encodeURIComponent(id)}`, logoutResponseSchema, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  async getCategories(accessToken: string): Promise<CategoryListResponse> {
+    return this.request('/categories', categoryListResponseSchema, {
+      method: 'GET',
+      accessToken,
+    });
+  }
+
+  async createCategory(input: CategoryCreateInput, accessToken: string): Promise<Category> {
+    return this.request('/categories', categorySchema, {
+      method: 'POST',
+      accessToken,
+      body: categoryCreateInputSchema.parse(input),
+    });
+  }
+
+  async listTransactions(
+    query: Partial<TransactionListQuery> = {},
+    accessToken: string,
+  ): Promise<TransactionListResponse> {
+    return this.request('/transactions', transactionListResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: transactionListQuerySchema.parse(query),
+    });
+  }
+
+  async createTransfer(input: TransferCreateInput, accessToken: string): Promise<TransferCreateResponse> {
+    return this.request('/transfers', transferCreateResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: transferCreateInputSchema.parse(input),
+    });
+  }
+
+  async createTransaction(input: TransactionCreateInput, accessToken: string): Promise<Transaction> {
+    return this.request('/transactions', transactionSchema, {
+      method: 'POST',
+      accessToken,
+      body: transactionCreateInputSchema.parse(input),
+    });
+  }
+
+  async getTransaction(id: string, accessToken: string): Promise<Transaction> {
+    return this.request(`/transactions/${encodeURIComponent(id)}`, transactionSchema, {
+      method: 'GET',
+      accessToken,
+    });
+  }
+
+  async updateTransaction(
+    id: string,
+    input: TransactionUpdateInput,
+    accessToken: string,
+  ): Promise<Transaction> {
+    return this.request(`/transactions/${encodeURIComponent(id)}`, transactionSchema, {
+      method: 'PATCH',
+      accessToken,
+      body: transactionUpdateInputSchema.parse(input),
+    });
+  }
+
+  async deleteTransaction(id: string, accessToken: string): Promise<void> {
+    await this.request(`/transactions/${encodeURIComponent(id)}`, logoutResponseSchema, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  async getDashboardRecent(accessToken: string): Promise<DashboardRecentResponse> {
+    return this.request('/dashboard/recent', dashboardRecentResponseSchema, {
+      method: 'GET',
+      accessToken,
+    });
+  }
+
+  async getAnalyticsSummary(
+    query: AnalyticsSummaryQuery,
+    accessToken: string,
+  ): Promise<AnalyticsSummaryResponse> {
+    return this.request('/analytics/summary', analyticsSummaryResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: analyticsSummaryQuerySchema.parse(query),
+    });
+  }
+
+  async getAnalyticsByCategory(
+    query: AnalyticsByCategoryQuery,
+    accessToken: string,
+  ): Promise<AnalyticsByCategoryResponse> {
+    return this.request('/analytics/by-category', analyticsByCategoryResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: analyticsByCategoryQuerySchema.parse(query),
+    });
+  }
+
+  async getAnalyticsTrend(query: AnalyticsTrendQuery, accessToken: string): Promise<AnalyticsTrendResponse> {
+    return this.request('/analytics/trend', analyticsTrendResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: analyticsTrendQuerySchema.parse(query),
+    });
+  }
+
+  async getAiAdvice(query: AiAdviceQuery, accessToken: string): Promise<AiAdviceResponse> {
+    return this.request('/ai/advice', aiAdviceResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: aiAdviceQuerySchema.parse(query),
+    });
+  }
+
+  async getWeeklyReport(
+    query: Partial<WeeklyReportQuery> = {},
+    accessToken: string,
+  ): Promise<WeeklyReportResponse> {
+    return this.request('/reports/weekly', weeklyReportResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: weeklyReportQuerySchema.parse(query),
+    });
+  }
+
+  async listBudgets(
+    query: Partial<BudgetListQuery> = {},
+    accessToken: string,
+  ): Promise<BudgetListResponse> {
+    return this.request('/budgets', budgetListResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: budgetListQuerySchema.parse(query),
+    });
+  }
+
+  async createBudget(input: BudgetCreateInput, accessToken: string): Promise<Budget> {
+    return this.request('/budgets', budgetSchema, {
+      method: 'POST',
+      accessToken,
+      body: budgetCreateInputSchema.parse(input),
+    });
+  }
+
+  async updateBudget(id: string, input: BudgetUpdateInput, accessToken: string): Promise<Budget> {
+    return this.request(`/budgets/${encodeURIComponent(id)}`, budgetSchema, {
+      method: 'PATCH',
+      accessToken,
+      body: budgetUpdateInputSchema.parse(input),
+    });
+  }
+
+  async deleteBudget(id: string, accessToken: string): Promise<void> {
+    await this.request(`/budgets/${encodeURIComponent(id)}`, logoutResponseSchema, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  async listRecurring(
+    query: Partial<RecurringListQuery> = {},
+    accessToken: string,
+  ): Promise<RecurringListResponse> {
+    return this.request('/recurring', recurringListResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: recurringListQuerySchema.parse(query),
+    });
+  }
+
+  async createRecurring(input: RecurringCreateInput, accessToken: string): Promise<RecurringRule> {
+    return this.request('/recurring', recurringRuleSchema, {
+      method: 'POST',
+      accessToken,
+      body: recurringCreateInputSchema.parse(input),
+    });
+  }
+
+  async updateRecurring(
+    id: string,
+    input: RecurringUpdateInput,
+    accessToken: string,
+  ): Promise<RecurringRule> {
+    return this.request(`/recurring/${encodeURIComponent(id)}`, recurringRuleSchema, {
+      method: 'PATCH',
+      accessToken,
+      body: recurringUpdateInputSchema.parse(input),
+    });
+  }
+
+  async deleteRecurring(id: string, accessToken: string): Promise<void> {
+    await this.request(`/recurring/${encodeURIComponent(id)}`, logoutResponseSchema, {
+      method: 'DELETE',
+      accessToken,
+    });
+  }
+
+  async runRecurringDue(cronSecret: string): Promise<RecurringRunDueResponse> {
+    return this.request(
+      '/recurring/run-due',
+      recurringRunDueResponseSchema,
+      {
+        method: 'POST',
+      },
+      {
+        'x-cron-secret': cronSecret,
+      },
+    );
+  }
+
+  async exportTransactionsCsv(
+    query: Partial<ExportTransactionsQuery> = {},
+    accessToken: string,
+  ): Promise<ExportTransactionsCsvResponse> {
+    return this.request('/export/transactions.csv', exportTransactionsCsvResponseSchema, {
+      method: 'GET',
+      accessToken,
+      query: exportTransactionsQuerySchema.parse(query),
+    });
+  }
+
+  private async request<T>(
+    path: string,
+    schema: z.ZodSchema<T>,
+    options: RequestOptions = {},
+    extraHeaders?: Record<string, string>,
+  ): Promise<T> {
+    const method = options.method ?? 'GET';
+    const resolvedPath = buildPathWithQuery(path, options.query);
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+
+    if (options.body !== undefined) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    if (options.accessToken) {
+      headers.Authorization = `Bearer ${options.accessToken}`;
+    }
+    if (extraHeaders) {
+      Object.assign(headers, extraHeaders);
+    }
+
+    const response = await this.fetchImpl(`${this.baseUrl}${resolvedPath}`, {
+      method,
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    });
+
+    const payload = await readPayload(response);
+
+    if (!response.ok) {
+      throw parseApiError(response, payload);
+    }
+
+    const parsedPayload = schema.safeParse(payload);
+    if (!parsedPayload.success) {
+      throw new ApiClientError({
+        code: 'INVALID_RESPONSE_PAYLOAD',
+        message: 'Received invalid response payload from API',
+        details: parsedPayload.error.flatten(),
+        status: response.status,
+      });
+    }
+
+    return parsedPayload.data;
+  }
+}
+
+export function createApiClient(options: ApiClientOptions = {}): ApiClient {
+  return new ApiClient(options);
+}
+```
+
+## FILE: packages/shared/src/index.ts
+```
+export {
+  ApiClient,
+  ApiClientError,
+  createApiClient,
+  normalizeApiError,
+  type NormalizedApiError,
+} from './client';
+export {
+  accountBalanceSchema,
+  accountCreateInputSchema,
+  accountListResponseSchema,
+  accountSchema,
+  accountTypeSchema,
+  accountUpdateInputSchema,
+  analyticsByCategoryItemSchema,
+  analyticsByCategoryQuerySchema,
+  analyticsByCategoryResponseSchema,
+  analyticsSummaryQuerySchema,
+  analyticsSummaryResponseSchema,
+  analyticsTopCategorySchema,
+  analyticsTrendPointSchema,
+  analyticsTrendQuerySchema,
+  analyticsTrendResponseSchema,
+  aiAdviceBudgetOverrunSchema,
+  aiAdviceItemSchema,
+  aiAdviceQuerySchema,
+  aiAdviceResponseSchema,
+  aiAdviceSeveritySchema,
+  apiErrorSchema,
+  authResponseSchema,
+  authUserSchema,
+  budgetCreateInputSchema,
+  budgetListItemSchema,
+  budgetListQuerySchema,
+  budgetListResponseSchema,
+  budgetSchema,
+  budgetUpdateInputSchema,
+  categoryCreateInputSchema,
+  categoryListResponseSchema,
+  categorySchema,
+  categoryTypeSchema,
+  dashboardRecentResponseSchema,
+  exportTransactionsCsvResponseSchema,
+  exportTransactionsQuerySchema,
+  healthResponseSchema,
+  loginInputSchema,
+  logoutInputSchema,
+  logoutResponseSchema,
+  meResponseSchema,
+  recurringCadenceSchema,
+  recurringCreateInputSchema,
+  recurringKindSchema,
+  recurringListQuerySchema,
+  recurringListResponseSchema,
+  recurringRuleSchema,
+  recurringRunDueResponseSchema,
+  recurringUpdateInputSchema,
+  refreshInputSchema,
+  registerInputSchema,
+  transferCreateInputSchema,
+  transferCreateResponseSchema,
+  transferDirectionSchema,
+  transactionCreateInputSchema,
+  transactionKindSchema,
+  transactionListQuerySchema,
+  transactionListResponseSchema,
+  transactionSchema,
+  transactionTypeSchema,
+  transactionUpdateInputSchema,
+  weeklyReportQuerySchema,
+  weeklyReportResponseSchema,
+} from './schemas';
+export type {
+  Account,
+  AccountBalance,
+  AccountCreateInput,
+  AccountListResponse,
+  AccountType,
+  AccountUpdateInput,
+  AnalyticsByCategoryItem,
+  AnalyticsByCategoryQuery,
+  AnalyticsByCategoryResponse,
+  AnalyticsSummaryQuery,
+  AnalyticsSummaryResponse,
+  AnalyticsTopCategory,
+  AnalyticsTrendPoint,
+  AnalyticsTrendQuery,
+  AnalyticsTrendResponse,
+  AiAdviceBudgetOverrun,
+  AiAdviceItem,
+  AiAdviceQuery,
+  AiAdviceResponse,
+  AiAdviceSeverity,
+  ApiErrorResponse,
+  AuthResponse,
+  AuthUser,
+  Budget,
+  BudgetCreateInput,
+  BudgetListItem,
+  BudgetListQuery,
+  BudgetListResponse,
+  BudgetUpdateInput,
+  Category,
+  CategoryCreateInput,
+  CategoryListResponse,
+  CategoryType,
+  DashboardRecentResponse,
+  ExportTransactionsCsvResponse,
+  ExportTransactionsQuery,
+  HealthResponse,
+  LoginInput,
+  LogoutInput,
+  LogoutResponse,
+  MeResponse,
+  RecurringCadence,
+  RecurringCreateInput,
+  RecurringKind,
+  RecurringListQuery,
+  RecurringListResponse,
+  RecurringRule,
+  RecurringRunDueResponse,
+  RecurringUpdateInput,
+  RefreshInput,
+  RegisterInput,
+  TransferCreateInput,
+  TransferCreateResponse,
+  TransferDirection,
+  Transaction,
+  TransactionCreateInput,
+  TransactionKind,
+  TransactionListQuery,
+  TransactionListResponse,
+  TransactionType,
+  TransactionUpdateInput,
+  WeeklyReportQuery,
+  WeeklyReportResponse,
+} from './schemas';
+```
+
+## FILE: apps/mobile/src/api/queryKeys.ts
+```
+import type { CategoryType } from '@finsight/shared';
+
+export const financeQueryKeys = {
+  dashboard: {
+    recent: () => ['dashboard', 'recent'] as const,
+  },
+  accounts: {
+    all: () => ['accounts'] as const,
+    list: () => ['accounts', 'list'] as const,
+  },
+  categories: {
+    all: () => ['categories'] as const,
+    list: () => ['categories', 'list'] as const,
+  },
+  transactions: {
+    all: () => ['transactions'] as const,
+    list: (filters: Record<string, unknown>) => ['transactions', 'list', filters] as const,
+  },
+  recurring: {
+    all: () => ['recurring'] as const,
+    list: (filters: Record<string, unknown>) => ['recurring', 'list', filters] as const,
+  },
+  analytics: {
+    all: () => ['analytics'] as const,
+    month: (month: string) => ['analytics', month] as const,
+    summary: (month: string) => ['analytics', month, 'summary'] as const,
+    byCategory: (month: string, type: CategoryType) =>
+      ['analytics', month, 'by-category', type] as const,
+    trend: (month: string, from: string, to: string) =>
+      ['analytics', month, 'trend', { from, to }] as const,
+  },
+  ai: {
+    all: () => ['ai'] as const,
+    advice: (month: string) => ['ai', 'advice', month] as const,
+  },
+  reports: {
+    all: () => ['reports'] as const,
+    weekly: (weekStart?: string) => ['reports', 'weekly', weekStart ?? 'current'] as const,
+  },
+  budgets: {
+    all: () => ['budgets'] as const,
+    month: (month: string) => ['budgets', month] as const,
+    list: (month: string) => ['budgets', month, 'list'] as const,
+  },
+};
+```
+
+## FILE: apps/mobile/src/navigation/stacks/AnalyticsStack.tsx
+```
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { createStackOptions } from '../createStackOptions';
+import { AiAdvisorScreen } from '../../screens/finance/AiAdvisorScreen';
+import { AnalyticsScreen } from '../../screens/finance/AnalyticsScreen';
+import { BudgetsScreen } from '../../screens/finance/BudgetsScreen';
+import { WeeklyReportScreen } from '../../screens/finance/WeeklyReportScreen';
+import { useTheme } from '../../theme';
+
+export type AnalyticsStackParamList = {
+  Analytics: undefined;
+  Budgets: undefined;
+  AiAdvisor: undefined;
+  WeeklyReport: undefined;
+};
+
+const Stack = createNativeStackNavigator<AnalyticsStackParamList>();
+
+export function AnalyticsStack() {
+  const { theme } = useTheme();
+
+  return (
+    <Stack.Navigator screenOptions={createStackOptions(theme)}>
+      <Stack.Screen name="Analytics" component={AnalyticsScreen} options={{ title: 'Analytics' }} />
+      <Stack.Screen name="AiAdvisor" component={AiAdvisorScreen} options={{ title: 'AI Advisor' }} />
+      <Stack.Screen name="WeeklyReport" component={WeeklyReportScreen} options={{ title: 'Weekly Report' }} />
+      <Stack.Screen name="Budgets" component={BudgetsScreen} options={{ title: 'Budgets' }} />
+    </Stack.Navigator>
+  );
+}
+```
+
+## FILE: apps/mobile/src/screens/finance/AnalyticsScreen.tsx
+```
+import { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import type { CategoryType } from '@finsight/shared';
+import { useNavigation } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
+
+import { useAuth } from '../../auth/AuthProvider';
+import { apiClient } from '../../api/client';
+import { financeQueryKeys } from '../../api/queryKeys';
+import { Card, ScreenContainer } from '../../components/ui';
+import { radius, spacing, typography, useTheme } from '../../theme';
+import { apiErrorText } from '../../utils/apiErrorText';
+import { formatMonthLabel, getCurrentMonthString, getTrendRange, shiftMonth } from '../../utils/month';
+
+// stitch asset: stitch/export/stitch_ana_ekran_dashboard/harcama_analizi_(koyu_mod)_2/screen.png
+// no touch/keyboard behavior changed by this PR.
+
+type InsightRange = 'weekly' | 'monthly' | 'yearly';
+
+const RANGE_TABS: Array<{ key: InsightRange; label: string }> = [
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'monthly', label: 'Monthly' },
+  { key: 'yearly', label: 'Yearly' },
+];
+
+const CATEGORY_ICON_BACKGROUNDS = ['#2F6BFF', '#4C7CFF', '#3D5FE3', '#6B4EFF'];
+
+function formatMoney(amount: number, currency: string): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+
+function buildDailyBars(values: number[]): number[] {
+  const fallback = [62, 44, 66, 53, 74, 29, 47];
+  if (!values.length) {
+    return fallback;
+  }
+
+  const nonZero = values.filter((value) => value > 0);
+  if (!nonZero.length) {
+    return fallback;
+  }
+
+  const max = Math.max(...nonZero);
+  return Array.from({ length: 7 }, (_, index) => {
+    const source = nonZero[index % nonZero.length] ?? 0;
+    return Math.max(18, Math.round((source / max) * 74));
+  });
+}
+
+function LoadingSkeleton({ dark }: { dark: boolean }) {
+  const block = dark ? '#171B2A' : '#E9EEF8';
+
+  return (
+    <View style={styles.skeletonWrap}>
+      <View style={[styles.skeletonHeader, { backgroundColor: block }]} />
+      <View style={[styles.skeletonTabs, { backgroundColor: block }]} />
+      <View style={[styles.skeletonMainCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonChartCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCategoryCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCategoryCard, { backgroundColor: block }]} />
+    </View>
+  );
+}
+
+export function AnalyticsScreen() {
+  const navigation = useNavigation<any>();
+  const { withAuth, user } = useAuth();
+  const { theme, mode } = useTheme();
+
+  const [month, setMonth] = useState(getCurrentMonthString());
+  const [range, setRange] = useState<InsightRange>('monthly');
+  const [categoryType, setCategoryType] = useState<CategoryType>('expense');
+
+  const trendSpan = range === 'yearly' ? 12 : range === 'monthly' ? 6 : 3;
+  const trendRange = useMemo(() => getTrendRange(month, trendSpan), [month, trendSpan]);
+
+  const summaryQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.summary(month),
+    queryFn: () => withAuth((token) => apiClient.getAnalyticsSummary({ month }, token)),
+  });
+
+  const byCategoryQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.byCategory(month, categoryType),
+    queryFn: () => withAuth((token) => apiClient.getAnalyticsByCategory({ month, type: categoryType }, token)),
+  });
+
+  const trendQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.trend(month, trendRange.from, trendRange.to),
+    queryFn: () =>
+      withAuth((token) =>
+        apiClient.getAnalyticsTrend(
+          {
+            from: trendRange.from,
+            to: trendRange.to,
+          },
+          token,
+        ),
+      ),
+  });
+
+  if (summaryQuery.isLoading && !summaryQuery.data) {
+    return (
+      <ScreenContainer scrollable={false} dark={mode === 'dark'} contentStyle={styles.containerContent}>
+        <LoadingSkeleton dark={mode === 'dark'} />
+      </ScreenContainer>
+    );
+  }
+
+  if (summaryQuery.isError && !summaryQuery.data) {
+    return (
+      <ScreenContainer dark={mode === 'dark'}>
+        <Card dark={mode === 'dark'}>
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>Analytics unavailable</Text>
+          <Text style={[styles.errorText, { color: theme.colors.expense }]}>
+            {apiErrorText(summaryQuery.error)}
+          </Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const summary = summaryQuery.data;
+  if (!summary) {
+    return (
+      <ScreenContainer dark={mode === 'dark'}>
+        <Card dark={mode === 'dark'}>
+          <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>No analytics data.</Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const currency = summary.currency ?? user?.baseCurrency ?? 'TRY';
+  const topCategories = byCategoryQuery.data?.categories ?? [];
+  const mainCategory = topCategories[0]?.name ?? 'No Category';
+
+  const expenseBars = trendQuery.data?.points.map((point) => point.expenseTotal) ?? [];
+  const dailyBars = buildDailyBars(expenseBars);
+
+  const expenseTrendPercent =
+    summary.expenseTotal <= 0
+      ? 0
+      : clampPercent((summary.netTotal / summary.expenseTotal) * 100);
+
+  const categoryTotal = Math.max(
+    1,
+    topCategories.reduce((accumulator, item) => accumulator + item.total, 0),
+  );
+
+  const dark = mode === 'dark';
+  const panelBg = dark ? '#0F1425' : '#FFFFFF';
+  const panelBorder = dark ? '#232843' : '#E3E9F5';
+  const sectionBg = dark ? '#10172A' : '#F7FAFF';
+
+  return (
+    <ScreenContainer scrollable={false} dark={dark} contentStyle={styles.containerContent}>
+      <View style={styles.contentWrap}>
+        <View style={styles.topBar}>
+          <Text style={[styles.topIcon, { color: theme.colors.text }]}>{'‹'}</Text>
+          <Text style={[styles.screenTitle, { color: theme.colors.text }]}>Spending Analysis</Text>
+          <Text style={[styles.topIcon, { color: theme.colors.primary }]}>↥</Text>
+        </View>
+
+        <View
+          style={[
+            styles.tabsWrap,
+            {
+              backgroundColor: dark ? '#101629' : '#EEF3FC',
+              borderColor: dark ? '#212A45' : '#DDE6F5',
+            },
+          ]}
+        >
+          {RANGE_TABS.map((tab) => {
+            const active = tab.key === range;
+            return (
+              <Pressable
+                key={tab.key}
+                accessibilityRole="button"
+                onPress={() => setRange(tab.key)}
+                style={styles.tabButton}
+              >
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: active ? theme.colors.primary : theme.colors.textMuted,
+                      fontWeight: active ? '700' : '600',
+                    },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+                {active ? (
+                  <View style={[styles.tabUnderline, { backgroundColor: theme.colors.primary }]} />
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.monthRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setMonth(shiftMonth(month, -1))}
+            style={styles.monthArrow}
+          >
+            <Text style={[styles.monthArrowText, { color: theme.colors.text }]}>{'<'}</Text>
+          </Pressable>
+
+          <Text style={[styles.monthLabel, { color: theme.colors.textMuted }]}>{formatMonthLabel(month)}</Text>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setMonth(shiftMonth(month, 1))}
+            style={styles.monthArrow}
+          >
+            <Text style={[styles.monthArrowText, { color: theme.colors.text }]}>{'>'}</Text>
+          </Pressable>
+        </View>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.totalCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <Text style={[styles.totalLabel, { color: theme.colors.textMuted }]}>Total Spending</Text>
+          <Text style={[styles.totalValue, { color: theme.colors.text }]}>
+            {formatMoney(summary.expenseTotal, currency)}
+          </Text>
+
+          <View style={[styles.percentPill, { backgroundColor: dark ? '#0D3A31' : '#DCFCEB' }]}>
+            <Text style={styles.percentPillText}>↘ {expenseTrendPercent.toFixed(0)}% from last month</Text>
+          </View>
+
+          <View style={styles.donutWrap}>
+            <View style={[styles.donutRingBase, { borderColor: dark ? '#2B5BD8' : '#4F7DFF' }]} />
+            <View style={[styles.donutRingArc, { borderTopColor: '#76B4FF', borderRightColor: '#76B4FF' }]} />
+            <View style={[styles.donutRingArc, { borderTopColor: '#2F6BFF', borderRightColor: '#2F6BFF', transform: [{ rotate: '135deg' }] }]} />
+
+            <View
+              style={[
+                styles.donutInner,
+                {
+                  backgroundColor: dark ? '#0C1221' : '#F7FAFF',
+                  borderColor: dark ? '#1E2842' : '#E5ECF8',
+                },
+              ]}
+            >
+              <Text style={[styles.donutLabel, { color: theme.colors.textMuted }]}>Main Category</Text>
+              <Text style={[styles.donutValue, { color: theme.colors.text }]}>{mainCategory}</Text>
+            </View>
+          </View>
+        </Card>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.trendCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Daily Trends</Text>
+            <Text style={[styles.sectionMeta, { color: theme.colors.textMuted }]}>Last 7 Days</Text>
+          </View>
+
+          <View style={[styles.barBoard, { backgroundColor: sectionBg, borderColor: panelBorder }]}> 
+            {dailyBars.map((height, index) => (
+              <View key={DAY_LABELS[index]} style={styles.barItem}>
+                <View
+                  style={[
+                    styles.bar,
+                    {
+                      height,
+                      backgroundColor: index % 2 === 0 ? '#5B2BFF' : '#3A5BFF',
+                    },
+                  ]}
+                />
+                <Text style={[styles.barLabel, { color: theme.colors.textMuted }]}>{DAY_LABELS[index]}</Text>
+              </View>
+            ))}
+          </View>
+
+          {trendQuery.isLoading ? (
+            <View style={styles.inlineLoadingWrap}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={[styles.inlineLoadingText, { color: theme.colors.textMuted }]}>Refreshing trend...</Text>
+            </View>
+          ) : null}
+        </Card>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.categoriesCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Top Categories</Text>
+            <View style={styles.typeToggleWrap}>
+              {(['expense', 'income'] as const).map((type) => {
+                const active = categoryType === type;
+                return (
+                  <Pressable
+                    key={type}
+                    accessibilityRole="button"
+                    onPress={() => setCategoryType(type)}
+                    style={[
+                      styles.typeChip,
+                      {
+                        backgroundColor: active
+                          ? theme.colors.primary
+                          : dark
+                            ? 'rgba(255,255,255,0.06)'
+                            : '#EEF2FA',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.typeChipText,
+                        { color: active ? '#FFFFFF' : theme.colors.textMuted },
+                      ]}
+                    >
+                      {type === 'expense' ? 'Expense' : 'Income'}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {byCategoryQuery.isLoading && !byCategoryQuery.data ? (
+            <View style={styles.inlineLoadingWrap}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={[styles.inlineLoadingText, { color: theme.colors.textMuted }]}>Loading categories...</Text>
+            </View>
+          ) : null}
+
+          {byCategoryQuery.isError && !byCategoryQuery.data ? (
+            <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(byCategoryQuery.error)}</Text>
+          ) : null}
+
+          {byCategoryQuery.data && topCategories.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No categories for this month.</Text>
+          ) : null}
+
+          {topCategories.slice(0, 4).map((item, index) => {
+            const percent = clampPercent((item.total / categoryTotal) * 100);
+
+            return (
+              <View
+                key={item.categoryId}
+                style={[
+                  styles.categoryRow,
+                  {
+                    backgroundColor: sectionBg,
+                    borderColor: panelBorder,
+                  },
+                ]}
+              >
+                <View style={styles.categoryLeft}>
+                  <View
+                    style={[
+                      styles.categoryIcon,
+                      { backgroundColor: CATEGORY_ICON_BACKGROUNDS[index % CATEGORY_ICON_BACKGROUNDS.length] },
+                    ]}
+                  >
+                    <Text style={styles.categoryIconText}>{item.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+
+                  <View>
+                    <Text style={[styles.categoryName, { color: theme.colors.text }]}>{item.name}</Text>
+                    <Text style={[styles.categoryMeta, { color: theme.colors.textMuted }]}>
+                      {item.count} transactions
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.categoryRight}>
+                  <Text
+                    style={[
+                      styles.categoryAmount,
+                      { color: categoryType === 'expense' ? theme.colors.expense : theme.colors.income },
+                    ]}
+                  >
+                    {formatMoney(item.total, currency)}
+                  </Text>
+                  <Text style={[styles.categoryMeta, { color: theme.colors.textMuted }]}> 
+                    {percent.toFixed(0)}% of total
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </Card>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.entryCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Premium Insights</Text>
+          <View style={styles.entryRow}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.navigate('AiAdvisor')}
+              style={({ pressed }) => [
+                styles.entryButton,
+                {
+                  backgroundColor: dark ? 'rgba(47,107,255,0.16)' : '#ECF2FF',
+                  borderColor: dark ? 'rgba(47,107,255,0.45)' : '#D4E1FF',
+                },
+                pressed && styles.entryPressed,
+              ]}
+            >
+              <Text style={[styles.entryTitle, { color: theme.colors.text }]}>AI Advisor</Text>
+              <Text style={[styles.entrySubtitle, { color: theme.colors.textMuted }]}>
+                Personalized actions from your spending behavior
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.navigate('WeeklyReport')}
+              style={({ pressed }) => [
+                styles.entryButton,
+                {
+                  backgroundColor: dark ? 'rgba(23,178,106,0.14)' : '#EAF9F0',
+                  borderColor: dark ? 'rgba(23,178,106,0.4)' : '#CBEFD9',
+                },
+                pressed && styles.entryPressed,
+              ]}
+            >
+              <Text style={[styles.entryTitle, { color: theme.colors.text }]}>Weekly Report</Text>
+              <Text style={[styles.entrySubtitle, { color: theme.colors.textMuted }]}>
+                Health score, risks and next-week forecast
+              </Text>
+            </Pressable>
+          </View>
+        </Card>
+      </View>
+    </ScreenContainer>
+  );
+}
+
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const styles = StyleSheet.create({
+  containerContent: {
+    flex: 1,
+    gap: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  contentWrap: {
+    gap: spacing.sm,
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  topBar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 38,
+  },
+  topIcon: {
+    ...typography.subheading,
+    fontSize: 22,
+    width: 32,
+  },
+  screenTitle: {
+    ...typography.heading,
+    fontSize: 24,
+    textAlign: 'center',
+  },
+  tabsWrap: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  tabButton: {
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.xxs,
+    minHeight: 42,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+    paddingTop: spacing.xs,
+  },
+  tabLabel: {
+    ...typography.caption,
+    fontSize: 13,
+  },
+  tabUnderline: {
+    borderRadius: radius.full,
+    height: 2,
+    width: '55%',
+  },
+  monthRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  monthArrow: {
+    alignItems: 'center',
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  monthArrowText: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  monthLabel: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.25,
+    minWidth: 140,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  totalCard: {
+    gap: spacing.xs,
+    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+  },
+  totalLabel: {
+    ...typography.caption,
+    alignSelf: 'center',
+    fontSize: 14,
+    letterSpacing: 0.5,
+  },
+  totalValue: {
+    ...typography.amount,
+    alignSelf: 'center',
+    fontSize: 48,
+    fontWeight: '800',
+    lineHeight: 54,
+  },
+  percentPill: {
+    alignSelf: 'center',
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+  },
+  percentPillText: {
+    ...typography.caption,
+    color: '#16B364',
+    fontWeight: '700',
+  },
+  donutWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xs,
+    minHeight: 176,
+  },
+  donutRingBase: {
+    borderRadius: radius.full,
+    borderWidth: 16,
+    height: 176,
+    width: 176,
+  },
+  donutRingArc: {
+    borderColor: 'transparent',
+    borderRadius: radius.full,
+    borderWidth: 16,
+    height: 176,
+    position: 'absolute',
+    transform: [{ rotate: '35deg' }],
+    width: 176,
+  },
+  donutInner: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    borderWidth: 1,
+    gap: 2,
+    height: 122,
+    justifyContent: 'center',
+    position: 'absolute',
+    width: 122,
+  },
+  donutLabel: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  donutValue: {
+    ...typography.subheading,
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  trendCard: {
+    gap: spacing.sm,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    ...typography.heading,
+    fontSize: 21,
+  },
+  sectionMeta: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  barBoard: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'space-between',
+    minHeight: 136,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  barItem: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  bar: {
+    borderRadius: radius.sm,
+    minHeight: 12,
+    width: '85%',
+  },
+  barLabel: {
+    ...typography.caption,
+    fontSize: 10,
+    marginTop: spacing.xs,
+  },
+  inlineLoadingWrap: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  inlineLoadingText: {
+    ...typography.caption,
+  },
+  categoriesCard: {
+    gap: spacing.sm,
+  },
+  entryCard: {
+    gap: spacing.sm,
+  },
+  entryRow: {
+    gap: spacing.sm,
+  },
+  entryButton: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    gap: spacing.xxs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  entryTitle: {
+    ...typography.subheading,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  entrySubtitle: {
+    ...typography.caption,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  entryPressed: {
+    opacity: 0.84,
+  },
+  typeToggleWrap: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  typeChip: {
+    borderRadius: radius.full,
+    minHeight: 28,
+    paddingHorizontal: spacing.sm,
+    justifyContent: 'center',
+  },
+  typeChipText: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  categoryRow: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  categoryLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  categoryIcon: {
+    alignItems: 'center',
+    borderRadius: radius.sm,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  categoryIconText: {
+    ...typography.caption,
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  categoryName: {
+    ...typography.subheading,
+    fontWeight: '700',
+  },
+  categoryMeta: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  categoryRight: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  categoryAmount: {
+    ...typography.subheading,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  skeletonWrap: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  skeletonHeader: {
+    borderRadius: radius.md,
+    height: 42,
+    width: '65%',
+  },
+  skeletonTabs: {
+    borderRadius: radius.md,
+    height: 44,
+    width: '100%',
+  },
+  skeletonMainCard: {
+    borderRadius: radius.lg,
+    height: 320,
+    width: '100%',
+  },
+  skeletonChartCard: {
+    borderRadius: radius.lg,
+    height: 200,
+    width: '100%',
+  },
+  skeletonCategoryCard: {
+    borderRadius: radius.md,
+    height: 72,
+    width: '100%',
+  },
+  errorTitle: {
+    ...typography.subheading,
+  },
+  errorText: {
+    ...typography.body,
+  },
+  emptyText: {
+    ...typography.body,
+  },
+});
+```
+
+## FILE: apps/mobile/src/screens/finance/AiAdvisorScreen.tsx
+```
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import type { AiAdviceSeverity } from '@finsight/shared';
+import { useQuery } from '@tanstack/react-query';
+
+import { apiClient } from '../../api/client';
+import { financeQueryKeys } from '../../api/queryKeys';
+import { useAuth } from '../../auth/AuthProvider';
+import { Card, ScreenContainer } from '../../components/ui';
+import { radius, spacing, typography, useTheme } from '../../theme';
+import { apiErrorText } from '../../utils/apiErrorText';
+import { formatMonthLabel, getCurrentMonthString, shiftMonth } from '../../utils/month';
+
+function formatMoney(amount: number, currency: string): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function withAlpha(hexColor: string, alpha: number): string {
+  const color = hexColor.trim();
+  const hex = color.startsWith('#') ? color.slice(1) : color;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return color;
+  }
+
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${Math.max(0, Math.min(alpha, 1))})`;
+}
+
+function severityPalette(severity: AiAdviceSeverity, dark: boolean, primary: string, warning: string, success: string) {
+  if (severity === 'warning') {
+    return {
+      border: withAlpha(warning, dark ? 0.6 : 0.35),
+      background: withAlpha(warning, dark ? 0.14 : 0.08),
+      text: warning,
+      label: 'Warning',
+    };
+  }
+
+  if (severity === 'success') {
+    return {
+      border: withAlpha(success, dark ? 0.6 : 0.35),
+      background: withAlpha(success, dark ? 0.14 : 0.08),
+      text: success,
+      label: 'Success',
+    };
+  }
+
+  return {
+    border: withAlpha(primary, dark ? 0.55 : 0.3),
+    background: withAlpha(primary, dark ? 0.16 : 0.09),
+    text: primary,
+    label: 'Info',
+  };
+}
+
+function LoadingState({ dark }: { dark: boolean }) {
+  const tone = dark ? '#1D2435' : '#E9EEF8';
+
+  return (
+    <View style={styles.loadingWrap}>
+      <View style={[styles.loadingBlockLarge, { backgroundColor: tone }]} />
+      <View style={[styles.loadingBlock, { backgroundColor: tone }]} />
+      <View style={[styles.loadingBlock, { backgroundColor: tone }]} />
+      <View style={[styles.loadingBlock, { backgroundColor: tone }]} />
+    </View>
+  );
+}
+
+export function AiAdvisorScreen() {
+  const { withAuth, user } = useAuth();
+  const { theme, mode } = useTheme();
+  const [month, setMonth] = useState(getCurrentMonthString());
+
+  const dark = mode === 'dark';
+
+  const adviceQuery = useQuery({
+    queryKey: financeQueryKeys.ai.advice(month),
+    queryFn: () => withAuth((token) => apiClient.getAiAdvice({ month }, token)),
+  });
+
+  if (adviceQuery.isLoading && !adviceQuery.data) {
+    return (
+      <ScreenContainer dark={dark}>
+        <LoadingState dark={dark} />
+      </ScreenContainer>
+    );
+  }
+
+  if (adviceQuery.isError && !adviceQuery.data) {
+    return (
+      <ScreenContainer dark={dark}>
+        <Card dark={dark} style={styles.errorCard}>
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>Advisor unavailable</Text>
+          <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(adviceQuery.error)}</Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const data = adviceQuery.data;
+  if (!data) {
+    return (
+      <ScreenContainer dark={dark}>
+        <Card dark={dark}>
+          <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>No advisor data available.</Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const currency = data.currency ?? user?.baseCurrency ?? 'TRY';
+
+  return (
+    <ScreenContainer dark={dark}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>AI Financial Advisor</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
+            Personalized rule-based insights from your monthly activity.
+          </Text>
+        </View>
+
+        <View style={styles.monthRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setMonth(shiftMonth(month, -1))}
+            style={({ pressed }) => [styles.arrowButton, pressed && styles.pressed]}
+          >
+            <Text style={[styles.arrowText, { color: theme.colors.text }]}>{'<'}</Text>
+          </Pressable>
+
+          <Text style={[styles.monthLabel, { color: theme.colors.textMuted }]}>{formatMonthLabel(month)}</Text>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setMonth(shiftMonth(month, 1))}
+            style={({ pressed }) => [styles.arrowButton, pressed && styles.pressed]}
+          >
+            <Text style={[styles.arrowText, { color: theme.colors.text }]}>{'>'}</Text>
+          </Pressable>
+        </View>
+
+        <Card dark={dark} style={styles.totalsCard}>
+          <Text style={[styles.totalsLabel, { color: theme.colors.textMuted }]}>Monthly Snapshot</Text>
+          <View style={styles.totalsGrid}>
+            <View style={styles.totalItem}>
+              <Text style={[styles.totalItemLabel, { color: theme.colors.textMuted }]}>Income</Text>
+              <Text style={[styles.totalItemValue, { color: theme.colors.income }]}>
+                {formatMoney(data.totalIncome, currency)}
+              </Text>
+            </View>
+            <View style={styles.totalItem}>
+              <Text style={[styles.totalItemLabel, { color: theme.colors.textMuted }]}>Expense</Text>
+              <Text style={[styles.totalItemValue, { color: theme.colors.expense }]}>
+                {formatMoney(data.totalExpense, currency)}
+              </Text>
+            </View>
+            <View style={styles.totalItem}>
+              <Text style={[styles.totalItemLabel, { color: theme.colors.textMuted }]}>Net</Text>
+              <Text
+                style={[
+                  styles.totalItemValue,
+                  { color: data.net >= 0 ? theme.colors.income : theme.colors.expense },
+                ]}
+              >
+                {formatMoney(data.net, currency)}
+              </Text>
+            </View>
+          </View>
+        </Card>
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Advice</Text>
+          {adviceQuery.isFetching ? <ActivityIndicator size="small" color={theme.colors.primary} /> : null}
+        </View>
+
+        {data.advice.length === 0 ? (
+          <Card dark={dark}>
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No advice yet for this month.</Text>
+          </Card>
+        ) : null}
+
+        {data.advice.map((item, index) => {
+          const palette = severityPalette(
+            item.severity,
+            dark,
+            theme.colors.primary,
+            theme.colors.expense,
+            theme.colors.income,
+          );
+
+          return (
+            <Card
+              key={`${item.title}-${index}`}
+              dark={dark}
+              style={[
+                styles.adviceCard,
+                {
+                  borderColor: palette.border,
+                  backgroundColor: palette.background,
+                },
+              ]}
+            >
+              <View style={styles.adviceTopRow}>
+                <Text style={[styles.adviceTitle, { color: theme.colors.text }]}>{item.title}</Text>
+                <View style={[styles.severityPill, { backgroundColor: palette.border }]}>
+                  <Text style={[styles.severityText, { color: palette.text }]}>{palette.label}</Text>
+                </View>
+              </View>
+              <Text style={[styles.adviceMessage, { color: theme.colors.textMuted }]}>{item.message}</Text>
+            </Card>
+          );
+        })}
+
+        <Card dark={dark} style={styles.actionsCard}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Next actions</Text>
+          {data.nextActions.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No action items right now.</Text>
+          ) : (
+            <View style={styles.actionsList}>
+              {data.nextActions.map((action, index) => (
+                <View key={`${action}-${index}`} style={styles.actionRow}>
+                  <View style={[styles.actionDot, { backgroundColor: theme.colors.primary }]} />
+                  <Text style={[styles.actionText, { color: theme.colors.textMuted }]}>{action}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </Card>
+      </View>
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.sm,
+  },
+  header: {
+    gap: spacing.xxs,
+  },
+  title: {
+    ...typography.heading,
+    fontSize: 26,
+  },
+  subtitle: {
+    ...typography.body,
+    fontSize: 14,
+  },
+  monthRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  arrowButton: {
+    alignItems: 'center',
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  arrowText: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  monthLabel: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    minWidth: 150,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  totalsCard: {
+    gap: spacing.sm,
+  },
+  totalsLabel: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  totalsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  totalItem: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  totalItemLabel: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  totalItemValue: {
+    ...typography.subheading,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  adviceCard: {
+    gap: spacing.xs,
+  },
+  adviceTopRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
+  adviceTitle: {
+    ...typography.body,
+    fontSize: 15,
+    fontWeight: '700',
+    flex: 1,
+  },
+  adviceMessage: {
+    ...typography.body,
+    fontSize: 14,
+  },
+  severityPill: {
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 4,
+  },
+  severityText: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  actionsCard: {
+    gap: spacing.sm,
+  },
+  actionsList: {
+    gap: spacing.xs,
+  },
+  actionRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  actionDot: {
+    borderRadius: radius.full,
+    height: 8,
+    width: 8,
+  },
+  actionText: {
+    ...typography.body,
+    flex: 1,
+    fontSize: 14,
+  },
+  loadingWrap: {
+    gap: spacing.sm,
+  },
+  loadingBlockLarge: {
+    borderRadius: radius.lg,
+    height: 140,
+    width: '100%',
+  },
+  loadingBlock: {
+    borderRadius: radius.md,
+    height: 86,
+    width: '100%',
+  },
+  errorCard: {
+    gap: spacing.xs,
+  },
+  errorTitle: {
+    ...typography.subheading,
+    fontWeight: '700',
+  },
+  errorText: {
+    ...typography.body,
+  },
+  emptyText: {
+    ...typography.body,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+});
+
+```
+
+## FILE: apps/mobile/src/screens/finance/WeeklyReportScreen.tsx
+```
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { useQuery } from '@tanstack/react-query';
+
+import { apiClient } from '../../api/client';
+import { financeQueryKeys } from '../../api/queryKeys';
+import { useAuth } from '../../auth/AuthProvider';
+import { Card, ScreenContainer } from '../../components/ui';
+import { radius, spacing, typography, useTheme } from '../../theme';
+import { apiErrorText } from '../../utils/apiErrorText';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function toDateOnlyUtc(value: Date): string {
+  const year = value.getUTCFullYear();
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(value.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateOnlyUtc(value: string): Date {
+  const [yearRaw, monthRaw, dayRaw] = value.split('-');
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+}
+
+function getCurrentWeekStartString(): string {
+  const now = new Date();
+  const weekday = now.getUTCDay();
+  const offset = weekday === 0 ? -6 : 1 - weekday;
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + offset));
+  return toDateOnlyUtc(monday);
+}
+
+function shiftWeek(weekStart: string, deltaWeeks: number): string {
+  const start = parseDateOnlyUtc(weekStart);
+  return toDateOnlyUtc(new Date(start.getTime() + deltaWeeks * 7 * DAY_MS));
+}
+
+function formatRange(start: string): string {
+  const startDate = parseDateOnlyUtc(start);
+  const endDate = new Date(startDate.getTime() + 6 * DAY_MS);
+
+  const startLabel = startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const endLabel = endDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  return `${startLabel} - ${endLabel}`;
+}
+
+function scoreTone(score: number): 'good' | 'medium' | 'risky' {
+  if (score >= 80) {
+    return 'good';
+  }
+  if (score >= 60) {
+    return 'medium';
+  }
+  return 'risky';
+}
+
+function LoadingState({ dark }: { dark: boolean }) {
+  const tone = dark ? '#1D2435' : '#E9EEF8';
+
+  return (
+    <View style={styles.loadingWrap}>
+      <View style={[styles.loadingScore, { backgroundColor: tone }]} />
+      <View style={[styles.loadingBlock, { backgroundColor: tone }]} />
+      <View style={[styles.loadingBlock, { backgroundColor: tone }]} />
+      <View style={[styles.loadingBlock, { backgroundColor: tone }]} />
+    </View>
+  );
+}
+
+export function WeeklyReportScreen() {
+  const { withAuth } = useAuth();
+  const { theme, mode } = useTheme();
+  const [weekStart, setWeekStart] = useState(getCurrentWeekStartString());
+
+  const dark = mode === 'dark';
+
+  const reportQuery = useQuery({
+    queryKey: financeQueryKeys.reports.weekly(weekStart),
+    queryFn: () => withAuth((token) => apiClient.getWeeklyReport({ weekStart }, token)),
+  });
+
+  if (reportQuery.isLoading && !reportQuery.data) {
+    return (
+      <ScreenContainer dark={dark}>
+        <LoadingState dark={dark} />
+      </ScreenContainer>
+    );
+  }
+
+  if (reportQuery.isError && !reportQuery.data) {
+    return (
+      <ScreenContainer dark={dark}>
+        <Card dark={dark} style={styles.errorCard}>
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>Weekly report unavailable</Text>
+          <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(reportQuery.error)}</Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const report = reportQuery.data;
+  if (!report) {
+    return (
+      <ScreenContainer dark={dark}>
+        <Card dark={dark}>
+          <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>No weekly report available.</Text>
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const tone = scoreTone(report.healthScore);
+  const scoreColor =
+    tone === 'good' ? theme.colors.income : tone === 'medium' ? theme.colors.primary : theme.colors.expense;
+
+  return (
+    <ScreenContainer dark={dark}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>Weekly Report</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
+            Financial health summary and next-week outlook.
+          </Text>
+        </View>
+
+        <View style={styles.weekRow}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setWeekStart(shiftWeek(weekStart, -1))}
+            style={({ pressed }) => [styles.arrowButton, pressed && styles.pressed]}
+          >
+            <Text style={[styles.arrowText, { color: theme.colors.text }]}>{'<'}</Text>
+          </Pressable>
+
+          <Text style={[styles.weekLabel, { color: theme.colors.textMuted }]}>{formatRange(weekStart)}</Text>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setWeekStart(shiftWeek(weekStart, 1))}
+            style={({ pressed }) => [styles.arrowButton, pressed && styles.pressed]}
+          >
+            <Text style={[styles.arrowText, { color: theme.colors.text }]}>{'>'}</Text>
+          </Pressable>
+        </View>
+
+        <Card dark={dark} style={styles.scoreCard}>
+          <View style={[styles.scoreCircle, { borderColor: scoreColor }]}>
+            <Text style={[styles.scoreValue, { color: scoreColor }]}>{report.healthScore}</Text>
+            <Text style={[styles.scoreCaption, { color: theme.colors.textMuted }]}>/100</Text>
+          </View>
+          <Text style={[styles.summaryText, { color: theme.colors.text }]}>{report.summaryText}</Text>
+          {reportQuery.isFetching ? <ActivityIndicator size="small" color={theme.colors.primary} /> : null}
+        </Card>
+
+        <Card dark={dark} style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Highlights</Text>
+          {report.highlights.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No highlights this week.</Text>
+          ) : (
+            <View style={styles.listWrap}>
+              {report.highlights.map((item, index) => (
+                <View key={`${item}-${index}`} style={styles.listRow}>
+                  <View style={[styles.listDot, { backgroundColor: theme.colors.income }]} />
+                  <Text style={[styles.listText, { color: theme.colors.textMuted }]}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </Card>
+
+        <Card dark={dark} style={styles.sectionCard}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Risk flags</Text>
+          {report.riskFlags.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>No risks detected.</Text>
+          ) : (
+            <View style={styles.listWrap}>
+              {report.riskFlags.map((item, index) => (
+                <View key={`${item}-${index}`} style={styles.listRow}>
+                  <View style={[styles.listDot, { backgroundColor: theme.colors.expense }]} />
+                  <Text style={[styles.listText, { color: theme.colors.textMuted }]}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </Card>
+
+        <Card dark={dark} style={styles.forecastCard}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Next week forecast</Text>
+          <Text style={[styles.forecastText, { color: theme.colors.textMuted }]}>{report.nextWeekForecastText}</Text>
+        </Card>
+      </View>
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.sm,
+  },
+  header: {
+    gap: spacing.xxs,
+  },
+  title: {
+    ...typography.heading,
+    fontSize: 26,
+  },
+  subtitle: {
+    ...typography.body,
+    fontSize: 14,
+  },
+  weekRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  arrowButton: {
+    alignItems: 'center',
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  arrowText: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  weekLabel: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    minWidth: 160,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  scoreCard: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  scoreCircle: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    borderWidth: 10,
+    height: 132,
+    justifyContent: 'center',
+    width: 132,
+  },
+  scoreValue: {
+    ...typography.heading,
+    fontSize: 38,
+    fontWeight: '800',
+    lineHeight: 42,
+  },
+  scoreCaption: {
+    ...typography.caption,
+    fontSize: 11,
+    letterSpacing: 0.4,
+  },
+  summaryText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  sectionCard: {
+    gap: spacing.xs,
+  },
+  sectionTitle: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  listWrap: {
+    gap: spacing.xs,
+  },
+  listRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  listDot: {
+    borderRadius: radius.full,
+    height: 8,
+    width: 8,
+  },
+  listText: {
+    ...typography.body,
+    flex: 1,
+    fontSize: 14,
+  },
+  forecastCard: {
+    gap: spacing.xs,
+  },
+  forecastText: {
+    ...typography.body,
+  },
+  loadingWrap: {
+    gap: spacing.sm,
+  },
+  loadingScore: {
+    borderRadius: radius.lg,
+    height: 220,
+    width: '100%',
+  },
+  loadingBlock: {
+    borderRadius: radius.md,
+    height: 92,
+    width: '100%',
+  },
+  errorCard: {
+    gap: spacing.xs,
+  },
+  errorTitle: {
+    ...typography.subheading,
+    fontWeight: '700',
+  },
+  errorText: {
+    ...typography.body,
+  },
+  emptyText: {
+    ...typography.body,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+});
+
+```
+

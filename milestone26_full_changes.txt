@@ -1,0 +1,3078 @@
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/AppIcon.tsx =====
+import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ComponentProps } from 'react';
+
+import { useTheme } from '@shared/theme';
+
+export type AppIconName = ComponentProps<typeof Ionicons>['name'];
+
+type AppIconTone = 'primary' | 'muted' | 'text' | 'income' | 'expense' | 'inverse';
+type AppIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
+
+interface AppIconProps {
+  name: AppIconName;
+  size?: AppIconSize;
+  tone?: AppIconTone;
+  color?: string;
+}
+
+const SIZE_MAP: Record<Exclude<AppIconSize, number>, number> = {
+  xs: 12,
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 28,
+};
+
+const FALLBACK_ICON: AppIconName = 'ellipse-outline';
+const GLYPH_MAP: Record<string, number> =
+  ((Ionicons as unknown as { glyphMap?: Record<string, number> }).glyphMap ?? {});
+
+export function AppIcon({ name, size = 'md', tone = 'muted', color }: AppIconProps) {
+  const { theme } = useTheme();
+
+  const resolvedSize = typeof size === 'number' ? size : SIZE_MAP[size];
+  const resolvedColor =
+    color ??
+    {
+      primary: theme.colors.primary,
+      muted: theme.colors.textMuted,
+      text: theme.colors.text,
+      income: theme.colors.income,
+      expense: theme.colors.expense,
+      inverse: theme.colors.buttonPrimaryText,
+    }[tone];
+
+  const resolvedName: AppIconName = Object.prototype.hasOwnProperty.call(GLYPH_MAP, name)
+    ? name
+    : FALLBACK_ICON;
+
+  return <Ionicons name={resolvedName} size={resolvedSize} color={resolvedColor} />;
+}
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/core/navigation/RootTabs.tsx =====
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StyleSheet } from 'react-native';
+
+import { AppIcon } from '@shared/ui';
+import { I18N_KEYS } from '@shared/i18n/keys';
+import { useI18n } from '@shared/i18n';
+import { useT } from '@shared/i18n/t';
+import { AddTransactionScreen } from '@features/finance/screens/AddTransactionScreen';
+import { radius, spacing, typography, useTheme } from '@shared/theme';
+
+import { AddTabButton } from './AddTabButton';
+import { AnalyticsStack } from './stacks/AnalyticsStack';
+import { GroupsStack } from './stacks/GroupsStack';
+import { HomeStack } from './stacks/HomeStack';
+import { ProfileStack } from './stacks/ProfileStack';
+import { TransactionsStack } from './stacks/TransactionsStack';
+import type { RootTabParamList } from './types';
+
+const Tab = createBottomTabNavigator<RootTabParamList>();
+type StandardTabName = Exclude<keyof RootTabParamList, 'AddTab'>;
+
+const TAB_ICON_MAP: Record<
+  StandardTabName,
+  {
+    active: Parameters<typeof AppIcon>[0]['name'];
+    inactive: Parameters<typeof AppIcon>[0]['name'];
+  }
+> = {
+  HomeTab: { active: 'home', inactive: 'home-outline' },
+  TransactionsTab: { active: 'list', inactive: 'list-outline' },
+  AnalyticsTab: { active: 'pie-chart', inactive: 'pie-chart-outline' },
+  GroupsTab: { active: 'people', inactive: 'people-outline' },
+  ProfileTab: { active: 'person', inactive: 'person-outline' },
+};
+
+export function RootTabs() {
+  const { theme } = useTheme();
+  const { locale } = useI18n();
+  const t = useT();
+
+  return (
+    <Tab.Navigator
+      key={`tabs-${locale}`}
+      screenOptions={{
+        headerShown: false,
+        tabBarHideOnKeyboard: true,
+        tabBarShowLabel: true,
+        tabBarStyle: {
+          height: 78,
+          paddingBottom: 8,
+          paddingTop: 8,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          borderTopLeftRadius: radius.lg,
+          borderTopRightRadius: radius.lg,
+          shadowColor: theme.shadows.card.shadowColor,
+          shadowOpacity: theme.shadows.card.shadowOpacity,
+          shadowRadius: theme.shadows.card.shadowRadius,
+          shadowOffset: theme.shadows.card.shadowOffset,
+          elevation: theme.shadows.card.elevation,
+        },
+        tabBarItemStyle: styles.tabItem,
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textMuted,
+      }}
+    >
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeStack}
+        options={{
+          title: t(I18N_KEYS.common.navigation.tabs.home.label),
+          tabBarLabel: t(I18N_KEYS.common.navigation.tabs.home.label),
+          tabBarAccessibilityLabel: t(I18N_KEYS.common.navigation.tabs.home.label),
+          tabBarIcon: ({ focused, color }) => (
+            <AppIcon
+              name={focused ? TAB_ICON_MAP.HomeTab.active : TAB_ICON_MAP.HomeTab.inactive}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="TransactionsTab"
+        component={TransactionsStack}
+        options={{
+          title: t(I18N_KEYS.common.navigation.tabs.transactions.label),
+          tabBarLabel: t(I18N_KEYS.common.navigation.tabs.transactions.shortLabel),
+          tabBarAccessibilityLabel: t(I18N_KEYS.common.navigation.tabs.transactions.label),
+          tabBarIcon: ({ focused, color }) => (
+            <AppIcon
+              name={focused ? TAB_ICON_MAP.TransactionsTab.active : TAB_ICON_MAP.TransactionsTab.inactive}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="AnalyticsTab"
+        component={AnalyticsStack}
+        options={{
+          title: t(I18N_KEYS.common.navigation.tabs.analytics.label),
+          tabBarLabel: t(I18N_KEYS.common.navigation.tabs.analytics.shortLabel),
+          tabBarAccessibilityLabel: t(I18N_KEYS.common.navigation.tabs.analytics.label),
+          tabBarIcon: ({ focused, color }) => (
+            <AppIcon
+              name={focused ? TAB_ICON_MAP.AnalyticsTab.active : TAB_ICON_MAP.AnalyticsTab.inactive}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="GroupsTab"
+        component={GroupsStack}
+        options={{
+          title: t(I18N_KEYS.common.navigation.tabs.groups.label),
+          tabBarLabel: t(I18N_KEYS.common.navigation.tabs.groups.shortLabel),
+          tabBarAccessibilityLabel: t(I18N_KEYS.common.navigation.tabs.groups.label),
+          tabBarIcon: ({ focused, color }) => (
+            <AppIcon
+              name={focused ? TAB_ICON_MAP.GroupsTab.active : TAB_ICON_MAP.GroupsTab.inactive}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="AddTab"
+        component={AddTransactionScreen}
+        options={{
+          title: t(I18N_KEYS.common.navigation.tabs.add.label),
+          tabBarButton: ({ onPress, accessibilityState }) => (
+            <AddTabButton onPress={onPress} focused={Boolean(accessibilityState?.selected)} />
+          ),
+          tabBarLabel: () => null,
+          tabBarIcon: () => null,
+          headerShown: false,
+        }}
+      />
+
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileStack}
+        options={{
+          title: t(I18N_KEYS.common.navigation.tabs.profile.label),
+          tabBarLabel: t(I18N_KEYS.common.navigation.tabs.profile.shortLabel),
+          tabBarAccessibilityLabel: t(I18N_KEYS.common.navigation.tabs.profile.label),
+          tabBarIcon: ({ focused, color }) => (
+            <AppIcon
+              name={focused ? TAB_ICON_MAP.ProfileTab.active : TAB_ICON_MAP.ProfileTab.inactive}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabItem: {
+    paddingTop: spacing.xxs,
+  },
+  tabLabel: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/core/navigation/AddTabButton.tsx =====
+import { Pressable, StyleSheet, Text, View, type GestureResponderEvent } from 'react-native';
+
+import { AppIcon } from '@shared/ui';
+import { I18N_KEYS } from '@shared/i18n/keys';
+import { useT } from '@shared/i18n/t';
+import { radius, spacing, typography, useTheme } from '@shared/theme';
+
+interface AddTabButtonProps {
+  onPress?: (event: GestureResponderEvent) => void;
+  focused?: boolean;
+}
+
+export function AddTabButton({ onPress, focused = false }: AddTabButtonProps) {
+  const { theme } = useTheme();
+  const t = useT();
+
+  return (
+    <View style={styles.container}>
+      <Pressable
+        accessibilityLabel={t(I18N_KEYS.common.navigation.tabs.add.label)}
+        accessibilityRole="button"
+        hitSlop={10}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.button,
+          {
+            backgroundColor: theme.colors.primary,
+            borderColor: theme.colors.surface,
+            shadowColor: theme.shadows.card.shadowColor,
+            shadowOpacity: focused ? theme.shadows.card.shadowOpacity + 0.08 : theme.shadows.card.shadowOpacity,
+            shadowRadius: focused ? theme.shadows.card.shadowRadius + 2 : theme.shadows.card.shadowRadius,
+            shadowOffset: theme.shadows.card.shadowOffset,
+            elevation: focused ? theme.shadows.card.elevation + 1 : theme.shadows.card.elevation,
+          },
+          pressed && styles.buttonPressed,
+        ]}
+      >
+        <AppIcon name="add" size={26} tone="inverse" />
+      </Pressable>
+      <Text
+        numberOfLines={1}
+        style={[styles.label, { color: focused ? theme.colors.primary : theme.colors.textMuted }]}
+      >
+        {t(I18N_KEYS.common.navigation.tabs.add.label)}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: -22,
+    alignItems: 'center',
+    gap: spacing.xxs,
+    minWidth: 72,
+  },
+  button: {
+    width: 62,
+    height: 62,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+  },
+  buttonPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  label: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/core/navigation/createStackOptions.ts =====
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+
+import { typography, type AppTheme } from '@shared/theme';
+
+export function createStackOptions(theme: AppTheme): NativeStackNavigationOptions {
+  return {
+    keyboardHandlingEnabled: false,
+    gestureEnabled: true,
+    headerBackButtonDisplayMode: 'minimal',
+    headerShadowVisible: true,
+    headerTintColor: theme.colors.text,
+    headerStyle: {
+      backgroundColor: theme.colors.surface,
+    },
+    headerTitleStyle: {
+      ...typography.subheading,
+      fontSize: 17,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    contentStyle: {
+      backgroundColor: theme.colors.background,
+    },
+  };
+}
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/Card.tsx =====
+import type { ReactNode } from 'react';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { darkTheme, radius, spacing, useTheme } from '@shared/theme';
+
+interface CardProps {
+  children: ReactNode;
+  dark?: boolean;
+  style?: StyleProp<ViewStyle>;
+}
+
+export function Card({ children, dark = false, style }: CardProps) {
+  const { theme } = useTheme();
+  const activeTheme = dark ? darkTheme : theme;
+
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: activeTheme.colors.cardBackground,
+          borderColor: activeTheme.colors.cardBorder,
+          shadowColor: activeTheme.shadows.card.shadowColor,
+          shadowOpacity: activeTheme.shadows.card.shadowOpacity,
+          shadowRadius: activeTheme.shadows.card.shadowRadius,
+          shadowOffset: activeTheme.shadows.card.shadowOffset,
+          elevation: activeTheme.shadows.card.elevation,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    borderWidth: 1,
+    borderRadius: radius.xl,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/Chip.tsx =====
+import { StyleSheet, Text, View } from 'react-native';
+
+import { darkTheme, radius, spacing, typography, useTheme, type AppTheme } from '@shared/theme';
+import type { AppIconName } from './AppIcon';
+import { AppIcon } from './AppIcon';
+
+type ChipTone = 'default' | 'primary' | 'income' | 'expense';
+
+interface ChipProps {
+  label: string;
+  tone?: ChipTone;
+  dark?: boolean;
+  selected?: boolean;
+  iconName?: AppIconName;
+}
+
+export function Chip({
+  label,
+  tone = 'default',
+  dark = false,
+  selected = false,
+  iconName,
+}: ChipProps) {
+  const { theme } = useTheme();
+  const activeTheme = dark ? darkTheme : theme;
+  const palette = getPalette(tone, activeTheme, selected);
+
+  return (
+    <View style={[styles.chip, { backgroundColor: palette.bg, borderColor: palette.border }]}>
+      {iconName ? <AppIcon name={iconName} size="xs" color={palette.text} /> : null}
+      <Text ellipsizeMode="tail" numberOfLines={1} style={[styles.label, { color: palette.text }]}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function getPalette(tone: ChipTone, theme: AppTheme, selected: boolean) {
+  if (selected && tone === 'default') {
+    return {
+      bg: theme.mode === 'dark' ? withAlpha(theme.colors.primary, 0.24) : theme.colors.primaryMuted,
+      text: theme.colors.primary,
+      border: theme.mode === 'dark' ? withAlpha(theme.colors.primary, 0.42) : withAlpha(theme.colors.primary, 0.22),
+    };
+  }
+
+  if (tone === 'primary') {
+    return {
+      bg: theme.mode === 'dark' ? withAlpha(theme.colors.primary, 0.24) : theme.colors.primaryMuted,
+      text: theme.colors.primary,
+      border: theme.mode === 'dark' ? withAlpha(theme.colors.primary, 0.42) : withAlpha(theme.colors.primary, 0.22),
+    };
+  }
+
+  if (tone === 'income') {
+    return {
+      bg: withAlpha(theme.colors.income, theme.mode === 'dark' ? 0.22 : 0.12),
+      text: theme.colors.income,
+      border: withAlpha(theme.colors.income, theme.mode === 'dark' ? 0.42 : 0.26),
+    };
+  }
+
+  if (tone === 'expense') {
+    return {
+      bg: withAlpha(theme.colors.expense, theme.mode === 'dark' ? 0.2 : 0.12),
+      text: theme.colors.expense,
+      border: withAlpha(theme.colors.expense, theme.mode === 'dark' ? 0.4 : 0.24),
+    };
+  }
+
+  return {
+    bg: theme.mode === 'dark' ? withAlpha(theme.colors.text, 0.08) : withAlpha(theme.colors.textMuted, 0.12),
+    text: theme.colors.textMuted,
+    border: theme.colors.border,
+  };
+}
+
+function withAlpha(hexColor: string, alpha: number): string {
+  const color = hexColor.trim();
+  const hex = color.startsWith('#') ? color.slice(1) : color;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return color;
+  }
+
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${Math.max(0, Math.min(alpha, 1))})`;
+}
+
+const styles = StyleSheet.create({
+  chip: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xxs,
+    maxWidth: '100%',
+    borderWidth: 1,
+    borderRadius: radius.full,
+    minHeight: 28,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    alignSelf: 'flex-start',
+  },
+  label: {
+    ...typography.caption,
+    fontWeight: '600',
+    maxWidth: 140,
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/PrimaryButton.tsx =====
+import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+
+import type { AppIconName } from './AppIcon';
+import { AppIcon } from './AppIcon';
+import { radius, spacing, typography, useTheme } from '@shared/theme';
+
+interface PrimaryButtonProps {
+  label: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  iconName?: AppIconName;
+  loading?: boolean;
+}
+
+export function PrimaryButton({
+  label,
+  onPress,
+  disabled = false,
+  iconName,
+  loading = false,
+}: PrimaryButtonProps) {
+  const { theme } = useTheme();
+  const isDisabled = disabled || loading;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={isDisabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          backgroundColor: theme.colors.buttonPrimaryBackground,
+          shadowColor: theme.shadows.card.shadowColor,
+          shadowOpacity: theme.shadows.card.shadowOpacity,
+          shadowRadius: theme.shadows.card.shadowRadius,
+          shadowOffset: theme.shadows.card.shadowOffset,
+          elevation: theme.shadows.card.elevation,
+        },
+        (pressed || isDisabled) && styles.pressed,
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator color={theme.colors.buttonPrimaryText} size="small" />
+      ) : iconName ? (
+        <AppIcon name={iconName} size="sm" tone="inverse" />
+      ) : null}
+      <Text numberOfLines={2} style={[styles.label, { color: theme.colors.buttonPrimaryText }]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    minHeight: 52,
+    borderRadius: radius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xs,
+  },
+  pressed: {
+    opacity: 0.8,
+  },
+  label: {
+    ...typography.subheading,
+    flexShrink: 1,
+    textAlign: 'center',
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/TextField.tsx =====
+import { forwardRef, useState, type ReactNode } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type KeyboardTypeOptions,
+  type ReturnKeyTypeOptions,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
+
+import { radius, spacing, typography, useTheme } from '@shared/theme';
+
+// no touch/keyboard behavior changed by this PR.
+interface TextFieldProps {
+  label: string;
+  value: string;
+  onChangeText: (value: string) => void;
+  placeholder: string;
+  error?: string | null;
+  secureTextEntry?: boolean;
+  keyboardType?: KeyboardTypeOptions;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  autoCorrect?: boolean;
+  autoComplete?: 'off' | 'name' | 'email' | 'password' | 'username' | 'tel';
+  textContentType?:
+    | 'none'
+    | 'name'
+    | 'givenName'
+    | 'familyName'
+    | 'emailAddress'
+    | 'password'
+    | 'newPassword'
+    | 'telephoneNumber'
+    | 'username';
+  returnKeyType?: ReturnKeyTypeOptions;
+  onSubmitEditing?: () => void;
+  blurOnSubmit?: boolean;
+  editable?: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
+  inputWrapStyle?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<TextStyle>;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  leftAdornment?: ReactNode;
+  rightAdornment?: ReactNode;
+  labelRight?: ReactNode;
+  multiline?: boolean;
+  numberOfLines?: number;
+}
+
+export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
+  {
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    error,
+    secureTextEntry,
+    keyboardType = 'default',
+    autoCapitalize = 'none',
+    autoCorrect = false,
+    autoComplete = 'off',
+    textContentType = 'none',
+    returnKeyType = 'done',
+    onSubmitEditing,
+    blurOnSubmit = true,
+    editable = true,
+    containerStyle,
+    inputWrapStyle,
+    inputStyle,
+    onFocus,
+    onBlur,
+    leftAdornment,
+    rightAdornment,
+    labelRight,
+    multiline = false,
+    numberOfLines,
+  },
+  ref,
+) {
+  const { theme } = useTheme();
+  const [isFocused, setIsFocused] = useState(false);
+
+  return (
+    <View style={[styles.wrapper, containerStyle]}>
+      <View style={styles.labelRow}>
+        <Text style={[styles.label, { color: theme.colors.label }]}>{label}</Text>
+        {labelRight ? <View>{labelRight}</View> : null}
+      </View>
+
+      <View
+        style={[
+          styles.inputWrap,
+          {
+            backgroundColor: theme.colors.inputBackground,
+            borderColor: theme.colors.inputBorder,
+            borderWidth: isFocused ? 1.5 : 1,
+          },
+          isFocused && { borderColor: theme.colors.inputBorderFocused },
+          error && { borderColor: theme.colors.inputBorderError },
+          !editable && styles.inputWrapDisabled,
+          multiline ? styles.inputWrapMultiline : null,
+          inputWrapStyle,
+        ]}
+      >
+        {leftAdornment ? (
+          <View pointerEvents="none" style={styles.leftAdornment}>
+            {leftAdornment}
+          </View>
+        ) : null}
+
+        <TextInput
+          ref={ref}
+          autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          autoCorrect={autoCorrect}
+          blurOnSubmit={blurOnSubmit}
+          editable={editable}
+          keyboardType={keyboardType}
+          onBlur={() => {
+            setIsFocused(false);
+            onBlur?.();
+          }}
+          onChangeText={onChangeText}
+          onFocus={() => {
+            setIsFocused(true);
+            onFocus?.();
+          }}
+          onSubmitEditing={onSubmitEditing}
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.inputPlaceholder}
+          returnKeyType={returnKeyType}
+          secureTextEntry={secureTextEntry}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          style={[
+            styles.input,
+            { color: theme.colors.inputText },
+            leftAdornment ? styles.inputWithLeftAdornment : null,
+            rightAdornment ? styles.inputWithRightAdornment : null,
+            multiline ? styles.inputMultiline : null,
+            inputStyle,
+          ]}
+          textContentType={textContentType}
+          value={value}
+        />
+
+        {rightAdornment ? <View style={styles.rightAdornment}>{rightAdornment}</View> : null}
+      </View>
+
+      {error ? <Text style={[styles.errorText, { color: theme.colors.inputBorderError }]}>{error}</Text> : null}
+    </View>
+  );
+});
+
+const styles = StyleSheet.create({
+  wrapper: {
+    gap: 6,
+  },
+  labelRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  label: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+  inputWrap: {
+    borderRadius: radius.md,
+    height: 54,
+    justifyContent: 'center',
+  },
+  inputWrapMultiline: {
+    height: 'auto',
+    minHeight: 54,
+    justifyContent: 'flex-start',
+  },
+  inputWrapDisabled: {
+    opacity: 0.7,
+  },
+  input: {
+    ...typography.body,
+    fontSize: 16,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 0,
+  },
+  inputMultiline: {
+    minHeight: 96,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
+    textAlignVertical: 'top',
+  },
+  inputWithLeftAdornment: {
+    paddingLeft: 44,
+  },
+  inputWithRightAdornment: {
+    paddingRight: 46,
+  },
+  leftAdornment: {
+    left: spacing.md,
+    position: 'absolute',
+    top: 16,
+  },
+  rightAdornment: {
+    alignItems: 'center',
+    height: 54,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: spacing.md,
+    top: 0,
+  },
+  errorText: {
+    ...typography.caption,
+    fontSize: 12,
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/ScreenContainer.tsx =====
+import type { ReactNode } from 'react';
+import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+
+import { darkTheme, spacing, useTheme } from '@shared/theme';
+
+interface ScreenContainerProps {
+  children: ReactNode;
+  dark?: boolean;
+  contentStyle?: StyleProp<ViewStyle>;
+  scrollable?: boolean;
+  safeAreaEdges?: Edge[];
+  keyboardDismissMode?: 'none' | 'interactive' | 'on-drag';
+  keyboardShouldPersistTaps?: 'always' | 'never' | 'handled';
+  showsVerticalScrollIndicator?: boolean;
+}
+
+export function ScreenContainer({
+  children,
+  dark = false,
+  contentStyle,
+  scrollable = true,
+  safeAreaEdges = ['top', 'left', 'right'],
+  keyboardDismissMode = 'on-drag',
+  keyboardShouldPersistTaps = 'handled',
+  showsVerticalScrollIndicator = false,
+}: ScreenContainerProps) {
+  const { theme } = useTheme();
+  const activeTheme = dark ? darkTheme : theme;
+
+  if (!scrollable) {
+    return (
+      <SafeAreaView
+        edges={safeAreaEdges}
+        style={[styles.safe, { backgroundColor: activeTheme.colors.background }]}
+      >
+        <View style={[styles.content, contentStyle]}>{children}</View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView
+      edges={safeAreaEdges}
+      style={[styles.safe, { backgroundColor: activeTheme.colors.background }]}
+    >
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={[styles.content, contentStyle]}
+        keyboardDismissMode={keyboardDismissMode}
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+        showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+      >
+        {children}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xxl,
+    paddingTop: spacing.sm,
+    gap: spacing.md,
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/shared/ui/TransactionRow.tsx =====
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { useI18n } from '@shared/i18n';
+import { darkTheme, radius, spacing, typography, useTheme, type AppTheme } from '@shared/theme';
+import type { AppIconName } from './AppIcon';
+import { AppIcon } from './AppIcon';
+
+import { Card } from './Card';
+
+interface TransactionRowProps {
+  title: string;
+  date: string;
+  amount: string;
+  type: 'income' | 'expense';
+  kind?: 'normal' | 'transfer';
+  dark?: boolean;
+  categoryIcon?: string;
+  categoryIconName?: AppIconName;
+  onPress?: () => void;
+}
+
+export function TransactionRow({
+  title,
+  date,
+  amount,
+  type,
+  kind = 'normal',
+  dark = false,
+  categoryIcon = '•',
+  categoryIconName,
+  onPress,
+}: TransactionRowProps) {
+  const { theme } = useTheme();
+  const { t } = useI18n();
+  const activeTheme = dark ? darkTheme : theme;
+  const palette = getPalette(type, kind, activeTheme);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [pressed && styles.pressed]}
+    >
+      <Card dark={dark} style={styles.card}>
+        <View style={[styles.iconCircle, { backgroundColor: palette.iconBg }]}>
+          {categoryIconName ? (
+            <AppIcon name={categoryIconName} size="sm" color={palette.iconText} />
+          ) : (
+            <Text style={[styles.iconText, { color: palette.iconText }]}>{categoryIcon}</Text>
+          )}
+        </View>
+
+        <View style={styles.meta}>
+          <View style={styles.titleRow}>
+            <Text numberOfLines={1} style={[styles.title, { color: activeTheme.colors.text }]}>
+              {title}
+            </Text>
+            {kind === 'transfer' ? (
+              <View
+                style={[
+                  styles.kindBadge,
+                  {
+                    backgroundColor:
+                      activeTheme.mode === 'dark'
+                        ? withAlpha(activeTheme.colors.primary, 0.24)
+                        : activeTheme.colors.primaryMuted,
+                  },
+                ]}
+              >
+                <AppIcon name="swap-horizontal-outline" size="xs" color={activeTheme.colors.primary} />
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={[styles.kindBadgeText, { color: activeTheme.colors.primary }]}
+                >
+                  {t('transactions.row.transferBadge')}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+          <Text numberOfLines={1} style={[styles.date, { color: activeTheme.colors.textMuted }]}>
+            {date}
+          </Text>
+        </View>
+
+        <Text adjustsFontSizeToFit numberOfLines={1} style={[styles.amount, { color: palette.amount }]}>
+          {amount}
+        </Text>
+      </Card>
+    </Pressable>
+  );
+}
+
+function getPalette(type: 'income' | 'expense', kind: 'normal' | 'transfer', theme: AppTheme) {
+  if (kind === 'transfer') {
+    return {
+      iconBg: theme.mode === 'dark' ? withAlpha(theme.colors.primary, 0.2) : theme.colors.primaryMuted,
+      iconText: theme.colors.primary,
+      amount: type === 'income' ? theme.colors.income : theme.colors.expense,
+    };
+  }
+
+  if (type === 'income') {
+    return {
+      iconBg: withAlpha(theme.colors.income, theme.mode === 'dark' ? 0.2 : 0.12),
+      iconText: theme.colors.income,
+      amount: theme.colors.income,
+    };
+  }
+
+  return {
+    iconBg: withAlpha(theme.colors.expense, theme.mode === 'dark' ? 0.18 : 0.12),
+    iconText: theme.colors.expense,
+    amount: theme.colors.expense,
+  };
+}
+
+function withAlpha(hexColor: string, alpha: number): string {
+  const color = hexColor.trim();
+  const hex = color.startsWith('#') ? color.slice(1) : color;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return color;
+  }
+
+  const red = Number.parseInt(hex.slice(0, 2), 16);
+  const green = Number.parseInt(hex.slice(2, 4), 16);
+  const blue = Number.parseInt(hex.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${Math.max(0, Math.min(alpha, 1))})`;
+}
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  pressed: {
+    opacity: 0.92,
+  },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconText: {
+    ...typography.subheading,
+    fontSize: 14,
+    lineHeight: 16,
+  },
+  meta: {
+    flex: 1,
+    gap: spacing.xxs,
+    minWidth: 0,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  title: {
+    ...typography.body,
+    fontWeight: '600',
+    flexShrink: 1,
+    fontSize: 15,
+  },
+  kindBadge: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xxs,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: radius.full,
+  },
+  kindBadgeText: {
+    ...typography.caption,
+    fontWeight: '700',
+    fontSize: 10,
+  },
+  date: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  amount: {
+    ...typography.subheading,
+    fontWeight: '700',
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/features/groups/screens/GroupsScreen.tsx =====
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
+
+import { apiClient } from '@core/api/client';
+import { financeQueryKeys } from '@core/api/queryKeys';
+import { useAuth } from '@app/providers/AuthProvider';
+import { AppIcon, Card, Chip, PrimaryButton, ScreenContainer } from '@shared/ui';
+import { useI18n } from '@shared/i18n';
+import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
+import { spacing, typography, useTheme } from '@shared/theme';
+import { apiErrorText } from '@shared/utils/apiErrorText';
+
+function GroupsLoadingSkeleton({ dark }: { dark: boolean }) {
+  const block = dark ? '#171C2B' : '#E8EDF7';
+
+  return (
+    <View style={styles.skeletonWrap}>
+      <View style={[styles.skeletonTitle, { backgroundColor: block }]} />
+      <View style={[styles.skeletonSubtitle, { backgroundColor: block }]} />
+      <View style={[styles.skeletonButton, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCard, { backgroundColor: block }]} />
+    </View>
+  );
+}
+
+export function GroupsScreen() {
+  const { withAuth } = useAuth();
+  const { theme, mode } = useTheme();
+  const { t } = useI18n();
+  const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackParamList>>();
+
+  const groupsQuery = useQuery({
+    queryKey: financeQueryKeys.groups.list(),
+    queryFn: () => withAuth((token) => apiClient.getGroups(token)),
+  });
+
+  const groups = groupsQuery.data?.groups ?? [];
+
+  if (groupsQuery.isLoading) {
+    return (
+      <ScreenContainer dark={mode === 'dark'} scrollable={false} contentStyle={styles.containerContent}>
+        <GroupsLoadingSkeleton dark={mode === 'dark'} />
+        <Text style={[styles.loadingText, { color: theme.colors.textMuted }]}>{t('groups.list.loading')}</Text>
+      </ScreenContainer>
+    );
+  }
+
+  if (groupsQuery.isError) {
+    return (
+      <ScreenContainer dark={mode === 'dark'}>
+        <Card dark={mode === 'dark'} style={styles.feedbackCard}>
+          <AppIcon name="alert-circle-outline" size="lg" tone="expense" />
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('groups.list.errorTitle')}</Text>
+          <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(groupsQuery.error)}</Text>
+          <PrimaryButton iconName="refresh" label={t('common.retry')} onPress={() => void groupsQuery.refetch()} />
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <ScreenContainer dark={mode === 'dark'} scrollable={false} contentStyle={styles.containerContent}>
+      <FlatList
+        contentContainerStyle={styles.content}
+        data={groups}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <View style={styles.titleRow}>
+              <AppIcon name="people-outline" size="md" tone="primary" />
+              <Text numberOfLines={1} style={[styles.title, { color: theme.colors.text }]}>
+                {t('groups.list.title')}
+              </Text>
+            </View>
+            <Text numberOfLines={2} style={[styles.subtitle, { color: theme.colors.textMuted }]}>
+              {t('groups.list.subtitle')}
+            </Text>
+            <PrimaryButton
+              iconName="add-circle-outline"
+              label={t('groups.list.createButton')}
+              onPress={() => navigation.navigate('CreateGroup')}
+            />
+          </View>
+        }
+        ListEmptyComponent={
+          <Card dark={mode === 'dark'} style={styles.feedbackCard}>
+            <AppIcon name="people-circle-outline" size="lg" tone="muted" />
+            <Text style={[styles.helperText, { color: theme.colors.textMuted }]}>{t('groups.list.empty')}</Text>
+            <PrimaryButton
+              iconName="add-circle-outline"
+              label={t('groups.list.createButton')}
+              onPress={() => navigation.navigate('CreateGroup')}
+            />
+          </Card>
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        renderItem={({ item }) => (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
+          >
+            <Card dark={mode === 'dark'} style={styles.groupCard}>
+              <View style={styles.groupTitleRow}>
+                <View style={styles.groupNameRow}>
+                  <AppIcon name="people" size="sm" tone="primary" />
+                  <Text numberOfLines={1} style={[styles.groupName, { color: theme.colors.text }]}>
+                    {item.name}
+                  </Text>
+                </View>
+                <AppIcon name="chevron-forward" size="sm" tone="muted" />
+              </View>
+              <View style={styles.memberRow}>
+                {item.members.slice(0, 4).map((member) => (
+                  <Chip key={member.id} iconName="person-outline" label={member.name} dark={mode === 'dark'} />
+                ))}
+              </View>
+              <Text numberOfLines={1} style={[styles.memberCount, { color: theme.colors.textMuted }]}>
+                {t('groups.list.memberCount', { count: item.members.length })}
+              </Text>
+            </Card>
+          </Pressable>
+        )}
+        showsVerticalScrollIndicator={false}
+      />
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  containerContent: {
+    flex: 1,
+    gap: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  content: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xl,
+    gap: spacing.sm,
+  },
+  header: {
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  titleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  title: {
+    ...typography.heading,
+    fontSize: 24,
+    flexShrink: 1,
+  },
+  subtitle: {
+    ...typography.body,
+    lineHeight: 20,
+  },
+  groupCard: {
+    gap: spacing.xs,
+  },
+  groupNameRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    minWidth: 0,
+    flex: 1,
+  },
+  groupTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  groupName: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+    minWidth: 0,
+  },
+  memberRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  memberCount: {
+    ...typography.caption,
+    fontSize: 12,
+  },
+  separator: {
+    height: spacing.sm,
+  },
+  feedbackCard: {
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  helperText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  loadingText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  errorTitle: {
+    ...typography.subheading,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  errorText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  skeletonWrap: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  skeletonTitle: {
+    borderRadius: 10,
+    height: 34,
+    width: '52%',
+  },
+  skeletonSubtitle: {
+    borderRadius: 10,
+    height: 20,
+    width: '78%',
+  },
+  skeletonButton: {
+    borderRadius: 12,
+    height: 48,
+    width: '100%',
+  },
+  skeletonCard: {
+    borderRadius: 14,
+    height: 112,
+    width: '100%',
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/features/finance/screens/TransactionsScreen.tsx =====
+import { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+
+import type { Transaction } from '@finsight/shared';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+
+import { apiClient } from '@core/api/client';
+import { financeQueryKeys } from '@core/api/queryKeys';
+import { useAuth } from '@app/providers/AuthProvider';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, TransactionRow } from '@shared/ui';
+import { useI18n } from '@shared/i18n';
+import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
+import { radius, spacing, typography, useTheme } from '@shared/theme';
+import { apiErrorText } from '@shared/utils/apiErrorText';
+
+// stitch asset: stitch/export/stitch_ana_ekran_dashboard/güncel_i̇şlem_geçmişi_(borç_kapama_dahil)/screen.png
+// no touch/keyboard behavior changed by this PR.
+
+type TypeFilter = 'all' | 'income' | 'expense';
+
+type ListItem =
+  | { id: string; kind: 'header'; title: string }
+  | { id: string; kind: 'transaction'; transaction: Transaction };
+
+function formatCurrency(amount: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function formatSignedAmount(
+  amount: number,
+  currency: string,
+  type: 'income' | 'expense',
+  locale: string,
+): string {
+  const value = formatCurrency(amount, currency, locale);
+  return `${type === 'income' ? '+' : '-'}${value}`;
+}
+
+function formatTime(dateIso: string, locale: string): string {
+  const date = new Date(dateIso);
+  if (Number.isNaN(date.getTime())) {
+    return '--:--';
+  }
+
+  return date.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function getDayKey(dateIso: string): string {
+  const date = new Date(dateIso);
+  if (Number.isNaN(date.getTime())) {
+    return 'unknown';
+  }
+
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getDayLabel(dayKey: string, t: (key: string) => string, locale: string): string {
+  if (dayKey === 'unknown') {
+    return t('transactions.group.other');
+  }
+
+  const [year, month, day] = dayKey.split('-').map(Number);
+  const target = new Date(year, (month ?? 1) - 1, day ?? 1);
+  if (Number.isNaN(target.getTime())) {
+    return t('transactions.group.other');
+  }
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round((today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return t('transactions.group.today');
+  }
+
+  if (diffDays === 1) {
+    return t('transactions.group.yesterday');
+  }
+
+  return target
+    .toLocaleDateString(locale, {
+      day: 'numeric',
+      month: 'long',
+    })
+    .toLocaleUpperCase(locale);
+}
+
+function buildListItems(transactions: Transaction[], t: (key: string) => string, locale: string): ListItem[] {
+  const groups = new Map<string, Transaction[]>();
+
+  for (const transaction of transactions) {
+    const dayKey = getDayKey(transaction.occurredAt);
+    const existing = groups.get(dayKey) ?? [];
+    existing.push(transaction);
+    groups.set(dayKey, existing);
+  }
+
+  const sortedDayKeys = [...groups.keys()].sort((a, b) => {
+    if (a === 'unknown') {
+      return 1;
+    }
+    if (b === 'unknown') {
+      return -1;
+    }
+    return a < b ? 1 : -1;
+  });
+
+  const items: ListItem[] = [];
+
+  for (const dayKey of sortedDayKeys) {
+    items.push({
+      id: `header-${dayKey}`,
+      kind: 'header',
+      title: getDayLabel(dayKey, t, locale),
+    });
+
+    const groupTransactions = groups.get(dayKey) ?? [];
+    for (const transaction of groupTransactions) {
+      items.push({
+        id: `tx-${transaction.id}`,
+        kind: 'transaction',
+        transaction,
+      });
+    }
+  }
+
+  return items;
+}
+
+function getTransactionTitle(transaction: Transaction, t: (key: string) => string): string {
+  if (transaction.description?.trim()) {
+    return transaction.description.trim();
+  }
+
+  if (transaction.kind === 'transfer') {
+    return t('transactions.row.transferTitle');
+  }
+
+  return transaction.type === 'income' ? t('transactions.row.incomeTitle') : t('transactions.row.expenseTitle');
+}
+
+function getCategoryHint(
+  transaction: Transaction,
+  t: (key: string, params?: Record<string, string | number>) => string,
+  locale: string,
+): string {
+  if (transaction.kind === 'transfer') {
+    return t('transactions.row.transferHint', { time: formatTime(transaction.occurredAt, locale) });
+  }
+
+  return t('transactions.row.typeHint', {
+    type: transaction.type === 'income' ? t('analytics.income') : t('analytics.expense'),
+    time: formatTime(transaction.occurredAt, locale),
+  });
+}
+
+function getCategoryIconName(transaction: Transaction): Parameters<typeof AppIcon>[0]['name'] {
+  if (transaction.kind === 'transfer') {
+    return 'swap-horizontal-outline';
+  }
+
+  if (transaction.type === 'income') {
+    return 'arrow-down-circle-outline';
+  }
+
+  const description = transaction.description?.toLowerCase() ?? '';
+  if (description.includes('market') || description.includes('migros') || description.includes('carrefour')) {
+    return 'cart-outline';
+  }
+  if (description.includes('coffee') || description.includes('food') || description.includes('yemek')) {
+    return 'restaurant-outline';
+  }
+  if (description.includes('fuel') || description.includes('akaryak')) {
+    return 'car-outline';
+  }
+  if (description.includes('rent') || description.includes('kira')) {
+    return 'home-outline';
+  }
+
+  return 'receipt-outline';
+}
+
+function LoadingSkeleton() {
+  return (
+    <View style={styles.skeletonWrap}>
+      <View style={styles.skeletonHeader} />
+      <View style={styles.skeletonSearch} />
+      <View style={styles.skeletonChips}>
+        <View style={styles.skeletonChip} />
+        <View style={styles.skeletonChip} />
+        <View style={styles.skeletonChip} />
+      </View>
+      <View style={styles.skeletonSummaryRow}>
+        <View style={styles.skeletonSummary} />
+        <View style={styles.skeletonSummary} />
+      </View>
+      <View style={styles.skeletonItem} />
+      <View style={styles.skeletonItem} />
+      <View style={styles.skeletonItem} />
+    </View>
+  );
+}
+
+export function TransactionsScreen() {
+  const { withAuth } = useAuth();
+  const { theme, mode } = useTheme();
+  const { t, locale } = useI18n();
+  const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackParamList>>();
+
+  const [draftSearch, setDraftSearch] = useState('');
+  const [activeSearch, setActiveSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+
+  const queryFilters = useMemo(
+    () => ({
+      search: activeSearch.trim() || undefined,
+      type: typeFilter === 'all' ? undefined : typeFilter,
+    }),
+    [activeSearch, typeFilter],
+  );
+  const hasActiveFilters = typeFilter !== 'all' || draftSearch.trim().length > 0 || activeSearch.trim().length > 0;
+
+  const openAddTransaction = useCallback(() => {
+    const parent = navigation.getParent?.();
+    if (parent && 'navigate' in parent) {
+      (parent as { navigate: (name: string) => void }).navigate('AddTab');
+    }
+  }, [navigation]);
+
+  const transactionsQuery = useInfiniteQuery({
+    queryKey: financeQueryKeys.transactions.list(queryFilters),
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      withAuth((token) =>
+        apiClient.listTransactions(
+          {
+            ...queryFilters,
+            page: pageParam,
+            limit: 20,
+          },
+          token,
+        ),
+      ),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination.page >= lastPage.pagination.totalPages) {
+        return undefined;
+      }
+
+      return lastPage.pagination.page + 1;
+    },
+  });
+
+  const transactions = useMemo(
+    () => transactionsQuery.data?.pages.flatMap((page) => page.transactions) ?? [],
+    [transactionsQuery.data?.pages],
+  );
+
+  const totals = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+
+    for (const transaction of transactions) {
+      if (transaction.kind === 'transfer') {
+        continue;
+      }
+
+      if (transaction.type === 'income') {
+        income += transaction.amount;
+      } else {
+        expense += transaction.amount;
+      }
+    }
+
+    return {
+      income,
+      expense,
+    };
+  }, [transactions]);
+
+  const listItems = useMemo(() => buildListItems(transactions, t, locale), [locale, t, transactions]);
+
+  const renderListItem = useCallback(
+    ({ item }: { item: ListItem }) => {
+      if (item.kind === 'header') {
+        return <Text style={[styles.groupHeader, { color: theme.colors.textMuted }]}>{item.title}</Text>;
+      }
+
+      const transaction = item.transaction;
+      return (
+        <TransactionRow
+          amount={formatSignedAmount(transaction.amount, transaction.currency, transaction.type, locale)}
+          categoryIconName={getCategoryIconName(transaction)}
+          date={getCategoryHint(transaction, t, locale)}
+          dark={mode === 'dark'}
+          kind={transaction.kind}
+          onPress={() => navigation.navigate('TransactionDetail', { transactionId: transaction.id })}
+          title={getTransactionTitle(transaction, t)}
+          type={transaction.type}
+        />
+      );
+    },
+    [locale, mode, navigation, t, theme.colors.textMuted],
+  );
+
+  if (transactionsQuery.isLoading) {
+    return (
+      <ScreenContainer scrollable={false} contentStyle={styles.containerContent}>
+        <View style={styles.loadingStateWrap}>
+          <LoadingSkeleton />
+          <Text style={[styles.loadingStateText, { color: theme.colors.textMuted }]}>
+            {t('common.loadingShort')}
+          </Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (transactionsQuery.isError) {
+    return (
+      <ScreenContainer>
+        <Card style={styles.errorCard}>
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('transactions.state.loadErrorTitle')}</Text>
+          <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(transactionsQuery.error)}</Text>
+          <PrimaryButton label={t('common.retry')} onPress={() => void transactionsQuery.refetch()} />
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  return (
+    <ScreenContainer scrollable={false} contentStyle={styles.containerContent}>
+      <FlatList
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={9}
+        contentContainerStyle={styles.listContent}
+        data={listItems}
+        ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={
+          <Card style={styles.emptyCard}>
+            <AppIcon name="file-tray-outline" size="lg" tone="muted" />
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>{t('transactions.state.empty')}</Text>
+            <PrimaryButton
+              iconName={hasActiveFilters ? 'funnel-outline' : 'add-circle-outline'}
+              label={hasActiveFilters ? t('transactions.filters.all') : t('common.navigation.tabs.add.label')}
+              onPress={() => {
+                if (hasActiveFilters) {
+                  setTypeFilter('all');
+                  setDraftSearch('');
+                  setActiveSearch('');
+                  return;
+                }
+
+                openAddTransaction();
+              }}
+            />
+          </Card>
+        }
+        ListFooterComponent={
+          transactionsQuery.hasNextPage ? (
+            <View style={styles.footerLoaderWrap}>
+              {transactionsQuery.isFetchingNextPage ? (
+                <>
+                  <ActivityIndicator color={theme.colors.primary} size="small" />
+                  <Text style={[styles.footerLoaderText, { color: theme.colors.textMuted }]}>
+                    {t('transactions.state.loadingMore')}
+                  </Text>
+                </>
+              ) : (
+                <PrimaryButton
+                  label={t('transactions.actions.loadMore')}
+                  onPress={() => {
+                    void transactionsQuery.fetchNextPage();
+                  }}
+                />
+              )}
+            </View>
+          ) : (
+            <View style={styles.footerSpacer} />
+          )
+        }
+        ListHeaderComponent={
+          <View style={styles.headerWrap}>
+            <View style={styles.topBar}>
+              <Pressable
+                accessibilityLabel={t('common.goBack')}
+                accessibilityRole="button"
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                style={[styles.iconButton, { backgroundColor: mode === 'dark' ? '#121A2E' : '#EDF2FB' }]}
+              >
+                <AppIcon name="chevron-back" size="md" tone="text" />
+              </Pressable>
+
+              <Text
+                adjustsFontSizeToFit
+                numberOfLines={1}
+                style={[styles.screenTitle, { color: theme.colors.text }]}
+              >
+                {t('transactions.title')}
+              </Text>
+
+              <Pressable
+                accessibilityLabel={t('common.navigation.stacks.transfer.header.title')}
+                accessibilityRole="button"
+                onPress={() => navigation.navigate('Transfer')}
+                style={[styles.iconButton, { backgroundColor: mode === 'dark' ? '#121A2E' : '#EDF2FB' }]}
+              >
+                <AppIcon name="swap-horizontal-outline" size="md" tone="text" />
+              </Pressable>
+            </View>
+
+            <View
+              style={[
+                styles.searchWrap,
+                {
+                  backgroundColor: mode === 'dark' ? '#111A2E' : '#EEF2FA',
+                },
+              ]}
+            >
+              <View pointerEvents="none" style={styles.searchIconWrap}>
+                <AppIcon name="search" size="sm" color={mode === 'dark' ? '#5C79C8' : '#6A84CB'} />
+              </View>
+              <TextInput
+                autoCapitalize="none"
+                onChangeText={setDraftSearch}
+                onSubmitEditing={() => setActiveSearch(draftSearch)}
+                placeholder={t('transactions.searchPlaceholder')}
+                placeholderTextColor={theme.colors.textMuted}
+                returnKeyType="search"
+                style={[styles.searchInput, { color: theme.colors.text }]}
+                value={draftSearch}
+              />
+            </View>
+
+            <View style={styles.filterChipRow}>
+              {(['all', 'income', 'expense'] as const).map((filter) => {
+                const isActive = typeFilter === filter;
+                const label =
+                  filter === 'all' ? t('transactions.filters.all') : filter === 'income' ? t('analytics.income') : t('analytics.expense');
+
+                return (
+                  <Pressable
+                    key={filter}
+                    accessibilityRole="button"
+                    onPress={() => setTypeFilter(filter)}
+                    style={[
+                      styles.filterChip,
+                      {
+                        backgroundColor: isActive
+                          ? theme.colors.primary
+                          : mode === 'dark'
+                            ? 'rgba(47,107,255,0.20)'
+                            : '#EAF0FF',
+                      },
+                    ]}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.filterChipText,
+                        {
+                          color: isActive
+                            ? '#FFFFFF'
+                            : theme.colors.primary,
+                        },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setActiveSearch(draftSearch)}
+                style={[
+                  styles.filterApplyButton,
+                  {
+                    borderColor: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#D8E0EE',
+                    backgroundColor: mode === 'dark' ? '#151D2E' : '#FFFFFF',
+                  },
+                ]}
+              >
+                <AppIcon name="search" size="xs" tone="muted" />
+                <Text numberOfLines={1} style={[styles.filterApplyText, { color: theme.colors.textMuted }]}>
+                  {t('transactions.actions.search')}
+                </Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.summaryRow}>
+              <View
+                style={[
+                  styles.summaryCard,
+                  {
+                    backgroundColor: mode === 'dark' ? '#171F33' : '#FFFFFF',
+                    borderColor: mode === 'dark' ? 'rgba(255,255,255,0.10)' : '#EAF0FA',
+                  },
+                ]}
+              >
+                <Text numberOfLines={1} style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('transactions.summary.totalIncome')}
+                </Text>
+                <Text adjustsFontSizeToFit numberOfLines={1} style={styles.summaryIncome}>
+                  {formatCurrency(totals.income, transactions[0]?.currency ?? 'TRY', locale)}
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  styles.summaryCard,
+                  {
+                    backgroundColor: mode === 'dark' ? '#171F33' : '#FFFFFF',
+                    borderColor: mode === 'dark' ? 'rgba(255,255,255,0.10)' : '#EAF0FA',
+                  },
+                ]}
+              >
+                <Text numberOfLines={1} style={[styles.summaryLabel, { color: theme.colors.textMuted }]}>
+                  {t('transactions.summary.totalExpense')}
+                </Text>
+                <Text adjustsFontSizeToFit numberOfLines={1} style={styles.summaryExpense}>
+                  {formatCurrency(totals.expense, transactions[0]?.currency ?? 'TRY', locale)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.quickActionsRow}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => navigation.navigate('ScanHome')}
+                style={[
+                  styles.quickActionButton,
+                  {
+                    backgroundColor: mode === 'dark' ? '#151E33' : '#EAF0FF',
+                    borderColor: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#D4E2FF',
+                  },
+                ]}
+              >
+                <AppIcon name="scan-outline" size="sm" tone="primary" />
+                <Text numberOfLines={2} style={[styles.quickActionTitle, { color: theme.colors.primary }]}>
+                  {t('transactions.quickActions.scanTitle')}
+                </Text>
+                <Text numberOfLines={2} style={[styles.quickActionSubtitle, { color: theme.colors.textMuted }]}>
+                  {t('transactions.quickActions.scanSubtitle')}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => navigation.navigate('Groups')}
+                style={[
+                  styles.quickActionButton,
+                  {
+                    backgroundColor: mode === 'dark' ? '#141C2B' : '#EAF9F0',
+                    borderColor: mode === 'dark' ? 'rgba(255,255,255,0.12)' : '#CDEBD8',
+                  },
+                ]}
+              >
+                <AppIcon name="people-outline" size="sm" tone="income" />
+                <Text numberOfLines={2} style={[styles.quickActionTitle, { color: theme.colors.income }]}>
+                  {t('transactions.quickActions.splitTitle')}
+                </Text>
+                <Text numberOfLines={2} style={[styles.quickActionSubtitle, { color: theme.colors.textMuted }]}>
+                  {t('transactions.quickActions.splitSubtitle')}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        }
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => {
+              void transactionsQuery.refetch();
+            }}
+            refreshing={transactionsQuery.isRefetching && !transactionsQuery.isFetchingNextPage}
+            tintColor={theme.colors.primary}
+          />
+        }
+        removeClippedSubviews
+        renderItem={renderListItem}
+        showsVerticalScrollIndicator={false}
+      />
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  containerContent: {
+    flex: 1,
+    gap: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  listContent: {
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  loadingStateWrap: {
+    gap: spacing.sm,
+  },
+  loadingStateText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  headerWrap: {
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  topBar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  iconButton: {
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderRadius: radius.full,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
+  },
+  screenTitle: {
+    ...typography.subheading,
+    fontSize: 21,
+    fontWeight: '700',
+  },
+  searchWrap: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    height: 46,
+    paddingHorizontal: spacing.xs,
+  },
+  searchIconWrap: {
+    alignItems: 'center',
+    height: 20,
+    justifyContent: 'center',
+    marginLeft: spacing.xs,
+    width: 20,
+  },
+  searchInput: {
+    ...typography.body,
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 0,
+  },
+  filterChipRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  filterChip: {
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  filterChipText: {
+    ...typography.caption,
+    fontWeight: '700',
+  },
+  filterApplyButton: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.xxs,
+    marginLeft: 0,
+    minHeight: 32,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  filterApplyText: {
+    ...typography.caption,
+    fontWeight: '700',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  quickActionsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  quickActionButton: {
+    alignItems: 'flex-start',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flex: 1,
+    gap: spacing.xxs,
+    minHeight: 76,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  quickActionTitle: {
+    ...typography.subheading,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  quickActionSubtitle: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  summaryCard: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  summaryLabel: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    marginBottom: spacing.xxs,
+  },
+  summaryIncome: {
+    ...typography.subheading,
+    color: '#17B26A',
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    flexShrink: 1,
+  },
+  summaryExpense: {
+    ...typography.subheading,
+    color: '#F04438',
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    flexShrink: 1,
+  },
+  groupHeader: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginTop: spacing.sm,
+    textTransform: 'uppercase',
+  },
+  itemSeparator: {
+    height: spacing.xs,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  footerLoaderWrap: {
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  footerLoaderText: {
+    ...typography.caption,
+    fontSize: 12,
+  },
+  footerSpacer: {
+    height: spacing.xl,
+  },
+  emptyText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  errorCard: {
+    gap: spacing.sm,
+  },
+  errorTitle: {
+    ...typography.subheading,
+  },
+  errorText: {
+    ...typography.body,
+  },
+  skeletonWrap: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  skeletonHeader: {
+    borderRadius: radius.md,
+    height: 30,
+    width: '45%',
+  },
+  skeletonSearch: {
+    borderRadius: radius.md,
+    height: 46,
+    width: '100%',
+  },
+  skeletonChips: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  skeletonChip: {
+    borderRadius: radius.full,
+    height: 34,
+    width: 90,
+  },
+  skeletonSummaryRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  skeletonSummary: {
+    borderRadius: radius.md,
+    flex: 1,
+    height: 84,
+  },
+  skeletonItem: {
+    borderRadius: radius.md,
+    height: 66,
+    width: '100%',
+  },
+});
+
+===== FILE: /Users/umutugur/finsight/apps/mobile/src/features/finance/screens/AnalyticsScreen.tsx =====
+import { useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+import type { CategoryType } from '@finsight/shared';
+import { useNavigation } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
+
+import { useAuth } from '@app/providers/AuthProvider';
+import { apiClient } from '@core/api/client';
+import { financeQueryKeys } from '@core/api/queryKeys';
+import { AppIcon, Card, PrimaryButton, ScreenContainer } from '@shared/ui';
+import { useI18n } from '@shared/i18n';
+import { radius, spacing, typography, useTheme } from '@shared/theme';
+import { apiErrorText } from '@shared/utils/apiErrorText';
+import { formatMonthLabel, getCurrentMonthString, getTrendRange, shiftMonth } from '@shared/utils/month';
+
+// stitch asset: stitch/export/stitch_ana_ekran_dashboard/harcama_analizi_(koyu_mod)_2/screen.png
+// no touch/keyboard behavior changed by this PR.
+
+type InsightRange = 'weekly' | 'monthly' | 'yearly';
+
+const RANGE_TABS: Array<{ key: InsightRange; labelKey: string }> = [
+  { key: 'weekly', labelKey: 'analytics.range.weekly' },
+  { key: 'monthly', labelKey: 'analytics.range.monthly' },
+  { key: 'yearly', labelKey: 'analytics.range.yearly' },
+];
+
+const CATEGORY_ICON_BACKGROUNDS = ['#2F6BFF', '#4C7CFF', '#3D5FE3', '#6B4EFF'];
+
+function formatMoney(amount: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+
+function buildDailyBars(values: number[]): number[] {
+  const fallback = [62, 44, 66, 53, 74, 29, 47];
+  if (!values.length) {
+    return fallback;
+  }
+
+  const nonZero = values.filter((value) => value > 0);
+  if (!nonZero.length) {
+    return fallback;
+  }
+
+  const max = Math.max(...nonZero);
+  return Array.from({ length: 7 }, (_, index) => {
+    const source = nonZero[index % nonZero.length] ?? 0;
+    return Math.max(18, Math.round((source / max) * 74));
+  });
+}
+
+function LoadingSkeleton({ dark }: { dark: boolean }) {
+  const block = dark ? '#171B2A' : '#E9EEF8';
+
+  return (
+    <View style={styles.skeletonWrap}>
+      <View style={[styles.skeletonHeader, { backgroundColor: block }]} />
+      <View style={[styles.skeletonTabs, { backgroundColor: block }]} />
+      <View style={[styles.skeletonMainCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonChartCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCategoryCard, { backgroundColor: block }]} />
+      <View style={[styles.skeletonCategoryCard, { backgroundColor: block }]} />
+    </View>
+  );
+}
+
+export function AnalyticsScreen() {
+  const navigation = useNavigation<any>();
+  const { withAuth, user } = useAuth();
+  const { theme, mode } = useTheme();
+  const { locale, t } = useI18n();
+
+  const [month, setMonth] = useState(getCurrentMonthString());
+  const [range, setRange] = useState<InsightRange>('monthly');
+  const [categoryType, setCategoryType] = useState<CategoryType>('expense');
+
+  const trendSpan = range === 'yearly' ? 12 : range === 'monthly' ? 6 : 3;
+  const trendRange = useMemo(() => getTrendRange(month, trendSpan), [month, trendSpan]);
+
+  const summaryQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.summary(month),
+    queryFn: () => withAuth((token) => apiClient.getAnalyticsSummary({ month }, token)),
+  });
+
+  const byCategoryQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.byCategory(month, categoryType),
+    queryFn: () => withAuth((token) => apiClient.getAnalyticsByCategory({ month, type: categoryType }, token)),
+  });
+
+  const trendQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.trend(month, trendRange.from, trendRange.to),
+    queryFn: () =>
+      withAuth((token) =>
+        apiClient.getAnalyticsTrend(
+          {
+            from: trendRange.from,
+            to: trendRange.to,
+          },
+          token,
+        ),
+      ),
+  });
+
+  if (summaryQuery.isLoading && !summaryQuery.data) {
+    return (
+      <ScreenContainer scrollable={false} dark={mode === 'dark'} contentStyle={styles.containerContent}>
+        <View style={styles.loadingStateWrap}>
+          <LoadingSkeleton dark={mode === 'dark'} />
+          <Text style={[styles.loadingStateText, { color: theme.colors.textMuted }]}>
+            {t('common.loadingShort')}
+          </Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (summaryQuery.isError && !summaryQuery.data) {
+    return (
+      <ScreenContainer dark={mode === 'dark'}>
+        <Card dark={mode === 'dark'} style={styles.stateCard}>
+          <AppIcon name="alert-circle-outline" size="lg" tone="expense" />
+          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('analytics.state.errorTitle')}</Text>
+          <Text style={[styles.errorText, { color: theme.colors.expense }]}>
+            {apiErrorText(summaryQuery.error)}
+          </Text>
+          <PrimaryButton iconName="refresh" label={t('common.retry')} onPress={() => void summaryQuery.refetch()} />
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const summary = summaryQuery.data;
+  if (!summary) {
+    return (
+      <ScreenContainer dark={mode === 'dark'}>
+        <Card dark={mode === 'dark'} style={styles.stateCard}>
+          <AppIcon name="analytics-outline" size="lg" tone="muted" />
+          <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('analytics.state.noData')}</Text>
+          <PrimaryButton iconName="refresh" label={t('common.retry')} onPress={() => void summaryQuery.refetch()} />
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  const currency = summary.currency ?? user?.baseCurrency ?? 'TRY';
+  const topCategories = byCategoryQuery.data?.categories ?? [];
+  const mainCategory = topCategories[0]?.name ?? t('analytics.noCategory');
+
+  const expenseBars = trendQuery.data?.points.map((point) => point.expenseTotal) ?? [];
+  const dailyBars = buildDailyBars(expenseBars);
+
+  const expenseTrendPercent =
+    summary.expenseTotal <= 0
+      ? 0
+      : clampPercent((summary.netTotal / summary.expenseTotal) * 100);
+
+  const categoryTotal = Math.max(
+    1,
+    topCategories.reduce((accumulator, item) => accumulator + item.total, 0),
+  );
+
+  const dark = mode === 'dark';
+  const panelBg = dark ? '#0F1425' : '#FFFFFF';
+  const panelBorder = dark ? '#232843' : '#E3E9F5';
+  const sectionBg = dark ? '#10172A' : '#F7FAFF';
+
+  return (
+    <ScreenContainer scrollable={false} dark={dark} contentStyle={styles.containerContent}>
+      <View style={styles.contentWrap}>
+        <View style={styles.topBar}>
+          <Pressable
+            accessibilityLabel={t('common.goBack')}
+            accessibilityRole="button"
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              }
+            }}
+            style={[styles.topIconButton, { backgroundColor: dark ? '#121A2E' : '#EEF3FC' }]}
+          >
+            <AppIcon name="chevron-back" size="md" tone="text" />
+          </Pressable>
+          <Text adjustsFontSizeToFit numberOfLines={1} style={[styles.screenTitle, { color: theme.colors.text }]}>
+            {t('analytics.title')}
+          </Text>
+          <Pressable
+            accessibilityLabel={t('common.view')}
+            accessibilityRole="button"
+            onPress={() => undefined}
+            style={[styles.topIconButton, { backgroundColor: dark ? '#121A2E' : '#EEF3FC' }]}
+          >
+            <AppIcon name="ellipsis-vertical" size="sm" tone="primary" />
+          </Pressable>
+        </View>
+
+        <View
+          style={[
+            styles.tabsWrap,
+            {
+              backgroundColor: dark ? '#101629' : '#EEF3FC',
+              borderColor: dark ? '#212A45' : '#DDE6F5',
+            },
+          ]}
+        >
+          {RANGE_TABS.map((tab) => {
+            const active = tab.key === range;
+            return (
+              <Pressable
+                key={tab.key}
+                accessibilityRole="button"
+                onPress={() => setRange(tab.key)}
+                style={styles.tabButton}
+              >
+                <Text
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                  style={[
+                    styles.tabLabel,
+                    {
+                      color: active ? theme.colors.primary : theme.colors.textMuted,
+                      fontWeight: active ? '700' : '600',
+                    },
+                  ]}
+                >
+                  {t(tab.labelKey)}
+                </Text>
+                {active ? (
+                  <View style={[styles.tabUnderline, { backgroundColor: theme.colors.primary }]} />
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.monthRow}>
+          <Pressable
+            accessibilityLabel={t('common.goBack')}
+            accessibilityRole="button"
+            onPress={() => setMonth(shiftMonth(month, -1))}
+            style={styles.monthArrow}
+          >
+            <AppIcon name="chevron-back" size="sm" tone="text" />
+          </Pressable>
+
+          <Text
+            adjustsFontSizeToFit
+            numberOfLines={1}
+            style={[styles.monthLabel, { color: theme.colors.textMuted }]}
+          >
+            {formatMonthLabel(month)}
+          </Text>
+
+          <Pressable
+            accessibilityLabel={t('common.continue')}
+            accessibilityRole="button"
+            onPress={() => setMonth(shiftMonth(month, 1))}
+            style={styles.monthArrow}
+          >
+            <AppIcon name="chevron-forward" size="sm" tone="text" />
+          </Pressable>
+        </View>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.totalCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <Text numberOfLines={1} style={[styles.totalLabel, { color: theme.colors.textMuted }]}>
+            {t('analytics.totalSpending')}
+          </Text>
+          <Text adjustsFontSizeToFit numberOfLines={1} style={[styles.totalValue, { color: theme.colors.text }]}>
+            {formatMoney(summary.expenseTotal, currency, locale)}
+          </Text>
+
+          <View style={[styles.percentPill, { backgroundColor: dark ? '#0D3A31' : '#DCFCEB' }]}>
+            <Text style={styles.percentPillText}>
+              {t('analytics.fromLastMonth', { percent: expenseTrendPercent.toFixed(0) })}
+            </Text>
+          </View>
+
+          <View style={styles.donutWrap}>
+            <View style={[styles.donutRingBase, { borderColor: dark ? '#2B5BD8' : '#4F7DFF' }]} />
+            <View style={[styles.donutRingArc, { borderTopColor: '#76B4FF', borderRightColor: '#76B4FF' }]} />
+            <View style={[styles.donutRingArc, { borderTopColor: '#2F6BFF', borderRightColor: '#2F6BFF', transform: [{ rotate: '135deg' }] }]} />
+
+            <View
+              style={[
+                styles.donutInner,
+                {
+                  backgroundColor: dark ? '#0C1221' : '#F7FAFF',
+                  borderColor: dark ? '#1E2842' : '#E5ECF8',
+                },
+              ]}
+            >
+              <Text style={[styles.donutLabel, { color: theme.colors.textMuted }]}>{t('analytics.mainCategory')}</Text>
+              <Text numberOfLines={2} style={[styles.donutValue, { color: theme.colors.text }]}>
+                {mainCategory}
+              </Text>
+            </View>
+          </View>
+        </Card>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.trendCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text numberOfLines={1} style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {t('analytics.dailyTrends')}
+            </Text>
+            <Text numberOfLines={1} style={[styles.sectionMeta, { color: theme.colors.textMuted }]}>
+              {t('analytics.last7Days')}
+            </Text>
+          </View>
+
+          <View style={[styles.barBoard, { backgroundColor: sectionBg, borderColor: panelBorder }]}> 
+            {dailyBars.map((height, index) => (
+              <View key={DAY_LABELS[index]} style={styles.barItem}>
+                <View
+                  style={[
+                    styles.bar,
+                    {
+                      height,
+                      backgroundColor: index % 2 === 0 ? '#5B2BFF' : '#3A5BFF',
+                    },
+                  ]}
+                />
+                <Text style={[styles.barLabel, { color: theme.colors.textMuted }]}>{t(DAY_LABELS[index])}</Text>
+              </View>
+            ))}
+          </View>
+
+          {trendQuery.isLoading ? (
+            <View style={styles.inlineLoadingWrap}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={[styles.inlineLoadingText, { color: theme.colors.textMuted }]}>{t('analytics.refreshingTrend')}</Text>
+            </View>
+          ) : null}
+        </Card>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.categoriesCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <View style={styles.sectionHeader}>
+            <Text numberOfLines={1} style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {t('analytics.topCategories')}
+            </Text>
+            <View style={styles.typeToggleWrap}>
+              {(['expense', 'income'] as const).map((type) => {
+                const active = categoryType === type;
+                return (
+                  <Pressable
+                    key={type}
+                    accessibilityRole="button"
+                    onPress={() => setCategoryType(type)}
+                    style={[
+                      styles.typeChip,
+                      {
+                        backgroundColor: active
+                          ? theme.colors.primary
+                          : dark
+                            ? 'rgba(255,255,255,0.06)'
+                            : '#EEF2FA',
+                      },
+                    ]}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.typeChipText,
+                        { color: active ? '#FFFFFF' : theme.colors.textMuted },
+                      ]}
+                    >
+                      {type === 'expense' ? t('analytics.expense') : t('analytics.income')}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {byCategoryQuery.isLoading && !byCategoryQuery.data ? (
+            <View style={styles.inlineLoadingWrap}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={[styles.inlineLoadingText, { color: theme.colors.textMuted }]}>{t('analytics.loadingCategories')}</Text>
+            </View>
+          ) : null}
+
+          {byCategoryQuery.isError && !byCategoryQuery.data ? (
+            <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(byCategoryQuery.error)}</Text>
+          ) : null}
+
+          {byCategoryQuery.data && topCategories.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>{t('analytics.noCategories')}</Text>
+          ) : null}
+
+          {topCategories.slice(0, 4).map((item, index) => {
+            const percent = clampPercent((item.total / categoryTotal) * 100);
+
+            return (
+              <View
+                key={item.categoryId}
+                style={[
+                  styles.categoryRow,
+                  {
+                    backgroundColor: sectionBg,
+                    borderColor: panelBorder,
+                  },
+                ]}
+              >
+                <View style={styles.categoryLeft}>
+                  <View
+                    style={[
+                      styles.categoryIcon,
+                      { backgroundColor: CATEGORY_ICON_BACKGROUNDS[index % CATEGORY_ICON_BACKGROUNDS.length] },
+                    ]}
+                  >
+                    <Text style={styles.categoryIconText}>{item.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+
+                  <View style={styles.categoryTextWrap}>
+                    <Text numberOfLines={1} style={[styles.categoryName, { color: theme.colors.text }]}>
+                      {item.name}
+                    </Text>
+                    <Text numberOfLines={1} style={[styles.categoryMeta, { color: theme.colors.textMuted }]}>
+                      {t('analytics.transactionsCount', { count: item.count })}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.categoryRight}>
+                  <Text
+                    adjustsFontSizeToFit
+                    numberOfLines={1}
+                    style={[
+                      styles.categoryAmount,
+                      { color: categoryType === 'expense' ? theme.colors.expense : theme.colors.income },
+                    ]}
+                  >
+                    {formatMoney(item.total, currency, locale)}
+                  </Text>
+                  <Text numberOfLines={1} style={[styles.categoryMeta, { color: theme.colors.textMuted }]}>
+                    {t('analytics.percentOfTotal', { percent: percent.toFixed(0) })}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </Card>
+
+        <Card
+          dark={dark}
+          style={[
+            styles.entryCard,
+            {
+              backgroundColor: panelBg,
+              borderColor: panelBorder,
+            },
+          ]}
+        >
+          <Text numberOfLines={1} style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            {t('analytics.premiumInsights')}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => navigation.navigate('AiAdvisor')}
+            style={({ pressed }) => [styles.insightsCta, pressed && styles.entryPressed]}
+          >
+            <Text style={[styles.insightsCtaText, { color: theme.colors.primary }]}>
+              {t('analytics.aiAdvisorCta')}
+            </Text>
+          </Pressable>
+          <View style={styles.entryRow}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.navigate('AiAdvisor')}
+              style={({ pressed }) => [
+                styles.entryButton,
+                {
+                  backgroundColor: dark ? 'rgba(47,107,255,0.16)' : '#ECF2FF',
+                  borderColor: dark ? 'rgba(47,107,255,0.45)' : '#D4E1FF',
+                },
+                pressed && styles.entryPressed,
+              ]}
+            >
+              <Text numberOfLines={1} style={[styles.entryTitle, { color: theme.colors.text }]}>
+                {t('analytics.aiAdvisor')}
+              </Text>
+              <Text numberOfLines={2} style={[styles.entrySubtitle, { color: theme.colors.textMuted }]}>
+                {t('analytics.aiAdvisorSubtitle')}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.navigate('WeeklyReport')}
+              style={({ pressed }) => [
+                styles.entryButton,
+                {
+                  backgroundColor: dark ? 'rgba(23,178,106,0.14)' : '#EAF9F0',
+                  borderColor: dark ? 'rgba(23,178,106,0.4)' : '#CBEFD9',
+                },
+                pressed && styles.entryPressed,
+              ]}
+            >
+              <Text numberOfLines={1} style={[styles.entryTitle, { color: theme.colors.text }]}>
+                {t('analytics.weeklyReport')}
+              </Text>
+              <Text numberOfLines={2} style={[styles.entrySubtitle, { color: theme.colors.textMuted }]}>
+                {t('analytics.weeklyReportSubtitle')}
+              </Text>
+            </Pressable>
+          </View>
+        </Card>
+      </View>
+    </ScreenContainer>
+  );
+}
+
+const DAY_LABELS = [
+  'analytics.days.mon',
+  'analytics.days.tue',
+  'analytics.days.wed',
+  'analytics.days.thu',
+  'analytics.days.fri',
+  'analytics.days.sat',
+  'analytics.days.sun',
+];
+
+const styles = StyleSheet.create({
+  containerContent: {
+    flex: 1,
+    gap: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  contentWrap: {
+    gap: spacing.sm,
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  loadingStateWrap: {
+    gap: spacing.sm,
+  },
+  loadingStateText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  topBar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'space-between',
+    minHeight: 38,
+  },
+  topIconButton: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  screenTitle: {
+    ...typography.heading,
+    fontSize: 24,
+    flex: 1,
+    textAlign: 'center',
+  },
+  tabsWrap: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  tabButton: {
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.xxs,
+    minHeight: 42,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+    paddingTop: spacing.xs,
+  },
+  tabLabel: {
+    ...typography.caption,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  tabUnderline: {
+    borderRadius: radius.full,
+    height: 2,
+    width: '55%',
+  },
+  monthRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  monthArrow: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  monthLabel: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.25,
+    flexShrink: 1,
+    maxWidth: 220,
+    minWidth: 140,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  totalCard: {
+    gap: spacing.xs,
+    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+  },
+  totalLabel: {
+    ...typography.caption,
+    alignSelf: 'center',
+    fontSize: 14,
+    letterSpacing: 0.5,
+  },
+  totalValue: {
+    ...typography.amount,
+    alignSelf: 'center',
+    fontSize: 48,
+    fontWeight: '800',
+    lineHeight: 54,
+  },
+  percentPill: {
+    alignSelf: 'center',
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+  },
+  percentPillText: {
+    ...typography.caption,
+    color: '#16B364',
+    fontWeight: '700',
+  },
+  donutWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xs,
+    minHeight: 176,
+  },
+  donutRingBase: {
+    borderRadius: radius.full,
+    borderWidth: 16,
+    height: 176,
+    width: 176,
+  },
+  donutRingArc: {
+    borderColor: 'transparent',
+    borderRadius: radius.full,
+    borderWidth: 16,
+    height: 176,
+    position: 'absolute',
+    transform: [{ rotate: '35deg' }],
+    width: 176,
+  },
+  donutInner: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    borderWidth: 1,
+    gap: 2,
+    height: 122,
+    justifyContent: 'center',
+    position: 'absolute',
+    width: 122,
+  },
+  donutLabel: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  donutValue: {
+    ...typography.subheading,
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  trendCard: {
+    gap: spacing.sm,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    ...typography.heading,
+    flex: 1,
+    fontSize: 21,
+  },
+  sectionMeta: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  barBoard: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'space-between',
+    minHeight: 136,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  barItem: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  bar: {
+    borderRadius: radius.sm,
+    minHeight: 12,
+    width: '85%',
+  },
+  barLabel: {
+    ...typography.caption,
+    fontSize: 10,
+    marginTop: spacing.xs,
+  },
+  inlineLoadingWrap: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  inlineLoadingText: {
+    ...typography.caption,
+  },
+  categoriesCard: {
+    gap: spacing.sm,
+  },
+  entryCard: {
+    gap: spacing.sm,
+  },
+  insightsCta: {
+    alignSelf: 'flex-start',
+    borderRadius: radius.full,
+    paddingVertical: spacing.xxs,
+  },
+  insightsCtaText: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  entryRow: {
+    gap: spacing.sm,
+  },
+  entryButton: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    gap: spacing.xxs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  entryTitle: {
+    ...typography.subheading,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  entrySubtitle: {
+    ...typography.caption,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  entryPressed: {
+    opacity: 0.84,
+  },
+  typeToggleWrap: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  typeChip: {
+    borderRadius: radius.full,
+    minHeight: 28,
+    paddingHorizontal: spacing.sm,
+    justifyContent: 'center',
+  },
+  typeChipText: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  categoryRow: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  categoryLeft: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+    gap: spacing.sm,
+    minWidth: 0,
+  },
+  categoryTextWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
+  categoryIcon: {
+    alignItems: 'center',
+    borderRadius: radius.sm,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  categoryIconText: {
+    ...typography.caption,
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  categoryName: {
+    ...typography.subheading,
+    fontWeight: '700',
+  },
+  categoryMeta: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  categoryRight: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  categoryAmount: {
+    ...typography.subheading,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  skeletonWrap: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  skeletonHeader: {
+    borderRadius: radius.md,
+    height: 42,
+    width: '65%',
+  },
+  skeletonTabs: {
+    borderRadius: radius.md,
+    height: 44,
+    width: '100%',
+  },
+  skeletonMainCard: {
+    borderRadius: radius.lg,
+    height: 320,
+    width: '100%',
+  },
+  skeletonChartCard: {
+    borderRadius: radius.lg,
+    height: 200,
+    width: '100%',
+  },
+  skeletonCategoryCard: {
+    borderRadius: radius.md,
+    height: 72,
+    width: '100%',
+  },
+  errorTitle: {
+    ...typography.subheading,
+  },
+  errorText: {
+    ...typography.body,
+  },
+  stateCard: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  emptyText: {
+    ...typography.body,
+  },
+});
+

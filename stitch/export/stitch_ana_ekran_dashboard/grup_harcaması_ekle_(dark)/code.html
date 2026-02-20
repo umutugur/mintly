@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-dark font-display text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto dark:bg-slate-900 min-h-screen shadow-xl flex flex-col relative pb-32 bg-slate-900">
+<!-- Header -->
+<div class="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md px-4 py-4 flex items-center border-b border-slate-800">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center text-lg font-bold tracking-tight mr-10">Grup Harcaması Ekle</h1>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Expense Details -->
+<div class="p-4 space-y-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-500 dark:text-slate-400">Harcama Adı</label>
+<input class="w-full h-14 px-4 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none bg-slate-800 border-slate-700 text-white" placeholder="Örn: Akşam Yemeği" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-500 dark:text-slate-400">Tutar (TL)</label>
+<div class="relative">
+<input class="w-full h-14 pl-10 pr-4 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none bg-slate-800 border-slate-700 text-white" placeholder="0,00" type="number"/>
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₺</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-500 dark:text-slate-400">Tarih</label>
+<div class="relative">
+<input class="w-full h-14 pl-10 pr-4 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none bg-slate-800 border-slate-700 text-white" type="date" value="2023-10-27"/>
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">calendar_today</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Categories -->
+<div class="py-2">
+<h3 class="px-4 text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3">Kategori Seçimi</h3>
+<div class="flex gap-3 overflow-x-auto px-4 pb-2 hide-scrollbar">
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<span class="text-xs font-medium text-primary">Restoran</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<span class="text-xs font-medium">Market</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<span class="text-xs font-medium">Ulaşım</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">sports_esports</span>
+</div>
+<span class="text-xs font-medium">Eğlence</span>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</div>
+<span class="text-xs font-medium">Diğer</span>
+</div>
+</div>
+</div>
+<!-- Payer Selection -->
+<div class="p-4 space-y-3">
+<label class="text-sm font-semibold text-slate-500 dark:text-slate-400">Ödemeyi Kim Yaptı?</label>
+<div class="flex items-center gap-3 p-3 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer">
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover" data-alt="Male user portrait with neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmEZatvsCcF4syjjJQ8-zBDrvHGJMjaTz-JFS9HTA1E2L9MqD5hCOd_Onm_54a6_oyIgjMsso4kxrqeDAFAHEQkBdq_WLQNHVY_p9MxdmXx_YCFLjobyfDMPXACTs9fv3umWIov4jO4HIzRuGqsKxBN5TOkzWtDODNnInsIn9rzvCpqioGo_G0faMdddzUu3X-5rp26TLZbPR2RzrL9-cppRC-EG9P4SB2T_z-rCZX7Ux_LB1EYR5cXt9ywbO-R-eiCYC52TdOF2Yk"/>
+<span class="flex-1 font-medium">Ahmet Yılmaz (Ben)</span>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</div>
+</div>
+<!-- Participants Multi-selection -->
+<div class="p-4 space-y-4">
+<div class="flex justify-between items-center">
+<label class="text-sm font-semibold text-slate-500 dark:text-slate-400">Kimler Paylaşıyor?</label>
+<button class="text-xs font-bold text-primary px-3 py-1 rounded-full bg-primary/10">Hepsini Seç</button>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="flex items-center gap-3 p-2 rounded-xl border-2 border-primary bg-primary/5">
+<div class="relative">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="Male user portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApxKYkOn9_aSfcxzY7IbCMiv_K7Xp38bNsrHyIdF2DnlVKteGP69c_VZnOPOxZB7HqwgQKPqbhMAVfmBppptWrsnwxjacu6TjFKrOHNllHvMNruu5xFgEAdlHnj04HAWSIICkZfwPTqQhkWa3OC0DGDvFQD599M6UYUep9SbWUt6SmsCXhmgTKY5i2-rbgDGQU6zrbeNeyhMl16thxQr0SIckAoy0rywr2TP8k7oXTln4iDkJNdfrhiZlM-mzE1xOpFDHATRu3E5fS"/>
+<div class="absolute -top-1 -right-1 bg-primary text-white rounded-full size-4 flex items-center justify-center text-[10px]">✓</div>
+</div>
+<span class="text-sm font-semibold">Ahmet Yılmaz</span>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-xl border-2 border-transparent bg-slate-50 dark:bg-slate-800">
+<div class="relative">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="Female user portrait smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj-Ycadi71CLuSaXlNUQvf0XO9svcJFBTv_ozxSLsPoUhzsE4aPX-RUfe3ReUwujOafBD4OhaCg9bOXGIfNzH0YilCxPL06evgeYRoUDnTxCxOJTyGj9ehtmWogJcqSCsCzO0aNzznyCJcWOvGE8YIWCNr5ZigH1BFvQoUh6NieHLHCpR4cW7VuaKBkn00IfjZH8ImbfDrmuCfNkRXzbkTUYFzzGjcBWQvTTRldr8xzthO9xhqjDmmcjNjvoA2Er__noYpKZ48JfwA"/>
+</div>
+<span class="text-sm font-semibold">Merve Kaya</span>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-xl border-2 border-primary bg-primary/5">
+<div class="relative">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="Man with glasses portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuPiOpOJjD8TaX1_3Fk5sCs-x3atBtN1cIOID9wMgDGQjZUM3y1fu5dJV7ykt1sgjHpekkjpzIPGgromqkdObDAlovU-mLmKRvq_rE4OIvEL8CUToxMTmK_ArExADFzJf8ZSSJ1cUbjGT-_M9Xyn6V0qhP_1-W-TLbje2QMIqZ7zGbPvglx4_NnGYDKp7rLs_Y2KCNTObMRJAMWbqKTuq34mfDwrZcpyt7SZQk6S9uDSH0dB3xoHSFOvbaQ0KxZiHfxR3hkVkRjFfo"/>
+<div class="absolute -top-1 -right-1 bg-primary text-white rounded-full size-4 flex items-center justify-center text-[10px]">✓</div>
+</div>
+<span class="text-sm font-semibold">Caner Öz</span>
+</div>
+<div class="flex items-center gap-3 p-2 rounded-xl border-2 border-primary bg-primary/5">
+<div class="relative">
+<img alt="User" class="w-10 h-10 rounded-full object-cover" data-alt="Middle aged man portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAioARjwqbefN5dMvrIuaGxkcQLxKc0bRQEkixWc7sGSTwQ7qUCjnAc4_mDlz9cERaqxOrob-9B1lmKVwLxvSUg3KbhbFPRChClhev71we6MklyZ9kVV4aIHf1tHpBYULtKMPEwwYpz6Q-Qr7PXr0wkRDOMtIVcIoXvycjO0vUuAxjVAGCcudkGlX4lMOINENL6yqU4CWUm9hwpB6KfwpyNJ6GP9Gv56ytUDRcHHV-0UHPpHV5p6Qj9lEsUPpYYNRDI1jWvCFrr_EeP"/>
+<div class="absolute -top-1 -right-1 bg-primary text-white rounded-full size-4 flex items-center justify-center text-[10px]">✓</div>
+</div>
+<span class="text-sm font-semibold">Ali Demir</span>
+</div>
+</div>
+</div>
+<!-- Split Method -->
+<div class="p-4 space-y-4">
+<div class="flex p-1 bg-slate-800 rounded-xl">
+<button class="flex-1 py-2 text-sm font-bold bg-slate-700 rounded-lg shadow-sm text-white">Eşit Böl</button>
+<button class="flex-1 py-2 text-sm font-bold text-slate-500 dark:text-slate-400">Özel Böl</button>
+</div>
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">info</span>
+<span class="text-sm text-slate-600 dark:text-slate-300">Kişi başı düşen tutar</span>
+</div>
+<span class="text-lg font-bold text-primary">₺0,00</span>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="absolute bottom-0 left-0 right-0 p-4 bg-slate-900/90 backdrop-blur-lg border-t border-slate-800">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined">add_circle</span>
+                Harcamayı Gruba Ekle
+            </button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>İşlem Detayı - Personal Finance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0c14",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+<!-- Main Container -->
+<div class="max-w-md mx-auto min-h-screen flex flex-col">
+<!-- Header -->
+<header class="flex items-center justify-between px-4 py-4 sticky top-0 bg-slate-950/90 backdrop-blur-md z-10">
+<button class="p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-white">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold tracking-tight">İşlem Detayı</h2>
+<button class="text-primary font-bold text-sm px-3 py-1 hover:bg-primary/5 rounded-lg transition-colors">Düzenle</button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 pb-32">
+<!-- Hero Transaction Info -->
+<section class="text-center py-8">
+<h1 class="text-4xl font-bold tracking-tight text-red-500 mb-2">-450,00 ₺</h1>
+<h2 class="text-xl font-semibold mb-3">Migros Market</h2>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-medium border border-emerald-500/30">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                    Tamamlandı
+                </div>
+</section>
+<!-- Metadata Cards -->
+<section class="space-y-4">
+<div class="bg-slate-900 rounded-xl p-4 shadow-lg border border-slate-800">
+<div class="space-y-4">
+<!-- Row: Date -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<span class="text-slate-400 text-sm font-medium">Tarih ve Saat</span>
+</div>
+<span class="font-semibold text-sm">14 Mayıs 2024, 18:42</span>
+</div>
+<!-- Row: Category -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<span class="text-slate-400 text-sm font-medium">Kategori</span>
+</div>
+<span class="font-semibold text-sm">Market &amp; Gıda</span>
+</div>
+<!-- Row: Payment Method -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<span class="text-slate-400 text-sm font-medium">Ödeme Yöntemi</span>
+</div>
+<span class="font-semibold text-sm">Mastercard •••• 4210</span>
+</div>
+</div>
+</div>
+<!-- Location/Map Section -->
+<div class="bg-slate-900 rounded-xl overflow-hidden shadow-lg border border-slate-800">
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold">Migros Jet - Ataşehir</h4>
+<p class="text-slate-400 text-sm font-medium">Barbaros Mah. No:3, İstanbul</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="h-32 w-full bg-slate-200 dark:bg-slate-700 relative">
+<img alt="Map view of the transaction location" class="w-full h-full object-cover" data-alt="Modern minimalist city map view showing a pin in Istanbul" data-location="Istanbul, Turkey" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArwnkKvhzFKrzkZ4C1-DejRiCtkKqeaOeuYn0583DDk4vRD2tJYXZeat4gCfAad7dnFZCytxCTjuwnoAN6Abged7i4Q2ZvxQbuZYbmQtDsblymPp-6Ll8_UyIsO42JtUulE4PW_dqJt52Rve-ZK3rjk1tVJbeocMn4zYF-QbBGr5xdpChmkAEnlxLxEpgDLmMmIt0ydz26YTbVj-ZzWD8U2ZuHWV1kHrXv9e9kmIfTcc_m83M1ky1nKgxTjtDEwGwMltWONA-CIHsf"/>
+<div class="absolute inset-0 bg-black/5"></div>
+</div>
+</div>
+<!-- Notes Section -->
+<div class="bg-slate-900 rounded-xl p-4 shadow-lg border border-slate-800">
+<h4 class="text-slate-300 text-sm font-bold">Notlarım</h4>
+<p class="text-sm text-slate-800 dark:text-slate-200 italic">"Haftalık ev mutfak alışverişi. Temizlik malzemeleri dahil."</p>
+</div>
+<!-- Receipt Image Section -->
+<div class="bg-slate-900 rounded-xl p-4 shadow-lg border border-slate-800">
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-slate-300 text-sm font-bold">Dijital Fiş</h4>
+<button class="text-primary text-xs font-bold">Görüntüle</button>
+</div>
+<div class="aspect-[3/4] rounded-lg bg-slate-100 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden">
+<img alt="Transaction Receipt" class="w-full h-full object-cover opacity-80" data-alt="A clean photograph of a paper store receipt on a wooden table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLwm3EpNuuGAvsAgIE0RffyK2rDqL30lhlNlI1DORnG24dA6_hB3-4oMe5Z7dKLWAMfDY7Lq8EWLMgzNs6PDDT3SV3TiEXTUaDAlNLmWU4zAHuwF3GUubANBmK1IghEDX9ZOYoq1Y-mu-z_T-WJ4sVJ7w6R-E2jPYmmz2bNvFifzbf1_8fcRJCmbcQojJJfa93qRJT95JydIa4b9g3VShnVLDaQyn7al_RFjHlGGglUy52EoGzjZYg9P0vNJ8O890eXEmG5pdRRu8D"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Actions -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 max-w-md mx-auto">
+<div class="grid grid-cols-2 gap-3 mb-3">
+<button class="flex items-center justify-center gap-2 py-3 px-4 bg-slate-900 border border-slate-700 rounded-xl font-semibold text-sm text-slate-100 hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-lg">call_split</span>
+                    Harcamayı Böl
+                </button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 bg-primary text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-lg">download</span>
+                    Fişi İndir
+                </button>
+</div>
+<button class="w-full flex items-center justify-center gap-2 py-3 px-4 text-red-400 font-semibold text-sm hover:bg-red-400/10 rounded-xl transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+                İşlemi Sil
+            </button>
+</div>
+<!-- Bottom Navigation Bar (Contextual) -->
+<nav class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 max-w-md mx-auto">
+<!-- Hidden as per task focusing on detailed transaction view, but structured if needed -->
+</nav>
+</div>
+</body></html>

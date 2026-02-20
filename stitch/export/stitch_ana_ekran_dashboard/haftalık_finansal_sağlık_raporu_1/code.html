@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1142d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Haftalık Finansal Sağlık Raporu</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen pb-24">
+<!-- Top Navigation -->
+<nav class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-4 flex items-center justify-between">
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Haftalık Rapor</h1>
+<button class="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300">share</span>
+</button>
+</nav>
+<main class="max-w-md mx-auto p-4 space-y-6">
+<!-- Financial Health Score Card -->
+<section class="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 text-center relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-primary">analytics</span>
+</div>
+<h2 class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-4 uppercase tracking-wider">Finansal Sağlık Skoru</h2>
+<!-- Circular Gauge -->
+<div class="relative flex items-center justify-center mb-4">
+<svg class="w-32 h-32 transform -rotate-90">
+<circle class="text-slate-100 dark:text-slate-800" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.4" stroke-dashoffset="54.6" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-bold">85<span class="text-lg text-slate-400">/100</span></span>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xl font-bold text-slate-900 dark:text-white">Harika Gidiyorsun!</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Geçen haftaya göre %5 artış gösterdin.</p>
+</div>
+</section>
+<!-- AI Insights Section -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+<h2 class="text-lg font-bold">AI İçgörüleri</h2>
+</div>
+<div class="grid gap-3">
+<div class="flex items-start gap-4 p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
+<span class="material-symbols-outlined text-emerald-600 mt-0.5">trending_down</span>
+<p class="text-sm font-medium text-emerald-900 dark:text-emerald-100">Harcamaların geçen haftaya göre <span class="font-bold">%10 azaldı</span>.</p>
+</div>
+<div class="flex items-start gap-4 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-100 dark:border-amber-900/50">
+<span class="material-symbols-outlined text-amber-600 mt-0.5">warning</span>
+<p class="text-sm font-medium text-amber-900 dark:text-amber-100">Market harcamaların bütçeni aşmak üzere.</p>
+</div>
+<div class="flex items-start gap-4 p-4 bg-primary/10 dark:bg-primary/20 rounded-xl border border-primary/20">
+<span class="material-symbols-outlined text-primary mt-0.5">savings</span>
+<p class="text-sm font-medium text-slate-900 dark:text-slate-100">Bu hafta <span class="font-bold text-primary">450 TL tasarruf</span> edebilirsin.</p>
+</div>
+</div>
+</section>
+<!-- Budget vs Actual Spending Chart -->
+<section class="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-bold">Harcama Analizi</h2>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-slate-200"></div>
+<span class="text-[10px] text-slate-500 uppercase">Hedef</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-[10px] text-slate-500 uppercase">Gerçekleşen</span>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<!-- Category 1 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium">Market</span>
+<span class="text-slate-500 font-mono text-xs">2.100 TL / 2.000 TL</span>
+</div>
+<div class="relative h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-amber-500 rounded-full" style="width: 100%"></div>
+<!-- Marker for Target -->
+<div class="absolute top-0 left-[90%] h-full w-0.5 bg-slate-400 z-10"></div>
+</div>
+</div>
+<!-- Category 2 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium">Ulaşım</span>
+<span class="text-slate-500 font-mono text-xs">850 TL / 1.200 TL</span>
+</div>
+<div class="relative h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary rounded-full" style="width: 70%"></div>
+</div>
+</div>
+<!-- Category 3 -->
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="font-medium">Eğlence</span>
+<span class="text-slate-500 font-mono text-xs">450 TL / 800 TL</span>
+</div>
+<div class="relative h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-primary rounded-full" style="width: 56%"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Prediction Banner -->
+<section class="bg-gradient-to-r from-primary to-blue-700 rounded-xl p-5 text-white shadow-lg relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-20">
+<span class="material-symbols-outlined text-8xl">glass_cup</span>
+</div>
+<h3 class="text-sm font-medium opacity-80 mb-2">Gelecek Hafta Tahmini</h3>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold">+1.200 TL</span>
+<span class="text-xs opacity-80 uppercase tracking-tighter">Beklenen Bakiye</span>
+</div>
+<p class="text-xs mt-3 opacity-90 leading-relaxed max-w-[80%]">
+                Mevcut harcama trendlerine göre önümüzdeki hafta bütçen pozitif kapayacak.
+            </p>
+</section>
+<!-- Actionable Tips -->
+<section class="space-y-3">
+<h2 class="text-lg font-bold px-1">Önerilen Aksiyonlar</h2>
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+<button class="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-primary">
+<span class="material-symbols-outlined">subscriptions</span>
+</div>
+<div>
+<p class="text-sm font-semibold">Aboneliklerini gözden geçir</p>
+<p class="text-xs text-slate-500">Kullanmadığın 2 servis olabilir.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-primary">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<div>
+<p class="text-sm font-semibold">Daha ucuz market seçeneklerine bak</p>
+<p class="text-xs text-slate-500">Bölgedeki alternatifler %15 daha ucuz.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-6 py-2 pb-6">
+<div class="max-w-md mx-auto flex justify-between items-center">
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">bar_chart</span>
+<span class="text-[10px] font-medium">Analiz</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Bütçe</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</div>
+</div>
+</body></html>

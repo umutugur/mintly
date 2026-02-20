@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Help &amp; Support | Finance AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0a",
+                        "card-dark": "#161618",
+                        "border-dark": "#262626"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(22, 22, 24, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-50 glass-effect border-b border-gray-200 dark:border-border-dark px-4 py-4 flex items-center justify-between">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Help &amp; Support</h1>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto custom-scrollbar pb-24">
+<!-- Hero Search Section -->
+<section class="px-6 pt-8 pb-6">
+<h2 class="text-3xl font-bold mb-2">How can we help?</h2>
+<p class="text-slate-500 dark:text-gray-400 mb-6">Search our knowledge base or browse categories below.</p>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-12 pr-4 py-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-gray-500" placeholder="Search for topics or questions..." type="text"/>
+</div>
+</section>
+<!-- Category Grid -->
+<section class="px-6 py-4">
+<h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4">Categories</h3>
+<div class="grid grid-cols-2 gap-4">
+<!-- Account & Security -->
+<div class="p-5 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-2xl hover:border-primary/50 transition-all cursor-pointer group">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white">shield_person</span>
+</div>
+<h4 class="font-bold mb-1">Account</h4>
+<p class="text-xs text-gray-500 leading-relaxed">Security, passwords, and profile settings</p>
+</div>
+<!-- AI Insights -->
+<div class="p-5 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-2xl hover:border-primary/50 transition-all cursor-pointer group">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white">smart_toy</span>
+</div>
+<h4 class="font-bold mb-1">AI Insights</h4>
+<p class="text-xs text-gray-500 leading-relaxed">Understanding AI predictions &amp; advice</p>
+</div>
+<!-- Group Expenses -->
+<div class="p-5 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-2xl hover:border-primary/50 transition-all cursor-pointer group">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white">group</span>
+</div>
+<h4 class="font-bold mb-1">Group</h4>
+<p class="text-xs text-gray-500 leading-relaxed">Managing shared bills and splits</p>
+</div>
+<!-- Payments -->
+<div class="p-5 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-2xl hover:border-primary/50 transition-all cursor-pointer group">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-white">account_balance_wallet</span>
+</div>
+<h4 class="font-bold mb-1">Payments</h4>
+<p class="text-xs text-gray-500 leading-relaxed">Transfers, bank links, and status</p>
+</div>
+</div>
+</section>
+<!-- Top Questions -->
+<section class="px-6 py-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Top Questions</h3>
+<button class="text-primary text-sm font-medium">View all</button>
+</div>
+<div class="space-y-3">
+<div class="p-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-xl flex items-center justify-between group cursor-pointer">
+<span class="font-medium pr-4">How do I link a new bank account?</span>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors">chevron_right</span>
+</div>
+<div class="p-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-xl flex items-center justify-between group cursor-pointer">
+<span class="font-medium pr-4">Is my financial data encrypted?</span>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors">chevron_right</span>
+</div>
+<div class="p-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-xl flex items-center justify-between group cursor-pointer">
+<span class="font-medium pr-4">How does AI predict my spending?</span>
+<span class="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Contact Support -->
+<section class="px-6 py-6 mb-8">
+<div class="p-6 bg-primary/5 border border-primary/20 rounded-2xl">
+<h3 class="text-xl font-bold mb-2">Still need help?</h3>
+<p class="text-gray-400 text-sm mb-6">Our team is available 24/7 to assist you with any questions.</p>
+<div class="flex flex-col gap-3">
+<button class="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">forum</span>
+                        Ask AI Assistant
+                    </button>
+<button class="w-full py-4 bg-white dark:bg-card-dark border border-gray-200 dark:border-border-dark rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">mail</span>
+                        Email Support
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Modified from Components List) -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 dark:border-border-dark bg-white dark:bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-2">
+<div class="flex items-center justify-around max-w-lg mx-auto">
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="text-[10px] font-medium">Insights</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">wallet</span>
+<span class="text-[10px] font-medium">Wallet</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-[10px] font-medium">Plan</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">help</span>
+<span class="text-[10px] font-bold">Support</span>
+</a>
+</div>
+</nav>
+</body></html>

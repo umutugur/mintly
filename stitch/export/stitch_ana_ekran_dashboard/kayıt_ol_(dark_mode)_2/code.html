@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Finance AI - Kayıt Ol</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0B0B0C",
+                        "surface-dark": "#1A1A1B",
+                        "border-dark": "#3f3267",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(66, 17, 212, 0.05);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col">
+<!-- Subtle Background Gradient Glow -->
+<div class="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="fixed bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+<div class="flex-1 flex flex-col max-w-md mx-auto w-full px-6 py-8">
+<!-- Top App Bar / Back Button -->
+<div class="flex items-center mb-8">
+<button class="text-white/80 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back</span>
+</button>
+</div>
+<!-- Header Section -->
+<div class="flex flex-col items-center text-center mb-10">
+<div class="size-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-6 border border-primary/30 shadow-[0_0_20px_rgba(66,17,212,0.3)]">
+<span class="material-symbols-outlined text-primary text-[40px] font-light">shield_with_heart</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight mb-3">Hesap Oluştur</h1>
+<p class="text-slate-400 text-base leading-relaxed max-w-[280px]">
+                Finansal geleceğinizi yapay zeka ile yönetmeye başlayın
+            </p>
+</div>
+<!-- Form Section -->
+<div class="space-y-4 mb-8">
+<div>
+<label class="block text-sm font-medium text-slate-300 mb-1.5 ml-1">Ad Soyad</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">person</span>
+<input class="w-full bg-surface-dark border border-border-dark/50 rounded-lg py-3.5 pl-11 pr-4 text-white placeholder:text-slate-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Adınızı ve soyadınızı girin" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-300 mb-1.5 ml-1">E-posta Adresi</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">mail</span>
+<input class="w-full bg-surface-dark border border-border-dark/50 rounded-lg py-3.5 pl-11 pr-4 text-white placeholder:text-slate-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="ornek@mail.com" type="email"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-300 mb-1.5 ml-1">Şifre</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">lock</span>
+<input class="w-full bg-surface-dark border border-border-dark/50 rounded-lg py-3.5 pl-11 pr-12 text-white placeholder:text-slate-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all mb-8">
+            Kayıt Ol
+        </button>
+<!-- Divider -->
+<div class="flex items-center gap-4 mb-8">
+<div class="h-[1px] flex-1 bg-border-dark/30"></div>
+<span class="text-slate-500 text-xs font-medium uppercase tracking-wider">Veya</span>
+<div class="h-[1px] flex-1 bg-border-dark/30"></div>
+</div>
+<!-- Social Buttons -->
+<div class="grid grid-cols-2 gap-4 mb-10">
+<button class="flex items-center justify-center gap-3 bg-surface-dark border border-border-dark/50 hover:bg-white/5 py-3.5 rounded-lg transition-all active:scale-[0.98]">
+<img alt="Google Logo" class="size-5" data-alt="Google colorful brand logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArHnFrz1wCqw5Ve0KSLeFcD7BoaT1DBtrZHb6IhMS_6506L4UPbPm2TGaaK3EdS3b6DNh9TPt2axnX8VwKYXOj_aaN-9kB34f85zv-jIOzhV8G2wd_uAdK-1BQ-6S9KEb4OS_JJZZYa109BG_P47-XsK0SWTMta5Nhl30E8wLaMDTQQWLn4FCAmQwyPYVk-HL3yNzg9HwsEz8pRQceSIF5QsfsulS6iR5zk1MMUnJo-iuGBL_RXCf_QQOYjusieuhgw22ySZjyaSXB"/>
+<span class="text-sm font-medium">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 bg-surface-dark border border-border-dark/50 hover:bg-white/5 py-3.5 rounded-lg transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-white text-[22px] fill-current">ios</span>
+<span class="text-sm font-medium">Apple</span>
+</button>
+</div>
+<!-- Footer Link -->
+<div class="mt-auto pt-6 text-center">
+<p class="text-slate-400 text-sm">
+                Zaten bir hesabın var mı? 
+                <a class="text-primary font-semibold ml-1 hover:underline" href="#">Giriş Yap</a>
+</p>
+</div>
+<!-- Hero image context for background (hidden but meets criteria) -->
+<div class="hidden">
+<img data-alt="Abstract dark purple flowing lines pattern" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO_rLrTctuC2CyOkzlcXNvEi6zsgERq8Rh03rNBO408B5c0P3YY4uZCwgiyzb01jcDcONB9Lrh5zKhprivYLuUrh7VDk5AW5L4hoXVT8UNV0C6HA6rCqNRYYtqeN3WOaXBQXJfyOq_RUYUrYKb-N2JKdfXK4XFhdbUUkb3NbfNJBapKuJ3RHZq14YMDSH4EWV9x5HapR5C19QDqwzTHWU0Qei--LUU2qv7ffzlzezbJmzfkdwEet2YBfRDnuP097ubobYL5mU_C4y0"/>
+</div>
+</div>
+</body></html>

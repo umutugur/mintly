@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<title>Yardım Merkezi</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-4 py-4 flex items-center justify-between">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Yardım Merkezi</h1>
+<div class="size-10"></div> <!-- Spacer for symmetry -->
+</header>
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Hero Search Section -->
+<section class="px-4 pt-8 pb-6 bg-gradient-to-b from-primary/10 to-transparent">
+<h2 class="text-2xl font-bold mb-6 text-center">Size nasıl yardımcı olabiliriz?</h2>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-primary group-focus-within:text-white transition-colors">search</span>
+</div>
+<input class="w-full bg-primary/5 border border-primary/20 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-lg shadow-black/20" placeholder="Soru, anahtar kelime veya konu arayın..." type="text"/>
+</div>
+</section>
+<!-- Category Grid -->
+<section class="px-4 py-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-primary/5 border border-primary/10 p-5 rounded-xl hover:bg-primary/10 transition-all cursor-pointer group">
+<div class="size-12 rounded-lg bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">shield</span>
+</div>
+<h3 class="font-bold text-sm mb-1">Hesap Güvenliği</h3>
+<p class="text-xs text-gray-400">Şifre ve giriş işlemleri</p>
+</div>
+<div class="bg-primary/5 border border-primary/10 p-5 rounded-xl hover:bg-primary/10 transition-all cursor-pointer group">
+<div class="size-12 rounded-lg bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+</div>
+<h3 class="font-bold text-sm mb-1">AI İçgörüleri</h3>
+<p class="text-xs text-gray-400">Yapay zeka asistanı</p>
+</div>
+<div class="bg-primary/5 border border-primary/10 p-5 rounded-xl hover:bg-primary/10 transition-all cursor-pointer group">
+<div class="size-12 rounded-lg bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">credit_card</span>
+</div>
+<h3 class="font-bold text-sm mb-1">Ödemeler</h3>
+<p class="text-xs text-gray-400">Faturalar ve iadeler</p>
+</div>
+<div class="bg-primary/5 border border-primary/10 p-5 rounded-xl hover:bg-primary/10 transition-all cursor-pointer group">
+<div class="size-12 rounded-lg bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">group</span>
+</div>
+<h3 class="font-bold text-sm mb-1">Grup Giderleri</h3>
+<p class="text-xs text-gray-400">Paylaşımlı harcamalar</p>
+</div>
+<div class="bg-primary/5 border border-primary/10 p-5 rounded-xl hover:bg-primary/10 transition-all cursor-pointer group">
+<div class="size-12 rounded-lg bg-primary/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</div>
+<h3 class="font-bold text-sm mb-1">Yatırım ve Tasarruf</h3>
+<p class="text-xs text-gray-400">Portföy ve birikimler</p>
+</div></div>
+</section>
+<!-- FAQ Section -->
+<section class="px-4 py-6">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold">Sıkça Sorulan Sorular</h2>
+<button class="text-primary text-sm font-semibold">Tümünü Gör</button>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10 cursor-pointer">
+<span class="text-sm font-medium">Şifremi nasıl sıfırlayabilirim?</span>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10 cursor-pointer">
+<span class="text-sm font-medium">Grup harcaması nasıl oluşturulur?</span>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10 cursor-pointer">
+<span class="text-sm font-medium">Ödeme yöntemimi nasıl güncellerim?</span>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10 cursor-pointer">
+<span class="text-sm font-medium">AI analizleri ne kadar güvenilir?</span>
+<span class="material-symbols-outlined text-gray-500 text-lg">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Contact Support Section -->
+<section class="mx-4 mt-8 p-6 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-center mb-10">
+<div class="size-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary/20">
+<span class="material-symbols-outlined text-white text-3xl">support_agent</span>
+</div>
+<h2 class="text-xl font-bold mb-2">Hala yardıma mı ihtiyacınız var?</h2>
+<p class="text-gray-400 text-sm mb-6 px-4">Aradığınız cevabı bulamadıysanız, uzman ekibimiz veya AI asistanımız size yardımcı olabilir.</p>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">smart_toy</span>
+                    AI Asistanına Sor
+                </button>
+<button class="w-full bg-transparent border border-primary/40 hover:bg-primary/10 text-primary font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">mail</span>
+                    E-posta Gönder
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full bg-background-dark/95 backdrop-blur-lg border-t border-primary/10 px-4 py-2 pb-6 flex justify-around items-center">
+<a class="flex flex-col items-center gap-1 text-gray-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">pie_chart</span>
+<span class="text-[10px] font-medium">Analizler</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="text-[10px] font-medium">AI</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-gray-500 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Cüzdan</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Arkadaşlarım - Finans Uygulaması</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="dark:bg-background-dark font-display bg-background-dark">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto dark:bg-background-dark shadow-xl overflow-x-hidden bg-background-dark">
+<!-- Header -->
+<div class="flex items-center p-4 pb-2 justify-between sticky top-0 dark:bg-background-dark/80 backdrop-blur-md z-10 bg-background-dark/80">
+<div class="text-primary flex size-10 items-center justify-center rounded-lg hover:bg-primary/10 cursor-pointer">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-white">Arkadaşlarım</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[22px]">person_add</span>
+</button>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="px-4 py-3">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm">
+<div class="text-slate-400 flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-xl">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-xl text-[#0d111b] dark:text-white focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 placeholder:text-slate-400 px-4 pl-2 text-base font-normal leading-normal" placeholder="Arkadaş ara..." value=""/>
+</div>
+</label>
+</div>
+<!-- Pending Requests Notification -->
+<div class="mx-4 mb-4 flex items-center gap-4 bg-primary/5 dark:bg-primary/10 border border-primary/10 rounded-xl px-4 min-h-[72px] py-2 justify-between cursor-pointer active:scale-[0.98] transition-transform">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-primary text-base font-semibold leading-tight line-clamp-1 text-white">Bekleyen İstekler (2)</p>
+<p class="text-primary/70 text-sm font-normal leading-normal line-clamp-2">Yeni arkadaşlık isteklerini onayla</p>
+</div>
+</div>
+<div class="shrink-0">
+<div class="flex size-7 items-center justify-center">
+<div class="size-2.5 rounded-full bg-red-500 animate-pulse"></div>
+</div>
+</div>
+</div>
+<!-- Section Title -->
+<div class="px-4 py-2 flex items-center justify-between">
+<h3 class="dark:text-white text-md font-bold leading-tight tracking-[-0.015em] text-white">Tüm Arkadaşlar</h3>
+<span class="text-xs text-slate-400 font-medium uppercase tracking-wider">12 Kişi</span>
+</div>
+<!-- Friends List -->
+<div class="flex flex-col flex-1 divide-y dark:divide-slate-800 pb-20 divide-slate-800">
+<!-- Friend Item 1 -->
+<div class="flex items-center gap-4 px-4 py-4 dark:hover:bg-slate-800/50 transition-colors">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-slate-200 overflow-hidden border-2 border-white dark:border-slate-800">
+<img alt="Felix Avatar" class="size-full object-cover" data-alt="Male profile picture with blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2vPVdmuOTuhk5d6_JFvUzWFBg19v543fuHr4tzJ1e5xvp3cqKXMhRQE2M7QmlI4K9G58k_9ke-rCB8P62FsU2NelKfI-2AriMR9HPp2LtUBdBZo4ZZDxIb2G53BfrS2mDfxBO8kBf1sHX9VgwkUVYBzKlqHphbQHMBTquXZ0_6Gw-dqfUW-KetA0rWOg5xtgw5kK0lao3bmz6cOVP1KXiVnr1qlTApochyjMByJsEu-IuAcK39i2aD5X3HE1pXsNQN4w7_iFoj65i"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3.5 rounded-full bg-green-500 border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="dark:text-white text-base font-semibold leading-none mb-1 text-white">Mert Yılmaz</p>
+<p class="text-slate-400 text-xs font-normal">Şu an aktif</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</button>
+</div>
+</div>
+<!-- Friend Item 2 -->
+<div class="flex items-center gap-4 px-4 py-4 dark:hover:bg-slate-800/50 transition-colors">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-slate-200 overflow-hidden border-2 border-white dark:border-slate-800">
+<img alt="Aria Avatar" class="size-full object-cover" data-alt="Female profile picture with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWjV-YXm_HFJHknYLU45AhzTIPdifqu9kaIDpdOj0w0byw8XRHRSqNJ0QYCJ3ENwcTG2Illoc3b_0kb63KHjKjDwewRsdNabeLTUCYDF_JHGiMzXRW0py5xRsP7g8eAEWYT6X_cC5MgTk587R5jZWFEj7B55msM1pnYC5MxVfYCp9xTPGy_JtC7ORnahPF40kqd8lLbd3sxZPr38JmsM2OmqRPf-ssleDmm3WgxLlA6IhHey_M4gL1faeHjtxVKJX1lzWOS82Kx4D8"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3.5 rounded-full bg-slate-300 border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="dark:text-white text-base font-semibold leading-none mb-1 text-white">Selin Aksoy</p>
+<p class="text-slate-400 text-xs font-normal">2sa önce aktifti</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</button>
+</div>
+</div>
+<!-- Friend Item 3 -->
+<div class="flex items-center gap-4 px-4 py-4 dark:hover:bg-slate-800/50 transition-colors">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-slate-200 overflow-hidden border-2 border-white dark:border-slate-800">
+<img alt="Bear Avatar" class="size-full object-cover" data-alt="Male profile picture with beard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxASC4FhbQMWi5Xiw15xlLRwwaN5fS8dcM9dm8BEsjAGPF8HhDsqPW4pQ02AuUDzpV2aYkZXe6wQwbikhNJ0tXHJNa4kF5GlJ7HrssCtuE1MsInHl4A40Dzg2Byg_iWptgLl4dRvzzPf2Rnj1SJ1UE_yko5_T7iWo_LCj2vf5U6OKTt9BcZwflMoxHNRY7IC4z_bx7s2NWiWKPHyd8rMP95v9HbMdftgSn_kzwA14MPbu06UOMr-bZpbSiqKjOSDuhUr7KqvXSww0l"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3.5 rounded-full bg-green-500 border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="dark:text-white text-base font-semibold leading-none mb-1 text-white">Can Demir</p>
+<p class="text-slate-400 text-xs font-normal">Şu an aktif</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</button>
+</div>
+</div>
+<!-- Friend Item 4 -->
+<div class="flex items-center gap-4 px-4 py-4 dark:hover:bg-slate-800/50 transition-colors">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-slate-200 overflow-hidden border-2 border-white dark:border-slate-800">
+<img alt="Chloe Avatar" class="size-full object-cover" data-alt="Female profile picture with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpb1fCCXeQmkZN6oiR_0TbyNX9qW-pJ8OQIPcXsFHdWnHwNy_gAJpAao20Xu8omopd6RjpfPIVWpUyoadMj_wb02BE1yzZ8fA_sCD3_0Y6DIjC-4Op8X6MqlGVw0iRQhQxkEONxok54-uVRAHNenDSCnS-6KYDn_jTaS13Av5wuPvQPG51w80BfQVE4yNxrjdgLmEwoJ11njq27SugE4wAahqokiD90v7iznrfKaX8GUqzjqMYCI-nIdiuyH7lV6GEP8ZrRZBAGkT0"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3.5 rounded-full bg-slate-300 border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="dark:text-white text-base font-semibold leading-none mb-1 text-white">Derya Kaya</p>
+<p class="text-slate-400 text-xs font-normal">Dün aktifti</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</button>
+</div>
+</div>
+<!-- Friend Item 5 -->
+<div class="flex items-center gap-4 px-4 py-4 dark:hover:bg-slate-800/50 transition-colors">
+<div class="relative shrink-0">
+<div class="size-14 rounded-full bg-slate-200 overflow-hidden border-2 border-white dark:border-slate-800">
+<img alt="Oliver Avatar" class="size-full object-cover" data-alt="Young male profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9OtYB1BKxlnl2gOCQIUhZQGrjumriZ6ddyXYrFv7zV8k90SJX7cycnJq4z9ODu0JGzrXOTvE8q91Cj21EnsuVUPmV5HKor4XvFEjukx5Vm5OHw3zSrOVHblgg5hHtQaYsBraTaWixT0fJJikXEsFrXlSfHTA8uG6G3Bro7seG4e12UZm-KXFkM99ti6rQFrHdV8qwh4S_TEyf-SAYIfcUs3o-xvs-YL7bUtqWM2qgG8PVkDHvWLhBt-_e9Hwcmmro-5mlLJLBMW94"/>
+</div>
+<div class="absolute bottom-0 right-0 size-3.5 rounded-full bg-slate-300 border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<p class="dark:text-white text-base font-semibold leading-none mb-1 text-white">Barış Yıldız</p>
+<p class="text-slate-400 text-xs font-normal">3sa önce aktifti</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md dark:bg-background-dark border-t dark:border-slate-800 px-4 pb-6 pt-2 z-50 bg-background-dark border-slate-800">
+<div class="flex gap-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">home</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Ana Sayfa</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Kartlarım</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<p class="text-[10px] font-bold leading-normal tracking-[0.015em]">Bölüştür</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">İstatistik</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400 hover:text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<p class="text-[10px] font-medium leading-normal tracking-[0.015em]">Profil</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>

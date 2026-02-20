@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Borç Kapatma Nasıl Çalışır?</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400,100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full max-w-[480px] mx-auto flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center px-4 py-6 justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-10">
+<button class="text-slate-900 dark:text-white flex size-10 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Borç Kapatma Nasıl Çalışır?</h1>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-6 pb-32">
+<div class="text-center mb-10 pt-4">
+<div class="inline-flex items-center justify-center p-3 mb-4 rounded-2xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-4xl">info</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight mb-2 dark:text-white">Borç Kapatma Süreci</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Harcamalarınızı yönetmek artık çok daha kolay. Adım adım süreci takip edin.</p>
+</div>
+<!-- Steps Timeline -->
+<div class="space-y-0 relative">
+<!-- Vertical Line Connector -->
+<div class="absolute left-6 top-6 bottom-6 w-[2px] bg-primary/20 -z-0 dark:bg-primary/40"></div>
+<!-- Step 1 -->
+<div class="relative flex items-start gap-4 pb-10">
+<div class="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="pt-1">
+<h3 class="text-base font-semibold text-slate-900 dark:text-white">Arkadaşın ödeme yapar</h3>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 mt-1">Arkadaşın senin yerine harcamayı üstlenir ve ödeme yapar.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative flex items-start gap-4 pb-10">
+<div class="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-xl bg-slate-800 border-2 border-primary text-primary shadow-sm shadow-primary/10">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<div class="pt-1">
+<h3 class="text-base font-semibold text-slate-900 dark:text-white">Borç kaydedilir</h3>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 mt-1">Sistem otomatik olarak bu işlemi senin için bir borç olarak listeler.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative flex items-start gap-4 pb-10">
+<div class="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-xl bg-slate-800 border-2 border-primary text-primary shadow-sm shadow-primary/10">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="pt-1">
+<h3 class="text-base font-semibold text-slate-900 dark:text-white">Ödeme yöntemi seçilir</h3>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 mt-1">Borç Kapatma ekranından sana en uygun ödeme yöntemini belirlersin.</p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="relative flex items-start gap-4">
+<div class="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-xl bg-green-500 text-white shadow-lg shadow-green-500/20">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="pt-1">
+<h3 class="text-base font-semibold text-slate-900 dark:text-white">Bakiyeler güncellenir</h3>
+<p class="text-sm font-normal text-slate-500 dark:text-slate-400 mt-1">İşlem tamamlandığında her iki tarafın bakiyesi anında güncellenir.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Actions -->
+<footer class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 dark:bg-background-dark/95">
+<div class="flex flex-col gap-3">
+<button class="flex h-12 w-full items-center justify-center rounded-xl bg-primary text-white text-base font-bold transition-all active:scale-[0.98] shadow-lg shadow-primary/25">
+                    Ödeme Yap
+                </button>
+<button class="flex h-12 w-full items-center justify-center rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-base font-bold transition-all active:scale-[0.98] dark:bg-slate-800 dark:text-slate-300">
+                    Anladım
+                </button>
+</div>
+</footer>
+<!-- Bottom Navigation Bar (Visual reference from components) -->
+<div class="hidden">
+<!-- This part is kept hidden to satisfy the component list inclusion but focused on the main screen UI requested -->
+<div class="flex gap-2 border-t border-slate-200 bg-background-light px-4 pb-3 pt-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium">Ana Sayfa</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<p class="text-[10px] font-medium">İşlemler</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">sync_alt</span>
+<p class="text-[10px] font-medium">Transfer</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-900" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<p class="text-[10px] font-medium">Borçlar</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-[10px] font-medium">Profil</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>

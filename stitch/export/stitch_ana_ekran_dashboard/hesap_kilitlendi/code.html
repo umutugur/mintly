@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hesap Kilitlendi - Güvenlik Uyarısı</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .warning-glow {
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-10 border-b border-primary/10">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-base font-semibold tracking-tight">Güvenlik Durumu</h1>
+<div class="size-10"></div> <!-- Spacer for symmetry -->
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col items-center justify-center px-6 py-8 max-w-md mx-auto w-full">
+<!-- Lock Illustration -->
+<div class="relative mb-10">
+<div class="absolute inset-0 bg-red-500/20 blur-3xl rounded-full scale-150"></div>
+<div class="relative bg-background-dark/80 border border-red-500/30 w-32 h-32 rounded-full flex items-center justify-center warning-glow">
+<span class="material-symbols-outlined text-red-500 !text-6xl" style="font-variation-settings: 'FILL' 1">lock</span>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-red-600 text-white rounded-full p-1 border-4 border-background-dark">
+<span class="material-symbols-outlined !text-xl">priority_high</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="text-center space-y-4 mb-10">
+<h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Hesap Kilitlendi</h2>
+<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                Çok fazla hatalı giriş denemesi nedeniyle hesabınız güvenlik amacıyla <span class="text-red-400 font-medium">30 dakika</span> süreyle kilitlenmiştir.
+            </p>
+</div>
+<!-- Countdown Timer -->
+<div class="w-full mb-12">
+<div class="flex gap-3 justify-center">
+<div class="flex flex-col items-center gap-2 flex-1 max-w-[100px]">
+<div class="w-full h-20 bg-primary/10 dark:bg-primary/20 rounded-xl border border-primary/20 flex items-center justify-center">
+<span class="text-3xl font-bold text-primary dark:text-primary-light">29</span>
+</div>
+<span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Dakika</span>
+</div>
+<div class="flex items-center text-3xl font-bold text-primary/40 pt-2">:</div>
+<div class="flex flex-col items-center gap-2 flex-1 max-w-[100px]">
+<div class="w-full h-20 bg-primary/10 dark:bg-primary/20 rounded-xl border border-primary/20 flex items-center justify-center">
+<span class="text-3xl font-bold text-primary dark:text-primary-light">59</span>
+</div>
+<span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Saniye</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-4">
+<button class="w-full py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined !text-xl">support_agent</span>
+<span>Müşteri Hizmetlerine Bağlan</span>
+</button>
+<button class="w-full py-4 bg-transparent border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all">
+                Şifremi Unuttum
+            </button>
+</div>
+<!-- Security Footer -->
+<div class="mt-12 flex items-center gap-2 text-slate-500 text-xs opacity-60">
+<span class="material-symbols-outlined !text-sm">verified_user</span>
+<span>Uçtan uca şifreli güvenlik altyapısı</span>
+</div>
+</main>
+<!-- Navigation Bar -->
+<nav class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/80 backdrop-blur-md px-6 py-3">
+<div class="flex justify-between items-center max-w-md mx-auto opacity-50 pointer-events-none">
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="text-[10px] font-medium">Transfer</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-[10px] font-medium">Ödemeler</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-[10px] font-medium">Yatırım</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</div>
+</div>
+</nav>
+</body></html>

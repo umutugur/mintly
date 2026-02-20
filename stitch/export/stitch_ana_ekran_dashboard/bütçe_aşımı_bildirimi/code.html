@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bütçe Aşımı Uyarısı</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                        "warning-red": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ai-gradient-border {
+            background: linear-gradient(to right, #4211d4, #8b5cf6);
+            padding: 1px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Navigation -->
+<header class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-primary/20 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Bütçe Aşımı Uyarısı!</h1>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto px-6 py-8 flex flex-col items-center max-w-md mx-auto w-full">
+<!-- Warning Icon & Main Message -->
+<div class="mb-8 text-center">
+<div class="relative inline-block mb-6">
+<div class="absolute inset-0 bg-warning-red/20 blur-2xl rounded-full"></div>
+<div class="relative bg-warning-red/10 border-2 border-warning-red/30 rounded-full p-6 flex items-center justify-center">
+<span class="material-symbols-outlined text-warning-red text-6xl">error</span>
+</div>
+</div>
+<h2 class="text-2xl font-bold mb-3 leading-tight">
+                Market &amp; Gıda kategorisindeki aylık limitinizi %15 oranında aştınız.
+            </h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm">
+                Bu harcama alışkanlığıyla ay sonu hedeflerinizden sapabilirsiniz.
+            </p>
+</div>
+<!-- Budget Progress Card -->
+<div class="w-full bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl p-5 mb-6 shadow-sm">
+<div class="flex justify-between items-end mb-4">
+<div>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Harcanan</p>
+<p class="text-2xl font-bold">1.150 TL</p>
+</div>
+<div class="text-right">
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Aylık Limit</p>
+<p class="text-lg font-semibold text-slate-700 dark:text-slate-300">1.000 TL</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="h-3 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 87%"></div>
+<div class="h-full bg-warning-red" style="width: 13%"></div>
+</div>
+<div class="flex justify-between mt-2">
+<span class="text-[10px] font-medium text-slate-400">0%</span>
+<span class="text-[10px] font-medium text-primary">100%</span>
+<span class="text-[10px] font-medium text-warning-red">115%</span>
+</div>
+</div>
+<!-- AI Insight Box -->
+<div class="w-full ai-gradient-border rounded-xl mb-8">
+<div class="bg-white dark:bg-background-dark rounded-[0.7rem] p-5 flex gap-4">
+<div class="shrink-0 bg-primary/10 text-primary p-2 rounded-lg h-fit">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-primary mb-1">AI Önerisi</h3>
+<p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                        Bu hafta dışarıda yemek harcamalarınızı %20 azaltarak bütçenizi tekrar dengeye getirebilirsiniz.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-3 mt-auto">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">edit_note</span>
+                Bütçeyi Güncelle
+            </button>
+<button class="w-full border border-slate-300 dark:border-primary/40 hover:bg-slate-50 dark:hover:bg-primary/10 text-slate-700 dark:text-primary font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">bar_chart</span>
+                Detaylı Analiz
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="flex border-t border-slate-200 dark:border-primary/20 bg-white dark:bg-[#1c1530] px-4 pb-6 pt-3">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-[#a092c9]" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium">Ana Sayfa</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-[#a092c9]" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<p class="text-[10px] font-medium">Cüzdan</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-[#a092c9]" href="#">
+<div class="bg-primary p-2 rounded-full -mt-8 shadow-lg shadow-primary/40">
+<span class="material-symbols-outlined text-white">add</span>
+</div>
+<p class="text-[10px] font-medium mt-1">Ekle</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pie_chart</span>
+<p class="text-[10px] font-medium">Analiz</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-[#a092c9]" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-[10px] font-medium">Profil</p>
+</a>
+</nav>
+</body></html>

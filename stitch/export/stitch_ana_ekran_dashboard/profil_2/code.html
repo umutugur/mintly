@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Accounting Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1142d4",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101522",
+            },
+            fontFamily: {
+              "display": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display">
+<div class="relative flex h-auto min-h-screen w-full max-w-[480px] mx-auto flex-col bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl">
+<!-- Header / Top Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between">
+<div class="text-primary flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined cursor-pointer text-2xl">arrow_back</span>
+</div>
+<h2 class="text-[#0d111b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Profile</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg h-12 bg-transparent text-[#0d111b] dark:text-white p-0">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</button>
+</div>
+</div>
+<!-- Profile Section -->
+<div class="flex p-4 @container">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="flex gap-4 flex-col items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-white dark:border-gray-800 shadow-md" data-alt="Professional male portrait for user profile" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBkADGAPS39b348TShYZXjfeg7Ch49iIZXM-FcigGfXLFW9RzL8lAky-fJCAEyzpnoUZHTZNtEaMn4-zTBuxdPMHYzRhwmqNkCPPRwID8Q8RtVMm1j_1NR-hBOgWktwPhMXVuYqhV_qlpRseUWvVh6QFQPgl3A-xT8ZoaQ0tyonzWhYt0UP-U6JxPf8x7IJ-PMxFKxc1AX_CGx_hHieOvMqf8UPs7ayketj--VK3ZSN_cXRurQi3-uWdjIp96FNNZpPMTiDT94gDdXe");'>
+</div>
+<div class="absolute bottom-1 right-1 bg-primary text-white p-1 rounded-full border-2 border-white dark:border-gray-800">
+<span class="material-symbols-outlined text-sm block">edit</span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center">
+<div class="flex items-center gap-2">
+<p class="text-[#0d111b] dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] text-center">Can Demir</p>
+</div>
+<div class="mt-2 flex items-center gap-1.5 px-3 py-1 bg-primary/10 rounded-full">
+<span class="material-symbols-outlined text-primary text-sm font-bold">verified</span>
+<p class="text-primary text-xs font-bold leading-normal uppercase tracking-wider">Premium Member</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Stats Container -->
+<div class="px-4 py-2">
+<div class="flex items-center justify-between gap-4 rounded-xl p-4 bg-white dark:bg-gray-900 border border-primary/10 shadow-sm">
+<div class="flex flex-col">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Member Status</p>
+<p class="text-[#0d111b] dark:text-white text-base font-bold">Joined May 2023</p>
+</div>
+<div class="h-10 w-[1px] bg-gray-200 dark:bg-gray-800"></div>
+<div class="flex flex-col">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">AI Accuracy</p>
+<p class="text-primary text-base font-bold">99.8%</p>
+</div>
+</div>
+</div>
+<!-- Menu List Section -->
+<div class="flex flex-col px-4 mt-6">
+<h3 class="text-[#0d111b] dark:text-white text-sm font-bold leading-tight uppercase tracking-[0.05em] mb-4 opacity-60">Account Settings</h3>
+<div class="flex flex-col gap-1 bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
+<!-- Menu Item -->
+<a class="flex items-center gap-4 px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" href="#">
+<div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[22px]">person</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold">Personal Information</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs">Name, email, and phone number</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</a>
+<div class="mx-4 h-[1px] bg-gray-100 dark:bg-gray-800"></div>
+<!-- Menu Item -->
+<a class="flex items-center gap-4 px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" href="#">
+<div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[22px]">account_balance</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold">My Bank Accounts &amp; Cards</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs">3 linked accounts, 1 card</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</a>
+<div class="mx-4 h-[1px] bg-gray-100 dark:bg-gray-800"></div>
+<!-- Menu Item -->
+<a class="flex items-center gap-4 px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" href="#">
+<div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[22px]">card_membership</span>
+</div>
+<div class="flex flex-1 flex-col">
+<div class="flex items-center gap-2">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold">Subscription Plan</p>
+<span class="bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter italic">AI Plus</span>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs">Next billing: June 12, 2024</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</a>
+<div class="mx-4 h-[1px] bg-gray-100 dark:bg-gray-800"></div>
+<!-- Menu Item -->
+<a class="flex items-center gap-4 px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" href="#">
+<div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[22px]">security</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold">Security &amp; Password</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs">Face ID and 2FA enabled</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</a>
+</div>
+</div>
+<!-- Help Section -->
+<div class="flex flex-col px-4 mt-8 mb-24">
+<h3 class="text-[#0d111b] dark:text-white text-sm font-bold leading-tight uppercase tracking-[0.05em] mb-4 opacity-60">Support</h3>
+<div class="flex flex-col gap-1 bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
+<a class="flex items-center gap-4 px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" href="#">
+<div class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[22px]">help_center</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-[#0d111b] dark:text-white text-base font-semibold">Help &amp; Support</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</a>
+<div class="mx-4 h-[1px] bg-gray-100 dark:bg-gray-800"></div>
+<a class="flex items-center gap-4 px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" href="#">
+<div class="flex size-10 items-center justify-center rounded-xl bg-red-50 text-red-500">
+<span class="material-symbols-outlined text-[22px]">logout</span>
+</div>
+<div class="flex flex-1 flex-col">
+<p class="text-red-500 text-base font-semibold">Log Out</p>
+</div>
+</a>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50">
+<div class="flex gap-2 border-t border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md px-4 pb-6 pt-3">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+</div>
+<p class="text-[10px] font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">receipt_long</span>
+</div>
+<p class="text-[10px] font-medium leading-normal">Transactions</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-gray-400" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">bar_chart_4_bars</span>
+</div>
+<p class="text-[10px] font-medium leading-normal">Reports</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<p class="text-[10px] font-bold leading-normal">Profile</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>

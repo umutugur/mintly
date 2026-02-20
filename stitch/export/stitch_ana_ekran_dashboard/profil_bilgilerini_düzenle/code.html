@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1142d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<title>Profili Düzenle</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto min-h-screen flex flex-col bg-white dark:bg-background-dark shadow-sm">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300">arrow_back</span>
+</button>
+<h1 class="text-lg font-semibold text-slate-900 dark:text-white">Profili Düzenle</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Profile Picture Section -->
+<div class="flex flex-col items-center py-8">
+<div class="relative">
+<div class="w-32 h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-lg bg-slate-200 dark:bg-slate-700 bg-cover bg-center overflow-hidden" data-alt="Ahmet Yilmaz profile portrait shot" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuACQAqDqiGK-_rzDQriUaQbXV2fd1nerGaFO38Gfk_aP0Oo9e273poMTDf01NPi-hi0gp3-d-DDQ5EzCaqzEgWuwawKVILZISxtGUWj5Vo8vRNI6_fY11PZOv-bVXVBfQu_lvlAAZ1KjJEZYiTZiPy802kDNxUSPoRReVleQBu0Wvxk7U8UwRDISTixA7_KsXbW7Zq_RJ8DehetxX9pqecVCbvk6CGu_y1tHZw30LljSWj0aC-W3a6hCdDjc5REOOa05TpyPGKeHc0V')">
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full shadow-md hover:bg-primary/90 transition-all flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</button>
+</div>
+<p class="mt-4 text-sm font-medium text-primary hover:underline cursor-pointer">Fotoğrafı Değiştir</p>
+</div>
+<!-- Form Fields -->
+<main class="flex-1 px-6 pb-24 space-y-5">
+<!-- Full Name -->
+<div class="space-y-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1" for="full_name">Ad Soyad</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" id="full_name" type="text" value="Ahmet Yılmaz"/>
+</div>
+</div>
+<!-- Email -->
+<div class="space-y-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1" for="email">E-posta</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" id="email" type="email" value="ahmet.yilmaz@example.com"/>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="space-y-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1" for="phone">Telefon Numarası</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" id="phone" type="tel" value="0 555 123 45 67"/>
+</div>
+</div>
+<!-- City -->
+<div class="space-y-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ml-1" for="city">Şehir</label>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" id="city" type="text" value="İstanbul"/>
+</div>
+</div>
+<!-- Notifications Toggle -->
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 mt-6">
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-900 dark:text-white">Finansal Özetler</span>
+<span class="text-xs text-slate-500">Haftalık harcama raporlarını al</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</main>
+<!-- Save Button Footer -->
+<footer class="sticky bottom-0 left-0 right-0 p-6 bg-white dark:bg-background-dark border-t border-slate-100 dark:border-slate-800">
+<button class="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">save</span>
+                Kaydet
+            </button>
+</footer>
+</div>
+</body></html>

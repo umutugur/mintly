@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#09090b",
+                        "background-dark": "#09090b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="dark:bg-background-dark min-h-screen flex flex-col font-display bg-background-dark">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-10 dark:bg-background-dark border-b border-primary/10 px-4 h-16 flex items-center justify-between bg-background-dark">
+<button class="text-primary flex items-center justify-center p-2 rounded-lg hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-gray-900 dark:text-white">Borç Kapatma</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="flex-1 overflow-y-auto pb-32">
+<!-- Recipient Hero Section -->
+<div class="p-6 flex flex-col items-center">
+<div class="relative mb-4">
+<div class="w-24 h-24 rounded-full border-4 border-primary/20 p-1">
+<img alt="Recipient Avatar" class="w-full h-full rounded-full object-cover" data-alt="Professional portrait of a man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv4G6s8RNs7U0Rjb6OAvUmbjgtpgh9QZ4I9iGJ2fdm7VoVlcfXM5-C1TQZucXcNFSpsVU_xYDwLXz7psmAXz6rA0WEACyS1CO3hb1a2TcINN2BDnc99uKCBMiuf5ZTuN57Dxb0mC1lcz-fKpPFH-fS17ZD0FFJREZuAhjAQrjas0rleN-KRsb-B23dCFmTO5xkLcugF1nDFLPvA3P2LBXllE_FTqOmbkqz3XDh5btXiNyGkULW8uM1NoK_3riyXqGbbn73ML0sL9zu"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full border-2 border-white dark:border-background-dark">
+<span class="material-symbols-outlined text-sm leading-none">check_circle</span>
+</div>
+</div>
+<h2 class="text-xl font-bold text-gray-900 dark:text-white">Ahmet Yılmaz</h2>
+<div class="mt-2 flex flex-col items-center">
+<span class="text-3xl font-black text-primary tracking-tight">120,00 TL</span>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">Borç Bakiyesi</span>
+</div>
+</div>
+<!-- Debt Context Card -->
+<div class="px-4 mb-6">
+<div class="dark:bg-background-dark/50 border border-primary/10 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+<div class="bg-primary/10 text-primary p-3 rounded-lg">
+<span class="material-symbols-outlined">restaurant</span>
+</div>
+<div>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase">Hangi harcama için?</p>
+<p class="text-base font-bold text-gray-900 dark:text-white">Akşam Yemeği Ekibi</p>
+</div>
+</div>
+</div>
+<!-- Payment Method Selection -->
+<div class="px-4 mb-6">
+<h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest px-1 mb-3">Ödeme Yöntemi</h3>
+<div class="space-y-3">
+<!-- Option 1: MasterCard -->
+<label class="relative flex items-center bg-zinc-900 border-2 border-primary rounded-xl p-4 cursor-pointer shadow-sm">
+<input checked="" class="hidden" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 w-full">
+<div class="text-orange-500">
+<span class="material-symbols-outlined text-3xl">credit_card</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-gray-900 dark:text-white">Kredi Kartı **** 4291</p>
+<p class="text-xs text-gray-500">Son Kullanma: 08/26</p>
+</div>
+<div class="text-primary">
+<span class="material-symbols-outlined">radio_button_checked</span>
+</div>
+</div>
+</label>
+<!-- Option 2: Balance -->
+<label class="relative flex items-center dark:bg-background-dark/50 border border-gray-200 dark:border-primary/10 rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-colors">
+<input class="hidden" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 w-full">
+<div class="text-green-500">
+<span class="material-symbols-outlined text-3xl">account_balance_wallet</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-gray-900 dark:text-white">Bakiye ile Öde</p>
+<p class="text-xs text-gray-500">Kullanılabilir: 450,50 TL</p>
+</div>
+<div class="text-gray-300">
+<span class="material-symbols-outlined">radio_button_unchecked</span>
+</div>
+</div>
+</label><!-- Option 3: Manual Cash Payment -->
+<label class="relative flex items-center dark:bg-background-dark/50 border border-gray-200 dark:border-primary/10 rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-colors">
+<input class="hidden" name="payment_method" type="radio"/>
+<div class="flex items-center gap-4 w-full">
+<div class="text-blue-500">
+<span class="material-symbols-outlined text-3xl">handshake</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-gray-900 dark:text-white">Nakit Ödedim</p>
+<p class="text-xs text-gray-500">Elden veya haricen ödendi</p>
+</div>
+<div class="text-gray-300">
+<span class="material-symbols-outlined">radio_button_unchecked</span>
+</div>
+</div>
+</label>
+<!-- Option 3: Add New Card -->
+<button class="w-full flex items-center gap-4 bg-primary/5 border border-dashed border-primary/30 rounded-xl p-4 text-primary font-bold text-sm justify-center hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+                    Yeni Kart Ekle
+                </button>
+</div>
+</div>
+<!-- Note Field -->
+<div class="px-4 mb-8">
+<h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest px-1 mb-3">Not ekle (isteğe bağlı)</h3>
+<textarea class="w-full dark:bg-background-dark/50 border border-primary/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none min-h-[100px] resize-none dark:text-white" placeholder="Ödemenizle ilgili bir not bırakın..."></textarea>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 left-0 right-0 bg-background-dark/80 backdrop-blur-md border-t border-white/10 p-4 pb-8">
+<button class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-[0.98] hover:opacity-90 shadow-primary/40"><span class="material-symbols-outlined">check_circle</span>
+            Ödemeyi Onayla</button>
+</div>
+<!-- Bottom Navigation Component Placeholder (as requested in list but refined) -->
+<nav class="fixed bottom-0 left-0 right-0 hidden">
+<!-- Hidden as it's a specific action screen, usually navigation is hidden or restricted during payment flows -->
+</nav>
+</body></html>

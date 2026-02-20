@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Harcama Grupları</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1142d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 border-b border-primary/10">
+<div class="flex items-center justify-between max-w-2xl mx-auto">
+<div class="flex items-center gap-3">
+<button class="p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Harcama Grupları</h1>
+</div>
+<button class="bg-primary text-white p-2 rounded-lg shadow-lg shadow-primary/30 hover:bg-primary/90 flex items-center justify-center transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</header>
+<main class="flex-1 max-w-2xl mx-auto w-full px-4 pb-24">
+<!-- Search Bar -->
+<div class="mt-6 mb-6">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60 group-focus-within:text-primary">search</span>
+<input class="w-full bg-white dark:bg-slate-800 border-none rounded-xl py-3 pl-12 pr-4 shadow-sm ring-1 ring-primary/5 focus:ring-2 focus:ring-primary transition-all text-base placeholder:text-slate-400" placeholder="Grup ara..." type="text"/>
+</div>
+</div>
+<!-- Quick Create Card -->
+<div class="mb-8">
+<div class="border-2 border-dashed border-primary/20 bg-primary/5 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-primary/10 transition-colors">
+<div class="flex items-center gap-4">
+<div class="bg-primary/20 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">group_add</span>
+</div>
+<div>
+<p class="font-semibold text-primary">Yeni Grup Oluştur</p>
+<p class="text-sm text-slate-500 dark:text-slate-400">Harcamaları adilce bölüştür</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary/40">chevron_right</span>
+</div>
+</div>
+<!-- Active Groups List -->
+<div class="space-y-4">
+<h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">Aktif Gruplar</h2>
+<!-- Group Card 1 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-xl bg-cover bg-center shrink-0 shadow-inner" data-alt="Modern minimalist home interior with plants" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAg9PPWN1xGvCW5DyaWGn13MYzSi7gT6uUzB2pkGtW1zy6x2FV7ih7viCwk3yVZGrPW7NyYb3MbJAW53vGezbfso_1tkgtjpVRctH7d-FVsc5dqiS2w3PB_Dv2YchBmmo9E7Nb_nAA3i0gQNtzfqOqE5hvi437Z0V671Xk0Ro7bSg2y3-lrS41kzcMpB6FHvYdScoe9aK5m9OEbh_KcGfhgBzsH1dCvjo65bNGN0gV5TB8LwxFKng1WovyZDhHVLORbhA3y9g67AXpu')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-lg leading-tight">Ev Giderleri</h3>
+<span class="material-symbols-outlined text-slate-300">more_vert</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Toplam: <span class="font-semibold">4.500 TL</span></p>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">Sana borçlular: 150 TL</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700 flex items-center justify-between">
+<div class="flex -space-x-3 overflow-hidden">
+<img alt="Avatar 1" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaVlYGYpBe6SfvmONP7jA7nNJM5ht8XLvWtnekDKvLT2fqo8A1fQ736TLp8OQq61nZ-yGT7JSGJuaDsmc2ih9gnCObrrrDVJxm8chDn_ic4-AZ-Zs77_0DHBpqDXogVaSo_jZoIysP-Zqt_QnhLgCTOZigFyeWaK9yOvAIMS3COxEQSt1h1fZ8-S0LDukJnkQQzSrJXrsqLjrP4fpdMBEAb88oO7sLu2cKeWFQfZr2NEKJUC_TtrQTgwT8PEdQfbIY40v3l1b5Sd51"/>
+<img alt="Avatar 2" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK3QduAH3UPnUOJyOILCVsMaLJQw6t9LpU7H3eXDGK7h6a4t-yhDbueZerl0Gvw9SKT35cZk7IDtla2qgE7INeD8qWVA6472kzqp2Vjdkh1vwtjiLOc43eqjMmU_kHwac8fLk4iHQGRXtz1QzKmqkKYM_JWzr7lyoo44Mi7tFdAqeRiXC0pYnCjSmngi2OlGbXq3GQaJRv0SiQrMTelEx-BlQIXjFsH-KmKy6KFLUaHxUsu1CDsk3_8j5TmcUG5H4GjMxdl8H5V_DS"/>
+<img alt="Avatar 3" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfo_eWOKq9-W_5_-bpRCQUjEDROCng5bRxGNWvk7I9EsWzIO8C5ik2kJMAqGNqPwfYW26I2yHdstNnDLT7qL29fJHVviVzeDsPD-npjgI0xH8IRA9gbZRVxaUTxuouteu4K86hW_d_5weXy2Z5C8UhpTziQLnvcf5Fk_wEy665OgI6J6t_2KJglWTZAadOQoPN6nCeh-_IITFGfTfZSKO-lb-MB35USCXb0L2Z4kA1V-g7cSrUHn6ogJ7_eA7Z-0T-O2LN8STQO4Pv"/>
+<div class="inline-block h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-white dark:ring-slate-800">
+<span class="text-[10px] font-bold text-primary">+2</span>
+</div>
+</div>
+<button class="text-primary text-sm font-bold flex items-center gap-1">
+                        Detaylar <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Group Card 2 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-xl bg-cover bg-center shrink-0 shadow-inner" data-alt="Tropical beach with turquoise water and palms" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAs7wYEXGpZyUmKw1gxam4MHcHOTb6iziZeWxmPrWieeh8I4fkNNUL2J2bj1l902HyqFwZQdCF4gB2rSzdD0ztz0uy_JNKCLWv3vv3mAZ-JmQMo7vsz2yb8d_lBxseGQXLiZXiZL8OBpyZgEQweFQXHW0xbEhwk5ObLJlFL2160L_u_V8Q3IIEQCInUpuoNt-Tsxkm4mqjJ7wOjqdZgMPL9lf3ljWnIWVQuzeE-2iGjE0dNmYpPe4Y8EhmKhzkUfJHmhh9GW388KMY0')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-lg leading-tight">Yaz Tatili</h3>
+<span class="material-symbols-outlined text-slate-300">more_vert</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Toplam: <span class="font-semibold">12.800 TL</span></p>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 px-2 py-1 rounded">Borcun var: 80 TL</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700 flex items-center justify-between">
+<div class="flex -space-x-3 overflow-hidden">
+<img alt="Avatar 1" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnF5H8lV2rjR_PH37SwBwBS-d7xwvkHY6MZMAeSUoDq6gm0LeqFRz_l1ABGZH6TNqg6lNHMZTlo8qIojlGUSbqTzW4Ynu7d1swL2xnNFAt93GrDnx5QeHmG0GIABVCBEE7JS2cHOpMiFvqKgUHkn9z02MmEECcbefF7gE6C3ePHUB2n0PrGeXpipCwHUre_YSCBg2mUncDqDhdf6chKAyXeJhupJ1ttg4lucQdVVdooU81PotJzeKSuIg5PF-cS-RA4gvkYCQuOYS0"/>
+<img alt="Avatar 2" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnVH7skkdJtDgaPMB72IHdDYzEKMpjzmBl4EZSqjeoHfDiV5-V0U84xoZD-iMzL4mNshNyOKPnpbMcRT5KAo0DzEGckDocNa7802-s_DSnvo8f_wG4jZf9lcf_nEsmSQckWi7MAcNSNbL15hJsMZ1uIjk9NQcOAGG82KgNpa3pKN07TyvXalqE7Jw3P68ZDUQAym1pLWPAm6NHC3pW5qsh7G8DU6RfhdGpD_vEtxPazoQtpS15sDrZhYzTjZr5M4v6UgNcEFGn-uIB"/>
+</div>
+<button class="text-primary text-sm font-bold flex items-center gap-1">
+                        Detaylar <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Group Card 3 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-xl bg-cover bg-center shrink-0 shadow-inner" data-alt="Close-up of a gourmet restaurant dish" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBanujcOP0NdxKOzLXUv67eaaZVAMVBFE7-EKV7dGASaSkL6X2A0-Vk9ikS8yESN49D66S17E_MS3VCgI0gB-ok9JL20RV2QD4TYrwDvUm_bPo-jr80Kk2_2iq-9nsXFbmBNkRn-LCcw3vGtMIjjxVYlrUuF9wrtTYHSzRW61Nr1Hpch3XlXVmLp44EAXds7LIIY_6SCTayhYB4mH3ur6bwYuKtGU09JJa5Lrje1OmQb1gLjoHPBrqTMrIqXOTiAdVCgi2qkKjV6Kw8')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-lg leading-tight">Akşam Yemeği Ekibi</h3>
+<span class="material-symbols-outlined text-slate-300">more_vert</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Toplam: <span class="font-semibold">850 TL</span></p>
+<div class="mt-3 flex items-center justify-between">
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">Herkes ödeşti</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700 flex items-center justify-between">
+<div class="flex -space-x-3 overflow-hidden">
+<img alt="Avatar 1" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOQm0cA2KTCoewCmwlQxUaZcJNhTA12fTwdMmPyEOJYpP9fLBUsaoJH-R2lihZHy5uzUzUZelFEcNX34EPRCmgomQBhlkqJ7RX9RtDr8giznClJ_-KKp0L2ogwYZHjoYCBMyCf63CV_soMvLixiyh0f-taOjh5Bxfuu6PAhk0gQ_Ax5pZMKmSGtqqaTjFq_KQRWlyeXuUEx48Q4KMD7xhQTUxpe397bvmN91rz8gmnBqQaeVE7oEaCgtnSngGT5qQwhrWaWpCTNxTV"/>
+<img alt="Avatar 2" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAjWE-NGtMsU_zdiossl_HddhY6afcgjQnhB4yMi08wtc17OAKh0Fjbd1WjxHoNTEmlojHWjuUVoiPE7dI8WkAeCTNX15KwrazGdu-XwSSQJZaDeqLGP50hA4gNthIc6t44R8fz_puMvM0MOuLP4e4R7Exoo00lS44WZh3OFym1GtNsDqzP5T_6BlQ8CzqRZHVhtIXVQ4Ayz-gI3I93Hqg0bTDCvXAp819ig5P7hn9JMXQR2WEAcG7EiHqf5_oTOnmuSWhziPPdZ7A"/>
+<img alt="Avatar 3" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoApXPKWP-oo9xmVM_OW1t2BP9hG7LVSAdcpvp7UQWBYkVzIs8O7KlpRBt9PgezzLfu8L49jGXbLT-mSZdewwkhyeakEGBcHmmWsvS102BVFP1Ob1mfSjDTYcmgKvOTGD9oGtl9Y6MTRtS1n2wQCS0tNPwgt2wSKj6N5VNVOYalMfOWvbaK1KvcBYsJzJQGDpIW_Bx0Q8j8wRZQpEBMPoWz-0W98TXHbR92G9BbgTHfWOHvKNax770TijLKGiP3romg3vVB4soPm4q"/>
+<img alt="Avatar 4" class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwqoKqvYFuwnSUQLVqhGAq5eE1vC6fXyyG2tbnOszdX0Unp00ZsOSoUrxe9FsoLhXFbpySh56whNpKTB1GK_Xfxv2OJRrhMHQ-OMXKNPlVMi28A4wvDLj-zy2IYjQn06fCBYRcfv1PkzXdgJGjPl5iImYGNf4xUcufQ2ueKMN7GHWLFlzmVaShiE6kx_wp5bVS6k1ITgk0dTUWpIfXMeyz9VTqkTZG2YiqWMYvF_3EOMkK_T5fRo0MD00_5rt9ZvBvnPqeC0qAkwc0"/>
+</div>
+<button class="text-primary text-sm font-bold flex items-center gap-1">
+                        Detaylar <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe-area">
+<div class="max-w-2xl mx-auto flex justify-around items-center py-2 px-2">
+<a class="flex flex-col items-center gap-1 px-3 py-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-3 py-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">credit_card</span>
+<span class="text-[10px] font-medium">Kartlarım</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-3 py-1 text-primary relative" href="#">
+<div class="absolute -top-6 bg-primary text-white p-3 rounded-full shadow-lg shadow-primary/40 ring-4 ring-background-light dark:ring-background-dark">
+<span class="material-symbols-outlined text-2xl active-tab">group</span>
+</div>
+<span class="text-[10px] font-bold mt-8">Bölüştür</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-3 py-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">leaderboard</span>
+<span class="text-[10px] font-medium">İstatistik</span>
+</a>
+<a class="flex flex-col items-center gap-1 px-3 py-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</a>
+</div>
+</nav>
+<!-- Padding for mobile safe area -->
+<div class="h-8 bg-white dark:bg-slate-900"></div>
+</body></html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart Finance AI - Giriş Yap</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4211d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Main Container -->
+<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden items-center justify-center px-4 py-8">
+<!-- Login Card -->
+<div class="w-full max-w-[440px] flex flex-col items-center">
+<!-- Logo Section -->
+<div class="mb-8 flex flex-col items-center">
+<div class="size-16 bg-primary/20 rounded-xl flex items-center justify-center text-primary mb-4 ring-1 ring-primary/30">
+<span class="material-symbols-outlined !text-4xl">
+                        shield_person
+                    </span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Finance AI</h2>
+</div>
+<!-- Header Section -->
+<div class="text-center mb-10">
+<h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">Giriş Yap</h1>
+<p class="text-slate-500 dark:text-slate-400 font-medium">Welcome Back</p>
+</div>
+<!-- Form Section -->
+<div class="w-full space-y-4">
+<!-- Email Input -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined !text-[22px]">mail</span>
+</div>
+<input class="w-full bg-white dark:bg-[#201933] border border-slate-200 dark:border-[#3f3267] rounded-xl py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#a092c9] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm" placeholder="Enter your email" type="email"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Password</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined !text-[22px]">lock</span>
+</div>
+<input class="w-full bg-white dark:bg-[#201933] border border-slate-200 dark:border-[#3f3267] rounded-xl py-3.5 pl-12 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#a092c9] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm" placeholder="Enter your password" type="password"/>
+<div class="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined !text-[22px]">visibility</span>
+</div>
+</div>
+</div>
+<!-- Forgot Password -->
+<div class="flex justify-end">
+<a class="text-sm font-medium text-primary hover:underline underline-offset-4" href="#">Forgot Password?</a>
+</div>
+<!-- Sign In Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] mt-4">
+                    Sign In
+                </button>
+</div>
+<!-- Divider -->
+<div class="w-full flex items-center gap-4 my-8">
+<div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+<span class="text-sm text-slate-500 dark:text-slate-400 font-medium">Or continue with</span>
+<div class="h-px flex-1 bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<!-- Social Logins -->
+<div class="w-full grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-white dark:bg-[#201933] border border-slate-200 dark:border-[#3f3267] rounded-xl py-3 hover:bg-slate-50 dark:hover:bg-[#2a2142] transition-colors shadow-sm">
+<img alt="Google" class="w-5 h-5" data-alt="Google logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjZcIR4kOmNsHBgmS9AzPyVonBZqZtWTGvcJK_auKzgdao4ZjO4lySDy1PjT7cxVvhP678EySR0NKnu9jnsJBrMbgYosu1A9jxQyJRtS4WHVLR7CxJyUQA86gUAF4Un5G5zhWrNggvcFYEFbKPsXlwL_L_xWYebIHJ6HbhSGwXs3d2KFRKNkx-q0xzSSFxjBJPEiVzIx_duDwuIgTYjEMY9gw1wnyCh-yk40XHEc7o0UZX7FppX9MT7YTJDfCaXiQ-clxVk5mLe7of"/>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Google</span>
+</button>
+<button class="flex items-center justify-center gap-2 bg-white dark:bg-[#201933] border border-slate-200 dark:border-[#3f3267] rounded-xl py-3 hover:bg-slate-50 dark:hover:bg-[#2a2142] transition-colors shadow-sm">
+<span class="material-symbols-outlined !text-xl text-slate-900 dark:text-white">ios</span>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Apple</span>
+</button>
+</div>
+<!-- Footer -->
+<div class="mt-10 text-center">
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    Don't have an account? 
+                    <a class="text-primary font-bold hover:underline ml-1" href="#">Join Now</a>
+</p>
+</div>
+</div>
+<!-- Decorative Background Elements -->
+<div class="absolute top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+</div>
+</body></html>

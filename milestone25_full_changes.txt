@@ -1,0 +1,4513 @@
+Milestone 25 full updated files
+
+===== FILE: package.json =====
+{
+  "name": "finsight",
+  "private": true,
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:mobile": "turbo run dev --filter=mobile",
+    "dev:api": "turbo run dev --filter=api",
+    "build": "turbo run build",
+    "lint": "pnpm i18n:check && turbo run lint",
+    "lint:i18n": "turbo run lint:i18n",
+    "i18n:check": "node scripts/i18n/check-locales.mjs && node scripts/i18n/check-hardcoded-strings.mjs",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "start:api": "pnpm -C apps/api start:prod",
+    "start:mobile": "pnpm -C apps/mobile start",
+    "smoke:api": "node scripts/smoke-api.mjs"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^8.57.1",
+    "turbo": "^2.8.9",
+    "typescript": "^5.9.3"
+  }
+}
+
+===== FILE: turbo.json =====
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "lint:i18n": {
+      "outputs": []
+    },
+    "i18n:check": {
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": []
+    }
+  }
+}
+
+===== FILE: apps/mobile/package.json =====
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "expo start --port 8089",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "pnpm lint:i18n",
+    "lint:i18n": "pnpm run i18n:check && eslint --config ../../.eslintrc.cjs --ext .ts,.tsx src --max-warnings=0",
+    "i18n:check": "node ../../scripts/i18n/check-locales.mjs && node ../../scripts/i18n/check-hardcoded-strings.mjs"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@finsight/shared": "workspace:*",
+    "@hookform/resolvers": "^5.2.2",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/netinfo": "^11.4.1",
+    "@react-navigation/bottom-tabs": "^7.8.6",
+    "@react-navigation/native": "^7.1.17",
+    "@react-navigation/native-stack": "^7.3.25",
+    "@sentry/react-native": "^7.2.0",
+    "@tanstack/react-query": "^5.90.5",
+    "expo": "~54.0.33",
+    "expo-camera": "~17.0.8",
+    "expo-constants": "^18.0.13",
+    "expo-localization": "^17.0.8",
+    "expo-secure-store": "~15.0.7",
+    "expo-status-bar": "~3.0.9",
+    "i18next": "^25.8.11",
+    "react": "19.1.0",
+    "react-hook-form": "^7.66.0",
+    "react-i18next": "^16.5.4",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-safe-area-context": "5.6.1",
+    "react-native-screens": "~4.16.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
+
+===== FILE: scripts/i18n/check-locales.mjs =====
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(scriptDir, '..', '..');
+const localesRoot = path.join(
+  projectRoot,
+  'apps',
+  'mobile',
+  'src',
+  'shared',
+  'i18n',
+  'locales',
+);
+const localeFiles = ['en.json', 'tr.json', 'ru.json'];
+
+function flatten(input, prefix = '') {
+  const output = {};
+
+  for (const [key, value] of Object.entries(input)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(output, flatten(value, fullKey));
+      continue;
+    }
+
+    output[fullKey] = value;
+  }
+
+  return output;
+}
+
+const localeMaps = {};
+for (const localeFile of localeFiles) {
+  const filePath = path.join(localesRoot, localeFile);
+  if (!fs.existsSync(filePath)) {
+    console.error(`[i18n:check] Missing locale file: ${filePath}`);
+    process.exit(1);
+  }
+
+  localeMaps[localeFile] = flatten(JSON.parse(fs.readFileSync(filePath, 'utf8')));
+}
+
+const allKeys = new Set();
+for (const localeFile of localeFiles) {
+  for (const key of Object.keys(localeMaps[localeFile])) {
+    allKeys.add(key);
+  }
+}
+
+let hasError = false;
+
+for (const localeFile of localeFiles) {
+  const missing = [...allKeys].filter((key) => !(key in localeMaps[localeFile]));
+  if (missing.length === 0) {
+    continue;
+  }
+
+  hasError = true;
+  console.error(`[i18n:check] Missing keys in ${localeFile}: ${missing.length}`);
+  for (const key of missing) {
+    console.error(`  - ${key}`);
+  }
+}
+
+if (hasError) {
+  process.exit(1);
+}
+
+console.log(
+  `[i18n:check] Locale parity OK (${allKeys.size} keys in ${localeFiles.join(', ')})`,
+);
+
+===== FILE: scripts/i18n/check-hardcoded-strings.mjs =====
+import fs from 'fs';
+import path from 'path';
+import ts from 'typescript';
+import { fileURLToPath } from 'url';
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(scriptDir, '..', '..');
+const srcRoot = path.join(projectRoot, 'apps', 'mobile', 'src');
+const extensionSet = new Set(['.tsx']);
+const ignoredPathParts = new Set(['node_modules', '.expo', 'dist', '__tests__']);
+const letterRegex = /[A-Za-zÀ-ÖØ-öø-ÿА-Яа-яЁёÇĞİÖŞÜçğıöşü]/;
+
+const trackedProps = new Set([
+  'title',
+  'headerTitle',
+  'tabBarLabel',
+  'placeholder',
+  'accessibilityLabel',
+  'label',
+  'subtitle',
+  'description',
+  'message',
+]);
+
+function walk(directory, collector = []) {
+  const entries = fs.readdirSync(directory, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (ignoredPathParts.has(entry.name)) {
+        continue;
+      }
+
+      walk(fullPath, collector);
+      continue;
+    }
+
+    if (!extensionSet.has(path.extname(entry.name))) {
+      continue;
+    }
+
+    if (entry.name.endsWith('.test.tsx')) {
+      continue;
+    }
+
+    collector.push(fullPath);
+  }
+
+  return collector;
+}
+
+function hasLetters(value) {
+  return letterRegex.test(value);
+}
+
+function isPunctuationOnly(value) {
+  return !hasLetters(value);
+}
+
+function createViolation(sourceFile, node, reason, value) {
+  const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+  return {
+    filePath: path.relative(projectRoot, sourceFile.fileName),
+    line: position.line + 1,
+    reason,
+    value,
+  };
+}
+
+function isStringLikeExpression(node) {
+  return (
+    ts.isStringLiteral(node) ||
+    ts.isNoSubstitutionTemplateLiteral(node)
+  );
+}
+
+function collectViolations(filePath) {
+  const source = fs.readFileSync(filePath, 'utf8');
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
+
+  const violations = [];
+
+  function visit(node) {
+    if (ts.isJsxText(node)) {
+      const value = node.getText(sourceFile).trim();
+      if (value && !isPunctuationOnly(value)) {
+        violations.push(createViolation(sourceFile, node, 'JSX text literal', value));
+      }
+    }
+
+    if (ts.isJsxAttribute(node)) {
+      const propName = node.name.getText(sourceFile);
+      if (trackedProps.has(propName) && node.initializer) {
+        if (ts.isStringLiteral(node.initializer)) {
+          const value = node.initializer.text.trim();
+          if (value && !isPunctuationOnly(value)) {
+            violations.push(
+              createViolation(
+                sourceFile,
+                node.initializer,
+                `Hardcoded ${propName} prop`,
+                value,
+              ),
+            );
+          }
+        } else if (
+          ts.isJsxExpression(node.initializer) &&
+          node.initializer.expression &&
+          isStringLikeExpression(node.initializer.expression)
+        ) {
+          const value = node.initializer.expression.text.trim();
+          if (value && !isPunctuationOnly(value)) {
+            violations.push(
+              createViolation(
+                sourceFile,
+                node.initializer.expression,
+                `Hardcoded ${propName} prop`,
+                value,
+              ),
+            );
+          }
+        }
+      }
+    }
+
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const target = node.expression;
+      const isAlert =
+        ts.isIdentifier(target.expression) &&
+        target.expression.text === 'Alert' &&
+        target.name.text === 'alert';
+
+      if (isAlert) {
+        const [arg0, arg1] = node.arguments;
+        for (const arg of [arg0, arg1]) {
+          if (arg && isStringLikeExpression(arg)) {
+            const value = arg.text.trim();
+            if (value && !isPunctuationOnly(value)) {
+              violations.push(
+                createViolation(sourceFile, arg, 'Hardcoded Alert.alert text', value),
+              );
+            }
+          }
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return violations;
+}
+
+const files = walk(srcRoot);
+const allViolations = files.flatMap((filePath) => collectViolations(filePath));
+
+if (allViolations.length > 0) {
+  console.error(
+    `[i18n:check] Hardcoded user-visible strings detected (${allViolations.length}):`,
+  );
+
+  for (const violation of allViolations) {
+    console.error(
+      `  - ${violation.filePath}:${violation.line} [${violation.reason}] ${JSON.stringify(violation.value)}`,
+    );
+  }
+
+  process.exit(1);
+}
+
+console.log(`[i18n:check] Hardcoded-string audit OK (${files.length} TSX files checked)`);
+
+===== FILE: apps/mobile/src/shared/i18n/index.ts =====
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Localization from 'expo-localization';
+import i18n from 'i18next';
+import { createElement, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { I18nextProvider, initReactI18next, useTranslation } from 'react-i18next';
+
+import en from './locales/en.json';
+import ru from './locales/ru.json';
+import tr from './locales/tr.json';
+
+export type SupportedLocale = 'tr' | 'en' | 'ru';
+
+const LANGUAGE_STORAGE_KEY = 'finsight:language';
+const DEFAULT_LOCALE: SupportedLocale = 'en';
+
+const resources = {
+  tr: { translation: tr },
+  en: { translation: en },
+  ru: { translation: ru },
+} as const;
+
+let initPromise: Promise<void> | null = null;
+
+function normalizeLocale(locale: string | null | undefined): SupportedLocale {
+  if (!locale) {
+    return DEFAULT_LOCALE;
+  }
+
+  const lowered = locale.toLowerCase();
+  if (lowered.startsWith('tr')) {
+    return 'tr';
+  }
+
+  if (lowered.startsWith('ru')) {
+    return 'ru';
+  }
+
+  return 'en';
+}
+
+function detectDeviceLocale(): SupportedLocale {
+  const locale = Localization.getLocales()[0]?.languageCode;
+  return normalizeLocale(locale);
+}
+
+async function initI18n(): Promise<void> {
+  if (i18n.isInitialized) {
+    return;
+  }
+
+  if (!initPromise) {
+    initPromise = (async () => {
+      const stored = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+      const locale = normalizeLocale(stored ?? detectDeviceLocale());
+
+      await i18n.use(initReactI18next).init({
+        resources,
+        lng: locale,
+        fallbackLng: DEFAULT_LOCALE,
+        interpolation: { escapeValue: false },
+        compatibilityJSON: 'v4',
+        returnNull: false,
+        returnEmptyString: false,
+        parseMissingKeyHandler: () => '',
+      });
+    })();
+  }
+
+  await initPromise;
+}
+
+interface I18nContextValue {
+  locale: SupportedLocale;
+  setLocale: (locale: SupportedLocale) => Promise<void>;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(i18n.isInitialized);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void initI18n().finally(() => {
+      if (mounted) {
+        setReady(true);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!ready) {
+    return null;
+  }
+
+  return createElement(I18nextProvider, { i18n }, children);
+}
+
+export function useI18n(): I18nContextValue {
+  const { t, i18n: instance } = useTranslation();
+
+  const locale = normalizeLocale(instance.resolvedLanguage ?? instance.language);
+
+  const setLocale = useCallback(async (nextLocale: SupportedLocale) => {
+    const normalized = normalizeLocale(nextLocale);
+    await instance.changeLanguage(normalized);
+    await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, normalized);
+  }, [instance]);
+
+  const translate = useCallback((key: string, params?: Record<string, string | number>) => {
+    const hasKey = instance.exists(key);
+    if (!hasKey) {
+      return '';
+    }
+
+    return t(key, params);
+  }, [instance, t]);
+
+  return useMemo(() => ({
+    locale,
+    setLocale,
+    t: translate,
+  }), [locale, setLocale, translate]);
+}
+
+export { LANGUAGE_STORAGE_KEY };
+
+===== FILE: apps/mobile/src/features/profile/screens/SettingsScreen.tsx =====
+import { useState, type ReactNode } from 'react';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { AppIcon, Card, ScreenContainer } from '@shared/ui';
+import { useI18n, type SupportedLocale } from '@shared/i18n';
+import type { ProfileStackParamList } from '@core/navigation/stacks/ProfileStack';
+import { radius, spacing, typography, useTheme, type ThemePreference } from '@shared/theme';
+
+const themeOptions: ThemePreference[] = ['system', 'light', 'dark'];
+const localeOptions: SupportedLocale[] = ['tr', 'en', 'ru'];
+
+const localeLabelKeyByOption: Record<SupportedLocale, string> = {
+  tr: 'profile.settings.locale.tr',
+  en: 'profile.settings.locale.en',
+  ru: 'profile.settings.locale.ru',
+};
+
+const themeLabelKeyByOption: Record<ThemePreference, string> = {
+  system: 'profile.settings.theme.system',
+  light: 'profile.settings.theme.light',
+  dark: 'profile.settings.theme.dark',
+};
+
+export function SettingsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const { theme, mode, preference, setPreference } = useTheme();
+  const { t, locale, setLocale } = useI18n();
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+
+  const dark = mode === 'dark';
+  const panelBg = dark ? '#15192A' : '#FFFFFF';
+  const panelBorder = dark ? '#2A2D42' : '#E4EAF5';
+
+  return (
+    <ScreenContainer dark={dark}>
+      <View style={styles.container}>
+        <Card
+          dark={dark}
+          style={[
+            styles.profileHint,
+            {
+              borderColor: panelBorder,
+              backgroundColor: panelBg,
+            },
+          ]}
+        >
+          <View style={[styles.profileIcon, { backgroundColor: dark ? 'rgba(66,17,212,0.22)' : '#ECF2FF' }]}> 
+            <AppIcon name="person-outline" size="lg" tone="primary" />
+          </View>
+          <Text style={[styles.profileName, { color: theme.colors.text }]}>{t('profile.settings.userTitle')}</Text>
+          <Text style={[styles.profilePlan, { color: theme.colors.primary }]}>{t('profile.settings.plan')}</Text>
+        </Card>
+
+        <SettingsGroup
+          title={t('profile.settings.sections.application')}
+          items={[
+            {
+              iconName: 'language-outline',
+              label: t('profile.settings.items.language.title'),
+              subtitle: t('profile.settings.items.language.subtitle'),
+              customRight: (
+                <View style={styles.optionChipRow}>
+                  {localeOptions.map((option) => {
+                    const active = locale === option;
+                    return (
+                      <Pressable
+                        key={option}
+                        accessibilityRole="button"
+                        onPress={() => {
+                          void setLocale(option);
+                        }}
+                        style={[
+                          styles.optionChip,
+                          {
+                            borderColor: active ? theme.colors.primary : panelBorder,
+                            backgroundColor: active
+                              ? dark
+                                ? 'rgba(66,17,212,0.22)'
+                                : '#ECF2FF'
+                              : dark
+                                ? '#121624'
+                                : '#FFFFFF',
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.optionChipText, { color: active ? theme.colors.primary : theme.colors.textMuted }]}> 
+                          {t(localeLabelKeyByOption[option])}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ),
+            },
+            {
+              iconName: 'color-palette-outline',
+              label: t('profile.settings.items.theme.title'),
+              subtitle: t('profile.settings.items.theme.subtitle'),
+              customRight: (
+                <View style={styles.optionChipRow}>
+                  {themeOptions.map((option) => {
+                    const active = preference === option;
+                    return (
+                      <Pressable
+                        key={option}
+                        accessibilityRole="button"
+                        onPress={() => setPreference(option)}
+                        style={[
+                          styles.optionChip,
+                          {
+                            borderColor: active ? theme.colors.primary : panelBorder,
+                            backgroundColor: active
+                              ? dark
+                                ? 'rgba(66,17,212,0.22)'
+                                : '#ECF2FF'
+                              : dark
+                                ? '#121624'
+                                : '#FFFFFF',
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.optionChipText, { color: active ? theme.colors.primary : theme.colors.textMuted }]}> 
+                          {t(themeLabelKeyByOption[option])}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              ),
+            },
+            {
+              iconName: 'notifications-outline',
+              label: t('profile.settings.items.notifications.title'),
+              subtitle: t('profile.settings.items.notifications.subtitle'),
+              customRight: (
+                <Switch
+                  trackColor={{ false: dark ? '#3A3F56' : '#CBD5E1', true: dark ? '#3A238A' : '#CAD8FF' }}
+                  thumbColor={notificationsEnabled ? theme.colors.primary : '#E2E8F0'}
+                  onValueChange={setNotificationsEnabled}
+                  value={notificationsEnabled}
+                />
+              ),
+            },
+          ]}
+        />
+
+        <SettingsGroup
+          title={t('profile.settings.sections.privacy')}
+          items={[
+            {
+              iconName: 'finger-print-outline',
+              label: t('profile.settings.items.biometric.title'),
+              subtitle: t('profile.settings.items.biometric.subtitle'),
+              customRight: (
+                <Switch
+                  trackColor={{ false: dark ? '#3A3F56' : '#CBD5E1', true: dark ? '#3A238A' : '#CAD8FF' }}
+                  thumbColor={biometricEnabled ? theme.colors.primary : '#E2E8F0'}
+                  onValueChange={setBiometricEnabled}
+                  value={biometricEnabled}
+                />
+              ),
+            },
+            {
+              iconName: 'shield-checkmark-outline',
+              label: t('profile.settings.items.security.title'),
+              subtitle: t('profile.settings.items.security.subtitle'),
+              chevron: true,
+            },
+          ]}
+        />
+
+        <SettingsGroup
+          title={t('profile.settings.sections.support')}
+          items={[
+            {
+              iconName: 'sparkles-outline',
+              label: t('profile.settings.items.howItWorks.title'),
+              subtitle: t('profile.settings.items.howItWorks.subtitle'),
+              onPress: () => navigation.navigate('HowItWorks'),
+              chevron: true,
+            },
+            {
+              iconName: 'help-circle-outline',
+              label: t('profile.settings.items.helpCenter.title'),
+              subtitle: t('profile.settings.items.helpCenter.subtitle'),
+            },
+            {
+              iconName: 'information-circle-outline',
+              label: t('profile.settings.items.version.title'),
+              subtitle: t('profile.settings.items.version.subtitle'),
+            },
+          ]}
+        />
+      </View>
+    </ScreenContainer>
+  );
+}
+
+function SettingsGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: Array<{
+    iconName: Parameters<typeof AppIcon>[0]['name'];
+    label: string;
+    subtitle: string;
+    value?: string;
+    chevron?: boolean;
+    customRight?: ReactNode;
+    onPress?: () => void;
+  }>;
+}) {
+  const { theme, mode } = useTheme();
+  const dark = mode === 'dark';
+
+  return (
+    <View style={styles.groupWrap}>
+      <Text style={[styles.groupTitle, { color: theme.colors.primary }]}>{title}</Text>
+      <Card
+        dark={dark}
+        style={[
+          styles.groupCard,
+          {
+            borderColor: dark ? '#2A2D42' : '#E4EAF5',
+            backgroundColor: dark ? '#15192A' : '#FFFFFF',
+          },
+        ]}
+      >
+        {items.map((item, index) => (
+          <View key={`${item.label}-${index}`}>
+            {item.onPress ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={item.onPress}
+                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              >
+                <View style={[styles.leadingIconWrap, { backgroundColor: dark ? 'rgba(66,17,212,0.18)' : '#ECF2FF' }]}> 
+                  <AppIcon name={item.iconName} size="sm" tone="primary" />
+                </View>
+
+                <View style={styles.textWrap}>
+                  <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.label}</Text>
+                  <Text style={[styles.rowSubtitle, { color: theme.colors.textMuted }]}>{item.subtitle}</Text>
+                </View>
+
+                {item.customRight ?? (
+                  <View style={styles.rightMeta}>
+                    {item.value ? <Text style={[styles.valueText, { color: theme.colors.textMuted }]}>{item.value}</Text> : null}
+                    {item.chevron ? <AppIcon name="chevron-forward" size="sm" tone="muted" /> : null}
+                  </View>
+                )}
+              </Pressable>
+            ) : (
+              <View style={styles.row}>
+                <View style={[styles.leadingIconWrap, { backgroundColor: dark ? 'rgba(66,17,212,0.18)' : '#ECF2FF' }]}> 
+                  <AppIcon name={item.iconName} size="sm" tone="primary" />
+                </View>
+
+                <View style={styles.textWrap}>
+                  <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.label}</Text>
+                  <Text style={[styles.rowSubtitle, { color: theme.colors.textMuted }]}>{item.subtitle}</Text>
+                </View>
+
+                {item.customRight ?? (
+                  <View style={styles.rightMeta}>
+                    {item.value ? <Text style={[styles.valueText, { color: theme.colors.textMuted }]}>{item.value}</Text> : null}
+                    {item.chevron ? <AppIcon name="chevron-forward" size="sm" tone="muted" /> : null}
+                  </View>
+                )}
+              </View>
+            )}
+
+            {index < items.length - 1 ? (
+              <View style={[styles.divider, { backgroundColor: dark ? '#2A2D42' : '#E4EAF5' }]} />
+            ) : null}
+          </View>
+        ))}
+      </Card>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    gap: spacing.md,
+  },
+  profileHint: {
+    alignItems: 'center',
+    gap: spacing.xxs,
+  },
+  profileIcon: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    height: 64,
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+    width: 64,
+  },
+  profileName: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  profilePlan: {
+    ...typography.caption,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  groupWrap: {
+    gap: spacing.xs,
+  },
+  groupTitle: {
+    ...typography.caption,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  groupCard: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minHeight: 64,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  rowPressed: {
+    opacity: 0.86,
+  },
+  leadingIconWrap: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    height: 34,
+    justifyContent: 'center',
+    width: 34,
+  },
+  textWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  rowTitle: {
+    ...typography.body,
+    fontWeight: '600',
+  },
+  rowSubtitle: {
+    ...typography.caption,
+    fontSize: 11,
+  },
+  rightMeta: {
+    alignItems: 'flex-end',
+    gap: spacing.xxs,
+  },
+  valueText: {
+    ...typography.caption,
+    fontWeight: '700',
+  },
+  divider: {
+    height: 1,
+    marginHorizontal: spacing.md,
+  },
+  optionChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xxs,
+    justifyContent: 'flex-end',
+    maxWidth: 176,
+  },
+  optionChip: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    minHeight: 26,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+  },
+  optionChipText: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+});
+
+===== FILE: apps/mobile/src/shared/i18n/locales/en.json =====
+{
+  "accounts": {
+    "baseCurrency": {
+      "empty": "No base currency yet. Pick one for your first account.",
+      "value": "Base currency: {{currency}}"
+    },
+    "form": {
+      "create": "Create Account",
+      "creating": "Creating...",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "USD",
+      "nameLabel": "Account name",
+      "namePlaceholder": "e.g. Main Bank",
+      "typeLabel": "Type"
+    },
+    "sections": {
+      "baseCurrency": {
+        "subtitle": "Locked for all accounts after first setup",
+        "title": "Base Currency"
+      },
+      "create": {
+        "title": "Create Account"
+      },
+      "list": {
+        "title": "Your Accounts",
+        "total": "{{count}} total"
+      },
+      "session": {
+        "title": "Account Session"
+      }
+    },
+    "session": {
+      "signedIn": "Signed in"
+    },
+    "state": {
+      "empty": "No accounts created yet.",
+      "loadErrorTitle": "Could not load accounts",
+      "loading": "Loading accounts..."
+    }
+  },
+  "advisor": {
+    "advice": "Advice",
+    "expense": "Expense",
+    "income": "Income",
+    "monthlySnapshot": "Monthly Snapshot",
+    "net": "Net",
+    "nextActions": "Next Actions",
+    "noActions": "No action items right now.",
+    "noAdvice": "No advice for this month yet.",
+    "severity": {
+      "info": "Info",
+      "success": "Success",
+      "warning": "Warning"
+    },
+    "state": {
+      "errorTitle": "Advisor unavailable",
+      "noData": "No advisor data available."
+    },
+    "subtitle": "Personalized insights from your monthly activity.",
+    "title": "AI Financial Advisor"
+  },
+  "aiAdvisor": {
+    "advice": "Advice",
+    "expense": "Expense",
+    "income": "Income",
+    "monthlySnapshot": "Monthly Snapshot",
+    "net": "Net",
+    "nextActions": "Next Actions",
+    "noActions": "No action items right now.",
+    "noAdvice": "No advice for this month yet.",
+    "severity": {
+      "info": "Info",
+      "success": "Success",
+      "warning": "Warning"
+    },
+    "state": {
+      "errorTitle": "Advisor unavailable",
+      "noData": "No advisor data available."
+    },
+    "subtitle": "Personalized insights from your monthly activity.",
+    "title": "AI Financial Advisor"
+  },
+  "analytics": {
+    "aiAdvisor": "AI Advisor",
+    "aiAdvisorCta": "Open AI Advisor",
+    "aiAdvisorSubtitle": "Review personalized action items.",
+    "dailyTrends": "Daily Trends",
+    "days": {
+      "fri": "Fri",
+      "mon": "Mon",
+      "sat": "Sat",
+      "sun": "Sun",
+      "thu": "Thu",
+      "tue": "Tue",
+      "wed": "Wed"
+    },
+    "expense": "Expense",
+    "fromLastMonth": "%{{percent}} from last month",
+    "income": "Income",
+    "last7Days": "Last 7 Days",
+    "loadingCategories": "Loading categories...",
+    "mainCategory": "Main Category",
+    "noCategories": "No category data for this period.",
+    "noCategory": "Uncategorized",
+    "percentOfTotal": "{{percent}}% of total",
+    "premiumInsights": "Premium Insights",
+    "range": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "yearly": "Yearly"
+    },
+    "refreshingTrend": "Refreshing trend...",
+    "state": {
+      "errorTitle": "Analytics unavailable",
+      "noData": "No analytics data available."
+    },
+    "title": "Spending Analysis",
+    "topCategories": "Top Categories",
+    "totalSpending": "Total Spending",
+    "transactionsCount": "{{count}} transactions",
+    "weeklyReport": "Weekly Report",
+    "weeklyReportSubtitle": "Check your weekly health score."
+  },
+  "app": {
+    "state": {
+      "preparing": "Preparing FinSight...",
+      "restoring": "Restoring session..."
+    }
+  },
+  "auth": {
+    "brandTitle": "Smart Finance AI",
+    "common": {
+      "apple": "Apple",
+      "google": "Google",
+      "or": "OR",
+      "orContinueWith": "OR CONTINUE WITH"
+    },
+    "forgot": {
+      "fields": {
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "name@company.com"
+      },
+      "secureBadge": "SECURE FINANCIAL AI ENCRYPTION",
+      "submit": "Send Reset Link",
+      "subtitle": "Enter your email address to receive a password reset link. We'll help you get back into your financial dashboard.",
+      "success": "If this email exists, reset instructions were sent.",
+      "title": "Forgot Password"
+    },
+    "links": {
+      "haveAccount": "Already have an account?",
+      "joinNow": "Join Now",
+      "noAccount": "Don't have an account?",
+      "signIn": "Sign In"
+    },
+    "login": {
+      "fallbackError": "Unable to sign in. Please try again.",
+      "fields": {
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "name@company.com",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "••••••••"
+      },
+      "forgot": "Forgot?",
+      "hidePassword": "Hide password",
+      "secureBadge": "SECURE ENCRYPTED LOGIN",
+      "showPassword": "Show password",
+      "submit": "Sign In to Account",
+      "subtitle": "Please enter your details to sign in",
+      "welcomeBack": "Welcome Back"
+    },
+    "register": {
+      "fallbackError": "Unable to create account.",
+      "fields": {
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "ornek@mail.com",
+        "nameLabel": "Full Name",
+        "namePlaceholder": "Enter your full name",
+        "passwordLabel": "Password"
+      },
+      "submit": "Create Account",
+      "subtitle": "Start managing your financial future with AI",
+      "title": "Create Account"
+    },
+    "validation": {
+      "emailInvalid": "Enter a valid email address.",
+      "emailRequired": "Email is required.",
+      "loginInvalidInput": "Please enter a valid email and password.",
+      "nameRequired": "Name is required.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordRequired": "Password is required.",
+      "registerInvalidInput": "Please check your registration details."
+    }
+  },
+  "budgets": {
+    "composer": {
+      "amountPlaceholder": "0.00",
+      "category": "Category",
+      "create": "Create Budget",
+      "creating": "Creating...",
+      "limitAmount": "Limit Amount",
+      "noCategories": "All expense categories already have budgets for this month.",
+      "title": "Add Budget"
+    },
+    "delete": {
+      "message": "Delete {{category}} budget for {{month}}?",
+      "title": "Delete budget"
+    },
+    "inline": {
+      "saveLimit": "Save Limit",
+      "updateLimit": "Update limit"
+    },
+    "overview": {
+      "aiHintPrefix": "AI suggests you're on track to save",
+      "aiHintSuffix": "this month.",
+      "leftLabel": "{{remaining}} left",
+      "spentLabel": "{{spent}} spent ({{percent}}%)",
+      "totalMonthlyBudget": "TOTAL MONTHLY BUDGET"
+    },
+    "row": {
+      "left": "{{remaining}} left",
+      "over": "OVER",
+      "spentOf": "Spent {{spent}} of {{limit}}"
+    },
+    "sections": {
+      "spendingCategories": "Spending Categories",
+      "viewHistory": "View History"
+    },
+    "state": {
+      "empty": "No budgets set for this month yet.",
+      "unavailableTitle": "Budgets unavailable",
+      "updating": "Updating budgets..."
+    },
+    "title": "Budget Planning"
+  },
+  "common": {
+    "appInitials": "FS",
+    "appName": "FinSight",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "delete": "Delete",
+    "edit": "Edit",
+    "goBack": "Go back",
+    "loadingShort": "Loading...",
+    "notAvailable": "N/A",
+    "now": "Now",
+    "pause": "Pause",
+    "resume": "Resume",
+    "retry": "Retry",
+    "save": "Save",
+    "saving": "Saving...",
+    "view": "View",
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "delete": "Delete"
+    },
+    "navigation": {
+      "tabs": {
+        "home": {
+          "label": "Home"
+        },
+        "transactions": {
+          "label": "Transactions",
+          "shortLabel": "Records"
+        },
+        "analytics": {
+          "label": "Analytics",
+          "shortLabel": "Insights"
+        },
+        "groups": {
+          "label": "Groups",
+          "shortLabel": "Groups"
+        },
+        "add": {
+          "label": "Add"
+        },
+        "profile": {
+          "label": "Profile",
+          "shortLabel": "Profile"
+        }
+      },
+      "stacks": {
+        "dashboard": {
+          "header": {
+            "title": "Dashboard"
+          }
+        },
+        "analytics": {
+          "header": {
+            "title": "Analytics"
+          }
+        },
+        "aiAdvisor": {
+          "header": {
+            "title": "AI Advisor"
+          }
+        },
+        "weeklyReport": {
+          "header": {
+            "title": "Weekly Report"
+          }
+        },
+        "budgets": {
+          "header": {
+            "title": "Budgets"
+          }
+        },
+        "groups": {
+          "header": {
+            "title": "Split Groups"
+          }
+        },
+        "createGroup": {
+          "header": {
+            "title": "Create Group"
+          }
+        },
+        "groupDetail": {
+          "header": {
+            "title": "Group Detail"
+          }
+        },
+        "addGroupExpense": {
+          "header": {
+            "title": "Add Group Expense"
+          }
+        },
+        "settleUp": {
+          "header": {
+            "title": "Settle Up"
+          }
+        },
+        "transfer": {
+          "header": {
+            "title": "Transfer"
+          }
+        },
+        "recurring": {
+          "header": {
+            "title": "Recurring"
+          }
+        },
+        "scanReceipt": {
+          "header": {
+            "title": "Scan Receipt"
+          }
+        },
+        "camera": {
+          "header": {
+            "title": "Camera"
+          }
+        },
+        "reviewScan": {
+          "header": {
+            "title": "Review Scan"
+          }
+        },
+        "profile": {
+          "header": {
+            "title": "Profile"
+          }
+        },
+        "editProfile": {
+          "header": {
+            "title": "Edit Profile"
+          }
+        },
+        "settings": {
+          "header": {
+            "title": "Settings"
+          }
+        },
+        "security": {
+          "header": {
+            "title": "Security"
+          }
+        },
+        "about": {
+          "header": {
+            "title": "About"
+          }
+        },
+        "accounts": {
+          "header": {
+            "title": "Accounts"
+          }
+        }
+      },
+      "preview": {
+        "screen": {
+          "header": {
+            "title": "Screen Preview",
+            "suffix": "Preview"
+          }
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "accountFallback": "Account",
+    "accountTypes": {
+      "bank": "Bank",
+      "cash": "Cash",
+      "credit": "Credit"
+    },
+    "accounts": "Accounts",
+    "addExpense": "Add Expense",
+    "addIncome": "Add Income",
+    "aiAction": "Get Insight",
+    "aiActive": "AI ACTIVE",
+    "aiAdvisor": "AI Advisor",
+    "aiAnalysisTitle": "AI Analysis",
+    "currentBalance": "Current Balance",
+    "expense": "Expense",
+    "greeting": "Welcome,",
+    "income": "Income",
+    "insight": {
+      "noSavingsHighlight": "Your savings rate is",
+      "noSavingsMessage": "this month. Let's improve it with smart tips.",
+      "savingsMessage": "more than your recent average.",
+      "thisMonth": "This month you saved"
+    },
+    "premiumSection": "Premium",
+    "quickActions": "Quick Actions",
+    "recentTransactions": "Recent Transactions",
+    "scanReceipt": "Scan Receipt",
+    "state": {
+      "errorTitle": "Dashboard unavailable",
+      "loading": "Loading dashboard...",
+      "noAccounts": "No accounts found.",
+      "noData": "No dashboard data available.",
+      "noTransactions": "No recent transactions yet."
+    },
+    "time": {
+      "dayWithTime": "{{day}} • {{time}}",
+      "today": "Today, {{time}}",
+      "yesterday": "Yesterday, {{time}}"
+    },
+    "transaction": {
+      "expenseTitle": "Expense",
+      "incomeTitle": "Income",
+      "transferContext": "Transfer",
+      "transferTitle": "Transfer"
+    },
+    "trend": {
+      "decrease": "Compared to last month -{{percent}}%",
+      "increase": "Compared to last month +{{percent}}%",
+      "stable": "Compared to last month, stable"
+    },
+    "viewAll": "See All",
+    "weeklyReport": "Weekly Report"
+  },
+  "debug": {
+    "input": {
+      "firstPlaceholder": "First input",
+      "goLogin": "Go to Login",
+      "goRegister": "Go to Register",
+      "secondPlaceholder": "Second input",
+      "subtitle": "This screen uses plain TextInput only. Check focus/blur logs in Metro console.",
+      "title": "Debug Input Isolation"
+    }
+  },
+  "errors": {
+    "account": {
+      "createFailedTitle": "Create account failed",
+      "updateFailedTitle": "Update account failed"
+    },
+    "auth": {
+      "logoutFailedTitle": "Logout failed",
+      "sessionNotAvailable": "Session not available"
+    },
+    "budget": {
+      "createFailedTitle": "Create budget failed",
+      "deleteFailedTitle": "Delete budget failed",
+      "updateFailedTitle": "Update budget failed"
+    },
+    "recurring": {
+      "createFailedTitle": "Create recurring failed",
+      "deleteFailedTitle": "Delete recurring failed",
+      "updateFailedTitle": "Update recurring failed"
+    },
+    "transaction": {
+      "createFailedTitle": "Create transaction failed"
+    },
+    "transfer": {
+      "createFailedTitle": "Transfer failed"
+    },
+    "boundary": {
+      "title": "Something went wrong",
+      "message": "The app hit an unexpected error. Please retry.",
+      "retry": "Try again"
+    },
+    "api": {
+      "API_REQUEST_FAILED": "The request could not be completed.",
+      "BASE_CURRENCY_MISMATCH": "This action uses a different base currency.",
+      "EMAIL_ALREADY_EXISTS": "An account already exists with this email.",
+      "FORBIDDEN": "You do not have permission for this action.",
+      "INVALID_CREDENTIALS": "Email or password is incorrect.",
+      "INVALID_REFRESH_TOKEN": "Your session expired. Please sign in again.",
+      "INVALID_RESPONSE_PAYLOAD": "Received invalid data from server.",
+      "NETWORK_ERROR": "Network connection failed.",
+      "NOT_FOUND": "The requested record was not found.",
+      "REQUEST_TIMEOUT": "The server took too long to respond.",
+      "SERVER_UNREACHABLE": "Server is unreachable right now.",
+      "UNAUTHORIZED": "Your session is no longer valid.",
+      "UNKNOWN_ERROR": "An unexpected error occurred."
+    }
+  },
+  "groups": {
+    "create": {
+      "actions": {
+        "create": "Create Group",
+        "creating": "Creating..."
+      },
+      "errors": {
+        "createFailedTitle": "Create group failed"
+      },
+      "fields": {
+        "membersLabel": "Members (comma separated emails)",
+        "membersPlaceholder": "alice@mail.com, bob@mail.com",
+        "nameLabel": "Group name",
+        "namePlaceholder": "Weekend trip"
+      },
+      "previewCount": "{{count}} members will be added",
+      "subtitle": "Set up a shared expense group",
+      "title": "Create Group",
+      "validation": {
+        "nameRequired": "Group name is required"
+      }
+    },
+    "list": {
+      "createButton": "Create Group",
+      "empty": "No groups yet. Create one to start splitting.",
+      "errorTitle": "Could not load groups",
+      "loading": "Loading groups...",
+      "memberCount": "{{count}} members",
+      "subtitle": "Track shared expenses and balances",
+      "title": "Groups"
+    },
+    "settle": {
+      "actions": {
+        "markSettled": "Mark Settled",
+        "settling": "Settling..."
+      },
+      "errorTitle": "Settle up failed",
+      "loadErrorTitle": "Could not load group",
+      "loading": "Loading group data...",
+      "openAmount": "Open amount",
+      "openExpenses": "Open expenses",
+      "subtitle": "Mark all open group expenses as settled",
+      "successMessage": "Group expenses were marked as settled.",
+      "successTitle": "Settled",
+      "title": "Settle Up"
+    }
+  },
+  "navigation": {
+    "stack": {
+      "about": "About",
+      "accounts": "Accounts",
+      "addGroupExpense": "Add Group Expense",
+      "aiAdvisor": "AI Advisor",
+      "analytics": "Analytics",
+      "budgets": "Budgets",
+      "camera": "Camera",
+      "createGroup": "Create Group",
+      "dashboard": "Dashboard",
+      "editProfile": "Edit Profile",
+      "groupDetail": "Group Detail",
+      "profile": "Profile",
+      "recurring": "Recurring",
+      "reviewScan": "Review Scan",
+      "scanReceipt": "Scan Receipt",
+      "security": "Security",
+      "settings": "Settings",
+      "settleUp": "Settle Up",
+      "splitGroups": "Split Groups",
+      "transfer": "Transfer",
+      "weeklyReport": "Weekly Report"
+    },
+    "tabs": {
+      "add": "Add",
+      "analytics": "Analytics",
+      "analyticsShort": "Insights",
+      "groups": "Groups",
+      "groupsShort": "Groups",
+      "home": "Home",
+      "profile": "Profile",
+      "profileShort": "Profile",
+      "transactions": "Transactions",
+      "transactionsShort": "Records"
+    }
+  },
+  "onboarding": {
+    "getStarted": "Get started",
+    "next": "Next",
+    "skip": "Skip",
+    "step1": {
+      "subtitle": "Keep every expense, income, and transfer in one clear timeline built for daily finance habits.",
+      "title": "Track everything"
+    },
+    "step2": {
+      "subtitle": "See category breakdowns, monthly trends, and budget usage so you always know where money goes.",
+      "title": "Understand spending"
+    },
+    "step3": {
+      "subtitle": "Create your account or sign in, then personalize accounts, categories, and budgets in minutes.",
+      "titleGate": "Ready to begin?",
+      "titlePreview": "You are all set"
+    },
+    "stepLabel": "Step {{current}}/{{total}}"
+  },
+  "profile": {
+    "about": {
+      "appNameLabel": "App Name",
+      "buildLabel": "Build",
+      "buildValue": "Development",
+      "noteOne": "FinSight helps track accounts, transactions, analytics, and budgets using a single base currency.",
+      "noteTwo": "Authentication includes access and refresh tokens with guarded navigation.",
+      "notesTitle": "Notes",
+      "subtitle": "Product and build information",
+      "title": "About FinSight",
+      "versionLabel": "Version",
+      "versionValue": "1.0.0"
+    },
+    "accountSettings": "ACCOUNT & SETTINGS",
+    "accounts": "Accounts",
+    "baseCurrency": "Base Currency",
+    "defaultUserName": "FinSight User",
+    "edit": {
+      "baseCurrencyLabel": "Base Currency",
+      "emailLabel": "Email",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "helper": "Profile update endpoint is not available yet. UI is ready for PATCH /me integration.",
+      "photoSubtitle": "Tap to change (UI only)",
+      "photoTitle": "Profile Photo",
+      "save": "Save Changes",
+      "updateNotAvailableCode": "PROFILE_UPDATE_NOT_AVAILABLE"
+    },
+    "lastSync": "Last Sync",
+    "logOut": "Log out",
+    "loggingOut": "Signing out...",
+    "premiumMember": "PREMIUM MEMBER",
+    "rows": {
+      "about": "About FinSight",
+      "aboutSubtitle": "Version and legal information",
+      "aiAdvisor": "AI Advisor",
+      "aiAdvisorSubtitle": "Open personalized financial advice",
+      "appSettings": "Settings",
+      "appSettingsSubtitle": "Theme and application preferences",
+      "myAccounts": "My accounts",
+      "myAccountsSubtitle": "View and manage your accounts",
+      "personalInfo": "Personal info",
+      "personalInfoSubtitle": "Name, email and profile details",
+      "security": "Security",
+      "securitySubtitle": "Password and session protection",
+      "weeklyReport": "Weekly Report",
+      "weeklyReportSubtitle": "View score and weekly outlook"
+    },
+    "security": {
+      "delete": {
+        "cta": "Delete Account and All Data",
+        "hint": "This action is permanent and cannot be undone.",
+        "notAvailable": "This action is not available yet.",
+        "title": "Delete Account"
+      },
+      "items": {
+        "accountActivity": {
+          "subtitle": "Review recent devices",
+          "title": "Account Activity"
+        },
+        "biometric": {
+          "subtitle": "Use Face ID or Fingerprint",
+          "title": "Biometric Login"
+        },
+        "downloadData": {
+          "subtitle": "Request export package",
+          "title": "Download Personal Data"
+        },
+        "privacyPolicy": {
+          "subtitle": "How FinSight protects data",
+          "title": "Privacy Policy"
+        },
+        "thirdParty": {
+          "subtitle": "Manage partner data access",
+          "title": "Third-party Sharing"
+        },
+        "twoFactor": {
+          "subtitle": "Extra verification for sign in",
+          "title": "Two-Factor Authentication"
+        }
+      },
+      "scoreSubtitle": "2 of 3 recommended controls are active.",
+      "scoreTitle": "Security Score: Strong",
+      "sections": {
+        "accessControl": "ACCESS CONTROL",
+        "dangerZone": "DANGER ZONE",
+        "dataPrivacy": "DATA & PRIVACY"
+      }
+    },
+    "settings": {
+      "items": {
+        "biometric": {
+          "subtitle": "Use Face ID / Fingerprint",
+          "title": "Biometric Login"
+        },
+        "helpCenter": {
+          "subtitle": "Guides and support",
+          "title": "Help Center"
+        },
+        "howItWorks": {
+          "subtitle": "View onboarding again",
+          "title": "How it works"
+        },
+        "language": {
+          "subtitle": "Choose app language",
+          "title": "Language"
+        },
+        "notifications": {
+          "subtitle": "Receive important updates",
+          "title": "Notifications"
+        },
+        "security": {
+          "subtitle": "Advanced security settings",
+          "title": "Security"
+        },
+        "theme": {
+          "subtitle": "System, light, or dark",
+          "title": "Theme"
+        },
+        "version": {
+          "subtitle": "FinSight 1.0.0",
+          "title": "Version"
+        }
+      },
+      "plan": "Premium Plan",
+      "sections": {
+        "application": "Application",
+        "privacy": "Privacy",
+        "support": "Support"
+      },
+      "userTitle": "Demo User",
+      "locale": {
+        "tr": "Turkish",
+        "en": "English",
+        "ru": "Russian"
+      },
+      "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
+    },
+    "support": "SUPPORT",
+    "useDifferentAccount": "Use a different account"
+  },
+  "recurring": {
+    "actions": {
+      "create": "Create Rule"
+    },
+    "cadence": {
+      "monthly": "MONTHLY",
+      "weekly": "WEEKLY"
+    },
+    "delete": {
+      "message": "Delete this recurring rule?",
+      "title": "Delete recurring rule"
+    },
+    "fields": {
+      "account": "Account",
+      "amount": "Amount",
+      "amountPlaceholder": "0.00",
+      "cadence": "Cadence",
+      "categoryWithType": "Category ({{type}})",
+      "dayOfMonth": "Day of month (1-28)",
+      "dayOfWeek": "Day of week (0=Sun ... 6=Sat)",
+      "dayPlaceholder": "1",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional note",
+      "fromAccount": "From account",
+      "kind": "Kind",
+      "startAt": "Start At (ISO)",
+      "startAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "toAccount": "To account",
+      "type": "Type"
+    },
+    "kind": {
+      "normal": "NORMAL",
+      "transfer": "TRANSFER"
+    },
+    "rule": {
+      "account": "Account: {{account}}",
+      "amount": "Amount: {{amount}}",
+      "cadence": "Cadence: {{cadence}}",
+      "category": "Category: {{category}}",
+      "from": "From: {{account}}",
+      "nextRun": "Next run: {{date}}",
+      "normal": "Normal rule",
+      "note": "Note: {{note}}",
+      "to": "To: {{account}}",
+      "transfer": "Transfer rule",
+      "type": "Type: {{type}}"
+    },
+    "sections": {
+      "existing": "Existing Rules",
+      "totalRules": "{{count}} rules"
+    },
+    "state": {
+      "empty": "No recurring rules yet.",
+      "loading": "Loading recurring data..."
+    },
+    "status": {
+      "active": "ACTIVE",
+      "paused": "PAUSED"
+    },
+    "subtitle": "Create scheduler-ready rules",
+    "successMessage": "The rule is now active.",
+    "successTitle": "Recurring rule created",
+    "title": "Recurring Rules"
+  },
+  "scan": {
+    "camera": {
+      "capture": "Capture",
+      "permission": {
+        "allow": "Allow camera",
+        "subtitle": "Allow camera permission to scan receipts.",
+        "title": "Camera access needed"
+      },
+      "state": {
+        "preparing": "Preparing camera..."
+      }
+    },
+    "home": {
+      "back": "Back to transactions",
+      "cta": "Scan receipt",
+      "steps": {
+        "capture": "Capture receipt image",
+        "create": "Create transaction with prefill",
+        "review": "Review extracted fields"
+      },
+      "subtitle": "Capture a bill photo and prefill transaction details in seconds.",
+      "title": "Scan Receipt"
+    },
+    "review": {
+      "createTransaction": "Create transaction",
+      "defaults": {
+        "description": "Receipt transaction"
+      },
+      "errors": {
+        "invalidAmountMessage": "Please enter a positive amount.",
+        "invalidAmountTitle": "Invalid amount",
+        "invalidDateMessage": "Please enter a valid date (YYYY-MM-DD).",
+        "invalidDateTitle": "Invalid date",
+        "navigationMessage": "Could not open Add Transaction screen.",
+        "navigationTitle": "Navigation error"
+      },
+      "fields": {
+        "amount": "Amount",
+        "amountPlaceholder": "0.00",
+        "date": "Date",
+        "datePlaceholder": "YYYY-MM-DD",
+        "merchant": "Merchant",
+        "merchantPlaceholder": "Merchant name"
+      },
+      "formTitle": "Extracted Fields (Mock)",
+      "previewTitle": "Receipt Preview",
+      "retake": "Retake photo"
+    }
+  },
+  "split": {
+    "addExpense": {
+      "actions": {
+        "submit": "Create Expense",
+        "submitting": "Saving..."
+      },
+      "categoryOptions": {
+        "bills": "Bills",
+        "food": "Food",
+        "other": "Other",
+        "rent": "Rent",
+        "shopping": "Shopping",
+        "transport": "Transport"
+      },
+      "equalShare": "{{amount}}",
+      "errors": {
+        "createFailedTitle": "Create expense failed",
+        "invalidAmountMessage": "Please enter a positive amount.",
+        "invalidAmountTitle": "Invalid amount",
+        "invalidCustomSplitMessage": "Enter valid non-negative amounts for each selected member.",
+        "invalidCustomSplitTitle": "Invalid custom split",
+        "membersRequiredMessage": "Please select at least one member.",
+        "membersRequiredTitle": "Members required",
+        "paidByRequiredMessage": "Please choose who paid.",
+        "paidByRequiredTitle": "Paid by required",
+        "requiredTitleMessage": "Please enter an expense title.",
+        "requiredTitleTitle": "Title required",
+        "splitMismatchMessage": "Amount {{amount}} does not match split total {{split}}.",
+        "splitMismatchTitle": "Split total mismatch"
+      },
+      "fields": {
+        "amountLabel": "Amount",
+        "amountPlaceholder": "0.00",
+        "categoryLabel": "Category",
+        "dateLabel": "Date",
+        "datePlaceholder": "YYYY-MM-DD",
+        "membersLabel": "Members",
+        "paidByLabel": "Paid by",
+        "paidByPlaceholder": "Select member",
+        "splitForMemberLabel": "Split: {{name}}",
+        "splitModeLabel": "Split mode",
+        "titleLabel": "Title",
+        "titlePlaceholder": "Dinner"
+      },
+      "loadErrorTitle": "Could not load group",
+      "loading": "Loading group members...",
+      "memberSelectedCount": "{{count}} members selected",
+      "retry": "Retry",
+      "sections": {
+        "customPreview": "Custom split amounts",
+        "equalPreview": "Equal split preview"
+      },
+      "splitModes": {
+        "custom": "Custom",
+        "equal": "Equal"
+      },
+      "subtitle": "{{group}}",
+      "title": "Add Group Expense"
+    },
+    "common": {
+      "unknownMember": "Unknown member"
+    },
+    "groupDetail": {
+      "actions": {
+        "addExpense": "Add Expense",
+        "settleUp": "Settle Up"
+      },
+      "balanceState": {
+        "creditor": "You are creditor",
+        "debtor": "You are debtor",
+        "settled": "Balanced"
+      },
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "indicator": {
+        "noShare": "No share",
+        "settled": "Settled",
+        "unknownShare": "Share unavailable",
+        "youGet": "You get {{amount}}",
+        "youOwe": "You owe {{amount}}"
+      },
+      "loadErrorTitle": "Could not load group details",
+      "loading": "Loading group details...",
+      "member": {
+        "balanced": "Balanced",
+        "creditor": "Creditor",
+        "debtor": "Debtor"
+      },
+      "membersTitle": "Members",
+      "noExpenses": "No group expenses yet.",
+      "recentExpenses": "Recent Expenses",
+      "retry": "Retry",
+      "summarySubtitle": "Shared expenses overview",
+      "summaryTitle": "Group Summary",
+      "totalSpending": "Total spending",
+      "yourBalance": "Your balance"
+    }
+  },
+  "stitch": {
+    "hub": {
+      "codeHtml": "code.html",
+      "dark": "dark",
+      "noApi": "No API",
+      "pngOnly": "png only",
+      "staticPlaceholders": "Static placeholders",
+      "totalScreens": "{{count}} Stitch screens"
+    },
+    "preview": {
+      "analytics": {
+        "food": "Food",
+        "highlights": "Highlights",
+        "savings": "Savings",
+        "spendingTrend": "Spending Trend",
+        "weeklyBars": "Weekly bars"
+      },
+      "auth": {
+        "authenticationForm": "Authentication Form",
+        "onboardingLoginPlaceholder": "Onboarding / login placeholder",
+        "phoneOtp": "Phone / OTP"
+      },
+      "chips": {
+        "codeHtmlUsed": "code.html hierarchy used",
+        "darkVariant": "Dark variant",
+        "lightVariant": "Light variant",
+        "pngPlaceholder": "png-driven placeholder"
+      },
+      "dashboard": {
+        "accountSnapshot": "Account Snapshot",
+        "categoryPulse": "Category Pulse",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income",
+        "overviewCards": "Overview cards",
+        "recentActivity": "Recent Activity",
+        "topCategories": "Top categories",
+        "updated1mAgo": "Updated 1m ago"
+      },
+      "errors": {
+        "notFoundBody": "The requested Stitch screen key does not exist in the inventory.",
+        "notFoundTitle": "Screen not found"
+      },
+      "other": {
+        "budgetTips": "Budget Tips",
+        "contentUtility": "Content / Utility",
+        "debtGuide": "Debt Guide",
+        "faq": "FAQ",
+        "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
+        "helpCenterDetailPages": "Help center + detail pages",
+        "helpCenterTitle": "FinSight Help Center"
+      },
+      "profile": {
+        "sampleEmail": "user@finsight.app",
+        "summary": "Profile Summary"
+      },
+      "scan": {
+        "alignReceipt": "Align receipt in frame",
+        "cameraFramePlaceholder": "Camera frame placeholder",
+        "captureReceipt": "Capture Receipt",
+        "receiptScan": "Receipt Scan"
+      },
+      "split": {
+        "accommodation": "Accommodation",
+        "aylinOwesYou": "Aylin owes you",
+        "carRental": "Car rental",
+        "expenseSplitScenario": "Expense split scenario",
+        "groupOverview": "Group Overview",
+        "memberAylin": "Aylin",
+        "memberDeniz": "Deniz",
+        "memberMert": "Mert",
+        "memberYou": "You",
+        "settleGroupExpense": "Settle Group Expense",
+        "weekendTrip": "Weekend Trip",
+        "youOweMert": "You owe Mert"
+      },
+      "transactions": {
+        "addNew": "Add New Transaction",
+        "feed": "Transaction Feed",
+        "filtersSubtitle": "List + quick filters"
+      }
+    }
+  },
+  "transactionDetail": {
+    "actions": {
+      "delete": "Delete Transaction",
+      "downloadReceipt": "Download Receipt",
+      "splitExpense": "Split Expense"
+    },
+    "fields": {
+      "account": "Account",
+      "category": "Category",
+      "dateTime": "Date & Time",
+      "noCategory": "No category"
+    },
+    "location": {
+      "placeholder": "Barbaros Mah. No:3, Istanbul"
+    },
+    "notes": {
+      "empty": "No description was added for this transaction.",
+      "title": "My Notes"
+    },
+    "receipt": {
+      "title": "Digital Receipt"
+    },
+    "state": {
+      "loadErrorTitle": "Could not load transaction details",
+      "loading": "Loading transaction details..."
+    },
+    "status": {
+      "completed": "Completed"
+    },
+    "title": "Transaction Detail"
+  },
+  "transactions": {
+    "accountFallback": "Account",
+    "actions": {
+      "loadMore": "Load more",
+      "search": "Search"
+    },
+    "create": {
+      "fields": {
+        "account": "Account",
+        "amount": "Amount",
+        "amountPlaceholder": "0.00",
+        "category": "Category",
+        "currency": "Currency",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional note",
+        "occurredAt": "Date & Time (ISO)",
+        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+      },
+      "sections": {
+        "details": "Transaction Details",
+        "step": "Step 1 of 1"
+      },
+      "selectAccountFirst": "Select account first",
+      "state": {
+        "loadErrorTitle": "Could not load transaction form",
+        "loading": "Loading add transaction form..."
+      },
+      "submit": "Save Transaction",
+      "subtitle": "Create a new income or expense record.",
+      "successMessage": "The transaction was saved successfully.",
+      "successTitle": "Transaction created",
+      "title": "Add Transaction"
+    },
+    "filters": {
+      "all": "All"
+    },
+    "group": {
+      "other": "OTHER",
+      "today": "TODAY",
+      "yesterday": "YESTERDAY"
+    },
+    "quickActions": {
+      "scanSubtitle": "Receipt OCR flow",
+      "scanTitle": "Scan",
+      "splitSubtitle": "Groups & settle up",
+      "splitTitle": "Split"
+    },
+    "row": {
+      "expenseTitle": "Expense",
+      "incomeTitle": "Income",
+      "transferBadge": "TRANSFER",
+      "transferHint": "Transfer • {{time}}",
+      "transferTitle": "Account Transfer",
+      "typeHint": "{{type}} • {{time}}"
+    },
+    "searchPlaceholder": "Search transaction or store...",
+    "state": {
+      "empty": "No transactions match these filters.",
+      "loadErrorTitle": "Could not load transactions",
+      "loadingMore": "Loading more..."
+    },
+    "summary": {
+      "totalExpense": "TOTAL EXPENSE",
+      "totalIncome": "TOTAL INCOME"
+    },
+    "title": "Transaction History"
+  },
+  "transfers": {
+    "form": {
+      "amount": "Amount",
+      "amountPlaceholder": "0.00",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional note",
+      "fromAccount": "From account",
+      "occurredAt": "Occurred At (ISO)",
+      "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "submit": "Create Transfer",
+      "subtitle": "Creates paired in/out transfer transactions",
+      "title": "Transfer Funds",
+      "toAccount": "To account"
+    },
+    "state": {
+      "loadingAccounts": "Loading accounts...",
+      "needTwoAccounts": "Create at least two accounts before making a transfer."
+    },
+    "successMessage": "Funds were moved successfully.",
+    "successTitle": "Transfer created",
+    "title": "Transfer"
+  },
+  "weeklyReport": {
+    "highlights": "Highlights",
+    "nextWeekForecast": "Next Week Forecast",
+    "noHighlights": "No highlights this week.",
+    "noRisks": "No risks detected.",
+    "riskFlags": "Risk Flags",
+    "scoreOutOf": "/100",
+    "state": {
+      "errorTitle": "Weekly report unavailable",
+      "noData": "No weekly report available."
+    },
+    "subtitle": "Financial health summary and next-week outlook.",
+    "title": "Weekly Report"
+  },
+  "settings": {
+    "general": {
+      "title": "Settings"
+    },
+    "language": {
+      "label": "Language"
+    },
+    "theme": {
+      "label": "Theme"
+    },
+    "notifications": {
+      "label": "Notifications"
+    }
+  },
+  "network": {
+    "offline": {
+      "title": "Offline mode",
+      "message": "Internet connection is unavailable. Some actions may fail.",
+      "retry": "Retry"
+    }
+  }
+}
+
+===== FILE: apps/mobile/src/shared/i18n/locales/tr.json =====
+{
+  "accounts": {
+    "baseCurrency": {
+      "empty": "Henüz ana para birimi yok. İlk hesabınız için birini seçin.",
+      "value": "Ana para birimi: {{currency}}"
+    },
+    "form": {
+      "create": "Hesap Oluştur",
+      "creating": "Oluşturuluyor...",
+      "currencyLabel": "Para Birimi",
+      "currencyPlaceholder": "TRY",
+      "nameLabel": "Hesap adı",
+      "namePlaceholder": "Örn. Ana Banka",
+      "typeLabel": "Tür"
+    },
+    "sections": {
+      "baseCurrency": {
+        "subtitle": "İlk kurulumdan sonra tüm hesaplar için kilitlenir",
+        "title": "Ana Para Birimi"
+      },
+      "create": {
+        "title": "Hesap Oluştur"
+      },
+      "list": {
+        "title": "Hesaplarınız",
+        "total": "{{count}} toplam"
+      },
+      "session": {
+        "title": "Hesap Oturumu"
+      }
+    },
+    "session": {
+      "signedIn": "Giriş yapıldı"
+    },
+    "state": {
+      "empty": "Henüz hesap oluşturulmadı.",
+      "loadErrorTitle": "Hesaplar yüklenemedi",
+      "loading": "Hesaplar yükleniyor..."
+    }
+  },
+  "advisor": {
+    "advice": "Öneriler",
+    "expense": "Gider",
+    "income": "Gelir",
+    "monthlySnapshot": "Aylık Özet",
+    "net": "Net",
+    "nextActions": "Sonraki Adımlar",
+    "noActions": "Şu an aksiyon maddesi yok.",
+    "noAdvice": "Bu ay için henüz öneri yok.",
+    "severity": {
+      "info": "Bilgi",
+      "success": "İyi",
+      "warning": "Uyarı"
+    },
+    "state": {
+      "errorTitle": "Danışman şu an kullanılamıyor",
+      "noData": "Danışman verisi bulunamadı."
+    },
+    "subtitle": "Aylık hareketlerine göre kişiselleştirilmiş öneriler.",
+    "title": "AI Finans Danışmanı"
+  },
+  "aiAdvisor": {
+    "advice": "Öneriler",
+    "expense": "Gider",
+    "income": "Gelir",
+    "monthlySnapshot": "Aylık Özet",
+    "net": "Net",
+    "nextActions": "Sonraki Adımlar",
+    "noActions": "Şu an aksiyon maddesi yok.",
+    "noAdvice": "Bu ay için henüz öneri yok.",
+    "severity": {
+      "info": "Bilgi",
+      "success": "İyi",
+      "warning": "Uyarı"
+    },
+    "state": {
+      "errorTitle": "Danışman şu an kullanılamıyor",
+      "noData": "Danışman verisi bulunamadı."
+    },
+    "subtitle": "Aylık hareketlerine göre kişiselleştirilmiş öneriler.",
+    "title": "AI Finans Danışmanı"
+  },
+  "analytics": {
+    "aiAdvisor": "AI Danışman",
+    "aiAdvisorCta": "AI Danışmanı Aç",
+    "aiAdvisorSubtitle": "Kişisel aksiyonlarını incele.",
+    "dailyTrends": "Günlük Trend",
+    "days": {
+      "fri": "Cum",
+      "mon": "Pzt",
+      "sat": "Cts",
+      "sun": "Paz",
+      "thu": "Per",
+      "tue": "Sal",
+      "wed": "Çar"
+    },
+    "expense": "Gider",
+    "fromLastMonth": "Geçen aya göre %{{percent}}",
+    "income": "Gelir",
+    "last7Days": "Son 7 Gün",
+    "loadingCategories": "Kategoriler yükleniyor...",
+    "mainCategory": "Ana Kategori",
+    "noCategories": "Bu dönem için kategori verisi yok.",
+    "noCategory": "Kategorisiz",
+    "percentOfTotal": "Toplamın %{{percent}}",
+    "premiumInsights": "Premium İçgörüler",
+    "range": {
+      "monthly": "Aylık",
+      "weekly": "Haftalık",
+      "yearly": "Yıllık"
+    },
+    "refreshingTrend": "Trend güncelleniyor...",
+    "state": {
+      "errorTitle": "Analiz yüklenemedi",
+      "noData": "Analiz verisi bulunamadı."
+    },
+    "title": "Harcama Analizi",
+    "topCategories": "Öne Çıkan Kategoriler",
+    "totalSpending": "Toplam Harcama",
+    "transactionsCount": "{{count}} işlem",
+    "weeklyReport": "Haftalık Rapor",
+    "weeklyReportSubtitle": "Haftalık skorunu kontrol et."
+  },
+  "app": {
+    "state": {
+      "preparing": "FinSight hazırlanıyor...",
+      "restoring": "Oturum geri yükleniyor..."
+    }
+  },
+  "auth": {
+    "brandTitle": "Akıllı Finans AI",
+    "common": {
+      "apple": "Apple",
+      "google": "Google",
+      "or": "VEYA",
+      "orContinueWith": "VEYA DEVAM ET"
+    },
+    "forgot": {
+      "fields": {
+        "emailLabel": "E-posta Adresi",
+        "emailPlaceholder": "ad@ornek.com"
+      },
+      "secureBadge": "GÜVENLİ FİNANSAL AI ŞİFRELEMESİ",
+      "submit": "Sıfırlama Bağlantısı Gönder",
+      "subtitle": "Şifre sıfırlama bağlantısı almak için e-posta adresinizi girin. Finans panelinize geri dönmenize yardımcı olacağız.",
+      "success": "Bu e-posta varsa sıfırlama talimatları gönderildi.",
+      "title": "Şifremi Unuttum"
+    },
+    "links": {
+      "haveAccount": "Zaten hesabın var mı?",
+      "joinNow": "Hemen Katıl",
+      "noAccount": "Hesabın yok mu?",
+      "signIn": "Giriş Yap"
+    },
+    "login": {
+      "fallbackError": "Giriş yapılamadı. Lütfen tekrar deneyin.",
+      "fields": {
+        "emailLabel": "E-posta Adresi",
+        "emailPlaceholder": "ad@ornek.com",
+        "passwordLabel": "Şifre",
+        "passwordPlaceholder": "••••••••"
+      },
+      "forgot": "Unuttun mu?",
+      "hidePassword": "Şifreyi gizle",
+      "secureBadge": "GÜVENLİ ŞİFRELİ GİRİŞ",
+      "showPassword": "Şifreyi göster",
+      "submit": "Hesaba Giriş Yap",
+      "subtitle": "Giriş yapmak için bilgilerinizi girin",
+      "welcomeBack": "Tekrar Hoş Geldin"
+    },
+    "register": {
+      "fallbackError": "Hesap oluşturulamadı.",
+      "fields": {
+        "emailLabel": "E-posta Adresi",
+        "emailPlaceholder": "ornek@mail.com",
+        "nameLabel": "Ad Soyad",
+        "namePlaceholder": "Tam adınızı girin",
+        "passwordLabel": "Şifre"
+      },
+      "submit": "Hesap Oluştur",
+      "subtitle": "Yapay zeka ile finansal geleceğini yönetmeye başla",
+      "title": "Hesap Oluştur"
+    },
+    "validation": {
+      "emailInvalid": "Geçerli bir e-posta adresi girin.",
+      "emailRequired": "E-posta gerekli.",
+      "loginInvalidInput": "Lütfen geçerli bir e-posta ve şifre girin.",
+      "nameRequired": "Ad gerekli.",
+      "passwordMin": "Şifre en az 8 karakter olmalıdır.",
+      "passwordRequired": "Şifre gerekli.",
+      "registerInvalidInput": "Lütfen kayıt bilgilerinizi kontrol edin."
+    }
+  },
+  "budgets": {
+    "composer": {
+      "amountPlaceholder": "0.00",
+      "category": "Kategori",
+      "create": "Bütçe Oluştur",
+      "creating": "Oluşturuluyor...",
+      "limitAmount": "Limit Tutarı",
+      "noCategories": "Bu ay için tüm gider kategorilerinde zaten bütçe var.",
+      "title": "Bütçe Ekle"
+    },
+    "delete": {
+      "message": "{{month}} için {{category}} bütçesi silinsin mi?",
+      "title": "Bütçeyi sil"
+    },
+    "inline": {
+      "saveLimit": "Limiti Kaydet",
+      "updateLimit": "Limiti güncelle"
+    },
+    "overview": {
+      "aiHintPrefix": "AI bu ay",
+      "aiHintSuffix": "tasarruf hedefinde olduğunuzu söylüyor.",
+      "leftLabel": "{{remaining}} kaldı",
+      "spentLabel": "{{spent}} harcandı ({{percent}}%)",
+      "totalMonthlyBudget": "TOPLAM AYLIK BÜTÇE"
+    },
+    "row": {
+      "left": "{{remaining}} kaldı",
+      "over": "AŞILDI",
+      "spentOf": "{{limit}} limitin {{spent}} kadarı harcandı"
+    },
+    "sections": {
+      "spendingCategories": "Harcama Kategorileri",
+      "viewHistory": "Geçmişi Gör"
+    },
+    "state": {
+      "empty": "Bu ay için henüz bütçe yok.",
+      "unavailableTitle": "Bütçeler mevcut değil",
+      "updating": "Bütçeler güncelleniyor..."
+    },
+    "title": "Bütçe Planlama"
+  },
+  "common": {
+    "appInitials": "FS",
+    "appName": "FinSight",
+    "cancel": "İptal",
+    "close": "Kapat",
+    "continue": "Devam Et",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "goBack": "Geri Git",
+    "loadingShort": "Yükleniyor...",
+    "notAvailable": "Yok",
+    "now": "Şimdi",
+    "pause": "Duraklat",
+    "resume": "Sürdür",
+    "retry": "Tekrar Dene",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "view": "Görüntüle",
+    "buttons": {
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "retry": "Tekrar Dene",
+      "delete": "Sil"
+    },
+    "navigation": {
+      "tabs": {
+        "home": {
+          "label": "Panel"
+        },
+        "transactions": {
+          "label": "İşlemler",
+          "shortLabel": "İşlemler"
+        },
+        "analytics": {
+          "label": "Analiz",
+          "shortLabel": "Analiz"
+        },
+        "groups": {
+          "label": "Gruplar",
+          "shortLabel": "Gruplar"
+        },
+        "add": {
+          "label": "Ekle"
+        },
+        "profile": {
+          "label": "Profil",
+          "shortLabel": "Profil"
+        }
+      },
+      "stacks": {
+        "dashboard": {
+          "header": {
+            "title": "Panel"
+          }
+        },
+        "analytics": {
+          "header": {
+            "title": "Analiz"
+          }
+        },
+        "aiAdvisor": {
+          "header": {
+            "title": "AI Danışman"
+          }
+        },
+        "weeklyReport": {
+          "header": {
+            "title": "Haftalık Rapor"
+          }
+        },
+        "budgets": {
+          "header": {
+            "title": "Bütçeler"
+          }
+        },
+        "groups": {
+          "header": {
+            "title": "Paylaşım Grupları"
+          }
+        },
+        "createGroup": {
+          "header": {
+            "title": "Grup Oluştur"
+          }
+        },
+        "groupDetail": {
+          "header": {
+            "title": "Grup Detayı"
+          }
+        },
+        "addGroupExpense": {
+          "header": {
+            "title": "Grup Harcaması Ekle"
+          }
+        },
+        "settleUp": {
+          "header": {
+            "title": "Hesap Kapat"
+          }
+        },
+        "transfer": {
+          "header": {
+            "title": "Para Transferi"
+          }
+        },
+        "recurring": {
+          "header": {
+            "title": "Tekrarlayan"
+          }
+        },
+        "scanReceipt": {
+          "header": {
+            "title": "Fiş Tara"
+          }
+        },
+        "camera": {
+          "header": {
+            "title": "Kamera"
+          }
+        },
+        "reviewScan": {
+          "header": {
+            "title": "Taramayı İncele"
+          }
+        },
+        "profile": {
+          "header": {
+            "title": "Profil"
+          }
+        },
+        "editProfile": {
+          "header": {
+            "title": "Profili Düzenle"
+          }
+        },
+        "settings": {
+          "header": {
+            "title": "Ayarlar"
+          }
+        },
+        "security": {
+          "header": {
+            "title": "Güvenlik"
+          }
+        },
+        "about": {
+          "header": {
+            "title": "Hakkında"
+          }
+        },
+        "accounts": {
+          "header": {
+            "title": "Hesaplar"
+          }
+        }
+      },
+      "preview": {
+        "screen": {
+          "header": {
+            "title": "Ekran Önizleme",
+            "suffix": "Önizleme"
+          }
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "accountFallback": "Hesap",
+    "accountTypes": {
+      "bank": "Banka",
+      "cash": "Nakit",
+      "credit": "Kredi"
+    },
+    "accounts": "Hesaplar",
+    "addExpense": "Gider Ekle",
+    "addIncome": "Gelir Ekle",
+    "aiAction": "İpucu Al",
+    "aiActive": "AI AKTİF",
+    "aiAdvisor": "AI Danışman",
+    "aiAnalysisTitle": "AI Analizi",
+    "currentBalance": "Mevcut Bakiye",
+    "expense": "Gider",
+    "greeting": "Hoş geldin,",
+    "income": "Gelir",
+    "insight": {
+      "noSavingsHighlight": "Tasarruf oranınız",
+      "noSavingsMessage": "bu ay. Akıllı önerilerle artırabiliriz.",
+      "savingsMessage": "daha fazla tasarruf ettiniz.",
+      "thisMonth": "Bu ay"
+    },
+    "premiumSection": "Ayrıcalıklar",
+    "quickActions": "Hızlı İşlemler",
+    "recentTransactions": "Son İşlemler",
+    "scanReceipt": "Fiş Tara",
+    "state": {
+      "errorTitle": "Panel yüklenemedi",
+      "loading": "Panel yükleniyor...",
+      "noAccounts": "Hesap bulunamadı.",
+      "noData": "Panel verisi bulunamadı.",
+      "noTransactions": "Henüz işlem bulunmuyor."
+    },
+    "time": {
+      "dayWithTime": "{{day}} • {{time}}",
+      "today": "Bugün, {{time}}",
+      "yesterday": "Dün, {{time}}"
+    },
+    "transaction": {
+      "expenseTitle": "Gider",
+      "incomeTitle": "Gelir",
+      "transferContext": "Aktarım",
+      "transferTitle": "Hesap Aktarımı"
+    },
+    "trend": {
+      "decrease": "Geçen aya göre -%{{percent}}",
+      "increase": "Geçen aya göre +%{{percent}}",
+      "stable": "Geçen aya göre sabit"
+    },
+    "viewAll": "Tümünü Gör",
+    "weeklyReport": "Haftalık Rapor"
+  },
+  "debug": {
+    "input": {
+      "firstPlaceholder": "First input",
+      "goLogin": "Go to Login",
+      "goRegister": "Go to Register",
+      "secondPlaceholder": "Second input",
+      "subtitle": "This screen uses plain TextInput only. Check focus/blur logs in Metro console.",
+      "title": "Debug Input Isolation"
+    }
+  },
+  "errors": {
+    "account": {
+      "createFailedTitle": "Hesap oluşturma başarısız",
+      "updateFailedTitle": "Hesap güncelleme başarısız"
+    },
+    "auth": {
+      "logoutFailedTitle": "Çıkış başarısız",
+      "sessionNotAvailable": "Oturum mevcut değil"
+    },
+    "budget": {
+      "createFailedTitle": "Bütçe oluşturma başarısız",
+      "deleteFailedTitle": "Bütçe silme başarısız",
+      "updateFailedTitle": "Bütçe güncelleme başarısız"
+    },
+    "recurring": {
+      "createFailedTitle": "Tekrarlayan kural oluşturma başarısız",
+      "deleteFailedTitle": "Tekrarlayan kural silme başarısız",
+      "updateFailedTitle": "Tekrarlayan kural güncelleme başarısız"
+    },
+    "transaction": {
+      "createFailedTitle": "İşlem oluşturma başarısız"
+    },
+    "transfer": {
+      "createFailedTitle": "Transfer başarısız"
+    },
+    "boundary": {
+      "title": "Bir hata oluştu",
+      "message": "Uygulama beklenmeyen bir hatayla karşılaştı. Lütfen yeniden deneyin.",
+      "retry": "Tekrar dene"
+    },
+    "api": {
+      "API_REQUEST_FAILED": "İstek tamamlanamadı.",
+      "BASE_CURRENCY_MISMATCH": "Bu işlem farklı bir ana para birimi kullanıyor.",
+      "EMAIL_ALREADY_EXISTS": "Bu e-posta ile zaten bir hesap var.",
+      "FORBIDDEN": "Bu işlem için yetkiniz yok.",
+      "INVALID_CREDENTIALS": "E-posta veya şifre hatalı.",
+      "INVALID_REFRESH_TOKEN": "Oturumunuz süresi doldu. Lütfen tekrar giriş yapın.",
+      "INVALID_RESPONSE_PAYLOAD": "Sunucudan geçersiz veri alındı.",
+      "NETWORK_ERROR": "Ağ bağlantısı başarısız oldu.",
+      "NOT_FOUND": "İstenen kayıt bulunamadı.",
+      "REQUEST_TIMEOUT": "Sunucu zamanında yanıt vermedi.",
+      "SERVER_UNREACHABLE": "Sunucuya şu anda ulaşılamıyor.",
+      "UNAUTHORIZED": "Oturumunuz artık geçerli değil.",
+      "UNKNOWN_ERROR": "Beklenmeyen bir hata oluştu."
+    }
+  },
+  "groups": {
+    "create": {
+      "actions": {
+        "create": "Grup Oluştur",
+        "creating": "Oluşturuluyor..."
+      },
+      "errors": {
+        "createFailedTitle": "Grup oluşturma başarısız"
+      },
+      "fields": {
+        "membersLabel": "Üyeler (virgülle ayrılmış e-postalar)",
+        "membersPlaceholder": "alice@mail.com, bob@mail.com",
+        "nameLabel": "Grup adı",
+        "namePlaceholder": "Hafta Sonu Gezi"
+      },
+      "previewCount": "{{count}} üye eklenecek",
+      "subtitle": "Paylaşımlı gider grubu oluştur",
+      "title": "Grup Oluştur",
+      "validation": {
+        "nameRequired": "Grup adı gerekli"
+      }
+    },
+    "list": {
+      "createButton": "Grup Oluştur",
+      "empty": "Henüz grup yok. Bölüşmeye başlamak için bir grup oluşturun.",
+      "errorTitle": "Gruplar yüklenemedi",
+      "loading": "Gruplar yükleniyor...",
+      "memberCount": "{{count}} üye",
+      "subtitle": "Ortak giderleri ve bakiyeleri takip edin",
+      "title": "Gruplar"
+    },
+    "settle": {
+      "actions": {
+        "markSettled": "Borcu Kapat",
+        "settling": "Kapatılıyor..."
+      },
+      "errorTitle": "Borç kapatma başarısız",
+      "loadErrorTitle": "Grup yüklenemedi",
+      "loading": "Grup verisi yükleniyor...",
+      "openAmount": "Açık tutar",
+      "openExpenses": "Açık giderler",
+      "subtitle": "Açık grup giderlerini kapat",
+      "successMessage": "Grup giderleri kapatıldı.",
+      "successTitle": "Kapatıldı",
+      "title": "Borç Kapat"
+    }
+  },
+  "navigation": {
+    "stack": {
+      "about": "Hakkında",
+      "accounts": "Hesaplar",
+      "addGroupExpense": "Grup Harcaması Ekle",
+      "aiAdvisor": "AI Danışman",
+      "analytics": "Analiz",
+      "budgets": "Bütçeler",
+      "camera": "Kamera",
+      "createGroup": "Grup Oluştur",
+      "dashboard": "Panel",
+      "editProfile": "Profili Düzenle",
+      "groupDetail": "Grup Detayı",
+      "profile": "Profil",
+      "recurring": "Tekrarlayan",
+      "reviewScan": "Taramayı İncele",
+      "scanReceipt": "Fiş Tara",
+      "security": "Güvenlik",
+      "settings": "Ayarlar",
+      "settleUp": "Hesap Kapat",
+      "splitGroups": "Paylaşım Grupları",
+      "transfer": "Para Transferi",
+      "weeklyReport": "Haftalık Rapor"
+    },
+    "tabs": {
+      "add": "Ekle",
+      "analytics": "Analiz",
+      "analyticsShort": "Analiz",
+      "groups": "Gruplar",
+      "groupsShort": "Gruplar",
+      "home": "Panel",
+      "profile": "Profil",
+      "profileShort": "Profil",
+      "transactions": "İşlemler",
+      "transactionsShort": "İşlemler"
+    }
+  },
+  "onboarding": {
+    "getStarted": "Başla",
+    "next": "İleri",
+    "skip": "Geç",
+    "step1": {
+      "subtitle": "Her gideri, geliri ve transferi tek bir zaman akışında takip edin.",
+      "title": "Her şeyi takip edin"
+    },
+    "step2": {
+      "subtitle": "Kategori dağılımını, aylık trendleri ve bütçe kullanımını görün.",
+      "title": "Harcamaları anlayın"
+    },
+    "step3": {
+      "subtitle": "Hesap açın veya giriş yapın, sonra hesap/bütçe ayarlarınızı tamamlayın.",
+      "titleGate": "Başlamaya hazır mısınız?",
+      "titlePreview": "Hazırsınız"
+    },
+    "stepLabel": "Adım {{current}}/{{total}}"
+  },
+  "profile": {
+    "about": {
+      "appNameLabel": "Uygulama Adı",
+      "buildLabel": "Derleme",
+      "buildValue": "Geliştirme",
+      "noteOne": "FinSight hesapları, işlemleri, analizleri ve bütçeleri tek para biriminde yönetir.",
+      "noteTwo": "Kimlik doğrulama erişim/yenileme tokenları ve korumalı navigasyon içerir.",
+      "notesTitle": "Notlar",
+      "subtitle": "Ürün ve sürüm bilgileri",
+      "title": "FinSight Hakkında",
+      "versionLabel": "Sürüm",
+      "versionValue": "1.0.0"
+    },
+    "accountSettings": "HESAP VE AYARLAR",
+    "accounts": "Hesap",
+    "baseCurrency": "Baz Para Birimi",
+    "defaultUserName": "FinSight Kullanıcısı",
+    "edit": {
+      "baseCurrencyLabel": "Ana Para Birimi",
+      "emailLabel": "E-posta",
+      "fullNameLabel": "Ad Soyad",
+      "fullNamePlaceholder": "Ad soyadınız",
+      "helper": "Profil güncelleme endpointi henüz mevcut değil. PATCH /me için UI hazır.",
+      "photoSubtitle": "Değiştirmek için dokunun (yalnızca UI)",
+      "photoTitle": "Profil Fotoğrafı",
+      "save": "Değişiklikleri Kaydet",
+      "updateNotAvailableCode": "PROFILE_UPDATE_NOT_AVAILABLE"
+    },
+    "lastSync": "Son Senkron",
+    "logOut": "Çıkış Yap",
+    "loggingOut": "Çıkış yapılıyor...",
+    "premiumMember": "PREMIUM ÜYE",
+    "rows": {
+      "about": "FinSight Hakkında",
+      "aboutSubtitle": "Sürüm ve yasal bilgiler",
+      "aiAdvisor": "AI Danışman",
+      "aiAdvisorSubtitle": "Kişisel finans önerilerini aç",
+      "appSettings": "Ayarlar",
+      "appSettingsSubtitle": "Tema ve uygulama tercihleri",
+      "myAccounts": "Hesaplarım",
+      "myAccountsSubtitle": "Hesaplarını görüntüle ve yönet",
+      "personalInfo": "Kişisel bilgiler",
+      "personalInfoSubtitle": "Ad, e-posta ve profil bilgileri",
+      "security": "Güvenlik",
+      "securitySubtitle": "Şifre ve oturum koruması",
+      "weeklyReport": "Haftalık Rapor",
+      "weeklyReportSubtitle": "Skor ve haftalık görünüm"
+    },
+    "security": {
+      "delete": {
+        "cta": "Hesabı ve tüm verileri sil",
+        "hint": "Bu işlem kalıcıdır ve geri alınamaz.",
+        "notAvailable": "Bu işlem henüz kullanılamıyor.",
+        "title": "Hesabı Sil"
+      },
+      "items": {
+        "accountActivity": {
+          "subtitle": "Son cihaz oturumlarını inceleyin",
+          "title": "Hesap Etkinliği"
+        },
+        "biometric": {
+          "subtitle": "Face ID veya Parmak izi kullan",
+          "title": "Biyometrik Giriş"
+        },
+        "downloadData": {
+          "subtitle": "Dışa aktarım paketi isteyin",
+          "title": "Kişisel Verileri İndir"
+        },
+        "privacyPolicy": {
+          "subtitle": "FinSight veriyi nasıl korur",
+          "title": "Gizlilik Politikası"
+        },
+        "thirdParty": {
+          "subtitle": "Partner veri erişimini yönet",
+          "title": "Üçüncü Taraf Paylaşımı"
+        },
+        "twoFactor": {
+          "subtitle": "Giriş için ek doğrulama",
+          "title": "İki Aşamalı Doğrulama"
+        }
+      },
+      "scoreSubtitle": "Önerilen 3 güvenlik kontrolünden 2’si aktif.",
+      "scoreTitle": "Güvenlik Skoru: Güçlü",
+      "sections": {
+        "accessControl": "ERİŞİM KONTROLÜ",
+        "dangerZone": "TEHLİKELİ BÖLGE",
+        "dataPrivacy": "VERİ VE GİZLİLİK"
+      }
+    },
+    "settings": {
+      "items": {
+        "biometric": {
+          "subtitle": "Face ID / Parmak izi kullan",
+          "title": "Biyometrik Giriş"
+        },
+        "helpCenter": {
+          "subtitle": "Rehberler ve destek",
+          "title": "Yardım Merkezi"
+        },
+        "howItWorks": {
+          "subtitle": "Onboarding ekranını tekrar görüntüle",
+          "title": "Nasıl çalışır?"
+        },
+        "language": {
+          "subtitle": "Uygulama dilini seçin",
+          "title": "Dil"
+        },
+        "notifications": {
+          "subtitle": "Önemli güncellemeleri al",
+          "title": "Bildirimler"
+        },
+        "security": {
+          "subtitle": "Gelişmiş güvenlik ayarları",
+          "title": "Güvenlik"
+        },
+        "theme": {
+          "subtitle": "Sistem, açık veya koyu",
+          "title": "Tema"
+        },
+        "version": {
+          "subtitle": "FinSight 1.0.0",
+          "title": "Sürüm"
+        }
+      },
+      "plan": "Premium Planı",
+      "sections": {
+        "application": "Uygulama",
+        "privacy": "Gizlilik",
+        "support": "Destek"
+      },
+      "userTitle": "Demo Kullanıcı",
+      "locale": {
+        "tr": "Türkçe",
+        "en": "İngilizce",
+        "ru": "Rusça"
+      },
+      "theme": {
+        "system": "Sistem",
+        "light": "Açık",
+        "dark": "Koyu"
+      }
+    },
+    "support": "DESTEK",
+    "useDifferentAccount": "Farklı hesap kullan"
+  },
+  "recurring": {
+    "actions": {
+      "create": "Kural Oluştur"
+    },
+    "cadence": {
+      "monthly": "AYLIK",
+      "weekly": "HAFTALIK"
+    },
+    "delete": {
+      "message": "Bu tekrarlayan kural silinsin mi?",
+      "title": "Tekrarlayan kuralı sil"
+    },
+    "fields": {
+      "account": "Hesap",
+      "amount": "Tutar",
+      "amountPlaceholder": "0.00",
+      "cadence": "Periyot",
+      "categoryWithType": "Kategori ({{type}})",
+      "dayOfMonth": "Ayın günü (1-28)",
+      "dayOfWeek": "Haftanın günü (0=Paz ... 6=Cmt)",
+      "dayPlaceholder": "1",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Opsiyonel not",
+      "fromAccount": "Kaynak hesap",
+      "kind": "Kural türü",
+      "startAt": "Başlangıç (ISO)",
+      "startAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "toAccount": "Hedef hesap",
+      "type": "Tür"
+    },
+    "kind": {
+      "normal": "NORMAL",
+      "transfer": "TRANSFER"
+    },
+    "rule": {
+      "account": "Hesap: {{account}}",
+      "amount": "Tutar: {{amount}}",
+      "cadence": "Periyot: {{cadence}}",
+      "category": "Kategori: {{category}}",
+      "from": "Kaynak: {{account}}",
+      "nextRun": "Sonraki çalışma: {{date}}",
+      "normal": "Normal kural",
+      "note": "Not: {{note}}",
+      "to": "Hedef: {{account}}",
+      "transfer": "Transfer kuralı",
+      "type": "Tür: {{type}}"
+    },
+    "sections": {
+      "existing": "Mevcut Kurallar",
+      "totalRules": "{{count}} kural"
+    },
+    "state": {
+      "empty": "Henüz tekrarlayan kural yok.",
+      "loading": "Tekrarlayan veriler yükleniyor..."
+    },
+    "status": {
+      "active": "AKTİF",
+      "paused": "DURAKLATILDI"
+    },
+    "subtitle": "Zamanlayıcıya hazır kurallar oluşturun",
+    "successMessage": "Kural artık aktif.",
+    "successTitle": "Tekrarlayan kural oluşturuldu",
+    "title": "Tekrarlayan Kurallar"
+  },
+  "scan": {
+    "camera": {
+      "capture": "Çek",
+      "permission": {
+        "allow": "Kameraya izin ver",
+        "subtitle": "Fiş taramak için kamera izni gerekiyor.",
+        "title": "Kamera erişimi gerekli"
+      },
+      "state": {
+        "preparing": "Kamera hazırlanıyor..."
+      }
+    },
+    "home": {
+      "back": "İşlemlere dön",
+      "cta": "Fiş Tara",
+      "steps": {
+        "capture": "Fiş fotoğrafını çek",
+        "create": "Ön dolgu ile işlem oluştur",
+        "review": "Çıkarılan alanları kontrol et"
+      },
+      "subtitle": "Fatura fotoğrafını çekip işlem bilgilerini saniyeler içinde doldurun.",
+      "title": "Fiş Tara"
+    },
+    "review": {
+      "createTransaction": "İşlem oluştur",
+      "defaults": {
+        "description": "Fiş işlemi"
+      },
+      "errors": {
+        "invalidAmountMessage": "Lütfen pozitif bir tutar girin.",
+        "invalidAmountTitle": "Geçersiz tutar",
+        "invalidDateMessage": "Lütfen geçerli tarih girin (YYYY-MM-DD).",
+        "invalidDateTitle": "Geçersiz tarih",
+        "navigationMessage": "İşlem ekleme ekranı açılamadı.",
+        "navigationTitle": "Navigasyon hatası"
+      },
+      "fields": {
+        "amount": "Tutar",
+        "amountPlaceholder": "0.00",
+        "date": "Tarih",
+        "datePlaceholder": "YYYY-MM-DD",
+        "merchant": "İşletme",
+        "merchantPlaceholder": "İşletme adı"
+      },
+      "formTitle": "Çıkarılan Alanlar (Mock)",
+      "previewTitle": "Fiş Önizleme",
+      "retake": "Fotoğrafı tekrar çek"
+    }
+  },
+  "split": {
+    "addExpense": {
+      "actions": {
+        "submit": "Harcamayı Kaydet",
+        "submitting": "Kaydediliyor..."
+      },
+      "categoryOptions": {
+        "bills": "Faturalar",
+        "food": "Yemek",
+        "other": "Diğer",
+        "rent": "Kira",
+        "shopping": "Alışveriş",
+        "transport": "Ulaşım"
+      },
+      "equalShare": "{{amount}}",
+      "errors": {
+        "createFailedTitle": "Harcama oluşturulamadı",
+        "invalidAmountMessage": "Lütfen pozitif bir tutar girin.",
+        "invalidAmountTitle": "Geçersiz tutar",
+        "invalidCustomSplitMessage": "Her seçili üye için geçerli ve negatif olmayan tutar girin.",
+        "invalidCustomSplitTitle": "Özel bölüşüm geçersiz",
+        "membersRequiredMessage": "En az bir üye seçin.",
+        "membersRequiredTitle": "Üye gerekli",
+        "paidByRequiredMessage": "Lütfen ödeyen kişiyi seçin.",
+        "paidByRequiredTitle": "Ödeyen gerekli",
+        "requiredTitleMessage": "Lütfen harcama başlığı girin.",
+        "requiredTitleTitle": "Başlık gerekli",
+        "splitMismatchMessage": "Tutar {{amount}}, bölüşüm toplamı {{split}} ile uyuşmuyor.",
+        "splitMismatchTitle": "Bölüşüm toplamı uyuşmuyor"
+      },
+      "fields": {
+        "amountLabel": "Tutar",
+        "amountPlaceholder": "0,00",
+        "categoryLabel": "Kategori",
+        "dateLabel": "Tarih",
+        "datePlaceholder": "YYYY-AA-GG",
+        "membersLabel": "Üyeler",
+        "paidByLabel": "Ödeyen",
+        "paidByPlaceholder": "Üye seçin",
+        "splitForMemberLabel": "Pay: {{name}}",
+        "splitModeLabel": "Bölüşüm modu",
+        "titleLabel": "Başlık",
+        "titlePlaceholder": "Akşam yemeği"
+      },
+      "loadErrorTitle": "Grup yüklenemedi",
+      "loading": "Grup üyeleri yükleniyor...",
+      "memberSelectedCount": "{{count}} üye seçildi",
+      "retry": "Tekrar Dene",
+      "sections": {
+        "customPreview": "Özel bölüşüm tutarları",
+        "equalPreview": "Eşit bölüşüm önizleme"
+      },
+      "splitModes": {
+        "custom": "Özel",
+        "equal": "Eşit"
+      },
+      "subtitle": "{{group}}",
+      "title": "Grup Harcaması Ekle"
+    },
+    "common": {
+      "unknownMember": "Bilinmeyen üye"
+    },
+    "groupDetail": {
+      "actions": {
+        "addExpense": "Harcama Ekle",
+        "settleUp": "Hesap Kapat"
+      },
+      "balanceState": {
+        "creditor": "Alacaklısın",
+        "debtor": "Borçlusun",
+        "settled": "Dengede"
+      },
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "indicator": {
+        "noShare": "Pay yok",
+        "settled": "Kapandı",
+        "unknownShare": "Pay bilgisi yok",
+        "youGet": "{{amount}} alacak",
+        "youOwe": "{{amount}} borç"
+      },
+      "loadErrorTitle": "Grup detayları yüklenemedi",
+      "loading": "Grup detayları yükleniyor...",
+      "member": {
+        "balanced": "Dengede",
+        "creditor": "Alacaklı",
+        "debtor": "Borçlu"
+      },
+      "membersTitle": "Üyeler",
+      "noExpenses": "Henüz grup harcaması yok.",
+      "recentExpenses": "Son Harcamalar",
+      "retry": "Tekrar Dene",
+      "summarySubtitle": "Paylaşılan harcamaların görünümü",
+      "summaryTitle": "Grup Özeti",
+      "totalSpending": "Toplam harcama",
+      "yourBalance": "Bakiyen"
+    }
+  },
+  "stitch": {
+    "hub": {
+      "codeHtml": "code.html",
+      "dark": "dark",
+      "noApi": "No API",
+      "pngOnly": "png only",
+      "staticPlaceholders": "Static placeholders",
+      "totalScreens": "{{count}} Stitch screens"
+    },
+    "preview": {
+      "analytics": {
+        "food": "Food",
+        "highlights": "Highlights",
+        "savings": "Savings",
+        "spendingTrend": "Spending Trend",
+        "weeklyBars": "Weekly bars"
+      },
+      "auth": {
+        "authenticationForm": "Authentication Form",
+        "onboardingLoginPlaceholder": "Onboarding / login placeholder",
+        "phoneOtp": "Phone / OTP"
+      },
+      "chips": {
+        "codeHtmlUsed": "code.html hierarchy used",
+        "darkVariant": "Dark variant",
+        "lightVariant": "Light variant",
+        "pngPlaceholder": "png-driven placeholder"
+      },
+      "dashboard": {
+        "accountSnapshot": "Account Snapshot",
+        "categoryPulse": "Category Pulse",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income",
+        "overviewCards": "Overview cards",
+        "recentActivity": "Recent Activity",
+        "topCategories": "Top categories",
+        "updated1mAgo": "Updated 1m ago"
+      },
+      "errors": {
+        "notFoundBody": "The requested Stitch screen key does not exist in the inventory.",
+        "notFoundTitle": "Screen not found"
+      },
+      "other": {
+        "budgetTips": "Budget Tips",
+        "contentUtility": "Content / Utility",
+        "debtGuide": "Debt Guide",
+        "faq": "FAQ",
+        "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
+        "helpCenterDetailPages": "Help center + detail pages",
+        "helpCenterTitle": "FinSight Help Center"
+      },
+      "profile": {
+        "sampleEmail": "user@finsight.app",
+        "summary": "Profile Summary"
+      },
+      "scan": {
+        "alignReceipt": "Align receipt in frame",
+        "cameraFramePlaceholder": "Camera frame placeholder",
+        "captureReceipt": "Capture Receipt",
+        "receiptScan": "Receipt Scan"
+      },
+      "split": {
+        "accommodation": "Accommodation",
+        "aylinOwesYou": "Aylin owes you",
+        "carRental": "Car rental",
+        "expenseSplitScenario": "Expense split scenario",
+        "groupOverview": "Group Overview",
+        "memberAylin": "Aylin",
+        "memberDeniz": "Deniz",
+        "memberMert": "Mert",
+        "memberYou": "You",
+        "settleGroupExpense": "Settle Group Expense",
+        "weekendTrip": "Weekend Trip",
+        "youOweMert": "You owe Mert"
+      },
+      "transactions": {
+        "addNew": "Add New Transaction",
+        "feed": "Transaction Feed",
+        "filtersSubtitle": "List + quick filters"
+      }
+    }
+  },
+  "transactionDetail": {
+    "actions": {
+      "delete": "İşlemi Sil",
+      "downloadReceipt": "Fişi İndir",
+      "splitExpense": "Harcamayı Böl"
+    },
+    "fields": {
+      "account": "Hesap",
+      "category": "Kategori",
+      "dateTime": "Tarih ve Saat",
+      "noCategory": "Kategori yok"
+    },
+    "location": {
+      "placeholder": "Barbaros Mah. No:3, İstanbul"
+    },
+    "notes": {
+      "empty": "Bu işlem için açıklama eklenmedi.",
+      "title": "Notlarım"
+    },
+    "receipt": {
+      "title": "Dijital Fiş"
+    },
+    "state": {
+      "loadErrorTitle": "İşlem detayları yüklenemedi",
+      "loading": "İşlem detayları yükleniyor..."
+    },
+    "status": {
+      "completed": "Tamamlandı"
+    },
+    "title": "İşlem Detayı"
+  },
+  "transactions": {
+    "accountFallback": "Hesap",
+    "actions": {
+      "loadMore": "Daha Fazla Yükle",
+      "search": "Ara"
+    },
+    "create": {
+      "fields": {
+        "account": "Hesap",
+        "amount": "Tutar",
+        "amountPlaceholder": "0,00",
+        "category": "Kategori",
+        "currency": "Para Birimi",
+        "description": "Açıklama",
+        "descriptionPlaceholder": "Opsiyonel not",
+        "occurredAt": "Tarih ve Saat (ISO)",
+        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+      },
+      "sections": {
+        "details": "İşlem Detayları",
+        "step": "1/1 adım"
+      },
+      "selectAccountFirst": "Önce hesap seçin",
+      "state": {
+        "loadErrorTitle": "İşlem formu yüklenemedi",
+        "loading": "İşlem formu yükleniyor..."
+      },
+      "submit": "İşlemi Kaydet",
+      "subtitle": "Yeni bir gelir veya gider kaydı oluşturun.",
+      "successMessage": "İşlem başarıyla kaydedildi.",
+      "successTitle": "İşlem oluşturuldu",
+      "title": "İşlem Ekle"
+    },
+    "filters": {
+      "all": "Tümü"
+    },
+    "group": {
+      "other": "DİĞER",
+      "today": "BUGÜN",
+      "yesterday": "DÜN"
+    },
+    "quickActions": {
+      "scanSubtitle": "Fiş OCR akışı",
+      "scanTitle": "Tara",
+      "splitSubtitle": "Gruplar ve borç kapatma",
+      "splitTitle": "Bölüş"
+    },
+    "row": {
+      "expenseTitle": "Gider",
+      "incomeTitle": "Gelir",
+      "transferBadge": "AKTARIM",
+      "transferHint": "Aktarım • {{time}}",
+      "transferTitle": "Hesap Transferi",
+      "typeHint": "{{type}} • {{time}}"
+    },
+    "searchPlaceholder": "İşlem veya mağaza ara...",
+    "state": {
+      "empty": "Bu filtrelere uyan işlem yok.",
+      "loadErrorTitle": "İşlemler yüklenemedi",
+      "loadingMore": "Daha fazla yükleniyor..."
+    },
+    "summary": {
+      "totalExpense": "TOPLAM GİDER",
+      "totalIncome": "TOPLAM GELİR"
+    },
+    "title": "İşlem Geçmişi"
+  },
+  "transfers": {
+    "form": {
+      "amount": "Tutar",
+      "amountPlaceholder": "0.00",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Opsiyonel not",
+      "fromAccount": "Kaynak hesap",
+      "occurredAt": "Tarih (ISO)",
+      "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "submit": "Transfer Oluştur",
+      "subtitle": "Eşleşmiş giriş/çıkış transfer işlemleri oluşturur",
+      "title": "Para Transferi",
+      "toAccount": "Hedef hesap"
+    },
+    "state": {
+      "loadingAccounts": "Hesaplar yükleniyor...",
+      "needTwoAccounts": "Transferden önce en az iki hesap oluşturun."
+    },
+    "successMessage": "Bakiye başarıyla taşındı.",
+    "successTitle": "Transfer oluşturuldu",
+    "title": "Transfer"
+  },
+  "weeklyReport": {
+    "highlights": "Öne Çıkanlar",
+    "nextWeekForecast": "Gelecek Hafta Tahmini",
+    "noHighlights": "Bu hafta öne çıkan bir veri yok.",
+    "noRisks": "Risk tespit edilmedi.",
+    "riskFlags": "Riskler",
+    "scoreOutOf": "/100",
+    "state": {
+      "errorTitle": "Haftalık rapor yüklenemedi",
+      "noData": "Haftalık rapor bulunamadı."
+    },
+    "subtitle": "Finansal sağlık özeti ve gelecek hafta görünümü.",
+    "title": "Haftalık Rapor"
+  },
+  "settings": {
+    "general": {
+      "title": "Ayarlar"
+    },
+    "language": {
+      "label": "Dil"
+    },
+    "theme": {
+      "label": "Tema"
+    },
+    "notifications": {
+      "label": "Bildirimler"
+    }
+  },
+  "network": {
+    "offline": {
+      "title": "Çevrimdışı mod",
+      "message": "İnternet bağlantısı yok. Bazı işlemler başarısız olabilir.",
+      "retry": "Yeniden dene"
+    }
+  }
+}
+
+===== FILE: apps/mobile/src/shared/i18n/locales/ru.json =====
+{
+  "accounts": {
+    "baseCurrency": {
+      "empty": "Базовая валюта еще не выбрана. Выберите ее для первого счета.",
+      "value": "Базовая валюта: {{currency}}"
+    },
+    "form": {
+      "create": "Создать счет",
+      "creating": "Создание...",
+      "currencyLabel": "Валюта",
+      "currencyPlaceholder": "TRY",
+      "nameLabel": "Название счета",
+      "namePlaceholder": "Например, Основной банк",
+      "typeLabel": "Тип"
+    },
+    "sections": {
+      "baseCurrency": {
+        "subtitle": "После первой настройки блокируется для всех счетов",
+        "title": "Базовая валюта"
+      },
+      "create": {
+        "title": "Создать счет"
+      },
+      "list": {
+        "title": "Ваши счета",
+        "total": "Всего: {{count}}"
+      },
+      "session": {
+        "title": "Сессия аккаунта"
+      }
+    },
+    "session": {
+      "signedIn": "Выполнен вход"
+    },
+    "state": {
+      "empty": "Счета еще не созданы.",
+      "loadErrorTitle": "Не удалось загрузить счета",
+      "loading": "Загрузка счетов..."
+    }
+  },
+  "advisor": {
+    "advice": "Советы",
+    "expense": "Расход",
+    "income": "Доход",
+    "monthlySnapshot": "Срез за месяц",
+    "net": "Чистый результат",
+    "nextActions": "Следующие шаги",
+    "noActions": "Сейчас нет действий.",
+    "noAdvice": "Пока нет советов за этот месяц.",
+    "severity": {
+      "info": "Инфо",
+      "success": "Хорошо",
+      "warning": "Внимание"
+    },
+    "state": {
+      "errorTitle": "Советник недоступен",
+      "noData": "Нет данных советника."
+    },
+    "subtitle": "Персональные рекомендации по вашей активности за месяц.",
+    "title": "AI Финансовый советник"
+  },
+  "aiAdvisor": {
+    "advice": "Советы",
+    "expense": "Расход",
+    "income": "Доход",
+    "monthlySnapshot": "Срез за месяц",
+    "net": "Чистый результат",
+    "nextActions": "Следующие шаги",
+    "noActions": "Сейчас нет действий.",
+    "noAdvice": "Пока нет советов за этот месяц.",
+    "severity": {
+      "info": "Инфо",
+      "success": "Хорошо",
+      "warning": "Внимание"
+    },
+    "state": {
+      "errorTitle": "Советник недоступен",
+      "noData": "Нет данных советника."
+    },
+    "subtitle": "Персональные рекомендации по вашей активности за месяц.",
+    "title": "AI Финансовый советник"
+  },
+  "analytics": {
+    "aiAdvisor": "AI Советник",
+    "aiAdvisorCta": "Открыть AI Советника",
+    "aiAdvisorSubtitle": "Проверьте персональные действия.",
+    "dailyTrends": "Дневной тренд",
+    "days": {
+      "fri": "Пт",
+      "mon": "Пн",
+      "sat": "Сб",
+      "sun": "Вс",
+      "thu": "Чт",
+      "tue": "Вт",
+      "wed": "Ср"
+    },
+    "expense": "Расход",
+    "fromLastMonth": "%{{percent}} к прошлому месяцу",
+    "income": "Доход",
+    "last7Days": "Последние 7 дней",
+    "loadingCategories": "Загрузка категорий...",
+    "mainCategory": "Главная категория",
+    "noCategories": "Нет данных по категориям за период.",
+    "noCategory": "Без категории",
+    "percentOfTotal": "{{percent}}% от общего",
+    "premiumInsights": "Премиум инсайты",
+    "range": {
+      "monthly": "Месяц",
+      "weekly": "Неделя",
+      "yearly": "Год"
+    },
+    "refreshingTrend": "Обновление тренда...",
+    "state": {
+      "errorTitle": "Аналитика недоступна",
+      "noData": "Нет аналитических данных."
+    },
+    "title": "Анализ расходов",
+    "topCategories": "Топ категорий",
+    "totalSpending": "Всего расходов",
+    "transactionsCount": "{{count}} операций",
+    "weeklyReport": "Недельный отчёт",
+    "weeklyReportSubtitle": "Проверьте недельный индекс здоровья."
+  },
+  "app": {
+    "state": {
+      "preparing": "Подготовка FinSight...",
+      "restoring": "Восстановление сессии..."
+    }
+  },
+  "auth": {
+    "brandTitle": "Умные Финансы AI",
+    "common": {
+      "apple": "Apple",
+      "google": "Google",
+      "or": "ИЛИ",
+      "orContinueWith": "ИЛИ ПРОДОЛЖИТЬ ЧЕРЕЗ"
+    },
+    "forgot": {
+      "fields": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "name@company.com"
+      },
+      "secureBadge": "БЕЗОПАСНОЕ ФИНАНСОВОЕ AI-ШИФРОВАНИЕ",
+      "submit": "Отправить ссылку для сброса",
+      "subtitle": "Введите email, чтобы получить ссылку для сброса пароля. Мы поможем вернуть доступ к вашему финансовому дашборду.",
+      "success": "Если этот email существует, инструкция отправлена.",
+      "title": "Забыли пароль"
+    },
+    "links": {
+      "haveAccount": "Уже есть аккаунт?",
+      "joinNow": "Присоединиться",
+      "noAccount": "Нет аккаунта?",
+      "signIn": "Войти"
+    },
+    "login": {
+      "fallbackError": "Не удалось войти. Попробуйте снова.",
+      "fields": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "name@company.com",
+        "passwordLabel": "Пароль",
+        "passwordPlaceholder": "••••••••"
+      },
+      "forgot": "Забыли?",
+      "hidePassword": "Скрыть пароль",
+      "secureBadge": "БЕЗОПАСНЫЙ ЗАШИФРОВАННЫЙ ВХОД",
+      "showPassword": "Показать пароль",
+      "submit": "Войти в аккаунт",
+      "subtitle": "Введите данные для входа",
+      "welcomeBack": "С возвращением"
+    },
+    "register": {
+      "fallbackError": "Не удалось создать аккаунт.",
+      "fields": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "example@mail.com",
+        "nameLabel": "Полное имя",
+        "namePlaceholder": "Введите полное имя",
+        "passwordLabel": "Пароль"
+      },
+      "submit": "Создать аккаунт",
+      "subtitle": "Начните управлять финансовым будущим с помощью ИИ",
+      "title": "Создать аккаунт"
+    },
+    "validation": {
+      "emailInvalid": "Введите корректный email.",
+      "emailRequired": "Email обязателен.",
+      "loginInvalidInput": "Введите корректные email и пароль.",
+      "nameRequired": "Имя обязательно.",
+      "passwordMin": "Пароль должен содержать минимум 8 символов.",
+      "passwordRequired": "Пароль обязателен.",
+      "registerInvalidInput": "Проверьте данные регистрации."
+    }
+  },
+  "budgets": {
+    "composer": {
+      "amountPlaceholder": "0.00",
+      "category": "Категория",
+      "create": "Создать бюджет",
+      "creating": "Создание...",
+      "limitAmount": "Лимит суммы",
+      "noCategories": "Для этого месяца бюджеты уже заданы для всех расходных категорий.",
+      "title": "Добавить бюджет"
+    },
+    "delete": {
+      "message": "Удалить бюджет {{category}} за {{month}}?",
+      "title": "Удалить бюджет"
+    },
+    "inline": {
+      "saveLimit": "Сохранить лимит",
+      "updateLimit": "Обновить лимит"
+    },
+    "overview": {
+      "aiHintPrefix": "AI считает, что вы идете к экономии",
+      "aiHintSuffix": "в этом месяце.",
+      "leftLabel": "Осталось {{remaining}}",
+      "spentLabel": "Потрачено {{spent}} ({{percent}}%)",
+      "totalMonthlyBudget": "ОБЩИЙ МЕСЯЧНЫЙ БЮДЖЕТ"
+    },
+    "row": {
+      "left": "Осталось {{remaining}}",
+      "over": "ПРЕВЫШЕНО",
+      "spentOf": "Потрачено {{spent}} из {{limit}}"
+    },
+    "sections": {
+      "spendingCategories": "Категории трат",
+      "viewHistory": "История"
+    },
+    "state": {
+      "empty": "На этот месяц бюджеты еще не настроены.",
+      "unavailableTitle": "Бюджеты недоступны",
+      "updating": "Обновление бюджетов..."
+    },
+    "title": "Планирование бюджета"
+  },
+  "common": {
+    "appInitials": "FS",
+    "appName": "FinSight",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "continue": "Продолжить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "goBack": "Назад",
+    "loadingShort": "Загрузка...",
+    "notAvailable": "Н/Д",
+    "now": "Сейчас",
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "retry": "Повторить",
+    "save": "Сохранить",
+    "saving": "Сохранение...",
+    "view": "Открыть",
+    "buttons": {
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "retry": "Повторить",
+      "delete": "Удалить"
+    },
+    "navigation": {
+      "tabs": {
+        "home": {
+          "label": "Главная"
+        },
+        "transactions": {
+          "label": "Операции",
+          "shortLabel": "Операции"
+        },
+        "analytics": {
+          "label": "Аналитика",
+          "shortLabel": "Аналитика"
+        },
+        "groups": {
+          "label": "Группы",
+          "shortLabel": "Группы"
+        },
+        "add": {
+          "label": "Добавить"
+        },
+        "profile": {
+          "label": "Профиль",
+          "shortLabel": "Профиль"
+        }
+      },
+      "stacks": {
+        "dashboard": {
+          "header": {
+            "title": "Панель"
+          }
+        },
+        "analytics": {
+          "header": {
+            "title": "Аналитика"
+          }
+        },
+        "aiAdvisor": {
+          "header": {
+            "title": "AI Советник"
+          }
+        },
+        "weeklyReport": {
+          "header": {
+            "title": "Недельный отчёт"
+          }
+        },
+        "budgets": {
+          "header": {
+            "title": "Бюджеты"
+          }
+        },
+        "groups": {
+          "header": {
+            "title": "Группы расходов"
+          }
+        },
+        "createGroup": {
+          "header": {
+            "title": "Создать группу"
+          }
+        },
+        "groupDetail": {
+          "header": {
+            "title": "Детали группы"
+          }
+        },
+        "addGroupExpense": {
+          "header": {
+            "title": "Добавить расход группы"
+          }
+        },
+        "settleUp": {
+          "header": {
+            "title": "Закрыть баланс"
+          }
+        },
+        "transfer": {
+          "header": {
+            "title": "Перевод средств"
+          }
+        },
+        "recurring": {
+          "header": {
+            "title": "Регулярные"
+          }
+        },
+        "scanReceipt": {
+          "header": {
+            "title": "Скан чека"
+          }
+        },
+        "camera": {
+          "header": {
+            "title": "Камера"
+          }
+        },
+        "reviewScan": {
+          "header": {
+            "title": "Проверка скана"
+          }
+        },
+        "profile": {
+          "header": {
+            "title": "Профиль"
+          }
+        },
+        "editProfile": {
+          "header": {
+            "title": "Редактировать профиль"
+          }
+        },
+        "settings": {
+          "header": {
+            "title": "Настройки"
+          }
+        },
+        "security": {
+          "header": {
+            "title": "Безопасность"
+          }
+        },
+        "about": {
+          "header": {
+            "title": "О приложении"
+          }
+        },
+        "accounts": {
+          "header": {
+            "title": "Счета"
+          }
+        }
+      },
+      "preview": {
+        "screen": {
+          "header": {
+            "title": "Предпросмотр экрана",
+            "suffix": "Предпросмотр"
+          }
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "accountFallback": "Счёт",
+    "accountTypes": {
+      "bank": "Банк",
+      "cash": "Наличные",
+      "credit": "Кредит"
+    },
+    "accounts": "Счета",
+    "addExpense": "Добавить расход",
+    "addIncome": "Добавить доход",
+    "aiAction": "Получить совет",
+    "aiActive": "AI АКТИВЕН",
+    "aiAdvisor": "AI Советник",
+    "aiAnalysisTitle": "AI Анализ",
+    "currentBalance": "Текущий баланс",
+    "expense": "Расход",
+    "greeting": "Добро пожаловать,",
+    "income": "Доход",
+    "insight": {
+      "noSavingsHighlight": "Ваш уровень сбережений",
+      "noSavingsMessage": "в этом месяце. Давайте улучшим его с умными подсказками.",
+      "savingsMessage": "больше обычного.",
+      "thisMonth": "В этом месяце вы сэкономили"
+    },
+    "premiumSection": "Премиум",
+    "quickActions": "Быстрые действия",
+    "recentTransactions": "Последние операции",
+    "scanReceipt": "Скан чека",
+    "state": {
+      "errorTitle": "Панель недоступна",
+      "loading": "Загрузка панели...",
+      "noAccounts": "Счета не найдены.",
+      "noData": "Нет данных для панели.",
+      "noTransactions": "Пока нет операций."
+    },
+    "time": {
+      "dayWithTime": "{{day}} • {{time}}",
+      "today": "Сегодня, {{time}}",
+      "yesterday": "Вчера, {{time}}"
+    },
+    "transaction": {
+      "expenseTitle": "Расход",
+      "incomeTitle": "Доход",
+      "transferContext": "Перевод",
+      "transferTitle": "Перевод"
+    },
+    "trend": {
+      "decrease": "-{{percent}}% к прошлому месяцу",
+      "increase": "+{{percent}}% к прошлому месяцу",
+      "stable": "По сравнению с прошлым месяцем стабильно"
+    },
+    "viewAll": "Смотреть все",
+    "weeklyReport": "Недельный отчёт"
+  },
+  "debug": {
+    "input": {
+      "firstPlaceholder": "First input",
+      "goLogin": "Go to Login",
+      "goRegister": "Go to Register",
+      "secondPlaceholder": "Second input",
+      "subtitle": "This screen uses plain TextInput only. Check focus/blur logs in Metro console.",
+      "title": "Debug Input Isolation"
+    }
+  },
+  "errors": {
+    "account": {
+      "createFailedTitle": "Не удалось создать счет",
+      "updateFailedTitle": "Не удалось обновить счет"
+    },
+    "auth": {
+      "logoutFailedTitle": "Не удалось выйти",
+      "sessionNotAvailable": "Сессия недоступна"
+    },
+    "budget": {
+      "createFailedTitle": "Не удалось создать бюджет",
+      "deleteFailedTitle": "Не удалось удалить бюджет",
+      "updateFailedTitle": "Не удалось обновить бюджет"
+    },
+    "recurring": {
+      "createFailedTitle": "Не удалось создать правило",
+      "deleteFailedTitle": "Не удалось удалить правило",
+      "updateFailedTitle": "Не удалось обновить правило"
+    },
+    "transaction": {
+      "createFailedTitle": "Не удалось создать транзакцию"
+    },
+    "transfer": {
+      "createFailedTitle": "Не удалось создать перевод"
+    },
+    "boundary": {
+      "title": "Произошла ошибка",
+      "message": "Приложение столкнулось с непредвиденной ошибкой. Повторите попытку.",
+      "retry": "Повторить"
+    },
+    "api": {
+      "API_REQUEST_FAILED": "Не удалось выполнить запрос.",
+      "BASE_CURRENCY_MISMATCH": "Действие использует другую базовую валюту.",
+      "EMAIL_ALREADY_EXISTS": "Аккаунт с таким email уже существует.",
+      "FORBIDDEN": "У вас нет доступа к этому действию.",
+      "INVALID_CREDENTIALS": "Неверный email или пароль.",
+      "INVALID_REFRESH_TOKEN": "Сессия истекла. Войдите снова.",
+      "INVALID_RESPONSE_PAYLOAD": "Получены некорректные данные с сервера.",
+      "NETWORK_ERROR": "Ошибка сетевого подключения.",
+      "NOT_FOUND": "Запрошенная запись не найдена.",
+      "REQUEST_TIMEOUT": "Сервер слишком долго не отвечает.",
+      "SERVER_UNREACHABLE": "Сервер сейчас недоступен.",
+      "UNAUTHORIZED": "Ваша сессия больше не действительна.",
+      "UNKNOWN_ERROR": "Произошла непредвиденная ошибка."
+    }
+  },
+  "groups": {
+    "create": {
+      "actions": {
+        "create": "Создать группу",
+        "creating": "Создание..."
+      },
+      "errors": {
+        "createFailedTitle": "Не удалось создать группу"
+      },
+      "fields": {
+        "membersLabel": "Участники (email через запятую)",
+        "membersPlaceholder": "alice@mail.com, bob@mail.com",
+        "nameLabel": "Название группы",
+        "namePlaceholder": "Поездка на выходные"
+      },
+      "previewCount": "Будет добавлено участников: {{count}}",
+      "subtitle": "Создайте группу для общих расходов",
+      "title": "Создать группу",
+      "validation": {
+        "nameRequired": "Название группы обязательно"
+      }
+    },
+    "list": {
+      "createButton": "Создать группу",
+      "empty": "Групп пока нет. Создайте группу, чтобы начать делить расходы.",
+      "errorTitle": "Не удалось загрузить группы",
+      "loading": "Загрузка групп...",
+      "memberCount": "{{count}} участников",
+      "subtitle": "Отслеживайте общие расходы и балансы",
+      "title": "Группы"
+    },
+    "settle": {
+      "actions": {
+        "markSettled": "Закрыть долг",
+        "settling": "Закрытие..."
+      },
+      "errorTitle": "Не удалось закрыть долг",
+      "loadErrorTitle": "Не удалось загрузить группу",
+      "loading": "Загрузка данных группы...",
+      "openAmount": "Открытая сумма",
+      "openExpenses": "Открытые расходы",
+      "subtitle": "Закрыть все открытые групповые расходы",
+      "successMessage": "Групповые расходы помечены как закрытые.",
+      "successTitle": "Закрыто",
+      "title": "Погашение"
+    }
+  },
+  "navigation": {
+    "stack": {
+      "about": "О приложении",
+      "accounts": "Счета",
+      "addGroupExpense": "Добавить расход группы",
+      "aiAdvisor": "AI Советник",
+      "analytics": "Аналитика",
+      "budgets": "Бюджеты",
+      "camera": "Камера",
+      "createGroup": "Создать группу",
+      "dashboard": "Панель",
+      "editProfile": "Редактировать профиль",
+      "groupDetail": "Детали группы",
+      "profile": "Профиль",
+      "recurring": "Регулярные",
+      "reviewScan": "Проверка скана",
+      "scanReceipt": "Скан чека",
+      "security": "Безопасность",
+      "settings": "Настройки",
+      "settleUp": "Закрыть баланс",
+      "splitGroups": "Группы расходов",
+      "transfer": "Перевод средств",
+      "weeklyReport": "Недельный отчёт"
+    },
+    "tabs": {
+      "add": "Добавить",
+      "analytics": "Аналитика",
+      "analyticsShort": "Аналитика",
+      "groups": "Группы",
+      "groupsShort": "Группы",
+      "home": "Главная",
+      "profile": "Профиль",
+      "profileShort": "Профиль",
+      "transactions": "Операции",
+      "transactionsShort": "Операции"
+    }
+  },
+  "onboarding": {
+    "getStarted": "Начать",
+    "next": "Далее",
+    "skip": "Пропустить",
+    "step1": {
+      "subtitle": "Отслеживайте все расходы, доходы и переводы в одной ленте.",
+      "title": "Контролируйте все"
+    },
+    "step2": {
+      "subtitle": "Смотрите категории, месячные тренды и использование бюджета.",
+      "title": "Понимайте траты"
+    },
+    "step3": {
+      "subtitle": "Создайте аккаунт или войдите, затем настройте счета и бюджеты.",
+      "titleGate": "Готовы начать?",
+      "titlePreview": "Все готово"
+    },
+    "stepLabel": "Шаг {{current}}/{{total}}"
+  },
+  "profile": {
+    "about": {
+      "appNameLabel": "Название приложения",
+      "buildLabel": "Сборка",
+      "buildValue": "Разработка",
+      "noteOne": "FinSight помогает вести счета, транзакции, аналитику и бюджеты в единой валюте.",
+      "noteTwo": "Аутентификация включает access/refresh токены и защищенную навигацию.",
+      "notesTitle": "Заметки",
+      "subtitle": "Информация о продукте и сборке",
+      "title": "О FinSight",
+      "versionLabel": "Версия",
+      "versionValue": "1.0.0"
+    },
+    "accountSettings": "АККАУНТ И НАСТРОЙКИ",
+    "accounts": "Счета",
+    "baseCurrency": "Базовая валюта",
+    "defaultUserName": "Пользователь FinSight",
+    "edit": {
+      "baseCurrencyLabel": "Базовая валюта",
+      "emailLabel": "Эл. почта",
+      "fullNameLabel": "Полное имя",
+      "fullNamePlaceholder": "Ваше полное имя",
+      "helper": "Эндпоинт обновления профиля пока недоступен. UI готов для PATCH /me.",
+      "photoSubtitle": "Нажмите для изменения (только UI)",
+      "photoTitle": "Фото профиля",
+      "save": "Сохранить изменения",
+      "updateNotAvailableCode": "PROFILE_UPDATE_NOT_AVAILABLE"
+    },
+    "lastSync": "Последняя синхр.",
+    "logOut": "Выйти",
+    "loggingOut": "Выход...",
+    "premiumMember": "ПРЕМИУМ",
+    "rows": {
+      "about": "О FinSight",
+      "aboutSubtitle": "Версия и правовая информация",
+      "aiAdvisor": "AI Советник",
+      "aiAdvisorSubtitle": "Открыть персональные советы",
+      "appSettings": "Настройки",
+      "appSettingsSubtitle": "Тема и параметры приложения",
+      "myAccounts": "Мои счета",
+      "myAccountsSubtitle": "Просмотр и управление счетами",
+      "personalInfo": "Личные данные",
+      "personalInfoSubtitle": "Имя, почта и данные профиля",
+      "security": "Безопасность",
+      "securitySubtitle": "Пароль и защита сессии",
+      "weeklyReport": "Недельный отчёт",
+      "weeklyReportSubtitle": "Счёт и прогноз на неделю"
+    },
+    "security": {
+      "delete": {
+        "cta": "Удалить аккаунт и все данные",
+        "hint": "Это действие необратимо.",
+        "notAvailable": "Это действие пока недоступно.",
+        "title": "Удалить аккаунт"
+      },
+      "items": {
+        "accountActivity": {
+          "subtitle": "Проверяйте последние устройства",
+          "title": "Активность аккаунта"
+        },
+        "biometric": {
+          "subtitle": "Использовать Face ID или отпечаток",
+          "title": "Биометрический вход"
+        },
+        "downloadData": {
+          "subtitle": "Запросить пакет экспорта",
+          "title": "Скачать персональные данные"
+        },
+        "privacyPolicy": {
+          "subtitle": "Как FinSight защищает данные",
+          "title": "Политика конфиденциальности"
+        },
+        "thirdParty": {
+          "subtitle": "Управлять доступом партнеров",
+          "title": "Обмен с третьими сторонами"
+        },
+        "twoFactor": {
+          "subtitle": "Дополнительная проверка входа",
+          "title": "Двухфакторная аутентификация"
+        }
+      },
+      "scoreSubtitle": "Активны 2 из 3 рекомендуемых защит.",
+      "scoreTitle": "Оценка безопасности: Высокая",
+      "sections": {
+        "accessControl": "КОНТРОЛЬ ДОСТУПА",
+        "dangerZone": "ОПАСНАЯ ЗОНА",
+        "dataPrivacy": "ДАННЫЕ И ПРИВАТНОСТЬ"
+      }
+    },
+    "settings": {
+      "items": {
+        "biometric": {
+          "subtitle": "Использовать Face ID / отпечаток",
+          "title": "Биометрический вход"
+        },
+        "helpCenter": {
+          "subtitle": "Руководства и поддержка",
+          "title": "Центр помощи"
+        },
+        "howItWorks": {
+          "subtitle": "Показать онбординг снова",
+          "title": "Как это работает"
+        },
+        "language": {
+          "subtitle": "Выберите язык приложения",
+          "title": "Язык"
+        },
+        "notifications": {
+          "subtitle": "Получать важные обновления",
+          "title": "Уведомления"
+        },
+        "security": {
+          "subtitle": "Расширенные настройки безопасности",
+          "title": "Безопасность"
+        },
+        "theme": {
+          "subtitle": "Системная, светлая или темная",
+          "title": "Тема"
+        },
+        "version": {
+          "subtitle": "FinSight 1.0.0",
+          "title": "Версия"
+        }
+      },
+      "plan": "Премиум план",
+      "sections": {
+        "application": "Приложение",
+        "privacy": "Конфиденциальность",
+        "support": "Поддержка"
+      },
+      "userTitle": "Демо пользователь",
+      "locale": {
+        "tr": "Турецкий",
+        "en": "Английский",
+        "ru": "Русский"
+      },
+      "theme": {
+        "system": "Системная",
+        "light": "Светлая",
+        "dark": "Темная"
+      }
+    },
+    "support": "ПОДДЕРЖКА",
+    "useDifferentAccount": "Использовать другой аккаунт"
+  },
+  "recurring": {
+    "actions": {
+      "create": "Создать правило"
+    },
+    "cadence": {
+      "monthly": "ЕЖЕМЕСЯЧНО",
+      "weekly": "ЕЖЕНЕДЕЛЬНО"
+    },
+    "delete": {
+      "message": "Удалить это повторяющееся правило?",
+      "title": "Удалить повторяющееся правило"
+    },
+    "fields": {
+      "account": "Счет",
+      "amount": "Сумма",
+      "amountPlaceholder": "0.00",
+      "cadence": "Периодичность",
+      "categoryWithType": "Категория ({{type}})",
+      "dayOfMonth": "День месяца (1-28)",
+      "dayOfWeek": "День недели (0=Вс ... 6=Сб)",
+      "dayPlaceholder": "1",
+      "description": "Описание",
+      "descriptionPlaceholder": "Необязательная заметка",
+      "fromAccount": "Со счета",
+      "kind": "Вид правила",
+      "startAt": "Старт (ISO)",
+      "startAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "toAccount": "На счет",
+      "type": "Тип"
+    },
+    "kind": {
+      "normal": "ОБЫЧНОЕ",
+      "transfer": "ПЕРЕВОД"
+    },
+    "rule": {
+      "account": "Счет: {{account}}",
+      "amount": "Сумма: {{amount}}",
+      "cadence": "Период: {{cadence}}",
+      "category": "Категория: {{category}}",
+      "from": "Со счета: {{account}}",
+      "nextRun": "Следующий запуск: {{date}}",
+      "normal": "Обычное правило",
+      "note": "Заметка: {{note}}",
+      "to": "На счет: {{account}}",
+      "transfer": "Правило перевода",
+      "type": "Тип: {{type}}"
+    },
+    "sections": {
+      "existing": "Существующие правила",
+      "totalRules": "{{count}} правил"
+    },
+    "state": {
+      "empty": "Пока нет повторяющихся правил.",
+      "loading": "Загрузка повторяющихся правил..."
+    },
+    "status": {
+      "active": "АКТИВНО",
+      "paused": "ПАУЗА"
+    },
+    "subtitle": "Создавайте правила для автозапуска по расписанию",
+    "successMessage": "Правило теперь активно.",
+    "successTitle": "Повторяющееся правило создано",
+    "title": "Повторяющиеся правила"
+  },
+  "scan": {
+    "camera": {
+      "capture": "Сделать снимок",
+      "permission": {
+        "allow": "Разрешить камеру",
+        "subtitle": "Разрешите доступ к камере для сканирования чеков.",
+        "title": "Нужен доступ к камере"
+      },
+      "state": {
+        "preparing": "Подготовка камеры..."
+      }
+    },
+    "home": {
+      "back": "Назад к операциям",
+      "cta": "Сканировать чек",
+      "steps": {
+        "capture": "Сделайте фото чека",
+        "create": "Создайте транзакцию с предзаполнением",
+        "review": "Проверьте распознанные поля"
+      },
+      "subtitle": "Сфотографируйте чек и заполните транзакцию за секунды.",
+      "title": "Скан чека"
+    },
+    "review": {
+      "createTransaction": "Создать транзакцию",
+      "defaults": {
+        "description": "Транзакция по чеку"
+      },
+      "errors": {
+        "invalidAmountMessage": "Введите положительную сумму.",
+        "invalidAmountTitle": "Некорректная сумма",
+        "invalidDateMessage": "Введите корректную дату (YYYY-MM-DD).",
+        "invalidDateTitle": "Некорректная дата",
+        "navigationMessage": "Не удалось открыть экран добавления транзакции.",
+        "navigationTitle": "Ошибка навигации"
+      },
+      "fields": {
+        "amount": "Сумма",
+        "amountPlaceholder": "0.00",
+        "date": "Дата",
+        "datePlaceholder": "YYYY-MM-DD",
+        "merchant": "Мерчант",
+        "merchantPlaceholder": "Название магазина"
+      },
+      "formTitle": "Распознанные поля (Mock)",
+      "previewTitle": "Предпросмотр чека",
+      "retake": "Сделать фото заново"
+    }
+  },
+  "split": {
+    "addExpense": {
+      "actions": {
+        "submit": "Сохранить расход",
+        "submitting": "Сохранение..."
+      },
+      "categoryOptions": {
+        "bills": "Счета",
+        "food": "Еда",
+        "other": "Другое",
+        "rent": "Аренда",
+        "shopping": "Покупки",
+        "transport": "Транспорт"
+      },
+      "equalShare": "{{amount}}",
+      "errors": {
+        "createFailedTitle": "Не удалось создать расход",
+        "invalidAmountMessage": "Введите положительную сумму.",
+        "invalidAmountTitle": "Некорректная сумма",
+        "invalidCustomSplitMessage": "Введите корректные неотрицательные суммы для выбранных участников.",
+        "invalidCustomSplitTitle": "Некорректные пользовательские доли",
+        "membersRequiredMessage": "Выберите хотя бы одного участника.",
+        "membersRequiredTitle": "Требуются участники",
+        "paidByRequiredMessage": "Выберите, кто оплатил расход.",
+        "paidByRequiredTitle": "Требуется плательщик",
+        "requiredTitleMessage": "Введите название расхода.",
+        "requiredTitleTitle": "Требуется название",
+        "splitMismatchMessage": "Сумма {{amount}} не совпадает с суммой долей {{split}}.",
+        "splitMismatchTitle": "Сумма долей не совпадает"
+      },
+      "fields": {
+        "amountLabel": "Сумма",
+        "amountPlaceholder": "0.00",
+        "categoryLabel": "Категория",
+        "dateLabel": "Дата",
+        "datePlaceholder": "ГГГГ-ММ-ДД",
+        "membersLabel": "Участники",
+        "paidByLabel": "Оплатил",
+        "paidByPlaceholder": "Выберите участника",
+        "splitForMemberLabel": "Доля: {{name}}",
+        "splitModeLabel": "Режим деления",
+        "titleLabel": "Название",
+        "titlePlaceholder": "Ужин"
+      },
+      "loadErrorTitle": "Не удалось загрузить группу",
+      "loading": "Загрузка участников группы...",
+      "memberSelectedCount": "Выбрано участников: {{count}}",
+      "retry": "Повторить",
+      "sections": {
+        "customPreview": "Пользовательские доли",
+        "equalPreview": "Предпросмотр равного деления"
+      },
+      "splitModes": {
+        "custom": "Своя сумма",
+        "equal": "Поровну"
+      },
+      "subtitle": "{{group}}",
+      "title": "Добавить групповой расход"
+    },
+    "common": {
+      "unknownMember": "Неизвестный участник"
+    },
+    "groupDetail": {
+      "actions": {
+        "addExpense": "Добавить расход",
+        "settleUp": "Закрыть долг"
+      },
+      "balanceState": {
+        "creditor": "Вы кредитор",
+        "debtor": "Вы должник",
+        "settled": "Баланс нулевой"
+      },
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "indicator": {
+        "noShare": "Без доли",
+        "settled": "Закрыто",
+        "unknownShare": "Доля недоступна",
+        "youGet": "Вам должны {{amount}}",
+        "youOwe": "Вы должны {{amount}}"
+      },
+      "loadErrorTitle": "Не удалось загрузить детали группы",
+      "loading": "Загрузка деталей группы...",
+      "member": {
+        "balanced": "Баланс",
+        "creditor": "Кредитор",
+        "debtor": "Должник"
+      },
+      "membersTitle": "Участники",
+      "noExpenses": "Пока нет групповых расходов.",
+      "recentExpenses": "Последние расходы",
+      "retry": "Повторить",
+      "summarySubtitle": "Обзор совместных расходов",
+      "summaryTitle": "Сводка группы",
+      "totalSpending": "Общие расходы",
+      "yourBalance": "Ваш баланс"
+    }
+  },
+  "stitch": {
+    "hub": {
+      "codeHtml": "code.html",
+      "dark": "dark",
+      "noApi": "No API",
+      "pngOnly": "png only",
+      "staticPlaceholders": "Static placeholders",
+      "totalScreens": "{{count}} Stitch screens"
+    },
+    "preview": {
+      "analytics": {
+        "food": "Food",
+        "highlights": "Highlights",
+        "savings": "Savings",
+        "spendingTrend": "Spending Trend",
+        "weeklyBars": "Weekly bars"
+      },
+      "auth": {
+        "authenticationForm": "Authentication Form",
+        "onboardingLoginPlaceholder": "Onboarding / login placeholder",
+        "phoneOtp": "Phone / OTP"
+      },
+      "chips": {
+        "codeHtmlUsed": "code.html hierarchy used",
+        "darkVariant": "Dark variant",
+        "lightVariant": "Light variant",
+        "pngPlaceholder": "png-driven placeholder"
+      },
+      "dashboard": {
+        "accountSnapshot": "Account Snapshot",
+        "categoryPulse": "Category Pulse",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income",
+        "overviewCards": "Overview cards",
+        "recentActivity": "Recent Activity",
+        "topCategories": "Top categories",
+        "updated1mAgo": "Updated 1m ago"
+      },
+      "errors": {
+        "notFoundBody": "The requested Stitch screen key does not exist in the inventory.",
+        "notFoundTitle": "Screen not found"
+      },
+      "other": {
+        "budgetTips": "Budget Tips",
+        "contentUtility": "Content / Utility",
+        "debtGuide": "Debt Guide",
+        "faq": "FAQ",
+        "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
+        "helpCenterDetailPages": "Help center + detail pages",
+        "helpCenterTitle": "FinSight Help Center"
+      },
+      "profile": {
+        "sampleEmail": "user@finsight.app",
+        "summary": "Profile Summary"
+      },
+      "scan": {
+        "alignReceipt": "Align receipt in frame",
+        "cameraFramePlaceholder": "Camera frame placeholder",
+        "captureReceipt": "Capture Receipt",
+        "receiptScan": "Receipt Scan"
+      },
+      "split": {
+        "accommodation": "Accommodation",
+        "aylinOwesYou": "Aylin owes you",
+        "carRental": "Car rental",
+        "expenseSplitScenario": "Expense split scenario",
+        "groupOverview": "Group Overview",
+        "memberAylin": "Aylin",
+        "memberDeniz": "Deniz",
+        "memberMert": "Mert",
+        "memberYou": "You",
+        "settleGroupExpense": "Settle Group Expense",
+        "weekendTrip": "Weekend Trip",
+        "youOweMert": "You owe Mert"
+      },
+      "transactions": {
+        "addNew": "Add New Transaction",
+        "feed": "Transaction Feed",
+        "filtersSubtitle": "List + quick filters"
+      }
+    }
+  },
+  "transactionDetail": {
+    "actions": {
+      "delete": "Удалить транзакцию",
+      "downloadReceipt": "Скачать чек",
+      "splitExpense": "Разделить расход"
+    },
+    "fields": {
+      "account": "Счет",
+      "category": "Категория",
+      "dateTime": "Дата и время",
+      "noCategory": "Без категории"
+    },
+    "location": {
+      "placeholder": "Barbaros Mah. No:3, Istanbul"
+    },
+    "notes": {
+      "empty": "Для этой транзакции нет заметки.",
+      "title": "Мои заметки"
+    },
+    "receipt": {
+      "title": "Цифровой чек"
+    },
+    "state": {
+      "loadErrorTitle": "Не удалось загрузить детали транзакции",
+      "loading": "Загрузка деталей транзакции..."
+    },
+    "status": {
+      "completed": "Завершено"
+    },
+    "title": "Детали транзакции"
+  },
+  "transactions": {
+    "accountFallback": "Счет",
+    "actions": {
+      "loadMore": "Загрузить еще",
+      "search": "Поиск"
+    },
+    "create": {
+      "fields": {
+        "account": "Счет",
+        "amount": "Сумма",
+        "amountPlaceholder": "0.00",
+        "category": "Категория",
+        "currency": "Валюта",
+        "description": "Описание",
+        "descriptionPlaceholder": "Необязательная заметка",
+        "occurredAt": "Дата и время (ISO)",
+        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+      },
+      "sections": {
+        "details": "Детали транзакции",
+        "step": "Шаг 1/1"
+      },
+      "selectAccountFirst": "Сначала выберите счет",
+      "state": {
+        "loadErrorTitle": "Не удалось загрузить форму транзакции",
+        "loading": "Загрузка формы транзакции..."
+      },
+      "submit": "Сохранить транзакцию",
+      "subtitle": "Создайте новую запись дохода или расхода.",
+      "successMessage": "Транзакция успешно сохранена.",
+      "successTitle": "Транзакция создана",
+      "title": "Добавить транзакцию"
+    },
+    "filters": {
+      "all": "Все"
+    },
+    "group": {
+      "other": "ДРУГОЕ",
+      "today": "СЕГОДНЯ",
+      "yesterday": "ВЧЕРА"
+    },
+    "quickActions": {
+      "scanSubtitle": "OCR чеков",
+      "scanTitle": "Скан",
+      "splitSubtitle": "Группы и взаиморасчеты",
+      "splitTitle": "Разделить"
+    },
+    "row": {
+      "expenseTitle": "Расход",
+      "incomeTitle": "Доход",
+      "transferBadge": "ПЕРЕВОД",
+      "transferHint": "Перевод • {{time}}",
+      "transferTitle": "Перевод между счетами",
+      "typeHint": "{{type}} • {{time}}"
+    },
+    "searchPlaceholder": "Поиск по транзакции или магазину...",
+    "state": {
+      "empty": "Нет транзакций под текущие фильтры.",
+      "loadErrorTitle": "Не удалось загрузить транзакции",
+      "loadingMore": "Загрузка..."
+    },
+    "summary": {
+      "totalExpense": "ОБЩИЙ РАСХОД",
+      "totalIncome": "ОБЩИЙ ДОХОД"
+    },
+    "title": "История транзакций"
+  },
+  "transfers": {
+    "form": {
+      "amount": "Сумма",
+      "amountPlaceholder": "0.00",
+      "description": "Описание",
+      "descriptionPlaceholder": "Необязательная заметка",
+      "fromAccount": "Со счета",
+      "occurredAt": "Дата (ISO)",
+      "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "submit": "Создать перевод",
+      "subtitle": "Создает связанную пару вход/выход для перевода",
+      "title": "Перевод средств",
+      "toAccount": "На счет"
+    },
+    "state": {
+      "loadingAccounts": "Загрузка счетов...",
+      "needTwoAccounts": "Создайте минимум два счета перед переводом."
+    },
+    "successMessage": "Средства успешно перемещены.",
+    "successTitle": "Перевод создан",
+    "title": "Перевод"
+  },
+  "weeklyReport": {
+    "highlights": "Ключевые моменты",
+    "nextWeekForecast": "Прогноз на следующую неделю",
+    "noHighlights": "На этой неделе нет ключевых моментов.",
+    "noRisks": "Риски не обнаружены.",
+    "riskFlags": "Риски",
+    "scoreOutOf": "/100",
+    "state": {
+      "errorTitle": "Недельный отчёт недоступен",
+      "noData": "Нет данных недельного отчёта."
+    },
+    "subtitle": "Сводка финансового здоровья и прогноз на следующую неделю.",
+    "title": "Недельный отчёт"
+  },
+  "settings": {
+    "general": {
+      "title": "Настройки"
+    },
+    "language": {
+      "label": "Язык"
+    },
+    "theme": {
+      "label": "Тема"
+    },
+    "notifications": {
+      "label": "Уведомления"
+    }
+  },
+  "network": {
+    "offline": {
+      "title": "Оффлайн-режим",
+      "message": "Нет подключения к интернету. Некоторые действия могут не работать.",
+      "retry": "Повторить"
+    }
+  }
+}
