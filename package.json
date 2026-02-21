@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.29.3",
   "scripts": {
     "dev": "turbo run dev",
+    "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.29.3 --activate && pnpm -v",
     "dev:mobile": "turbo run dev --filter=mobile",
     "dev:api": "turbo run dev --filter=api",
     "build": "turbo run build",
