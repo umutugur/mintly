@@ -71,10 +71,11 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
 
   app.register(cors, {
     // NOTE: Keep this 2-arg signature to satisfy @fastify/cors typings.
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) => {
+   origin: (
+  _request: FastifyRequest,
+  origin: string | undefined,
+  callback: (err: Error | null, allow?: boolean) => void,
+) => {
       if (isAllowedOrigin(origin, allowedOrigins)) {
         callback(null, true);
         return;
