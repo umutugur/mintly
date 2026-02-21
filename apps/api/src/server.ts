@@ -70,22 +70,10 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
   }
 
   app.register(cors, {
-    // NOTE: Keep this 2-arg signature to satisfy @fastify/cors typings.
-   origin: (
-  _request: FastifyRequest,
-  origin: string | undefined,
-  callback: (err: Error | null, allow?: boolean) => void,
-) => {
-      if (isAllowedOrigin(origin, allowedOrigins)) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error('Origin not allowed by CORS policy'), false);
-    },
-    allowedHeaders: ['Authorization', 'Content-Type'],
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  });
+  origin: Array.from(allowedOrigins),
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+});
 
   app.register(rateLimit, {
     global: true,
