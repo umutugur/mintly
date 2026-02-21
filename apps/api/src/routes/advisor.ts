@@ -12,7 +12,7 @@ import {
   type AdvisorActionTransferInput,
   type AdvisorInsightsQuery,
   type RecurringRule,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 
 import { authenticate } from '../auth/middleware.js';

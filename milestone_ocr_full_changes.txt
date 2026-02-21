@@ -155,7 +155,7 @@ import {
   type UpcomingPaymentListQuery,
   type UpcomingPaymentMarkPaidInput,
   type UpcomingPaymentUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { type FilterQuery, type Types } from 'mongoose';
 
@@ -466,7 +466,7 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
 
 ## FILE: /Users/umutugur/finsight/apps/api/src/routes/dashboard.ts
 ```
-import { dashboardRecentResponseSchema, type DashboardRecentResponse } from '@finsight/shared';
+import { dashboardRecentResponseSchema, type DashboardRecentResponse } from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 
@@ -591,7 +591,7 @@ export function registerDashboardRoutes(app: FastifyInstance): void {
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
-import { healthResponseSchema } from '@finsight/shared';
+import { healthResponseSchema } from '@mintly/shared';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 
 import { getConfig } from './config.js';
@@ -3238,7 +3238,7 @@ export type {
 
 ## FILE: /Users/umutugur/finsight/apps/mobile/src/core/api/queryKeys.ts
 ```
-import type { CategoryType } from '@finsight/shared';
+import type { CategoryType } from '@mintly/shared';
 
 export const financeQueryKeys = {
   dashboard: {
@@ -3373,7 +3373,7 @@ export async function recognizeReceiptText(photoUri: string): Promise<OcrRecogni
 
 ## FILE: /Users/umutugur/finsight/apps/mobile/src/features/scan/lib/ocrParsing.ts
 ```
-import type { UpcomingPaymentType } from '@finsight/shared';
+import type { UpcomingPaymentType } from '@mintly/shared';
 
 const DUE_KEYWORD_REGEX = /(son\s+odeme|son\s+ödeme|due|vade|odeme\s+tarihi|ödeme\s+tarihi|payment\s+due)/i;
 const RECEIPT_DATE_HINT_REGEX = /(tarih|date|receipt\s+date|islem\s+tarihi|işlem\s+tarihi)/i;
@@ -4170,7 +4170,7 @@ import {
   upcomingPaymentCreateInputSchema,
   type Category,
   type UpcomingPaymentType,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -4752,7 +4752,7 @@ import {
   View,
 } from 'react-native';
 
-import type { UpcomingPayment } from '@finsight/shared';
+import type { UpcomingPayment } from '@mintly/shared';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
@@ -4980,7 +4980,7 @@ import {
   View,
 } from 'react-native';
 
-import type { UpcomingPayment } from '@finsight/shared';
+import type { UpcomingPayment } from '@mintly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
@@ -5512,7 +5512,7 @@ import {
   View,
 } from 'react-native';
 
-import type { Transaction } from '@finsight/shared';
+import type { Transaction } from '@mintly/shared';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -6475,7 +6475,7 @@ import {
   View,
 } from 'react-native';
 
-import type { DashboardRecentResponse } from '@finsight/shared';
+import type { DashboardRecentResponse } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
@@ -7873,7 +7873,7 @@ export { UpcomingPaymentDetailScreen } from './screens/UpcomingPaymentDetailScre
 
 ## FILE: /Users/umutugur/finsight/apps/mobile/src/shared/utils/normalizeApiError.ts
 ```
-import { normalizeApiError, type NormalizedApiError } from '@finsight/shared';
+import { normalizeApiError, type NormalizedApiError } from '@mintly/shared';
 
 const API_CODE_TO_KEY: Record<string, string> = {
   AI_PROVIDER_ERROR: 'errors.api.AI_PROVIDER_ERROR',
@@ -12848,7 +12848,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@finsight/shared": "workspace:*",
+    "@mintly/shared": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/netinfo": "^11.4.1",
@@ -12925,7 +12925,7 @@ importers:
       '@fastify/rate-limit':
         specifier: ^10.3.0
         version: 10.3.0
-      '@finsight/shared':
+      '@mintly/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       argon2:
@@ -12980,7 +12980,7 @@ importers:
       '@expo/vector-icons':
         specifier: ^15.0.3
         version: 15.0.3(expo-font@14.0.11(expo@54.0.33(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      '@finsight/shared':
+      '@mintly/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@hookform/resolvers':

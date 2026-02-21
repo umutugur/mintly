@@ -7,7 +7,7 @@ import {
   type Account,
   type AccountCreateInput,
   type AccountUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 import { z } from 'zod';

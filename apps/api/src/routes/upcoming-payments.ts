@@ -11,7 +11,7 @@ import {
   type UpcomingPaymentListQuery,
   type UpcomingPaymentMarkPaidInput,
   type UpcomingPaymentUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { type FilterQuery, type Types } from 'mongoose';
 

@@ -1,4 +1,4 @@
-import { dashboardRecentResponseSchema, type DashboardRecentResponse } from '@finsight/shared';
+import { dashboardRecentResponseSchema, type DashboardRecentResponse } from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 

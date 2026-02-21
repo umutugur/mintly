@@ -325,7 +325,7 @@ export default function App() {
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@finsight/shared": "workspace:*",
+    "@mintly/shared": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/netinfo": "^11.4.1",
@@ -687,7 +687,7 @@ import {
   type LoginInput,
   type MeResponse,
   type RegisterInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
 import i18n from 'i18next';
@@ -1105,7 +1105,7 @@ export function useNetworkStatus(): NetworkContextValue {
 }
 
 ===== FILE: apps/mobile/src/core/api/client.ts =====
-import { ApiClientError, createApiClient } from '@finsight/shared';
+import { ApiClientError, createApiClient } from '@mintly/shared';
 
 import { mobileEnv } from '@core/config/env';
 import { trackAppEvent } from '@core/observability/telemetry';
@@ -1223,7 +1223,7 @@ export const apiClient = createApiClient({
 
 ===== FILE: apps/mobile/src/core/api/queryClient.ts =====
 import { QueryClient } from '@tanstack/react-query';
-import { ApiClientError } from '@finsight/shared';
+import { ApiClientError } from '@mintly/shared';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -1965,7 +1965,7 @@ import {
   View,
 } from 'react-native';
 
-import type { DashboardRecentResponse } from '@finsight/shared';
+import type { DashboardRecentResponse } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
@@ -3169,7 +3169,7 @@ import {
   View,
 } from 'react-native';
 
-import type { Transaction } from '@finsight/shared';
+import type { Transaction } from '@mintly/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -7693,7 +7693,7 @@ export function apiErrorText(error: unknown): string {
 }
 
 ===== FILE: apps/mobile/src/shared/utils/normalizeApiError.ts =====
-import { normalizeApiError, type NormalizedApiError } from '@finsight/shared';
+import { normalizeApiError, type NormalizedApiError } from '@mintly/shared';
 
 const API_CODE_TO_KEY: Record<string, string> = {
   API_REQUEST_FAILED: 'errors.api.API_REQUEST_FAILED',
@@ -7774,7 +7774,7 @@ importers:
       '@fastify/rate-limit':
         specifier: ^10.3.0
         version: 10.3.0
-      '@finsight/shared':
+      '@mintly/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       argon2:
@@ -7826,7 +7826,7 @@ importers:
       '@expo/vector-icons':
         specifier: ^15.0.3
         version: 15.0.3(expo-font@14.0.11(expo@54.0.33(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      '@finsight/shared':
+      '@mintly/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@hookform/resolvers':

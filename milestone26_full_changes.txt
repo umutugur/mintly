@@ -1321,7 +1321,7 @@ import {
   View,
 } from 'react-native';
 
-import type { Transaction } from '@finsight/shared';
+import type { Transaction } from '@mintly/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -2164,7 +2164,7 @@ import {
   View,
 } from 'react-native';
 
-import type { CategoryType } from '@finsight/shared';
+import type { CategoryType } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 

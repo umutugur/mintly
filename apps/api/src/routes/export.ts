@@ -2,7 +2,7 @@ import {
   exportTransactionsCsvResponseSchema,
   exportTransactionsQuerySchema,
   type ExportTransactionsQuery,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { FilterQuery } from 'mongoose';
 

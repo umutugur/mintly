@@ -9,7 +9,7 @@ import {
   type BudgetCreateInput,
   type BudgetListQuery,
   type BudgetUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 

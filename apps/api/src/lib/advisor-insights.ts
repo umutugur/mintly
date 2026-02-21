@@ -3,7 +3,7 @@ import {
   type AiInsightsLanguage,
   type AdvisorInsight,
   type RiskProfile,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { Types } from 'mongoose';
 import { z } from 'zod';
 

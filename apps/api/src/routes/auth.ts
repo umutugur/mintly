@@ -12,7 +12,7 @@ import {
   type OauthProvider,
   type RefreshInput,
   type RegisterInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';

@@ -8,7 +8,7 @@ import {
   type AnalyticsByCategoryQuery,
   type AnalyticsSummaryQuery,
   type AnalyticsTrendQuery,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 

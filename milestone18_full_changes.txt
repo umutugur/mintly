@@ -175,7 +175,7 @@ import {
   type GroupCreateInput,
   type GroupExpense,
   type GroupExpenseCreateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 
@@ -428,7 +428,7 @@ export function registerGroupRoutes(app: FastifyInstance): void {
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
-import { healthResponseSchema } from '@finsight/shared';
+import { healthResponseSchema } from '@mintly/shared';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 
 import { getConfig } from './config.js';
@@ -3931,7 +3931,7 @@ export type {
     "web": "expo start --web"
   },
   "dependencies": {
-    "@finsight/shared": "workspace:*",
+    "@mintly/shared": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@react-navigation/bottom-tabs": "^7.8.6",
     "@react-navigation/native": "^7.1.17",
@@ -3959,7 +3959,7 @@ export type {
 
 ## FILE: apps/mobile/src/api/queryKeys.ts
 ```
-import type { CategoryType } from '@finsight/shared';
+import type { CategoryType } from '@mintly/shared';
 
 export const financeQueryKeys = {
   dashboard: {
@@ -4125,7 +4125,7 @@ import {
   View,
 } from 'react-native';
 
-import type { Transaction } from '@finsight/shared';
+import type { Transaction } from '@mintly/shared';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -4856,7 +4856,7 @@ import {
 } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { transactionCreateInputSchema, type TransactionType } from '@finsight/shared';
+import { transactionCreateInputSchema, type TransactionType } from '@mintly/shared';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -6276,7 +6276,7 @@ const styles = StyleSheet.create({
 import { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { GroupExpense } from '@finsight/shared';
+import type { GroupExpense } from '@mintly/shared';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';

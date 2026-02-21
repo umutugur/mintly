@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { type OauthProvider } from '@finsight/shared';
+import { type OauthProvider } from '@mintly/shared';
 import { errors, jwtVerify, createRemoteJWKSet, type JWTPayload } from 'jose';
 
 import { getConfig } from '../config.js';

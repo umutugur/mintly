@@ -1,4 +1,4 @@
-import { advisorInsightSchema } from '@finsight/shared';
+import { advisorInsightSchema } from '@mintly/shared';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import request from 'supertest';
 import { Types } from 'mongoose';

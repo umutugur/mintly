@@ -2,7 +2,7 @@ import {
   weeklyReportQuerySchema,
   weeklyReportResponseSchema,
   type WeeklyReportQuery,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 
 import { authenticate } from '../auth/middleware.js';

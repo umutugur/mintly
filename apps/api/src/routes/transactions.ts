@@ -8,7 +8,7 @@ import {
   type TransactionCreateInput,
   type TransactionListQuery,
   type TransactionUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { type FilterQuery } from 'mongoose';
 

@@ -5,7 +5,7 @@ import {
   logoutResponseSchema,
   type Category,
   type CategoryCreateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 

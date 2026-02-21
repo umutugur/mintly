@@ -5,7 +5,7 @@ import {
   type AiAdviceQuery,
   type AiInsightsQuery,
   type AiAdviceResponse,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 

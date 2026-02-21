@@ -20,7 +20,7 @@ import {
   accountCreateInputSchema,
   type AccountType,
   type AccountUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

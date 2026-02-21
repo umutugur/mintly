@@ -10,7 +10,7 @@ import {
   type RecurringListQuery,
   type RecurringRule,
   type RecurringUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { FilterQuery, Types } from 'mongoose';
 

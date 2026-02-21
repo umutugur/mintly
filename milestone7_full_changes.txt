@@ -1707,7 +1707,7 @@ export const RecurringRunLogModel =
   mongoose.models.RecurringRunLog || model<RecurringRunLog>('RecurringRunLog', recurringRunLogSchema);
 
 ### /Users/umutugur/finsight/apps/api/src/lib/transaction-dto.ts
-import type { Transaction } from '@finsight/shared';
+import type { Transaction } from '@mintly/shared';
 
 import type { TransactionDocument } from '../models/Transaction.js';
 
@@ -1733,7 +1733,7 @@ export function toTransactionDto(transaction: TransactionDocument): Transaction 
 }
 
 ### /Users/umutugur/finsight/apps/api/src/lib/ledger.ts
-import type { TransactionType } from '@finsight/shared';
+import type { TransactionType } from '@mintly/shared';
 import { Types } from 'mongoose';
 
 import { ApiError } from '../errors.js';
@@ -1960,7 +1960,7 @@ export function getConfig(): RuntimeConfig {
 ### /Users/umutugur/finsight/apps/api/src/server.ts
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
-import { healthResponseSchema } from '@finsight/shared';
+import { healthResponseSchema } from '@mintly/shared';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 
 import { getConfig } from './config.js';
@@ -2070,7 +2070,7 @@ import {
   type Account,
   type AccountCreateInput,
   type AccountUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 import { z } from 'zod';
@@ -2217,7 +2217,7 @@ import {
   logoutResponseSchema,
   type Category,
   type CategoryCreateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
@@ -2321,7 +2321,7 @@ import {
   type TransactionCreateInput,
   type TransactionListQuery,
   type TransactionUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { type FilterQuery } from 'mongoose';
 
@@ -2557,7 +2557,7 @@ export function registerTransactionRoutes(app: FastifyInstance): void {
 }
 
 ### /Users/umutugur/finsight/apps/api/src/routes/dashboard.ts
-import { dashboardRecentResponseSchema, type DashboardRecentResponse } from '@finsight/shared';
+import { dashboardRecentResponseSchema, type DashboardRecentResponse } from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 
@@ -2643,7 +2643,7 @@ import {
   type AnalyticsByCategoryQuery,
   type AnalyticsSummaryQuery,
   type AnalyticsTrendQuery,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 
@@ -2974,7 +2974,7 @@ import {
   type BudgetCreateInput,
   type BudgetListQuery,
   type BudgetUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 
@@ -3185,7 +3185,7 @@ import {
   transferCreateInputSchema,
   transferCreateResponseSchema,
   type TransferCreateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 
 import { authenticate } from '../auth/middleware.js';
@@ -3230,7 +3230,7 @@ import {
   type RecurringListQuery,
   type RecurringRule,
   type RecurringUpdateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { FilterQuery, Types } from 'mongoose';
 
@@ -3769,7 +3769,7 @@ import {
   exportTransactionsCsvResponseSchema,
   exportTransactionsQuerySchema,
   type ExportTransactionsQuery,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { FilterQuery } from 'mongoose';
 
@@ -5386,7 +5386,7 @@ describe('Auth + Finance API', () => {
 });
 
 ### /Users/umutugur/finsight/apps/mobile/src/api/queryKeys.ts
-import type { CategoryType } from '@finsight/shared';
+import type { CategoryType } from '@mintly/shared';
 
 export const financeQueryKeys = {
   dashboard: {
@@ -6172,7 +6172,7 @@ const styles = StyleSheet.create({
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { transferCreateInputSchema } from '@finsight/shared';
+import { transferCreateInputSchema } from '@mintly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -6459,7 +6459,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   recurringCreateInputSchema,
   type RecurringRule,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';

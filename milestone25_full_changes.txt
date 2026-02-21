@@ -76,7 +76,7 @@ Milestone 25 full updated files
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@finsight/shared": "workspace:*",
+    "@mintly/shared": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/netinfo": "^11.4.1",

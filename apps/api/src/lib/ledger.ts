@@ -1,4 +1,4 @@
-import type { TransactionType } from '@finsight/shared';
+import type { TransactionType } from '@mintly/shared';
 import { Types } from 'mongoose';
 
 import { ApiError } from '../errors.js';

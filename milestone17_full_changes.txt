@@ -5,7 +5,7 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
-import { healthResponseSchema } from '@finsight/shared';
+import { healthResponseSchema } from '@mintly/shared';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 
 import { getConfig } from './config.js';
@@ -171,7 +171,7 @@ import {
   aiAdviceResponseSchema,
   type AiAdviceQuery,
   type AiAdviceResponse,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import type { Types } from 'mongoose';
 
@@ -400,7 +400,7 @@ import {
   weeklyReportQuerySchema,
   weeklyReportResponseSchema,
   type WeeklyReportQuery,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 
 import { authenticate } from '../auth/middleware.js';
@@ -3709,7 +3709,7 @@ export type {
 
 ## FILE: apps/mobile/src/api/queryKeys.ts
 ```
-import type { CategoryType } from '@finsight/shared';
+import type { CategoryType } from '@mintly/shared';
 
 export const financeQueryKeys = {
   dashboard: {
@@ -3801,7 +3801,7 @@ import {
   View,
 } from 'react-native';
 
-import type { CategoryType } from '@finsight/shared';
+import type { CategoryType } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
@@ -4605,7 +4605,7 @@ const styles = StyleSheet.create({
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { AiAdviceSeverity } from '@finsight/shared';
+import type { AiAdviceSeverity } from '@mintly/shared';
 import { useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '../../api/client';

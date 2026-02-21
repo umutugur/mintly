@@ -1,4 +1,4 @@
-import type { Transaction } from '@finsight/shared';
+import type { Transaction } from '@mintly/shared';
 
 import type { TransactionDocument } from '../models/Transaction.js';
 

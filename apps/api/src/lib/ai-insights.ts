@@ -4,7 +4,7 @@ import {
   type AiInsightsResponse,
   type CategoryType,
   type TransactionType,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { Types } from 'mongoose';
 import { z } from 'zod';
 

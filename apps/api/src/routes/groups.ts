@@ -10,7 +10,7 @@ import {
   type GroupCreateInput,
   type GroupExpense,
   type GroupExpenseCreateInput,
-} from '@finsight/shared';
+} from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
 import { Types } from 'mongoose';
 
