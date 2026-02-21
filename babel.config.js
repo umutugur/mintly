@@ -11,6 +11,7 @@ module.exports = function (api) {
             "@app": "./apps/mobile/src/app",
             "@core": "./apps/mobile/src/core",
             "@features": "./apps/mobile/src/features",
+              "@shared": "./apps/mobile/src/shared",
             "@ui": "./apps/mobile/src/ui",
             "@assets": "./apps/mobile/assets",
           },
