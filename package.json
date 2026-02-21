@@ -1,6 +1,7 @@
 {
   "name": "mintly",
   "private": true,
+  "workspaces": ["apps/*", "packages/*"],
   "packageManager": "pnpm@10.29.3",
   "scripts": {
     "dev": "turbo run dev",
