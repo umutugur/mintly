@@ -3,6 +3,8 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "packageManager": "pnpm@10.29.3",
+  "main": "apps/mobile/index.ts",
+
   "scripts": {
     "dev": "turbo run dev",
     "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.29.3 --activate && pnpm -v",
