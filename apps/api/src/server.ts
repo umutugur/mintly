@@ -2,7 +2,12 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import { healthResponseSchema } from '@finsight/shared';
-import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import Fastify, {
+  type FastifyError,
+  type FastifyInstance,
+  type FastifyReply,
+  type FastifyRequest,
+} from 'fastify';
 
 import { getConfig } from './config.js';
 import { connectMongo, disconnectMongo } from './db/mongo.js';
@@ -65,7 +70,11 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
   }
 
   app.register(cors, {
-    origin: (origin, callback) => {
+    // NOTE: Keep this 2-arg signature to satisfy @fastify/cors typings.
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (isAllowedOrigin(origin, allowedOrigins)) {
         callback(null, true);
         return;
@@ -81,7 +90,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     global: true,
     max: 300,
     timeWindow: '1 minute',
-    errorResponseBuilder: (_request, context) => {
+    errorResponseBuilder: (_request: unknown, context: { ttl: number }) => {
       return {
         error: {
           code: 'RATE_LIMITED',
@@ -204,16 +213,16 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     await disconnectMongo();
   });
 
-  app.addHook('onRequest', async (request) => {
+  app.addHook('onRequest', async (request: FastifyRequest) => {
     request.requestStartedAt = Date.now();
   });
 
-  app.addHook('onSend', async (request, reply, payload) => {
+  app.addHook('onSend', async (request: FastifyRequest, reply: FastifyReply, payload: unknown) => {
     reply.header('x-request-id', request.id);
     return payload;
   });
 
-  app.addHook('onResponse', async (request, reply) => {
+  app.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
     const durationMs = request.requestStartedAt
       ? Date.now() - request.requestStartedAt
       : undefined;
@@ -231,7 +240,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
     );
   });
 
-  app.setErrorHandler((error: FastifyError, request, reply) => {
+  app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
     if (error instanceof ApiError) {
       reply
         .status(error.statusCode)
@@ -241,9 +250,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
 
     if (typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500) {
       const message = config.isProduction ? 'Invalid request' : error.message;
-      reply
-        .status(error.statusCode)
-        .send(toErrorPayload({ code: 'REQUEST_ERROR', message }));
+      reply.status(error.statusCode).send(toErrorPayload({ code: 'REQUEST_ERROR', message }));
       return;
     }
 
