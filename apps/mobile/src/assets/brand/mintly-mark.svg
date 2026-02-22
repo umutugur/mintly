@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 320" width="560" height="320">
+  <defs>
+    <linearGradient id="mintlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3B6EF5" />
+      <stop offset="100%" stop-color="#2ED47A" />
+    </linearGradient>
+  </defs>
+  <path
+    d="M60 270V170A90 90 0 0 1 240 170V270V170A90 90 0 0 1 420 170V70"
+    stroke="url(#mintlyGrad)"
+    stroke-width="68"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  <path d="M510 12Q510 52 550 52Q510 52 510 92Q510 52 470 52Q510 52 510 12Z" fill="url(#mintlyGrad)" />
+</svg>

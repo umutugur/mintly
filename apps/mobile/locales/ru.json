@@ -1,0 +1,306 @@
+{
+  "common": {
+    "appName": "Mintly",
+    "appInitials": "M",
+    "retry": "Повторить",
+    "loadingShort": "Загрузка...",
+    "notAvailable": "Н/Д"
+  },
+  "app": {
+    "state": {
+      "preparing": "Подготовка Mintly...",
+      "restoring": "Восстановление сессии..."
+    }
+  },
+  "navigation": {
+    "tabs": {
+      "home": "Главная",
+      "transactions": "Операции",
+      "transactionsShort": "Операции",
+      "analytics": "Аналитика",
+    "analyticsShort": "Аналитика",
+    "groups": "Группы",
+    "groupsShort": "Группы",
+    "add": "Добавить",
+      "profile": "Профиль",
+      "profileShort": "Профиль"
+    },
+    "stack": {
+      "dashboard": "Панель",
+      "analytics": "Аналитика",
+      "aiAdvisor": "AI Советник",
+      "weeklyReport": "Недельный отчёт",
+      "budgets": "Бюджеты",
+      "profile": "Профиль",
+      "editProfile": "Редактировать профиль",
+      "settings": "Настройки",
+      "security": "Безопасность",
+      "about": "О приложении",
+      "accounts": "Счета",
+      "transfer": "Перевод",
+      "recurring": "Регулярные",
+      "scanReceipt": "Скан чека",
+      "camera": "Камера",
+      "reviewScan": "Проверка скана",
+      "splitGroups": "Группы расходов",
+      "createGroup": "Создать группу",
+      "groupDetail": "Детали группы",
+      "addGroupExpense": "Добавить расход группы",
+      "settleUp": "Закрыть баланс"
+    }
+  },
+  "dashboard": {
+    "greeting": "Добро пожаловать,",
+    "aiActive": "AI АКТИВЕН",
+    "currentBalance": "Текущий баланс",
+    "income": "Доход",
+    "expense": "Расход",
+    "accounts": "Счета",
+    "premiumSection": "Премиум",
+    "quickActions": "Быстрые действия",
+    "scanReceipt": "Скан чека",
+    "addIncome": "Добавить доход",
+    "addExpense": "Добавить расход",
+    "recentTransactions": "Последние операции",
+    "viewAll": "Смотреть все",
+    "aiAnalysisTitle": "AI Анализ",
+    "aiAction": "Получить совет",
+    "aiAdvisor": "AI Советник",
+    "weeklyReport": "Недельный отчёт",
+    "accountFallback": "Счёт",
+    "accountTypes": {
+      "cash": "Наличные",
+      "bank": "Банк",
+      "credit": "Кредит"
+    },
+    "state": {
+      "errorTitle": "Панель недоступна",
+      "noData": "Нет данных для панели.",
+      "noTransactions": "Пока нет операций.",
+      "noAccounts": "Счета не найдены."
+    },
+    "time": {
+      "today": "Сегодня, {{time}}",
+      "yesterday": "Вчера, {{time}}",
+      "dayWithTime": "{{day}} • {{time}}"
+    },
+    "trend": {
+      "stable": "По сравнению с прошлым месяцем стабильно",
+      "increase": "+{{percent}}% к прошлому месяцу",
+      "decrease": "-{{percent}}% к прошлому месяцу"
+    },
+    "transaction": {
+      "transferContext": "Перевод",
+      "transferTitle": "Перевод",
+      "incomeTitle": "Доход",
+      "expenseTitle": "Расход"
+    },
+    "insight": {
+      "thisMonth": "В этом месяце вы сэкономили",
+      "savingsMessage": "больше обычного.",
+      "noSavingsHighlight": "Ваш уровень сбережений",
+      "noSavingsMessage": "в этом месяце. Давайте улучшим его с умными подсказками."
+    }
+  },
+  "analytics": {
+    "title": "Анализ расходов",
+    "range": {
+      "weekly": "Неделя",
+      "monthly": "Месяц",
+      "yearly": "Год"
+    },
+    "totalSpending": "Всего расходов",
+    "fromLastMonth": "%{{percent}} к прошлому месяцу",
+    "mainCategory": "Главная категория",
+    "dailyTrends": "Дневной тренд",
+    "last7Days": "Последние 7 дней",
+    "refreshingTrend": "Обновление тренда...",
+    "topCategories": "Топ категорий",
+    "expense": "Расход",
+    "income": "Доход",
+    "loadingCategories": "Загрузка категорий...",
+    "noCategories": "Нет данных по категориям за период.",
+    "transactionsCount": "{{count}} операций",
+    "percentOfTotal": "{{percent}}% от общего",
+    "premiumInsights": "Премиум инсайты",
+    "aiAdvisorCta": "Открыть AI Советника",
+    "aiAdvisor": "AI Советник",
+    "aiAdvisorSubtitle": "Проверьте персональные действия.",
+    "weeklyReport": "Недельный отчёт",
+    "weeklyReportSubtitle": "Проверьте недельный индекс здоровья.",
+    "noCategory": "Без категории",
+    "state": {
+      "errorTitle": "Аналитика недоступна",
+      "noData": "Нет аналитических данных."
+    },
+    "days": {
+      "mon": "Пн",
+      "tue": "Вт",
+      "wed": "Ср",
+      "thu": "Чт",
+      "fri": "Пт",
+      "sat": "Сб",
+      "sun": "Вс"
+    }
+  },
+  "profile": {
+    "defaultUserName": "Пользователь Mintly",
+    "premiumMember": "ПРЕМИУМ",
+    "baseCurrency": "Базовая валюта",
+    "accounts": "Счета",
+    "lastSync": "Последняя синхр.",
+    "accountSettings": "АККАУНТ И НАСТРОЙКИ",
+    "support": "ПОДДЕРЖКА",
+    "loggingOut": "Выход...",
+    "logOut": "Выйти",
+    "useDifferentAccount": "Использовать другой аккаунт",
+    "rows": {
+      "personalInfo": "Личные данные",
+      "personalInfoSubtitle": "Имя, почта и данные профиля",
+      "myAccounts": "Мои счета",
+      "myAccountsSubtitle": "Просмотр и управление счетами",
+      "appSettings": "Настройки",
+      "appSettingsSubtitle": "Тема и параметры приложения",
+      "security": "Безопасность",
+      "securitySubtitle": "Пароль и защита сессии",
+      "about": "О Mintly",
+      "aboutSubtitle": "Версия и правовая информация",
+      "aiAdvisor": "AI Советник",
+      "aiAdvisorSubtitle": "Открыть персональные советы",
+      "weeklyReport": "Недельный отчёт",
+      "weeklyReportSubtitle": "Счёт и прогноз на неделю"
+    }
+  },
+  "aiAdvisor": {
+    "title": "AI Финансовый советник",
+    "subtitle": "Персональные рекомендации по вашей активности за месяц.",
+    "monthlySnapshot": "Срез за месяц",
+    "income": "Доход",
+    "expense": "Расход",
+    "net": "Итог",
+    "advice": "Советы",
+    "noAdvice": "Пока нет советов за этот месяц.",
+    "nextActions": "Следующие шаги",
+    "noActions": "Сейчас нет действий.",
+    "severity": {
+      "info": "Инфо",
+      "warning": "Внимание",
+      "success": "Хорошо"
+    },
+    "state": {
+      "errorTitle": "Советник недоступен",
+      "noData": "Нет данных советника."
+    }
+  },
+  "weeklyReport": {
+    "title": "Недельный отчёт",
+    "subtitle": "Сводка финансового здоровья и прогноз на следующую неделю.",
+    "scoreOutOf": "/100",
+    "highlights": "Ключевые моменты",
+    "noHighlights": "На этой неделе нет ключевых моментов.",
+    "riskFlags": "Риски",
+    "noRisks": "Риски не обнаружены.",
+    "nextWeekForecast": "Прогноз на следующую неделю",
+    "state": {
+      "errorTitle": "Недельный отчёт недоступен",
+      "noData": "Нет данных недельного отчёта."
+    }
+  },
+  "split": {
+    "common": {
+      "unknownMember": "Неизвестный участник"
+    },
+    "groupDetail": {
+      "loading": "Загрузка деталей группы...",
+      "loadErrorTitle": "Не удалось загрузить детали группы",
+      "retry": "Повторить",
+      "summaryTitle": "Сводка группы",
+      "summarySubtitle": "Обзор совместных расходов",
+      "totalSpending": "Общие расходы",
+      "yourBalance": "Ваш баланс",
+      "balanceState": {
+        "creditor": "Вы кредитор",
+        "debtor": "Вы должник",
+        "settled": "Баланс нулевой"
+      },
+      "membersTitle": "Участники",
+      "recentExpenses": "Последние расходы",
+      "noExpenses": "Пока нет групповых расходов.",
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "member": {
+        "creditor": "Кредитор",
+        "debtor": "Должник",
+        "balanced": "Баланс"
+      },
+      "indicator": {
+        "youGet": "Вам должны {{amount}}",
+        "youOwe": "Вы должны {{amount}}",
+        "noShare": "Без доли",
+        "settled": "Закрыто",
+        "unknownShare": "Доля недоступна"
+      },
+      "actions": {
+        "settleUp": "Закрыть долг",
+        "addExpense": "Добавить расход"
+      }
+    },
+    "addExpense": {
+      "loading": "Загрузка участников группы...",
+      "loadErrorTitle": "Не удалось загрузить группу",
+      "retry": "Повторить",
+      "title": "Добавить групповой расход",
+      "subtitle": "{{group}}",
+      "memberSelectedCount": "Выбрано участников: {{count}}",
+      "equalShare": "{{amount}}",
+      "fields": {
+        "titleLabel": "Название",
+        "titlePlaceholder": "Ужин",
+        "amountLabel": "Сумма",
+        "amountPlaceholder": "0.00",
+        "dateLabel": "Дата",
+        "datePlaceholder": "ГГГГ-ММ-ДД",
+        "categoryLabel": "Категория",
+        "paidByLabel": "Оплатил",
+        "paidByPlaceholder": "Выберите участника",
+        "membersLabel": "Участники",
+        "splitModeLabel": "Режим деления",
+        "splitForMemberLabel": "Доля: {{name}}"
+      },
+      "splitModes": {
+        "equal": "Поровну",
+        "custom": "Своя сумма"
+      },
+      "sections": {
+        "equalPreview": "Предпросмотр равного деления",
+        "customPreview": "Пользовательские доли"
+      },
+      "actions": {
+        "submit": "Сохранить расход",
+        "submitting": "Сохранение..."
+      },
+      "errors": {
+        "createFailedTitle": "Не удалось создать расход",
+        "requiredTitleTitle": "Требуется название",
+        "requiredTitleMessage": "Введите название расхода.",
+        "invalidAmountTitle": "Некорректная сумма",
+        "invalidAmountMessage": "Введите положительную сумму.",
+        "paidByRequiredTitle": "Требуется плательщик",
+        "paidByRequiredMessage": "Выберите, кто оплатил расход.",
+        "membersRequiredTitle": "Требуются участники",
+        "membersRequiredMessage": "Выберите хотя бы одного участника.",
+        "invalidCustomSplitTitle": "Некорректные пользовательские доли",
+        "invalidCustomSplitMessage": "Введите корректные неотрицательные суммы для выбранных участников.",
+        "splitMismatchTitle": "Сумма долей не совпадает",
+        "splitMismatchMessage": "Сумма {{amount}} не совпадает с суммой долей {{split}}."
+      },
+      "categoryOptions": {
+        "food": "Еда",
+        "transport": "Транспорт",
+        "rent": "Аренда",
+        "bills": "Счета",
+        "shopping": "Покупки",
+        "other": "Другое"
+      }
+    }
+  }
+}

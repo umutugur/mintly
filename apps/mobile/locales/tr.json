@@ -1,0 +1,306 @@
+{
+  "common": {
+    "appName": "Mintly",
+    "appInitials": "M",
+    "retry": "Tekrar Dene",
+    "loadingShort": "Yükleniyor...",
+    "notAvailable": "Yok"
+  },
+  "app": {
+    "state": {
+      "preparing": "Mintly hazırlanıyor...",
+      "restoring": "Oturum geri yükleniyor..."
+    }
+  },
+  "navigation": {
+    "tabs": {
+      "home": "Panel",
+      "transactions": "İşlemler",
+      "transactionsShort": "İşlemler",
+      "analytics": "Analiz",
+    "analyticsShort": "Analiz",
+    "groups": "Gruplar",
+    "groupsShort": "Gruplar",
+    "add": "Ekle",
+      "profile": "Profil",
+      "profileShort": "Profil"
+    },
+    "stack": {
+      "dashboard": "Panel",
+      "analytics": "Analiz",
+      "aiAdvisor": "AI Danışman",
+      "weeklyReport": "Haftalık Rapor",
+      "budgets": "Bütçeler",
+      "profile": "Profil",
+      "editProfile": "Profili Düzenle",
+      "settings": "Ayarlar",
+      "security": "Güvenlik",
+      "about": "Hakkında",
+      "accounts": "Hesaplar",
+      "transfer": "Transfer",
+      "recurring": "Tekrarlayan",
+      "scanReceipt": "Fiş Tara",
+      "camera": "Kamera",
+      "reviewScan": "Taramayı İncele",
+      "splitGroups": "Paylaşım Grupları",
+      "createGroup": "Grup Oluştur",
+      "groupDetail": "Grup Detayı",
+      "addGroupExpense": "Grup Harcaması Ekle",
+      "settleUp": "Hesap Kapat"
+    }
+  },
+  "dashboard": {
+    "greeting": "Hoş geldin,",
+    "aiActive": "AI AKTİF",
+    "currentBalance": "Mevcut Bakiye",
+    "income": "Gelir",
+    "expense": "Gider",
+    "accounts": "Hesaplar",
+    "premiumSection": "Premium",
+    "quickActions": "Hızlı İşlemler",
+    "scanReceipt": "Fiş Tara",
+    "addIncome": "Gelir Ekle",
+    "addExpense": "Gider Ekle",
+    "recentTransactions": "Son İşlemler",
+    "viewAll": "Tümünü Gör",
+    "aiAnalysisTitle": "AI Analizi",
+    "aiAction": "İpucu Al",
+    "aiAdvisor": "AI Danışman",
+    "weeklyReport": "Haftalık Rapor",
+    "accountFallback": "Hesap",
+    "accountTypes": {
+      "cash": "Nakit",
+      "bank": "Banka",
+      "credit": "Kredi"
+    },
+    "state": {
+      "errorTitle": "Panel yüklenemedi",
+      "noData": "Panel verisi bulunamadı.",
+      "noTransactions": "Henüz işlem bulunmuyor.",
+      "noAccounts": "Hesap bulunamadı."
+    },
+    "time": {
+      "today": "Bugün, {{time}}",
+      "yesterday": "Dün, {{time}}",
+      "dayWithTime": "{{day}} • {{time}}"
+    },
+    "trend": {
+      "stable": "Geçen aya göre sabit",
+      "increase": "Geçen aya göre +%{{percent}}",
+      "decrease": "Geçen aya göre -%{{percent}}"
+    },
+    "transaction": {
+      "transferContext": "Transfer",
+      "transferTitle": "Transfer",
+      "incomeTitle": "Gelir",
+      "expenseTitle": "Gider"
+    },
+    "insight": {
+      "thisMonth": "Bu ay",
+      "savingsMessage": "daha fazla tasarruf ettiniz.",
+      "noSavingsHighlight": "Tasarruf oranınız",
+      "noSavingsMessage": "bu ay. Akıllı önerilerle artırabiliriz."
+    }
+  },
+  "analytics": {
+    "title": "Harcama Analizi",
+    "range": {
+      "weekly": "Haftalık",
+      "monthly": "Aylık",
+      "yearly": "Yıllık"
+    },
+    "totalSpending": "Toplam Harcama",
+    "fromLastMonth": "Geçen aya göre %{{percent}}",
+    "mainCategory": "Ana Kategori",
+    "dailyTrends": "Günlük Trend",
+    "last7Days": "Son 7 Gün",
+    "refreshingTrend": "Trend güncelleniyor...",
+    "topCategories": "Öne Çıkan Kategoriler",
+    "expense": "Gider",
+    "income": "Gelir",
+    "loadingCategories": "Kategoriler yükleniyor...",
+    "noCategories": "Bu dönem için kategori verisi yok.",
+    "transactionsCount": "{{count}} işlem",
+    "percentOfTotal": "Toplamın %{{percent}}",
+    "premiumInsights": "Premium İçgörüler",
+    "aiAdvisorCta": "AI Danışmanı Aç",
+    "aiAdvisor": "AI Danışman",
+    "aiAdvisorSubtitle": "Kişisel aksiyonlarını incele.",
+    "weeklyReport": "Haftalık Rapor",
+    "weeklyReportSubtitle": "Haftalık skorunu kontrol et.",
+    "noCategory": "Kategorisiz",
+    "state": {
+      "errorTitle": "Analiz yüklenemedi",
+      "noData": "Analiz verisi bulunamadı."
+    },
+    "days": {
+      "mon": "Pzt",
+      "tue": "Sal",
+      "wed": "Çar",
+      "thu": "Per",
+      "fri": "Cum",
+      "sat": "Cts",
+      "sun": "Paz"
+    }
+  },
+  "profile": {
+    "defaultUserName": "Mintly Kullanıcısı",
+    "premiumMember": "PREMIUM ÜYE",
+    "baseCurrency": "Baz Para Birimi",
+    "accounts": "Hesap",
+    "lastSync": "Son Senkron",
+    "accountSettings": "HESAP VE AYARLAR",
+    "support": "DESTEK",
+    "loggingOut": "Çıkış yapılıyor...",
+    "logOut": "Çıkış Yap",
+    "useDifferentAccount": "Farklı hesap kullan",
+    "rows": {
+      "personalInfo": "Kişisel bilgiler",
+      "personalInfoSubtitle": "Ad, e-posta ve profil bilgileri",
+      "myAccounts": "Hesaplarım",
+      "myAccountsSubtitle": "Hesaplarını görüntüle ve yönet",
+      "appSettings": "Ayarlar",
+      "appSettingsSubtitle": "Tema ve uygulama tercihleri",
+      "security": "Güvenlik",
+      "securitySubtitle": "Şifre ve oturum koruması",
+      "about": "Mintly Hakkında",
+      "aboutSubtitle": "Sürüm ve yasal bilgiler",
+      "aiAdvisor": "AI Danışman",
+      "aiAdvisorSubtitle": "Kişisel finans önerilerini aç",
+      "weeklyReport": "Haftalık Rapor",
+      "weeklyReportSubtitle": "Skor ve haftalık görünüm"
+    }
+  },
+  "aiAdvisor": {
+    "title": "AI Finans Danışmanı",
+    "subtitle": "Aylık hareketlerine göre kişiselleştirilmiş öneriler.",
+    "monthlySnapshot": "Aylık Özet",
+    "income": "Gelir",
+    "expense": "Gider",
+    "net": "Net",
+    "advice": "Öneriler",
+    "noAdvice": "Bu ay için henüz öneri yok.",
+    "nextActions": "Sonraki Adımlar",
+    "noActions": "Şu an aksiyon maddesi yok.",
+    "severity": {
+      "info": "Bilgi",
+      "warning": "Uyarı",
+      "success": "İyi"
+    },
+    "state": {
+      "errorTitle": "Danışman şu an kullanılamıyor",
+      "noData": "Danışman verisi bulunamadı."
+    }
+  },
+  "weeklyReport": {
+    "title": "Haftalık Rapor",
+    "subtitle": "Finansal sağlık özeti ve gelecek hafta görünümü.",
+    "scoreOutOf": "/100",
+    "highlights": "Öne Çıkanlar",
+    "noHighlights": "Bu hafta öne çıkan bir veri yok.",
+    "riskFlags": "Riskler",
+    "noRisks": "Risk tespit edilmedi.",
+    "nextWeekForecast": "Gelecek Hafta Tahmini",
+    "state": {
+      "errorTitle": "Haftalık rapor yüklenemedi",
+      "noData": "Haftalık rapor bulunamadı."
+    }
+  },
+  "split": {
+    "common": {
+      "unknownMember": "Bilinmeyen üye"
+    },
+    "groupDetail": {
+      "loading": "Grup detayları yükleniyor...",
+      "loadErrorTitle": "Grup detayları yüklenemedi",
+      "retry": "Tekrar Dene",
+      "summaryTitle": "Grup Özeti",
+      "summarySubtitle": "Paylaşılan harcamaların görünümü",
+      "totalSpending": "Toplam harcama",
+      "yourBalance": "Bakiyen",
+      "balanceState": {
+        "creditor": "Alacaklısın",
+        "debtor": "Borçlusun",
+        "settled": "Dengede"
+      },
+      "membersTitle": "Üyeler",
+      "recentExpenses": "Son Harcamalar",
+      "noExpenses": "Henüz grup harcaması yok.",
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "member": {
+        "creditor": "Alacaklı",
+        "debtor": "Borçlu",
+        "balanced": "Dengede"
+      },
+      "indicator": {
+        "youGet": "{{amount}} alacak",
+        "youOwe": "{{amount}} borç",
+        "noShare": "Pay yok",
+        "settled": "Kapandı",
+        "unknownShare": "Pay bilgisi yok"
+      },
+      "actions": {
+        "settleUp": "Hesap Kapat",
+        "addExpense": "Harcama Ekle"
+      }
+    },
+    "addExpense": {
+      "loading": "Grup üyeleri yükleniyor...",
+      "loadErrorTitle": "Grup yüklenemedi",
+      "retry": "Tekrar Dene",
+      "title": "Grup Harcaması Ekle",
+      "subtitle": "{{group}}",
+      "memberSelectedCount": "{{count}} üye seçildi",
+      "equalShare": "{{amount}}",
+      "fields": {
+        "titleLabel": "Başlık",
+        "titlePlaceholder": "Akşam yemeği",
+        "amountLabel": "Tutar",
+        "amountPlaceholder": "0,00",
+        "dateLabel": "Tarih",
+        "datePlaceholder": "YYYY-AA-GG",
+        "categoryLabel": "Kategori",
+        "paidByLabel": "Ödeyen",
+        "paidByPlaceholder": "Üye seçin",
+        "membersLabel": "Üyeler",
+        "splitModeLabel": "Bölüşüm modu",
+        "splitForMemberLabel": "Pay: {{name}}"
+      },
+      "splitModes": {
+        "equal": "Eşit",
+        "custom": "Özel"
+      },
+      "sections": {
+        "equalPreview": "Eşit bölüşüm önizleme",
+        "customPreview": "Özel bölüşüm tutarları"
+      },
+      "actions": {
+        "submit": "Harcamayı Kaydet",
+        "submitting": "Kaydediliyor..."
+      },
+      "errors": {
+        "createFailedTitle": "Harcama oluşturulamadı",
+        "requiredTitleTitle": "Başlık gerekli",
+        "requiredTitleMessage": "Lütfen harcama başlığı girin.",
+        "invalidAmountTitle": "Geçersiz tutar",
+        "invalidAmountMessage": "Lütfen pozitif bir tutar girin.",
+        "paidByRequiredTitle": "Ödeyen gerekli",
+        "paidByRequiredMessage": "Lütfen ödeyen kişiyi seçin.",
+        "membersRequiredTitle": "Üye gerekli",
+        "membersRequiredMessage": "En az bir üye seçin.",
+        "invalidCustomSplitTitle": "Özel bölüşüm geçersiz",
+        "invalidCustomSplitMessage": "Her seçili üye için geçerli ve negatif olmayan tutar girin.",
+        "splitMismatchTitle": "Bölüşüm toplamı uyuşmuyor",
+        "splitMismatchMessage": "Tutar {{amount}}, bölüşüm toplamı {{split}} ile uyuşmuyor."
+      },
+      "categoryOptions": {
+        "food": "Yemek",
+        "transport": "Ulaşım",
+        "rent": "Kira",
+        "bills": "Faturalar",
+        "shopping": "Alışveriş",
+        "other": "Diğer"
+      }
+    }
+  }
+}

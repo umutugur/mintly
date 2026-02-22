@@ -1,0 +1,16 @@
+{
+  "cli": {
+    "version": ">= 16.20.4"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://mintly-2lbv.onrender.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  }
+}

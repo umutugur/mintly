@@ -1,0 +1,1656 @@
+{
+  "accounts": {
+    "accountType": {
+      "bank": "Банк",
+      "bankAccount": "Банковский счет",
+      "cash": "Наличные",
+      "cashWallet": "Наличный кошелек",
+      "credit": "Кредит",
+      "creditCard": "Кредитная карта",
+      "savings": "Сберегательный счет"
+    },
+    "baseCurrency": {
+      "empty": "Базовая валюта еще не выбрана. Выберите ее для первого счета.",
+      "value": "Базовая валюта: {{currency}}"
+    },
+    "delete": {
+      "confirmBody": "Вы уверены, что хотите удалить счет {{name}}?",
+      "confirmTitle": "Удалить счет",
+      "error": "Не удалось удалить счет. Попробуйте еще раз.",
+      "success": "Счет удален."
+    },
+    "form": {
+      "create": "Создать счет",
+      "creating": "Создание...",
+      "currencyLabel": "Валюта",
+      "currencyPlaceholder": "TRY",
+      "nameLabel": "Название счета",
+      "namePlaceholder": "Например, Основной банк",
+      "typeLabel": "Тип"
+    },
+    "sections": {
+      "baseCurrency": {
+        "subtitle": "После первой настройки блокируется для всех счетов",
+        "title": "Базовая валюта"
+      },
+      "create": {
+        "title": "Создать счет"
+      },
+      "list": {
+        "title": "Ваши счета",
+        "total": "Всего: {{count}}"
+      },
+      "session": {
+        "title": "Сессия аккаунта"
+      }
+    },
+    "session": {
+      "signedIn": "Выполнен вход"
+    },
+    "state": {
+      "empty": "Счета еще не созданы.",
+      "loadErrorTitle": "Не удалось загрузить счета",
+      "loading": "Загрузка счетов..."
+    },
+    "update": {
+      "error": "Не удалось обновить счет. Попробуйте еще раз.",
+      "success": "Счет обновлен."
+    }
+  },
+  "add": {
+    "hub": {
+      "addTransaction": "Добавить транзакцию",
+      "addTransactionAction": "Открыть форму",
+      "addTransactionHint": "Создайте новую запись дохода или расхода.",
+      "subtitle": "Выберите добавление операции, перевод или регулярный шаблон.",
+      "title": "Что вы хотите добавить?",
+      "transfer": "Перевод между счетами",
+      "transferAction": "Сделать перевод",
+      "transferHint": "Перемещайте баланс между своими счетами.",
+      "recurring": "Регулярный платеж",
+      "recurringHint": "Создайте еженедельный или ежемесячный шаблон.",
+      "recurringAction": "Открыть регулярные"
+    },
+    "transfer": {
+      "amount": "Сумма",
+      "amountPlaceholder": "0.00",
+      "date": "Дата (ISO)",
+      "datePlaceholder": "2026-02-17T10:30:00.000Z",
+      "fromAccount": "Со счета",
+      "note": "Заметка",
+      "notePlaceholder": "Необязательная заметка",
+      "state": {
+        "loadingAccounts": "Загрузка счетов...",
+        "needTwoAccounts": "Для перевода нужно минимум два счета."
+      },
+      "submit": "Создать перевод",
+      "subtitle": "Перемещайте средства между счетами без выбора категории.",
+      "title": "Перевод между счетами",
+      "toAccount": "На счет"
+    }
+  },
+  "advisor": {
+    "advice": "Советы",
+    "expense": "Расход",
+    "income": "Доход",
+    "monthlySnapshot": "Срез за месяц",
+    "net": "Чистый результат",
+    "nextActions": "Следующие шаги",
+    "noActions": "Сейчас нет действий.",
+    "noAdvice": "Пока нет советов за этот месяц.",
+    "severity": {
+      "info": "Инфо",
+      "success": "Хорошо",
+      "warning": "Внимание"
+    },
+    "state": {
+      "errorTitle": "Советник недоступен",
+      "noData": "Нет данных советника."
+    },
+    "subtitle": "Персональные рекомендации по вашей активности за месяц.",
+    "title": "AI Финансовый советник",
+    "actions": {
+      "title": "Действия в один клик",
+      "subtitle": "Применяйте рекомендации советника с подтверждением.",
+      "common": {
+        "amountLabel": "Сумма",
+        "amountPlaceholder": "0.00",
+        "noteLabel": "Комментарий",
+        "notePlaceholder": "Необязательный комментарий"
+      },
+      "validation": {
+        "budgetAmountRequired": "Введите хотя бы одну корректную сумму бюджета."
+      },
+      "budgets": {
+        "title": "Создать рекомендованные бюджеты",
+        "subtitle": "Сформировать лимиты по ключевым расходным категориям.",
+        "cta": "Создать бюджеты",
+        "modalTitle": "Создание бюджетов",
+        "submit": "Создать",
+        "success": "Бюджеты успешно созданы."
+      },
+      "recurring": {
+        "title": "Настроить шаблон регулярных расходов",
+        "subtitle": "Создать шаблон регулярного расхода в режиме паузы.",
+        "cta": "Настроить регулярный",
+        "modalTitle": "Создать регулярный шаблон",
+        "account": "Счет",
+        "weekly": "Еженедельно",
+        "monthly": "Ежемесячно",
+        "submit": "Создать правило",
+        "success": "Шаблон регулярного расхода создан в паузе."
+      },
+      "transfer": {
+        "title": "Создать перевод в сбережения",
+        "subtitle": "Переводите средства между счетами одним действием.",
+        "cta": "Создать перевод",
+        "modalTitle": "Создать перевод",
+        "fromAccount": "Со счета",
+        "toAccount": "На счет",
+        "submit": "Перевести",
+        "success": "Перевод успешно создан."
+      }
+    }
+  },
+  "aiAdvisor": {
+    "title": "AI Советник",
+    "subtitle": "Рекомендации на основе ваших финансовых данных за месяц.",
+    "month": {
+      "title": "Месяц"
+    },
+    "generatedAt": "Последняя генерация: {{value}}",
+    "actions": {
+      "regenerate": "Сгенерировать заново"
+    },
+    "tabs": {
+      "summary": "Сводка",
+      "savings": "Сбережения",
+      "investment": "Инвестиции",
+      "tips": "Оптимизация"
+    },
+    "state": {
+      "loading": "Обновление AI-анализа...",
+      "errorTitle": "Советник недоступен",
+      "noData": "Нет данных советника."
+    },
+    "summary": {
+      "sections": {
+        "overview": "Обзор расходов",
+        "categoryBreakdown": "Разбивка по категориям",
+        "cashflowTrend": "Тренд денежного потока (3 месяца)",
+        "budgetAdherence": "Выполнение бюджета",
+        "flags": "Флаги риска"
+      },
+      "cards": {
+        "last30Income": "Доход за 30 дней",
+        "last30Expense": "Расход за 30 дней",
+        "currentMonthNet": "Чистый итог месяца",
+        "savingsRate": "Норма сбережений"
+      },
+      "shareValue": "Доля: {{value}}",
+      "emptyCategory": "Нет данных по расходным категориям за этот месяц.",
+      "emptyBudget": "Нет бюджетов на этот месяц.",
+      "emptyFlags": "Критических рисков не обнаружено.",
+      "noTrend": "Нет данных тренда."
+    },
+    "budget": {
+      "usageValue": "{{spent}} / {{limit}}",
+      "status": {
+        "onTrack": "В норме",
+        "nearLimit": "Почти лимит",
+        "overLimit": "Превышен"
+      }
+    },
+    "flags": {
+      "negativeCashflow": "Денежный поток за месяц отрицательный.",
+      "lowSavingsRate": "Норма сбережений ниже целевого уровня.",
+      "irregularIncome": "Доходы поступают неравномерно.",
+      "overspendingCategories": "Категории перерасхода: {{value}}"
+    },
+    "savings": {
+      "title": "План сбережений",
+      "targetRate": "Целевая норма сбережений",
+      "monthlyTargetAmount": "Месячная цель по сбережениям",
+      "next7Days": "Действия на ближайшие 7 дней",
+      "autoTransferSuggestion": "Рекомендация по автопереводу",
+      "emptyActions": "Для этого периода нет действий."
+    },
+    "investment": {
+      "title": "Инвестиционные рекомендации",
+      "emergencyFundCurrent": "Резервный фонд сейчас",
+      "emergencyFundTarget": "Цель резервного фонда",
+      "emergencyFundStatus": "Статус резервного фонда",
+      "profiles": "Риск-профили",
+      "guidance": "Рекомендации",
+      "status": {
+        "ready": "Готов",
+        "building": "Формируется",
+        "not_started": "Не начат"
+      },
+      "risk": {
+        "low": "Низкий риск",
+        "medium": "Средний риск",
+        "high": "Высокий риск"
+      }
+    },
+    "tips": {
+      "title": "Оптимизация расходов",
+      "cutCandidates": "Приоритетные статьи для сокращения",
+      "currentAmountValue": "Текущий расход: {{value}}",
+      "reductionValue": "Сократить на {{value}}%",
+      "quickWins": "Быстрые шаги",
+      "generalTips": "Общие советы"
+    },
+    "disclaimer": "AI-инсайты Mintly носят информационный характер и не являются финансовой консультацией.",
+    "fallback": {
+      "title": "Ответ AI недоступен",
+      "tryAgain": "Повторить",
+      "useBasicAdvice": "Использовать базовые советы",
+      "reason": {
+        "missing_api_key": "Ключ AI-провайдера не настроен на сервере.",
+        "provider_timeout": "AI-провайдер не успел ответить вовремя.",
+        "provider_http_error": "AI-провайдер вернул ошибочный HTTP-ответ.",
+        "provider_parse_error": "Не удалось разобрать ответ AI-провайдера.",
+        "provider_validation_error": "Формат ответа AI-провайдера некорректен.",
+        "provider_unknown_error": "Неизвестная ошибка AI-провайдера."
+      }
+    },
+    "debug": {
+      "title": "Диагностика советника",
+      "apiBaseUrl": "Базовый URL API: {{value}}",
+      "provider": "Провайдер: {{value}}",
+      "mode": "Режим: {{value}}",
+      "modeReason": "Причина fallback: {{value}}",
+      "providerStatus": "Статус провайдера: {{value}}"
+    }
+  },
+  "analytics": {
+    "aiAdvisor": "AI Советник",
+    "aiAdvisorCta": "Открыть AI Советника",
+    "aiAdvisorSubtitle": "Проверьте персональные действия.",
+    "aiSection": {
+      "title": "AI Модули",
+      "subtitle": "Быстрый доступ к продвинутым инсайтам и недельному отчёту."
+    },
+    "dailyTrends": "Дневной тренд",
+    "days": {
+      "fri": "Пт",
+      "mon": "Пн",
+      "sat": "Сб",
+      "sun": "Вс",
+      "thu": "Чт",
+      "tue": "Вт",
+      "wed": "Ср"
+    },
+    "expense": "Расход",
+    "fromLastMonth": "%{{percent}} к прошлому месяцу",
+    "income": "Доход",
+    "last7Days": "Последние 7 дней",
+    "loadingCategories": "Загрузка категорий...",
+    "mainCategory": "Главная категория",
+    "noCategories": "Нет данных по категориям за период.",
+    "noCategory": "Без категории",
+    "percentOfTotal": "{{percent}}% от общего",
+    "premiumInsights": "Премиум инсайты",
+    "range": {
+      "monthly": "Месяц",
+      "weekly": "Неделя",
+      "yearly": "Год"
+    },
+    "refreshingTrend": "Обновление тренда...",
+    "state": {
+      "errorTitle": "Аналитика недоступна",
+      "noData": "Нет аналитических данных.",
+      "emptyTitle": "Пока нет аналитики",
+      "emptyBody": "Добавьте несколько транзакций, чтобы увидеть аналитику.",
+      "emptyCta": "Добавить транзакцию"
+    },
+    "title": "Анализ расходов",
+    "topCategories": "Топ категорий",
+    "totalSpending": "Всего расходов",
+    "transactionsCount": "{{count}} операций",
+    "weeklyReport": "Недельный отчёт",
+    "weeklyReportCta": "Открыть недельный отчёт",
+    "weeklyReportSubtitle": "Проверьте недельный индекс здоровья.",
+    "summary": {
+      "title": "Сводка за месяц",
+      "subtitle": "Обзор доходов, расходов и чистого результата",
+      "totalIncome": "Общий доход",
+      "totalExpense": "Общий расход",
+      "net": "Чистый итог",
+      "topCategory": "Главная категория",
+      "topCategoryFallback": "Нет данных по категориям за этот месяц.",
+      "share": "Доля {{percent}}%"
+    },
+    "trend": {
+      "title": "Тренд",
+      "subtitle": "Последние {{days}} дней",
+      "range": {
+        "7d": "7Д",
+        "30d": "30Д",
+        "90d": "90Д"
+      },
+      "legendIncome": "Доход",
+      "legendExpense": "Расход",
+      "totalIncome": "Доход: {{amount}}",
+      "totalExpense": "Расход: {{amount}}"
+    },
+    "categories": {
+      "title": "Разбивка по категориям",
+      "subtitle": "Распределение по категориям и долям",
+      "empty": "За этот месяц нет распределения по категориям."
+    }
+  },
+  "app": {
+    "state": {
+      "preparing": "Подготовка Mintly...",
+      "restoring": "Восстановление сессии..."
+    }
+  },
+  "auth": {
+    "brandTitle": "Умные Финансы AI",
+    "common": {
+      "apple": "Apple",
+      "google": "Google",
+      "or": "ИЛИ",
+      "orContinueWith": "ИЛИ ПРОДОЛЖИТЬ ЧЕРЕЗ"
+    },
+    "forgot": {
+      "fields": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "name@company.com"
+      },
+      "secureBadge": "БЕЗОПАСНОЕ ФИНАНСОВОЕ AI-ШИФРОВАНИЕ",
+      "submit": "Отправить ссылку для сброса",
+      "subtitle": "Введите email, чтобы получить ссылку для сброса пароля. Мы поможем вернуть доступ к вашему финансовому дашборду.",
+      "success": "Если этот email существует, инструкция отправлена.",
+      "title": "Забыли пароль"
+    },
+    "links": {
+      "haveAccount": "Уже есть аккаунт?",
+      "joinNow": "Присоединиться",
+      "noAccount": "Нет аккаунта?",
+      "signIn": "Войти"
+    },
+    "login": {
+      "fallbackError": "Не удалось войти. Попробуйте снова.",
+      "fields": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "name@company.com",
+        "passwordLabel": "Пароль",
+        "passwordPlaceholder": "••••••••"
+      },
+      "forgot": "Забыли?",
+      "hidePassword": "Скрыть пароль",
+      "secureBadge": "БЕЗОПАСНЫЙ ЗАШИФРОВАННЫЙ ВХОД",
+      "showPassword": "Показать пароль",
+      "submit": "Войти в аккаунт",
+      "subtitle": "Введите данные для входа",
+      "welcomeBack": "С возвращением"
+    },
+    "register": {
+      "fallbackError": "Не удалось создать аккаунт.",
+      "fields": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "example@mail.com",
+        "nameLabel": "Полное имя",
+        "namePlaceholder": "Введите полное имя",
+        "passwordLabel": "Пароль"
+      },
+      "submit": "Создать аккаунт",
+      "subtitle": "Начните управлять финансовым будущим с помощью ИИ",
+      "title": "Создать аккаунт"
+    },
+    "validation": {
+      "emailInvalid": "Введите корректный email.",
+      "emailRequired": "Email обязателен.",
+      "loginInvalidInput": "Введите корректные email и пароль.",
+      "nameRequired": "Имя обязательно.",
+      "passwordMin": "Пароль должен содержать минимум 8 символов.",
+      "passwordRequired": "Пароль обязателен.",
+      "registerInvalidInput": "Проверьте данные регистрации."
+    }
+  },
+  "budgets": {
+    "composer": {
+      "amountPlaceholder": "0.00",
+      "category": "Категория",
+      "create": "Создать бюджет",
+      "creating": "Создание...",
+      "limitAmount": "Лимит суммы",
+      "noCategories": "Для этого месяца бюджеты уже заданы для всех расходных категорий.",
+      "title": "Добавить бюджет"
+    },
+    "delete": {
+      "message": "Удалить бюджет {{category}} за {{month}}?",
+      "title": "Удалить бюджет"
+    },
+    "inline": {
+      "saveLimit": "Сохранить лимит",
+      "updateLimit": "Обновить лимит"
+    },
+    "overview": {
+      "aiHintPrefix": "AI считает, что вы идете к экономии",
+      "aiHintSuffix": "в этом месяце.",
+      "leftLabel": "Осталось {{remaining}}",
+      "spentLabel": "Потрачено {{spent}} ({{percent}}%)",
+      "totalMonthlyBudget": "ОБЩИЙ МЕСЯЧНЫЙ БЮДЖЕТ"
+    },
+    "row": {
+      "left": "Осталось {{remaining}}",
+      "over": "ПРЕВЫШЕНО",
+      "spentOf": "Потрачено {{spent}} из {{limit}}"
+    },
+    "sections": {
+      "spendingCategories": "Категории трат",
+      "viewHistory": "История"
+    },
+    "state": {
+      "empty": "На этот месяц бюджеты еще не настроены.",
+      "unavailableTitle": "Бюджеты недоступны",
+      "updating": "Обновление бюджетов..."
+    },
+    "title": "Планирование бюджета"
+  },
+  "common": {
+    "appInitials": "M",
+    "appName": "Mintly",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "continue": "Продолжить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "goBack": "Назад",
+    "loadingShort": "Загрузка...",
+    "notAvailable": "Н/Д",
+    "now": "Сейчас",
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "retry": "Повторить",
+    "save": "Сохранить",
+    "saving": "Сохранение...",
+    "view": "Открыть",
+    "buttons": {
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "retry": "Повторить",
+      "delete": "Удалить"
+    },
+    "navigation": {
+      "tabs": {
+        "home": {
+          "label": "Главная"
+        },
+        "transactions": {
+          "label": "Операции",
+          "shortLabel": "Операции"
+        },
+        "analytics": {
+          "label": "Аналитика",
+          "shortLabel": "Аналитика"
+        },
+        "groups": {
+          "label": "Группы",
+          "shortLabel": "Группы"
+        },
+        "add": {
+          "label": "Добавить"
+        },
+        "profile": {
+          "label": "Профиль",
+          "shortLabel": "Профиль"
+        }
+      },
+      "stacks": {
+        "dashboard": {
+          "header": {
+            "title": "Панель"
+          }
+        },
+        "analytics": {
+          "header": {
+            "title": "Аналитика"
+          }
+        },
+        "aiAdvisor": {
+          "header": {
+            "title": "AI Советник"
+          }
+        },
+        "weeklyReport": {
+          "header": {
+            "title": "Недельный отчёт"
+          }
+        },
+        "budgets": {
+          "header": {
+            "title": "Бюджеты"
+          }
+        },
+        "groups": {
+          "header": {
+            "title": "Группы расходов"
+          }
+        },
+        "createGroup": {
+          "header": {
+            "title": "Создать группу"
+          }
+        },
+        "groupDetail": {
+          "header": {
+            "title": "Детали группы"
+          }
+        },
+        "addGroupExpense": {
+          "header": {
+            "title": "Добавить расход группы"
+          }
+        },
+        "settleUp": {
+          "header": {
+            "title": "Закрыть баланс"
+          }
+        },
+        "addHub": {
+          "header": {
+            "title": "Добавить"
+          }
+        },
+        "addTransaction": {
+          "header": {
+            "title": "Добавить транзакцию"
+          }
+        },
+        "transfer": {
+          "header": {
+            "title": "Перевод средств"
+          }
+        },
+        "recurring": {
+          "header": {
+            "title": "Регулярные"
+          }
+        },
+        "scanReceipt": {
+          "header": {
+            "title": "Скан чека"
+          }
+        },
+        "camera": {
+          "header": {
+            "title": "Камера"
+          }
+        },
+        "reviewScan": {
+          "header": {
+            "title": "Проверка скана"
+          }
+        },
+        "profile": {
+          "header": {
+            "title": "Профиль"
+          }
+        },
+        "editProfile": {
+          "header": {
+            "title": "Редактировать профиль"
+          }
+        },
+        "settings": {
+          "header": {
+            "title": "Настройки"
+          }
+        },
+        "security": {
+          "header": {
+            "title": "Безопасность"
+          }
+        },
+        "about": {
+          "header": {
+            "title": "О приложении"
+          }
+        },
+        "accounts": {
+          "header": {
+            "title": "Счета"
+          }
+        },
+        "financialGoals": {
+          "header": {
+            "title": "Финансовые цели"
+          }
+        }
+      },
+      "preview": {
+        "screen": {
+          "header": {
+            "title": "Предпросмотр экрана",
+            "suffix": "Предпросмотр"
+          }
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "accountFallback": "Счёт",
+    "accountTypes": {
+      "bank": "Банк",
+      "cash": "Наличные",
+      "credit": "Кредит"
+    },
+    "accounts": "Счета",
+    "addExpense": "Добавить расход",
+    "addIncome": "Добавить доход",
+    "aiAction": "Получить совет",
+    "aiActive": "AI АКТИВЕН",
+    "aiAdvisor": "AI Советник",
+    "aiAnalysisTitle": "AI Анализ",
+    "currentBalance": "Текущий баланс",
+    "expense": "Расход",
+    "greeting": "Добро пожаловать,",
+    "income": "Доход",
+    "insight": {
+      "noSavingsHighlight": "Ваш уровень сбережений",
+      "noSavingsMessage": "в этом месяце. Давайте улучшим его с умными подсказками.",
+      "savingsMessage": "больше обычного.",
+      "thisMonth": "В этом месяце вы сэкономили"
+    },
+    "premiumSection": "Премиум",
+    "quickActions": "Быстрые действия",
+    "recentTransactions": "Последние операции",
+    "scanReceipt": "Скан чека",
+    "state": {
+      "errorTitle": "Панель недоступна",
+      "loading": "Загрузка панели...",
+      "noAccounts": "Счета не найдены.",
+      "noData": "Нет данных для панели.",
+      "noTransactions": "Пока нет операций."
+    },
+    "time": {
+      "dayWithTime": "{{day}} • {{time}}",
+      "today": "Сегодня, {{time}}",
+      "yesterday": "Вчера, {{time}}"
+    },
+    "transaction": {
+      "expenseTitle": "Расход",
+      "incomeTitle": "Доход",
+      "transferContext": "Перевод",
+      "transferTitle": "Перевод"
+    },
+    "trend": {
+      "decrease": "-{{percent}}% к прошлому месяцу",
+      "increase": "+{{percent}}% к прошлому месяцу",
+      "stable": "По сравнению с прошлым месяцем стабильно"
+    },
+    "viewAll": "Смотреть все",
+    "weeklyReport": "Недельный отчёт",
+    "upcoming": {
+      "title": "Ближайшие платежи",
+      "empty": "На ближайшие 7 дней платежей нет.",
+      "dueValue": "Срок: {{date}}",
+      "today": "Сегодня",
+      "tomorrow": "Завтра"
+    }
+  },
+  "debug": {
+    "input": {
+      "firstPlaceholder": "First input",
+      "goLogin": "Go to Login",
+      "goRegister": "Go to Register",
+      "secondPlaceholder": "Second input",
+      "subtitle": "This screen uses plain TextInput only. Check focus/blur logs in Metro console.",
+      "title": "Debug Input Isolation"
+    }
+  },
+  "errors": {
+    "account": {
+      "createFailedTitle": "Не удалось создать счет",
+      "deleteFailedTitle": "Не удалось удалить счет",
+      "updateFailedTitle": "Не удалось обновить счет"
+    },
+    "auth": {
+      "logoutFailedTitle": "Не удалось выйти",
+      "sessionNotAvailable": "Сессия недоступна"
+    },
+    "budget": {
+      "createFailedTitle": "Не удалось создать бюджет",
+      "deleteFailedTitle": "Не удалось удалить бюджет",
+      "updateFailedTitle": "Не удалось обновить бюджет"
+    },
+    "recurring": {
+      "createFailedTitle": "Не удалось создать правило",
+      "deleteFailedTitle": "Не удалось удалить правило",
+      "updateFailedTitle": "Не удалось обновить правило"
+    },
+    "transaction": {
+      "createFailedTitle": "Не удалось создать транзакцию"
+    },
+    "transfer": {
+      "createFailedTitle": "Не удалось создать перевод"
+    },
+    "scan": {
+      "captureFailed": "Не удалось сделать фото.",
+      "ocrFailed": "Не удалось распознать текст на чеке.",
+      "libraryPermissionDenied": "Нужен доступ к галерее для выбора фото.",
+      "invalidAmount": "Введите корректную сумму больше нуля.",
+      "invalidDate": "Введите дату в формате YYYY-MM-DD.",
+      "invalidDueDate": "Введите срок оплаты в формате YYYY-MM-DD.",
+      "noExpenseCategory": "Не найдена подходящая категория расхода."
+    },
+    "validation": {
+      "amountPositive": "Сумма должна быть больше нуля.",
+      "amountRequired": "Сумма обязательна.",
+      "dateTimeRequired": "Дата обязательна.",
+      "dayOfMonthRange": "День месяца должен быть от 1 до 28.",
+      "dayOfWeekRange": "День недели должен быть от 0 до 6.",
+      "invalidIsoDateTime": "Введите корректную дату/время в ISO формате.",
+      "limitAmountPositive": "Лимит должен быть больше нуля.",
+      "limitAmountRequired": "Лимит обязателен.",
+      "nameRequired": "Имя обязательно.",
+      "selectAccount": "Выберите счет.",
+      "selectCategory": "Выберите категорию.",
+      "selectDestinationAccount": "Выберите счет назначения.",
+      "selectSourceAccount": "Выберите счет списания.",
+      "sourceDestinationDifferent": "Счет списания и счет назначения должны отличаться.",
+      "startDateTimeRequired": "Дата начала обязательна."
+    },
+    "sameAccount": "Счет списания и счет назначения не могут совпадать.",
+    "currencyMismatch": "У счетов разные валюты. Выберите счета с одной валютой.",
+    "boundary": {
+      "title": "Произошла ошибка",
+      "message": "Приложение столкнулось с непредвиденной ошибкой. Повторите попытку.",
+      "retry": "Повторить"
+    },
+    "api": {
+      "AI_PROVIDER_ERROR": "Сервис AI не смог сгенерировать инсайты.",
+      "AI_PROVIDER_TIMEOUT": "Сервис AI превысил время ожидания. Попробуйте снова.",
+      "AI_PROVIDER_UNREACHABLE": "Сервис AI сейчас недоступен.",
+      "AI_SERVICE_NOT_CONFIGURED": "AI-инсайты не настроены для этого окружения.",
+      "ACCOUNT_NOT_FOUND": "Выбранный счет не найден.",
+      "API_REQUEST_FAILED": "Не удалось выполнить запрос.",
+      "BASE_CURRENCY_NOT_SET": "Перед этим действием задайте базовую валюту.",
+      "BASE_CURRENCY_MISMATCH": "Действие использует другую базовую валюту.",
+      "CATEGORY_NOT_FOUND": "Требуемая категория не найдена.",
+      "EMAIL_ALREADY_EXISTS": "Аккаунт с таким email уже существует.",
+      "FORBIDDEN": "У вас нет доступа к этому действию.",
+      "INVALID_CREDENTIALS": "Неверный email или пароль.",
+      "INVALID_REFRESH_TOKEN": "Сессия истекла. Войдите снова.",
+      "INVALID_RESPONSE_PAYLOAD": "Получены некорректные данные с сервера.",
+      "NETWORK_ERROR": "Ошибка сетевого подключения.",
+      "NOT_FOUND": "Запрошенная запись не найдена.",
+      "RATE_LIMITED": "Слишком много запросов. Подождите и повторите попытку.",
+      "REQUEST_TIMEOUT": "Сервер слишком долго не отвечает.",
+      "SERVER_UNREACHABLE": "Сервер сейчас недоступен.",
+      "UNAUTHORIZED": "Ваша сессия больше не действительна.",
+      "UPCOMING_PAYMENT_NOT_FOUND": "Запись о предстоящем платеже не найдена.",
+      "UNKNOWN_ERROR": "Произошла непредвиденная ошибка.",
+      "ADVISOR_REGENERATE_COOLDOWN": "Подождите несколько секунд перед повторной генерацией инсайтов.",
+      "ADVISOR_PROVIDER_RATE_LIMIT": "Достигнут лимит AI-провайдера. Повторите попытку позже.",
+      "ADVISOR_PROVIDER_TIMEOUT": "Превышено время ожидания AI-провайдера. Попробуйте снова.",
+      "ADVISOR_PROVIDER_INVALID_REQUEST": "Некорректный запрос к AI-провайдеру. Повторите попытку позже.",
+      "ADVISOR_PROVIDER_RATE_LIMITED": "Достигнут лимит AI-провайдера. Повторите попытку позже.",
+      "ADVISOR_PROVIDER_REQUEST_INVALID": "Некорректный запрос к AI-провайдеру. Повторите попытку позже."
+    },
+    "advisor": {
+      "timeout": "Запрос к советнику превысил время ожидания. Показан резервный анализ."
+    }
+  },
+  "groups": {
+    "create": {
+      "actions": {
+        "create": "Создать группу",
+        "creating": "Создание..."
+      },
+      "errors": {
+        "createFailedTitle": "Не удалось создать группу"
+      },
+      "fields": {
+        "membersLabel": "Участники (email через запятую)",
+        "membersPlaceholder": "alice@mail.com, bob@mail.com",
+        "nameLabel": "Название группы",
+        "namePlaceholder": "Поездка на выходные"
+      },
+      "previewCount": "Будет добавлено участников: {{count}}",
+      "subtitle": "Создайте группу для общих расходов",
+      "title": "Создать группу",
+      "validation": {
+        "nameRequired": "Название группы обязательно"
+      }
+    },
+    "list": {
+      "createButton": "Создать группу",
+      "empty": "Групп пока нет. Создайте группу, чтобы начать делить расходы.",
+      "errorTitle": "Не удалось загрузить группы",
+      "loading": "Загрузка групп...",
+      "memberCount": "{{count}} участников",
+      "subtitle": "Отслеживайте общие расходы и балансы",
+      "title": "Группы"
+    },
+    "settle": {
+      "actions": {
+        "markSettled": "Закрыть долг",
+        "settling": "Закрытие..."
+      },
+      "errorTitle": "Не удалось закрыть долг",
+      "loadErrorTitle": "Не удалось загрузить группу",
+      "loading": "Загрузка данных группы...",
+      "openAmount": "Открытая сумма",
+      "openExpenses": "Открытые расходы",
+      "subtitle": "Закрыть все открытые групповые расходы",
+      "successMessage": "Групповые расходы помечены как закрытые.",
+      "successTitle": "Закрыто",
+      "title": "Погашение"
+    }
+  },
+  "navigation": {
+    "stack": {
+      "about": "О приложении",
+      "accounts": "Счета",
+      "addGroupExpense": "Добавить расход группы",
+      "aiAdvisor": "AI Советник",
+      "analytics": "Аналитика",
+      "budgets": "Бюджеты",
+      "camera": "Камера",
+      "createGroup": "Создать группу",
+      "dashboard": "Панель",
+      "editProfile": "Редактировать профиль",
+      "groupDetail": "Детали группы",
+      "profile": "Профиль",
+      "recurring": "Регулярные",
+      "reviewScan": "Проверка скана",
+      "scanReceipt": "Скан чека",
+      "security": "Безопасность",
+      "settings": "Настройки",
+      "settleUp": "Закрыть баланс",
+      "splitGroups": "Группы расходов",
+      "transfer": "Перевод средств",
+      "weeklyReport": "Недельный отчёт"
+    },
+    "tabs": {
+      "add": "Добавить",
+      "analytics": "Аналитика",
+      "analyticsShort": "Аналитика",
+      "groups": "Группы",
+      "groupsShort": "Группы",
+      "home": "Главная",
+      "profile": "Профиль",
+      "profileShort": "Профиль",
+      "transactions": "Операции",
+      "transactionsShort": "Операции"
+    }
+  },
+  "onboarding": {
+    "getStarted": "Начать",
+    "next": "Далее",
+    "skip": "Пропустить",
+    "step1": {
+      "subtitle": "Отслеживайте все расходы, доходы и переводы в одной ленте.",
+      "title": "Контролируйте все"
+    },
+    "step2": {
+      "subtitle": "Смотрите категории, месячные тренды и использование бюджета.",
+      "title": "Понимайте траты"
+    },
+    "step3": {
+      "subtitle": "Создайте аккаунт или войдите, затем настройте счета и бюджеты.",
+      "titleGate": "Готовы начать?",
+      "titlePreview": "Все готово"
+    },
+    "stepLabel": "Шаг {{current}}/{{total}}"
+  },
+  "profile": {
+    "about": {
+      "appNameLabel": "Название приложения",
+      "buildLabel": "Сборка",
+      "buildValue": "Разработка",
+      "noteOne": "Mintly помогает вести счета, транзакции, аналитику и бюджеты в единой валюте.",
+      "noteTwo": "Аутентификация включает access/refresh токены и защищенную навигацию.",
+      "notesTitle": "Заметки",
+      "subtitle": "Информация о продукте и сборке",
+      "title": "О Mintly",
+      "versionLabel": "Версия",
+      "versionValue": "1.0.0"
+    },
+    "accountSettings": "АККАУНТ И НАСТРОЙКИ",
+    "accounts": "Счета",
+    "baseCurrency": "Базовая валюта",
+    "defaultUserName": "Пользователь Mintly",
+    "edit": {
+      "baseCurrencyLabel": "Базовая валюта",
+      "emailLabel": "Эл. почта",
+      "fullNameLabel": "Полное имя",
+      "fullNamePlaceholder": "Ваше полное имя",
+      "helper": "Эндпоинт обновления профиля пока недоступен. UI готов для PATCH /me.",
+      "photoSubtitle": "Нажмите для изменения (только UI)",
+      "photoTitle": "Фото профиля",
+      "save": "Сохранить изменения",
+      "updateNotAvailableCode": "PROFILE_UPDATE_NOT_AVAILABLE",
+      "title": "Редактировать профиль",
+      "nameLabel": "Имя и фамилия",
+      "saveSuccess": "Профиль успешно обновлён."
+    },
+    "lastSync": "Последняя синхр.",
+    "logOut": "Выйти",
+    "loggingOut": "Выход...",
+    "premiumMember": "ПРЕМИУМ",
+    "rows": {
+      "about": "О Mintly",
+      "aboutSubtitle": "Версия и правовая информация",
+      "aiAdvisor": "AI Советник",
+      "aiAdvisorSubtitle": "Открыть персональные советы",
+      "appSettings": "Настройки",
+      "appSettingsSubtitle": "Тема и параметры приложения",
+      "myAccounts": "Мои счета",
+      "myAccountsSubtitle": "Просмотр и управление счетами",
+      "personalInfo": "Личные данные",
+      "personalInfoSubtitle": "Имя, почта и данные профиля",
+      "security": "Безопасность",
+      "securitySubtitle": "Пароль и защита сессии",
+      "weeklyReport": "Недельный отчёт",
+      "weeklyReportSubtitle": "Счёт и прогноз на неделю",
+      "financialGoals": "Финансовые цели",
+      "financialGoalsSubtitle": "Цель сбережений и профиль риска"
+    },
+    "security": {
+      "delete": {
+        "cta": "Удалить аккаунт и все данные",
+        "hint": "Это действие необратимо.",
+        "notAvailable": "Это действие пока недоступно.",
+        "title": "Удалить аккаунт"
+      },
+      "items": {
+        "accountActivity": {
+          "subtitle": "Проверяйте последние устройства",
+          "title": "Активность аккаунта"
+        },
+        "biometric": {
+          "subtitle": "Использовать Face ID или отпечаток",
+          "title": "Биометрический вход"
+        },
+        "downloadData": {
+          "subtitle": "Запросить пакет экспорта",
+          "title": "Скачать персональные данные"
+        },
+        "privacyPolicy": {
+          "subtitle": "Как Mintly защищает данные",
+          "title": "Политика конфиденциальности"
+        },
+        "thirdParty": {
+          "subtitle": "Управлять доступом партнеров",
+          "title": "Обмен с третьими сторонами"
+        },
+        "twoFactor": {
+          "subtitle": "Дополнительная проверка входа",
+          "title": "Двухфакторная аутентификация"
+        }
+      },
+      "scoreSubtitle": "Активны 2 из 3 рекомендуемых защит.",
+      "scoreTitle": "Оценка безопасности: Высокая",
+      "sections": {
+        "accessControl": "КОНТРОЛЬ ДОСТУПА",
+        "dangerZone": "ОПАСНАЯ ЗОНА",
+        "dataPrivacy": "ДАННЫЕ И ПРИВАТНОСТЬ"
+      }
+    },
+    "settings": {
+      "items": {
+        "biometric": {
+          "subtitle": "Использовать Face ID / отпечаток",
+          "title": "Биометрический вход"
+        },
+        "helpCenter": {
+          "subtitle": "Руководства и поддержка",
+          "title": "Центр помощи"
+        },
+        "howItWorks": {
+          "subtitle": "Показать онбординг снова",
+          "title": "Как это работает"
+        },
+        "language": {
+          "subtitle": "Выберите язык приложения",
+          "title": "Язык"
+        },
+        "notifications": {
+          "subtitle": "Получать важные обновления",
+          "title": "Уведомления"
+        },
+        "security": {
+          "subtitle": "Расширенные настройки безопасности",
+          "title": "Безопасность"
+        },
+        "theme": {
+          "subtitle": "Системная, светлая или темная",
+          "title": "Тема"
+        },
+        "version": {
+          "subtitle": "Mintly 1.0.0",
+          "title": "Версия"
+        }
+      },
+      "plan": "Премиум план",
+      "sections": {
+        "application": "Приложение",
+        "privacy": "Конфиденциальность",
+        "support": "Поддержка"
+      },
+      "userTitle": "Демо пользователь",
+      "locale": {
+        "tr": "Турецкий",
+        "en": "Английский",
+        "ru": "Русский"
+      },
+      "theme": {
+        "system": "Системная",
+        "light": "Светлая",
+        "dark": "Темная"
+      }
+    },
+    "support": "ПОДДЕРЖКА",
+    "useDifferentAccount": "Использовать другой аккаунт",
+    "financialGoals": {
+      "title": "Финансовые цели",
+      "subtitle": "Задайте целевую норму сбережений и профиль риска.",
+      "savingsTargetRateLabel": "Целевая норма сбережений (%)",
+      "savingsTargetRatePlaceholder": "20",
+      "riskProfileLabel": "Профиль риска",
+      "riskProfile": {
+        "low": "Низкий",
+        "medium": "Средний",
+        "high": "Высокий"
+      },
+      "hint": "Эти предпочтения используются в рекомендациях AI советника.",
+      "save": "Сохранить настройки",
+      "saving": "Сохранение...",
+      "validation": {
+        "targetRequired": "Введите целевую норму сбережений.",
+        "targetRange": "Целевая норма сбережений должна быть от 0 до 80."
+      }
+    }
+  },
+  "recurring": {
+    "actions": {
+      "create": "Создать правило"
+    },
+    "cadence": {
+      "monthly": "ЕЖЕМЕСЯЧНО",
+      "weekly": "ЕЖЕНЕДЕЛЬНО"
+    },
+    "delete": {
+      "message": "Удалить это повторяющееся правило?",
+      "title": "Удалить повторяющееся правило"
+    },
+    "fields": {
+      "account": "Счет",
+      "amount": "Сумма",
+      "amountPlaceholder": "0.00",
+      "cadence": "Периодичность",
+      "categoryWithType": "Категория ({{type}})",
+      "dayOfMonth": "День месяца (1-28)",
+      "dayOfWeek": "День недели (0=Вс ... 6=Сб)",
+      "dayPlaceholder": "1",
+      "description": "Описание",
+      "descriptionPlaceholder": "Необязательная заметка",
+      "fromAccount": "Со счета",
+      "kind": "Вид правила",
+      "startAt": "Старт (ISO)",
+      "startAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "toAccount": "На счет",
+      "type": "Тип"
+    },
+    "kind": {
+      "normal": "ОБЫЧНОЕ",
+      "transfer": "ПЕРЕВОД"
+    },
+    "rule": {
+      "account": "Счет: {{account}}",
+      "amount": "Сумма: {{amount}}",
+      "cadence": "Период: {{cadence}}",
+      "category": "Категория: {{category}}",
+      "from": "Со счета: {{account}}",
+      "nextRun": "Следующий запуск: {{date}}",
+      "normal": "Обычное правило",
+      "note": "Заметка: {{note}}",
+      "to": "На счет: {{account}}",
+      "transfer": "Правило перевода",
+      "type": "Тип: {{type}}"
+    },
+    "sections": {
+      "existing": "Существующие правила",
+      "totalRules": "{{count}} правил"
+    },
+    "state": {
+      "empty": "Пока нет повторяющихся правил.",
+      "loading": "Загрузка повторяющихся правил..."
+    },
+    "status": {
+      "active": "АКТИВНО",
+      "paused": "ПАУЗА"
+    },
+    "subtitle": "Создавайте правила для автозапуска по расписанию",
+    "successMessage": "Правило теперь активно.",
+    "successTitle": "Повторяющееся правило создано",
+    "title": "Повторяющиеся правила"
+  },
+  "scan": {
+    "receipt": {
+      "title": "Скан чека",
+      "state": {
+        "preparing": "Подготовка камеры..."
+      },
+      "permission": {
+        "title": "Требуется доступ к камере",
+        "subtitle": "Разрешите доступ к камере для сканирования счетов и аренды.",
+        "allowCamera": "Разрешить камеру"
+      },
+      "actions": {
+        "capture": "Снять",
+        "pickPhoto": "Выбрать фото"
+      }
+    },
+    "confirm": {
+      "title": "Подтвердить распознавание",
+      "previewTitle": "Предпросмотр чека",
+      "formTitle": "Распознанные поля",
+      "defaults": {
+        "title": "Чек"
+      },
+      "currencyWarning": "Определена валюта {{detected}}, она отличается от вашей базовой {{base}}. Mintly сохранит {{base}}.",
+      "ocrMode": {
+        "mlkit": "Режим OCR: ML Kit на устройстве",
+        "fallback": "Режим OCR: резервный парсер"
+      },
+      "state": {
+        "loading": "Загрузка подтверждения скана...",
+        "loadErrorTitle": "Не удалось загрузить данные скана"
+      },
+      "fields": {
+        "title": "Название",
+        "titlePlaceholder": "Счет за электричество",
+        "amount": "Сумма",
+        "amountPlaceholder": "0.00",
+        "date": "Дата",
+        "datePlaceholder": "YYYY-MM-DD",
+        "dueDate": "Срок оплаты (необязательно)",
+        "dueDatePlaceholder": "YYYY-MM-DD",
+        "type": "Тип платежа",
+        "account": "Счет",
+        "currency": "Валюта",
+        "classification": "Классификация",
+        "category": "Категория",
+        "frequency": "Частота",
+        "startDate": "Дата начала",
+        "startDatePlaceholder": "YYYY-MM-DD",
+        "endDate": "Дата окончания (необязательно)",
+        "endDatePlaceholder": "YYYY-MM-DD"
+      },
+      "types": {
+        "bill": "Счет",
+        "rent": "Аренда",
+        "subscription": "Подписка",
+        "debt": "Долг",
+        "other": "Другое"
+      },
+      "actions": {
+        "createUpcoming": "Создать предстоящий платеж",
+        "createTransaction": "Создать расходную транзакцию",
+        "createRecurring": "Создать регулярный шаблон"
+      },
+      "success": {
+        "title": "Сохранено",
+        "upcoming": "Предстоящий платеж успешно создан.",
+        "transaction": "Расходная транзакция успешно создана.",
+        "recurring": "Шаблон регулярного платежа создан."
+      },
+      "classification": {
+        "expense": "Расход",
+        "bill": "Счет / Долг",
+        "recurring": "Регулярный шаблон"
+      }
+    }
+  },
+  "upcoming": {
+    "list": {
+      "title": "Ближайшие платежи",
+      "state": {
+        "loading": "Загрузка ближайших платежей...",
+        "errorTitle": "Не удалось загрузить ближайшие платежи",
+        "empty": "На ближайшие 45 дней платежей нет."
+      },
+      "row": {
+        "dueDate": "Срок: {{date}}"
+      }
+    },
+    "detail": {
+      "title": "Ближайший платеж",
+      "state": {
+        "loading": "Загрузка деталей платежа...",
+        "errorTitle": "Не удалось загрузить детали платежа",
+        "notFound": "Этот ближайший платеж не найден."
+      },
+      "dueDateValue": "Срок оплаты: {{date}}",
+      "accountTitle": "Счет для оплаты",
+      "markPaid": {
+        "cta": "Отметить как оплаченный",
+        "successTitle": "Платеж выполнен",
+        "successMessage": "Из ближайшего платежа создана расходная транзакция."
+      },
+      "markSkipped": {
+        "cta": "Пропустить",
+        "successTitle": "Платеж пропущен",
+        "successMessage": "Платеж помечен как пропущенный."
+      }
+    },
+    "notifications": {
+      "title": "Напоминание о платеже",
+      "body": "{{title}} будет через {{days}} дн. до {{dueDate}}. Сумма: {{amount}}."
+    }
+  },
+  "split": {
+    "addExpense": {
+      "actions": {
+        "submit": "Сохранить расход",
+        "submitting": "Сохранение..."
+      },
+      "categoryOptions": {
+        "bills": "Счета",
+        "food": "Еда",
+        "other": "Другое",
+        "rent": "Аренда",
+        "shopping": "Покупки",
+        "transport": "Транспорт"
+      },
+      "equalShare": "{{amount}}",
+      "errors": {
+        "createFailedTitle": "Не удалось создать расход",
+        "invalidAmountMessage": "Введите положительную сумму.",
+        "invalidAmountTitle": "Некорректная сумма",
+        "invalidCustomSplitMessage": "Введите корректные неотрицательные суммы для выбранных участников.",
+        "invalidCustomSplitTitle": "Некорректные пользовательские доли",
+        "membersRequiredMessage": "Выберите хотя бы одного участника.",
+        "membersRequiredTitle": "Требуются участники",
+        "paidByRequiredMessage": "Выберите, кто оплатил расход.",
+        "paidByRequiredTitle": "Требуется плательщик",
+        "requiredTitleMessage": "Введите название расхода.",
+        "requiredTitleTitle": "Требуется название",
+        "splitMismatchMessage": "Сумма {{amount}} не совпадает с суммой долей {{split}}.",
+        "splitMismatchTitle": "Сумма долей не совпадает"
+      },
+      "fields": {
+        "amountLabel": "Сумма",
+        "amountPlaceholder": "0.00",
+        "categoryLabel": "Категория",
+        "dateLabel": "Дата",
+        "datePlaceholder": "ГГГГ-ММ-ДД",
+        "membersLabel": "Участники",
+        "paidByLabel": "Оплатил",
+        "paidByPlaceholder": "Выберите участника",
+        "splitForMemberLabel": "Доля: {{name}}",
+        "splitModeLabel": "Режим деления",
+        "titleLabel": "Название",
+        "titlePlaceholder": "Ужин"
+      },
+      "loadErrorTitle": "Не удалось загрузить группу",
+      "loading": "Загрузка участников группы...",
+      "memberSelectedCount": "Выбрано участников: {{count}}",
+      "retry": "Повторить",
+      "sections": {
+        "customPreview": "Пользовательские доли",
+        "equalPreview": "Предпросмотр равного деления"
+      },
+      "splitModes": {
+        "custom": "Своя сумма",
+        "equal": "Поровну"
+      },
+      "subtitle": "{{group}}",
+      "title": "Добавить групповой расход"
+    },
+    "common": {
+      "unknownMember": "Неизвестный участник"
+    },
+    "groupDetail": {
+      "actions": {
+        "addExpense": "Добавить расход",
+        "settleUp": "Закрыть долг"
+      },
+      "balanceState": {
+        "creditor": "Вы кредитор",
+        "debtor": "Вы должник",
+        "settled": "Баланс нулевой"
+      },
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "indicator": {
+        "noShare": "Без доли",
+        "settled": "Закрыто",
+        "unknownShare": "Доля недоступна",
+        "youGet": "Вам должны {{amount}}",
+        "youOwe": "Вы должны {{amount}}"
+      },
+      "loadErrorTitle": "Не удалось загрузить детали группы",
+      "loading": "Загрузка деталей группы...",
+      "member": {
+        "balanced": "Баланс",
+        "creditor": "Кредитор",
+        "debtor": "Должник"
+      },
+      "membersTitle": "Участники",
+      "noExpenses": "Пока нет групповых расходов.",
+      "recentExpenses": "Последние расходы",
+      "retry": "Повторить",
+      "summarySubtitle": "Обзор совместных расходов",
+      "summaryTitle": "Сводка группы",
+      "totalSpending": "Общие расходы",
+      "yourBalance": "Ваш баланс"
+    }
+  },
+  "stitch": {
+    "hub": {
+      "codeHtml": "code.html",
+      "dark": "dark",
+      "noApi": "No API",
+      "pngOnly": "png only",
+      "staticPlaceholders": "Static placeholders",
+      "totalScreens": "{{count}} Stitch screens"
+    },
+    "preview": {
+      "analytics": {
+        "food": "Food",
+        "highlights": "Highlights",
+        "savings": "Savings",
+        "spendingTrend": "Spending Trend",
+        "weeklyBars": "Weekly bars"
+      },
+      "auth": {
+        "authenticationForm": "Authentication Form",
+        "onboardingLoginPlaceholder": "Onboarding / login placeholder",
+        "phoneOtp": "Phone / OTP"
+      },
+      "chips": {
+        "codeHtmlUsed": "code.html hierarchy used",
+        "darkVariant": "Dark variant",
+        "lightVariant": "Light variant",
+        "pngPlaceholder": "png-driven placeholder"
+      },
+      "dashboard": {
+        "accountSnapshot": "Account Snapshot",
+        "categoryPulse": "Category Pulse",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income",
+        "overviewCards": "Overview cards",
+        "recentActivity": "Recent Activity",
+        "topCategories": "Top categories",
+        "updated1mAgo": "Updated 1m ago"
+      },
+      "errors": {
+        "notFoundBody": "The requested Stitch screen key does not exist in the inventory.",
+        "notFoundTitle": "Screen not found"
+      },
+      "other": {
+        "budgetTips": "Budget Tips",
+        "contentUtility": "Content / Utility",
+        "debtGuide": "Debt Guide",
+        "faq": "FAQ",
+        "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
+        "helpCenterDetailPages": "Help center + detail pages",
+        "helpCenterTitle": "Mintly Help Center"
+      },
+      "profile": {
+        "sampleEmail": "user@mintly.app",
+        "summary": "Profile Summary"
+      },
+      "scan": {
+        "alignReceipt": "Align receipt in frame",
+        "cameraFramePlaceholder": "Camera frame placeholder",
+        "captureReceipt": "Capture Receipt",
+        "receiptScan": "Receipt Scan"
+      },
+      "split": {
+        "accommodation": "Accommodation",
+        "aylinOwesYou": "Aylin owes you",
+        "carRental": "Car rental",
+        "expenseSplitScenario": "Expense split scenario",
+        "groupOverview": "Group Overview",
+        "memberAylin": "Aylin",
+        "memberDeniz": "Deniz",
+        "memberMert": "Mert",
+        "memberYou": "You",
+        "settleGroupExpense": "Settle Group Expense",
+        "weekendTrip": "Weekend Trip",
+        "youOweMert": "You owe Mert"
+      },
+      "transactions": {
+        "addNew": "Add New Transaction",
+        "feed": "Transaction Feed",
+        "filtersSubtitle": "List + quick filters"
+      }
+    }
+  },
+  "transactionDetail": {
+    "actions": {
+      "delete": "Удалить транзакцию",
+      "downloadReceipt": "Скачать чек",
+      "splitExpense": "Разделить расход"
+    },
+    "fields": {
+      "account": "Счет",
+      "category": "Категория",
+      "dateTime": "Дата и время",
+      "noCategory": "Без категории"
+    },
+    "location": {
+      "placeholder": "Barbaros Mah. No:3, Istanbul"
+    },
+    "notes": {
+      "empty": "Для этой транзакции нет заметки.",
+      "title": "Мои заметки"
+    },
+    "receipt": {
+      "title": "Цифровой чек"
+    },
+    "state": {
+      "loadErrorTitle": "Не удалось загрузить детали транзакции",
+      "loading": "Загрузка деталей транзакции..."
+    },
+    "status": {
+      "completed": "Завершено"
+    },
+    "title": "Детали транзакции"
+  },
+  "transactions": {
+    "accountFallback": "Счет",
+    "actions": {
+      "loadMore": "Загрузить еще",
+      "search": "Поиск"
+    },
+    "create": {
+      "fields": {
+        "account": "Счет",
+        "amount": "Сумма",
+        "amountPlaceholder": "0.00",
+        "category": "Категория",
+        "currency": "Валюта",
+        "description": "Описание",
+        "descriptionPlaceholder": "Необязательная заметка",
+        "occurredAt": "Дата и время (ISO)",
+        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+      },
+      "systemCategories": {
+        "expense": {
+          "bills": "Счета",
+          "entertainment": "Развлечения",
+          "food": "Еда",
+          "health": "Здоровье",
+          "market": "Маркет",
+          "rent": "Аренда",
+          "shopping": "Покупки",
+          "transport": "Транспорт"
+        },
+        "income": {
+          "otherIncome": "Другой доход",
+          "salary": "Зарплата"
+        }
+      },
+      "sections": {
+        "details": "Детали транзакции",
+        "step": "Шаг 1/1"
+      },
+      "selectAccountFirst": "Сначала выберите счет",
+      "state": {
+        "loadErrorTitle": "Не удалось загрузить форму транзакции",
+        "loading": "Загрузка формы транзакции..."
+      },
+      "submit": "Сохранить транзакцию",
+      "subtitle": "Создайте новую запись дохода или расхода.",
+      "successMessage": "Транзакция успешно сохранена.",
+      "successTitle": "Транзакция создана",
+      "title": "Добавить транзакцию"
+    },
+    "filters": {
+      "all": "Все"
+    },
+    "group": {
+      "other": "ДРУГОЕ",
+      "today": "СЕГОДНЯ",
+      "yesterday": "ВЧЕРА"
+    },
+    "quickActions": {
+      "scanSubtitle": "OCR чеков",
+      "scanTitle": "Скан",
+      "splitSubtitle": "Группы и взаиморасчеты",
+      "splitTitle": "Разделить"
+    },
+    "row": {
+      "expenseTitle": "Расход",
+      "incomeTitle": "Доход",
+      "transferBadge": "ПЕРЕВОД",
+      "transferHint": "Перевод • {{time}}",
+      "transferTitle": "Перевод между счетами",
+      "typeHint": "{{type}} • {{time}}"
+    },
+    "searchPlaceholder": "Поиск по транзакции или магазину...",
+    "state": {
+      "empty": "Нет транзакций под текущие фильтры.",
+      "loadErrorTitle": "Не удалось загрузить транзакции",
+      "loadingMore": "Загрузка..."
+    },
+    "summary": {
+      "totalExpense": "ОБЩИЙ РАСХОД",
+      "totalIncome": "ОБЩИЙ ДОХОД"
+    },
+    "title": "История транзакций"
+  },
+  "transfers": {
+    "form": {
+      "amount": "Сумма",
+      "amountPlaceholder": "0.00",
+      "description": "Описание",
+      "descriptionPlaceholder": "Необязательная заметка",
+      "fromAccount": "Со счета",
+      "occurredAt": "Дата (ISO)",
+      "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "submit": "Создать перевод",
+      "subtitle": "Создает связанную пару вход/выход для перевода",
+      "title": "Перевод средств",
+      "toAccount": "На счет"
+    },
+    "state": {
+      "loadingAccounts": "Загрузка счетов...",
+      "needTwoAccounts": "Создайте минимум два счета перед переводом."
+    },
+    "successMessage": "Средства успешно перемещены.",
+    "successTitle": "Перевод создан",
+    "title": "Перевод"
+  },
+  "weeklyReport": {
+    "highlights": "Ключевые моменты",
+    "nextWeekForecast": "Прогноз на следующую неделю",
+    "noHighlights": "На этой неделе нет ключевых моментов.",
+    "noRisks": "Риски не обнаружены.",
+    "riskFlags": "Риски",
+    "scoreOutOf": "/100",
+    "state": {
+      "errorTitle": "Недельный отчёт недоступен",
+      "noData": "Нет данных недельного отчёта."
+    },
+    "subtitle": "Сводка финансового здоровья и прогноз на следующую неделю.",
+    "title": "Недельный отчёт"
+  },
+  "success": {
+    "transferCreated": "Перевод успешно создан."
+  },
+  "settings": {
+    "general": {
+      "title": "Настройки"
+    },
+    "language": {
+      "label": "Язык",
+      "title": "Язык",
+      "subtitle": "Выберите язык приложения",
+      "options": {
+        "tr": "Турецкий",
+        "en": "Английский",
+        "ru": "Русский"
+      }
+    },
+    "theme": {
+      "label": "Тема",
+      "title": "Тема",
+      "subtitle": "Системная, светлая или темная",
+      "options": {
+        "system": "Системная",
+        "light": "Светлая",
+        "dark": "Темная"
+      }
+    },
+    "notifications": {
+      "label": "Уведомления",
+      "title": "Уведомления",
+      "subtitle": "Получать важные обновления"
+    },
+    "sections": {
+      "application": "Приложение",
+      "privacy": "Конфиденциальность",
+      "support": "Поддержка"
+    },
+    "user": {
+      "title": "Демо пользователь",
+      "plan": "Премиум план"
+    },
+    "biometric": {
+      "title": "Биометрический вход",
+      "subtitle": "Использовать Face ID / отпечаток"
+    },
+    "security": {
+      "title": "Безопасность",
+      "subtitle": "Расширенные настройки безопасности"
+    },
+    "howItWorks": {
+      "title": "Как это работает",
+      "subtitle": "Показать онбординг снова"
+    },
+    "helpCenter": {
+      "title": "Центр помощи",
+      "subtitle": "Руководства и поддержка"
+    },
+    "version": {
+      "title": "Версия",
+      "subtitle": "Mintly 1.0.0"
+    },
+    "financialGoals": {
+      "title": "Финансовые цели",
+      "subtitle": "Цель сбережений и профиль риска"
+    },
+    "regularPayments": {
+      "title": "Регулярные платежи",
+      "subtitle": "Управляйте шаблонами регулярных платежей"
+    }
+  },
+  "network": {
+    "offline": {
+      "title": "Оффлайн-режим",
+      "message": "Нет подключения к интернету. Некоторые действия могут не работать.",
+      "retry": "Повторить"
+    }
+  }
+}

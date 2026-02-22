@@ -1,0 +1,306 @@
+{
+  "common": {
+    "appName": "Mintly",
+    "appInitials": "M",
+    "retry": "Retry",
+    "loadingShort": "Loading...",
+    "notAvailable": "N/A"
+  },
+  "app": {
+    "state": {
+      "preparing": "Preparing Mintly...",
+      "restoring": "Restoring session..."
+    }
+  },
+  "navigation": {
+    "tabs": {
+      "home": "Home",
+      "transactions": "Transactions",
+      "transactionsShort": "Records",
+      "analytics": "Analytics",
+    "analyticsShort": "Insights",
+    "groups": "Groups",
+    "groupsShort": "Groups",
+    "add": "Add",
+      "profile": "Profile",
+      "profileShort": "Profile"
+    },
+    "stack": {
+      "dashboard": "Dashboard",
+      "analytics": "Analytics",
+      "aiAdvisor": "AI Advisor",
+      "weeklyReport": "Weekly Report",
+      "budgets": "Budgets",
+      "profile": "Profile",
+      "editProfile": "Edit Profile",
+      "settings": "Settings",
+      "security": "Security",
+      "about": "About",
+      "accounts": "Accounts",
+      "transfer": "Transfer",
+      "recurring": "Recurring",
+      "scanReceipt": "Scan Receipt",
+      "camera": "Camera",
+      "reviewScan": "Review Scan",
+      "splitGroups": "Split Groups",
+      "createGroup": "Create Group",
+      "groupDetail": "Group Detail",
+      "addGroupExpense": "Add Group Expense",
+      "settleUp": "Settle Up"
+    }
+  },
+  "dashboard": {
+    "greeting": "Welcome,",
+    "aiActive": "AI ACTIVE",
+    "currentBalance": "Current Balance",
+    "income": "Income",
+    "expense": "Expense",
+    "accounts": "Accounts",
+    "premiumSection": "Premium",
+    "quickActions": "Quick Actions",
+    "scanReceipt": "Scan Receipt",
+    "addIncome": "Add Income",
+    "addExpense": "Add Expense",
+    "recentTransactions": "Recent Transactions",
+    "viewAll": "See All",
+    "aiAnalysisTitle": "AI Analysis",
+    "aiAction": "Get Insight",
+    "aiAdvisor": "AI Advisor",
+    "weeklyReport": "Weekly Report",
+    "accountFallback": "Account",
+    "accountTypes": {
+      "cash": "Cash",
+      "bank": "Bank",
+      "credit": "Credit"
+    },
+    "state": {
+      "errorTitle": "Dashboard unavailable",
+      "noData": "No dashboard data available.",
+      "noTransactions": "No recent transactions yet.",
+      "noAccounts": "No accounts found."
+    },
+    "time": {
+      "today": "Today, {{time}}",
+      "yesterday": "Yesterday, {{time}}",
+      "dayWithTime": "{{day}} • {{time}}"
+    },
+    "trend": {
+      "stable": "Compared to last month, stable",
+      "increase": "Compared to last month +{{percent}}%",
+      "decrease": "Compared to last month -{{percent}}%"
+    },
+    "transaction": {
+      "transferContext": "Transfer",
+      "transferTitle": "Transfer",
+      "incomeTitle": "Income",
+      "expenseTitle": "Expense"
+    },
+    "insight": {
+      "thisMonth": "This month you saved",
+      "savingsMessage": "more than your recent average.",
+      "noSavingsHighlight": "Your savings rate is",
+      "noSavingsMessage": "this month. Let's improve it with smart tips."
+    }
+  },
+  "analytics": {
+    "title": "Spending Analysis",
+    "range": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "totalSpending": "Total Spending",
+    "fromLastMonth": "%{{percent}} from last month",
+    "mainCategory": "Main Category",
+    "dailyTrends": "Daily Trends",
+    "last7Days": "Last 7 Days",
+    "refreshingTrend": "Refreshing trend...",
+    "topCategories": "Top Categories",
+    "expense": "Expense",
+    "income": "Income",
+    "loadingCategories": "Loading categories...",
+    "noCategories": "No category data for this period.",
+    "transactionsCount": "{{count}} transactions",
+    "percentOfTotal": "{{percent}}% of total",
+    "premiumInsights": "Premium Insights",
+    "aiAdvisorCta": "Open AI Advisor",
+    "aiAdvisor": "AI Advisor",
+    "aiAdvisorSubtitle": "Review personalized action items.",
+    "weeklyReport": "Weekly Report",
+    "weeklyReportSubtitle": "Check your weekly health score.",
+    "noCategory": "Uncategorized",
+    "state": {
+      "errorTitle": "Analytics unavailable",
+      "noData": "No analytics data available."
+    },
+    "days": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
+  },
+  "profile": {
+    "defaultUserName": "Mintly User",
+    "premiumMember": "PREMIUM MEMBER",
+    "baseCurrency": "Base Currency",
+    "accounts": "Accounts",
+    "lastSync": "Last Sync",
+    "accountSettings": "ACCOUNT & SETTINGS",
+    "support": "SUPPORT",
+    "loggingOut": "Signing out...",
+    "logOut": "Log out",
+    "useDifferentAccount": "Use a different account",
+    "rows": {
+      "personalInfo": "Personal info",
+      "personalInfoSubtitle": "Name, email and profile details",
+      "myAccounts": "My accounts",
+      "myAccountsSubtitle": "View and manage your accounts",
+      "appSettings": "Settings",
+      "appSettingsSubtitle": "Theme and application preferences",
+      "security": "Security",
+      "securitySubtitle": "Password and session protection",
+      "about": "About Mintly",
+      "aboutSubtitle": "Version and legal information",
+      "aiAdvisor": "AI Advisor",
+      "aiAdvisorSubtitle": "Open personalized financial advice",
+      "weeklyReport": "Weekly Report",
+      "weeklyReportSubtitle": "View score and weekly outlook"
+    }
+  },
+  "aiAdvisor": {
+    "title": "AI Financial Advisor",
+    "subtitle": "Personalized insights from your monthly activity.",
+    "monthlySnapshot": "Monthly Snapshot",
+    "income": "Income",
+    "expense": "Expense",
+    "net": "Net",
+    "advice": "Advice",
+    "noAdvice": "No advice for this month yet.",
+    "nextActions": "Next Actions",
+    "noActions": "No action items right now.",
+    "severity": {
+      "info": "Info",
+      "warning": "Warning",
+      "success": "Success"
+    },
+    "state": {
+      "errorTitle": "Advisor unavailable",
+      "noData": "No advisor data available."
+    }
+  },
+  "weeklyReport": {
+    "title": "Weekly Report",
+    "subtitle": "Financial health summary and next-week outlook.",
+    "scoreOutOf": "/100",
+    "highlights": "Highlights",
+    "noHighlights": "No highlights this week.",
+    "riskFlags": "Risk Flags",
+    "noRisks": "No risks detected.",
+    "nextWeekForecast": "Next Week Forecast",
+    "state": {
+      "errorTitle": "Weekly report unavailable",
+      "noData": "No weekly report available."
+    }
+  },
+  "split": {
+    "common": {
+      "unknownMember": "Unknown member"
+    },
+    "groupDetail": {
+      "loading": "Loading group details...",
+      "loadErrorTitle": "Could not load group details",
+      "retry": "Retry",
+      "summaryTitle": "Group Summary",
+      "summarySubtitle": "Shared expenses overview",
+      "totalSpending": "Total spending",
+      "yourBalance": "Your balance",
+      "balanceState": {
+        "creditor": "You are creditor",
+        "debtor": "You are debtor",
+        "settled": "Balanced"
+      },
+      "membersTitle": "Members",
+      "recentExpenses": "Recent Expenses",
+      "noExpenses": "No group expenses yet.",
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "member": {
+        "creditor": "Creditor",
+        "debtor": "Debtor",
+        "balanced": "Balanced"
+      },
+      "indicator": {
+        "youGet": "You get {{amount}}",
+        "youOwe": "You owe {{amount}}",
+        "noShare": "No share",
+        "settled": "Settled",
+        "unknownShare": "Share unavailable"
+      },
+      "actions": {
+        "settleUp": "Settle Up",
+        "addExpense": "Add Expense"
+      }
+    },
+    "addExpense": {
+      "loading": "Loading group members...",
+      "loadErrorTitle": "Could not load group",
+      "retry": "Retry",
+      "title": "Add Group Expense",
+      "subtitle": "{{group}}",
+      "memberSelectedCount": "{{count}} members selected",
+      "equalShare": "{{amount}}",
+      "fields": {
+        "titleLabel": "Title",
+        "titlePlaceholder": "Dinner",
+        "amountLabel": "Amount",
+        "amountPlaceholder": "0.00",
+        "dateLabel": "Date",
+        "datePlaceholder": "YYYY-MM-DD",
+        "categoryLabel": "Category",
+        "paidByLabel": "Paid by",
+        "paidByPlaceholder": "Select member",
+        "membersLabel": "Members",
+        "splitModeLabel": "Split mode",
+        "splitForMemberLabel": "Split: {{name}}"
+      },
+      "splitModes": {
+        "equal": "Equal",
+        "custom": "Custom"
+      },
+      "sections": {
+        "equalPreview": "Equal split preview",
+        "customPreview": "Custom split amounts"
+      },
+      "actions": {
+        "submit": "Create Expense",
+        "submitting": "Saving..."
+      },
+      "errors": {
+        "createFailedTitle": "Create expense failed",
+        "requiredTitleTitle": "Title required",
+        "requiredTitleMessage": "Please enter an expense title.",
+        "invalidAmountTitle": "Invalid amount",
+        "invalidAmountMessage": "Please enter a positive amount.",
+        "paidByRequiredTitle": "Paid by required",
+        "paidByRequiredMessage": "Please choose who paid.",
+        "membersRequiredTitle": "Members required",
+        "membersRequiredMessage": "Please select at least one member.",
+        "invalidCustomSplitTitle": "Invalid custom split",
+        "invalidCustomSplitMessage": "Enter valid non-negative amounts for each selected member.",
+        "splitMismatchTitle": "Split total mismatch",
+        "splitMismatchMessage": "Amount {{amount}} does not match split total {{split}}."
+      },
+      "categoryOptions": {
+        "food": "Food",
+        "transport": "Transport",
+        "rent": "Rent",
+        "bills": "Bills",
+        "shopping": "Shopping",
+        "other": "Other"
+      }
+    }
+  }
+}

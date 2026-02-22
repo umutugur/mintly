@@ -1,0 +1,1656 @@
+{
+  "accounts": {
+    "accountType": {
+      "bank": "Banka",
+      "bankAccount": "Banka Hesabı",
+      "cash": "Nakit",
+      "cashWallet": "Nakit Cüzdanı",
+      "credit": "Kredi",
+      "creditCard": "Kredi Kartı",
+      "savings": "Birikim Hesabı"
+    },
+    "baseCurrency": {
+      "empty": "Henüz ana para birimi yok. İlk hesabınız için birini seçin.",
+      "value": "Ana para birimi: {{currency}}"
+    },
+    "delete": {
+      "confirmBody": "{{name}} hesabını silmek istediğinizden emin misiniz?",
+      "confirmTitle": "Hesabı sil",
+      "error": "Hesap silinemedi. Lütfen tekrar deneyin.",
+      "success": "Hesap silindi."
+    },
+    "form": {
+      "create": "Hesap Oluştur",
+      "creating": "Oluşturuluyor...",
+      "currencyLabel": "Para Birimi",
+      "currencyPlaceholder": "TRY",
+      "nameLabel": "Hesap adı",
+      "namePlaceholder": "Örn. Ana Banka",
+      "typeLabel": "Tür"
+    },
+    "sections": {
+      "baseCurrency": {
+        "subtitle": "İlk kurulumdan sonra tüm hesaplar için kilitlenir",
+        "title": "Ana Para Birimi"
+      },
+      "create": {
+        "title": "Hesap Oluştur"
+      },
+      "list": {
+        "title": "Hesaplarınız",
+        "total": "{{count}} toplam"
+      },
+      "session": {
+        "title": "Hesap Oturumu"
+      }
+    },
+    "session": {
+      "signedIn": "Giriş yapıldı"
+    },
+    "state": {
+      "empty": "Henüz hesap oluşturulmadı.",
+      "loadErrorTitle": "Hesaplar yüklenemedi",
+      "loading": "Hesaplar yükleniyor..."
+    },
+    "update": {
+      "error": "Hesap güncellenemedi. Lütfen tekrar deneyin.",
+      "success": "Hesap güncellendi."
+    }
+  },
+  "add": {
+    "hub": {
+      "addTransaction": "İşlem Ekle",
+      "addTransactionAction": "İşlem Formu",
+      "addTransactionHint": "Gelir veya gider kaydı oluşturun.",
+      "subtitle": "İşlem ekleme, transfer veya düzenli şablon akışını seçin.",
+      "title": "Ne Eklemek İstersin?",
+      "transfer": "Hesaplar Arası Transfer",
+      "transferAction": "Transfer Yap",
+      "transferHint": "Bakiyeyi hesaplar arasında taşıyın.",
+      "recurring": "Düzenli ödeme",
+      "recurringHint": "Haftalık veya aylık düzenli ödeme şablonu oluşturun.",
+      "recurringAction": "Düzenli ödemeye git"
+    },
+    "transfer": {
+      "amount": "Tutar",
+      "amountPlaceholder": "0.00",
+      "date": "Tarih (ISO)",
+      "datePlaceholder": "2026-02-17T10:30:00.000Z",
+      "fromAccount": "Kaynak hesap",
+      "note": "Not",
+      "notePlaceholder": "Opsiyonel not",
+      "state": {
+        "loadingAccounts": "Hesaplar yükleniyor...",
+        "needTwoAccounts": "Transfer için en az iki hesap gerekli."
+      },
+      "submit": "Transfer Oluştur",
+      "subtitle": "Kategori seçmeden hesaplar arasında bakiye taşıyın.",
+      "title": "Hesaplar Arası Transfer",
+      "toAccount": "Hedef hesap"
+    }
+  },
+  "advisor": {
+    "advice": "Öneriler",
+    "expense": "Gider",
+    "income": "Gelir",
+    "monthlySnapshot": "Aylık Özet",
+    "net": "Net",
+    "nextActions": "Sonraki Adımlar",
+    "noActions": "Şu an aksiyon maddesi yok.",
+    "noAdvice": "Bu ay için henüz öneri yok.",
+    "severity": {
+      "info": "Bilgi",
+      "success": "İyi",
+      "warning": "Uyarı"
+    },
+    "state": {
+      "errorTitle": "Danışman şu an kullanılamıyor",
+      "noData": "Danışman verisi bulunamadı."
+    },
+    "subtitle": "Aylık hareketlerine göre kişiselleştirilmiş öneriler.",
+    "title": "AI Finans Danışmanı",
+    "actions": {
+      "title": "Tek Dokunuş Aksiyonlar",
+      "subtitle": "Danışman önerilerini onaylayarak hızlıca uygula.",
+      "common": {
+        "amountLabel": "Tutar",
+        "amountPlaceholder": "0,00",
+        "noteLabel": "Not",
+        "notePlaceholder": "İsteğe bağlı not"
+      },
+      "validation": {
+        "budgetAmountRequired": "En az bir geçerli bütçe tutarı girin."
+      },
+      "budgets": {
+        "title": "Önerilen Bütçeleri Oluştur",
+        "subtitle": "Öne çıkan gider kategorileri için bütçe limitleri oluştur.",
+        "cta": "Bütçe Oluştur",
+        "modalTitle": "Bütçe Oluştur",
+        "submit": "Oluştur",
+        "success": "Bütçeler başarıyla oluşturuldu."
+      },
+      "recurring": {
+        "title": "Tekrarlı Şablon Kur",
+        "subtitle": "Harcama düzenine göre duraklatılmış tekrarlı gider şablonu oluştur.",
+        "cta": "Tekrarlı Kur",
+        "modalTitle": "Tekrarlı Şablon Oluştur",
+        "account": "Hesap",
+        "weekly": "Haftalık",
+        "monthly": "Aylık",
+        "submit": "Kural Oluştur",
+        "success": "Tekrarlı şablon duraklatılmış olarak oluşturuldu."
+      },
+      "transfer": {
+        "title": "Birikim Transferi Oluştur",
+        "subtitle": "Hesaplar arasında tek dokunuşla para aktar.",
+        "cta": "Transfer Oluştur",
+        "modalTitle": "Transfer Oluştur",
+        "fromAccount": "Kaynak Hesap",
+        "toAccount": "Hedef Hesap",
+        "submit": "Transfer Et",
+        "success": "Transfer başarıyla oluşturuldu."
+      }
+    }
+  },
+  "aiAdvisor": {
+    "title": "AI Danışman",
+    "subtitle": "Aylık finans hareketlerinize göre veri odaklı içgörüler.",
+    "month": {
+      "title": "Ay"
+    },
+    "generatedAt": "Son üretim: {{value}}",
+    "actions": {
+      "regenerate": "Yeniden Üret"
+    },
+    "tabs": {
+      "summary": "Özet",
+      "savings": "Birikim",
+      "investment": "Yatırım",
+      "tips": "Tasarruf"
+    },
+    "state": {
+      "loading": "AI danışman içgörüsü yenileniyor...",
+      "errorTitle": "Danışman şu an kullanılamıyor",
+      "noData": "Danışman verisi bulunamadı."
+    },
+    "summary": {
+      "sections": {
+        "overview": "Harcama Özeti",
+        "categoryBreakdown": "Kategori Dağılımı",
+        "cashflowTrend": "Nakit Akışı Trendi (3 Ay)",
+        "budgetAdherence": "Bütçe Uyum Durumu",
+        "flags": "Risk İşaretleri"
+      },
+      "cards": {
+        "last30Income": "Son 30 Gün Gelir",
+        "last30Expense": "Son 30 Gün Gider",
+        "currentMonthNet": "Bu Ay Net",
+        "savingsRate": "Birikim Oranı"
+      },
+      "shareValue": "Pay: {{value}}",
+      "emptyCategory": "Bu ay için gider kategorisi verisi yok.",
+      "emptyBudget": "Bu ay için bütçe takibi yok.",
+      "emptyFlags": "Kritik risk işareti yok.",
+      "noTrend": "Trend verisi bulunamadı."
+    },
+    "budget": {
+      "usageValue": "{{spent}} / {{limit}}",
+      "status": {
+        "onTrack": "Takipte",
+        "nearLimit": "Sınıra Yakın",
+        "overLimit": "Aşıldı"
+      }
+    },
+    "flags": {
+      "negativeCashflow": "Bu ay nakit akışı negatif.",
+      "lowSavingsRate": "Birikim oranı hedefin altında.",
+      "irregularIncome": "Gelir akışı düzensiz görünüyor.",
+      "overspendingCategories": "Aşırı harcama kategorileri: {{value}}"
+    },
+    "savings": {
+      "title": "Birikim Planı",
+      "targetRate": "Hedef Birikim Oranı",
+      "monthlyTargetAmount": "Aylık Birikim Hedefi",
+      "next7Days": "Önümüzdeki 7 Gün Aksiyonları",
+      "autoTransferSuggestion": "Otomatik Transfer Önerisi",
+      "emptyActions": "Bu dönem için aksiyon önerisi yok."
+    },
+    "investment": {
+      "title": "Yatırım Yönlendirmesi",
+      "emergencyFundCurrent": "Acil Durum Fonu Mevcut",
+      "emergencyFundTarget": "Acil Durum Fonu Hedef",
+      "emergencyFundStatus": "Acil Durum Fonu Durumu",
+      "profiles": "Risk Profilleri",
+      "guidance": "Yol Haritası",
+      "status": {
+        "ready": "Hazır",
+        "building": "Oluşturuluyor",
+        "not_started": "Başlanmadı"
+      },
+      "risk": {
+        "low": "Düşük Risk",
+        "medium": "Orta Risk",
+        "high": "Yüksek Risk"
+      }
+    },
+    "tips": {
+      "title": "Gider Optimizasyonu",
+      "cutCandidates": "Öncelikli Kısma Alanları",
+      "currentAmountValue": "Mevcut: {{value}}",
+      "reductionValue": "%{{value}} azalt",
+      "quickWins": "Hızlı Kazanımlar",
+      "generalTips": "Genel Öneriler"
+    },
+    "disclaimer": "Mintly AI içgörüleri bilgilendirme amaçlıdır, yatırım veya finansal tavsiye değildir.",
+    "fallback": {
+      "title": "AI yanıtı alınamadı",
+      "tryAgain": "Tekrar dene",
+      "useBasicAdvice": "Temel önerileri kullan",
+      "reason": {
+        "missing_api_key": "Sunucuda AI sağlayıcı anahtarı yapılandırılmamış.",
+        "provider_timeout": "AI sağlayıcısı zaman aşımına uğradı.",
+        "provider_http_error": "AI sağlayıcısı başarısız bir HTTP yanıtı döndü.",
+        "provider_parse_error": "AI sağlayıcı yanıtı çözümlenemedi.",
+        "provider_validation_error": "AI sağlayıcı yanıt biçimi geçersiz.",
+        "provider_unknown_error": "AI sağlayıcısında bilinmeyen bir hata oluştu."
+      }
+    },
+    "debug": {
+      "title": "Advisor tanılama",
+      "apiBaseUrl": "API taban URL: {{value}}",
+      "provider": "Sağlayıcı: {{value}}",
+      "mode": "Mod: {{value}}",
+      "modeReason": "Fallback nedeni: {{value}}",
+      "providerStatus": "Sağlayıcı durumu: {{value}}"
+    }
+  },
+  "analytics": {
+    "aiAdvisor": "AI Danışman",
+    "aiAdvisorCta": "AI Danışmanı Aç",
+    "aiAdvisorSubtitle": "Kişisel aksiyonlarını incele.",
+    "aiSection": {
+      "title": "AI Modülleri",
+      "subtitle": "Gelişmiş içgörülere ve haftalık sağlık analizine hızlı geçiş."
+    },
+    "dailyTrends": "Günlük Trend",
+    "days": {
+      "fri": "Cum",
+      "mon": "Pzt",
+      "sat": "Cts",
+      "sun": "Paz",
+      "thu": "Per",
+      "tue": "Sal",
+      "wed": "Çar"
+    },
+    "expense": "Gider",
+    "fromLastMonth": "Geçen aya göre %{{percent}}",
+    "income": "Gelir",
+    "last7Days": "Son 7 Gün",
+    "loadingCategories": "Kategoriler yükleniyor...",
+    "mainCategory": "Ana Kategori",
+    "noCategories": "Bu dönem için kategori verisi yok.",
+    "noCategory": "Kategorisiz",
+    "percentOfTotal": "Toplamın %{{percent}}",
+    "premiumInsights": "Premium İçgörüler",
+    "range": {
+      "monthly": "Aylık",
+      "weekly": "Haftalık",
+      "yearly": "Yıllık"
+    },
+    "refreshingTrend": "Trend güncelleniyor...",
+    "state": {
+      "errorTitle": "Analiz yüklenemedi",
+      "noData": "Analiz verisi bulunamadı.",
+      "emptyTitle": "Henüz analiz yok",
+      "emptyBody": "Analiz içgörülerini görmek için birkaç işlem ekleyin.",
+      "emptyCta": "İşlem Ekle"
+    },
+    "title": "Harcama Analizi",
+    "topCategories": "Öne Çıkan Kategoriler",
+    "totalSpending": "Toplam Harcama",
+    "transactionsCount": "{{count}} işlem",
+    "weeklyReport": "Haftalık Rapor",
+    "weeklyReportCta": "Haftalık Raporu Aç",
+    "weeklyReportSubtitle": "Haftalık skorunu kontrol et.",
+    "summary": {
+      "title": "Aylık Özet",
+      "subtitle": "Gelir, gider ve net görünümü",
+      "totalIncome": "Toplam Gelir",
+      "totalExpense": "Toplam Gider",
+      "net": "Net Toplam",
+      "topCategory": "Öne Çıkan Kategori",
+      "topCategoryFallback": "Bu ay için kategori verisi yok.",
+      "share": "%{{percent}} pay"
+    },
+    "trend": {
+      "title": "Trend",
+      "subtitle": "Son {{days}} gün",
+      "range": {
+        "7d": "7G",
+        "30d": "30G",
+        "90d": "90G"
+      },
+      "legendIncome": "Gelir",
+      "legendExpense": "Gider",
+      "totalIncome": "Gelir: {{amount}}",
+      "totalExpense": "Gider: {{amount}}"
+    },
+    "categories": {
+      "title": "Kategori Dağılımı",
+      "subtitle": "Kategori ve yüzde bazlı dağılım",
+      "empty": "Bu ay için kategori dağılımı bulunmuyor."
+    }
+  },
+  "app": {
+    "state": {
+      "preparing": "Mintly hazırlanıyor...",
+      "restoring": "Oturum geri yükleniyor..."
+    }
+  },
+  "auth": {
+    "brandTitle": "Akıllı Finans AI",
+    "common": {
+      "apple": "Apple",
+      "google": "Google",
+      "or": "VEYA",
+      "orContinueWith": "VEYA DEVAM ET"
+    },
+    "forgot": {
+      "fields": {
+        "emailLabel": "E-posta Adresi",
+        "emailPlaceholder": "ad@ornek.com"
+      },
+      "secureBadge": "GÜVENLİ FİNANSAL AI ŞİFRELEMESİ",
+      "submit": "Sıfırlama Bağlantısı Gönder",
+      "subtitle": "Şifre sıfırlama bağlantısı almak için e-posta adresinizi girin. Finans panelinize geri dönmenize yardımcı olacağız.",
+      "success": "Bu e-posta varsa sıfırlama talimatları gönderildi.",
+      "title": "Şifremi Unuttum"
+    },
+    "links": {
+      "haveAccount": "Zaten hesabın var mı?",
+      "joinNow": "Hemen Katıl",
+      "noAccount": "Hesabın yok mu?",
+      "signIn": "Giriş Yap"
+    },
+    "login": {
+      "fallbackError": "Giriş yapılamadı. Lütfen tekrar deneyin.",
+      "fields": {
+        "emailLabel": "E-posta Adresi",
+        "emailPlaceholder": "ad@ornek.com",
+        "passwordLabel": "Şifre",
+        "passwordPlaceholder": "••••••••"
+      },
+      "forgot": "Unuttun mu?",
+      "hidePassword": "Şifreyi gizle",
+      "secureBadge": "GÜVENLİ ŞİFRELİ GİRİŞ",
+      "showPassword": "Şifreyi göster",
+      "submit": "Hesaba Giriş Yap",
+      "subtitle": "Giriş yapmak için bilgilerinizi girin",
+      "welcomeBack": "Tekrar Hoş Geldin"
+    },
+    "register": {
+      "fallbackError": "Hesap oluşturulamadı.",
+      "fields": {
+        "emailLabel": "E-posta Adresi",
+        "emailPlaceholder": "ornek@mail.com",
+        "nameLabel": "Ad Soyad",
+        "namePlaceholder": "Tam adınızı girin",
+        "passwordLabel": "Şifre"
+      },
+      "submit": "Hesap Oluştur",
+      "subtitle": "Yapay zeka ile finansal geleceğini yönetmeye başla",
+      "title": "Hesap Oluştur"
+    },
+    "validation": {
+      "emailInvalid": "Geçerli bir e-posta adresi girin.",
+      "emailRequired": "E-posta gerekli.",
+      "loginInvalidInput": "Lütfen geçerli bir e-posta ve şifre girin.",
+      "nameRequired": "Ad gerekli.",
+      "passwordMin": "Şifre en az 8 karakter olmalıdır.",
+      "passwordRequired": "Şifre gerekli.",
+      "registerInvalidInput": "Lütfen kayıt bilgilerinizi kontrol edin."
+    }
+  },
+  "budgets": {
+    "composer": {
+      "amountPlaceholder": "0.00",
+      "category": "Kategori",
+      "create": "Bütçe Oluştur",
+      "creating": "Oluşturuluyor...",
+      "limitAmount": "Limit Tutarı",
+      "noCategories": "Bu ay için tüm gider kategorilerinde zaten bütçe var.",
+      "title": "Bütçe Ekle"
+    },
+    "delete": {
+      "message": "{{month}} için {{category}} bütçesi silinsin mi?",
+      "title": "Bütçeyi sil"
+    },
+    "inline": {
+      "saveLimit": "Limiti Kaydet",
+      "updateLimit": "Limiti güncelle"
+    },
+    "overview": {
+      "aiHintPrefix": "AI bu ay",
+      "aiHintSuffix": "tasarruf hedefinde olduğunuzu söylüyor.",
+      "leftLabel": "{{remaining}} kaldı",
+      "spentLabel": "{{spent}} harcandı ({{percent}}%)",
+      "totalMonthlyBudget": "TOPLAM AYLIK BÜTÇE"
+    },
+    "row": {
+      "left": "{{remaining}} kaldı",
+      "over": "AŞILDI",
+      "spentOf": "{{limit}} limitin {{spent}} kadarı harcandı"
+    },
+    "sections": {
+      "spendingCategories": "Harcama Kategorileri",
+      "viewHistory": "Geçmişi Gör"
+    },
+    "state": {
+      "empty": "Bu ay için henüz bütçe yok.",
+      "unavailableTitle": "Bütçeler mevcut değil",
+      "updating": "Bütçeler güncelleniyor..."
+    },
+    "title": "Bütçe Planlama"
+  },
+  "common": {
+    "appInitials": "M",
+    "appName": "Mintly",
+    "cancel": "İptal",
+    "close": "Kapat",
+    "continue": "Devam Et",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "goBack": "Geri Git",
+    "loadingShort": "Yükleniyor...",
+    "notAvailable": "Yok",
+    "now": "Şimdi",
+    "pause": "Duraklat",
+    "resume": "Sürdür",
+    "retry": "Tekrar Dene",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "view": "Görüntüle",
+    "buttons": {
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "retry": "Tekrar Dene",
+      "delete": "Sil"
+    },
+    "navigation": {
+      "tabs": {
+        "home": {
+          "label": "Panel"
+        },
+        "transactions": {
+          "label": "İşlemler",
+          "shortLabel": "İşlemler"
+        },
+        "analytics": {
+          "label": "Analiz",
+          "shortLabel": "Analiz"
+        },
+        "groups": {
+          "label": "Gruplar",
+          "shortLabel": "Gruplar"
+        },
+        "add": {
+          "label": "Ekle"
+        },
+        "profile": {
+          "label": "Profil",
+          "shortLabel": "Profil"
+        }
+      },
+      "stacks": {
+        "dashboard": {
+          "header": {
+            "title": "Panel"
+          }
+        },
+        "analytics": {
+          "header": {
+            "title": "Analiz"
+          }
+        },
+        "aiAdvisor": {
+          "header": {
+            "title": "AI Danışman"
+          }
+        },
+        "weeklyReport": {
+          "header": {
+            "title": "Haftalık Rapor"
+          }
+        },
+        "budgets": {
+          "header": {
+            "title": "Bütçeler"
+          }
+        },
+        "groups": {
+          "header": {
+            "title": "Paylaşım Grupları"
+          }
+        },
+        "createGroup": {
+          "header": {
+            "title": "Grup Oluştur"
+          }
+        },
+        "groupDetail": {
+          "header": {
+            "title": "Grup Detayı"
+          }
+        },
+        "addGroupExpense": {
+          "header": {
+            "title": "Grup Harcaması Ekle"
+          }
+        },
+        "settleUp": {
+          "header": {
+            "title": "Hesap Kapat"
+          }
+        },
+        "addHub": {
+          "header": {
+            "title": "Ekle"
+          }
+        },
+        "addTransaction": {
+          "header": {
+            "title": "İşlem Ekle"
+          }
+        },
+        "transfer": {
+          "header": {
+            "title": "Para Transferi"
+          }
+        },
+        "recurring": {
+          "header": {
+            "title": "Tekrarlayan"
+          }
+        },
+        "scanReceipt": {
+          "header": {
+            "title": "Fiş Tara"
+          }
+        },
+        "camera": {
+          "header": {
+            "title": "Kamera"
+          }
+        },
+        "reviewScan": {
+          "header": {
+            "title": "Taramayı İncele"
+          }
+        },
+        "profile": {
+          "header": {
+            "title": "Profil"
+          }
+        },
+        "editProfile": {
+          "header": {
+            "title": "Profili Düzenle"
+          }
+        },
+        "settings": {
+          "header": {
+            "title": "Ayarlar"
+          }
+        },
+        "security": {
+          "header": {
+            "title": "Güvenlik"
+          }
+        },
+        "about": {
+          "header": {
+            "title": "Hakkında"
+          }
+        },
+        "accounts": {
+          "header": {
+            "title": "Hesaplar"
+          }
+        },
+        "financialGoals": {
+          "header": {
+            "title": "Finansal Hedefler"
+          }
+        }
+      },
+      "preview": {
+        "screen": {
+          "header": {
+            "title": "Ekran Önizleme",
+            "suffix": "Önizleme"
+          }
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "accountFallback": "Hesap",
+    "accountTypes": {
+      "bank": "Banka",
+      "cash": "Nakit",
+      "credit": "Kredi"
+    },
+    "accounts": "Hesaplar",
+    "addExpense": "Gider Ekle",
+    "addIncome": "Gelir Ekle",
+    "aiAction": "İpucu Al",
+    "aiActive": "AI AKTİF",
+    "aiAdvisor": "AI Danışman",
+    "aiAnalysisTitle": "AI Analizi",
+    "currentBalance": "Mevcut Bakiye",
+    "expense": "Gider",
+    "greeting": "Hoş geldin,",
+    "income": "Gelir",
+    "insight": {
+      "noSavingsHighlight": "Tasarruf oranınız",
+      "noSavingsMessage": "bu ay. Akıllı önerilerle artırabiliriz.",
+      "savingsMessage": "daha fazla tasarruf ettiniz.",
+      "thisMonth": "Bu ay"
+    },
+    "premiumSection": "Ayrıcalıklar",
+    "quickActions": "Hızlı İşlemler",
+    "recentTransactions": "Son İşlemler",
+    "scanReceipt": "Fiş Tara",
+    "state": {
+      "errorTitle": "Panel yüklenemedi",
+      "loading": "Panel yükleniyor...",
+      "noAccounts": "Hesap bulunamadı.",
+      "noData": "Panel verisi bulunamadı.",
+      "noTransactions": "Henüz işlem bulunmuyor."
+    },
+    "time": {
+      "dayWithTime": "{{day}} • {{time}}",
+      "today": "Bugün, {{time}}",
+      "yesterday": "Dün, {{time}}"
+    },
+    "transaction": {
+      "expenseTitle": "Gider",
+      "incomeTitle": "Gelir",
+      "transferContext": "Aktarım",
+      "transferTitle": "Hesap Aktarımı"
+    },
+    "trend": {
+      "decrease": "Geçen aya göre -%{{percent}}",
+      "increase": "Geçen aya göre +%{{percent}}",
+      "stable": "Geçen aya göre sabit"
+    },
+    "viewAll": "Tümünü Gör",
+    "weeklyReport": "Haftalık Rapor",
+    "upcoming": {
+      "title": "Yaklaşan Ödemeler",
+      "empty": "Önümüzdeki 7 gün için yaklaşan ödeme yok.",
+      "dueValue": "Vade: {{date}}",
+      "today": "Bugün",
+      "tomorrow": "Yarın"
+    }
+  },
+  "debug": {
+    "input": {
+      "firstPlaceholder": "First input",
+      "goLogin": "Go to Login",
+      "goRegister": "Go to Register",
+      "secondPlaceholder": "Second input",
+      "subtitle": "This screen uses plain TextInput only. Check focus/blur logs in Metro console.",
+      "title": "Debug Input Isolation"
+    }
+  },
+  "errors": {
+    "account": {
+      "createFailedTitle": "Hesap oluşturma başarısız",
+      "deleteFailedTitle": "Hesap silme başarısız",
+      "updateFailedTitle": "Hesap güncelleme başarısız"
+    },
+    "auth": {
+      "logoutFailedTitle": "Çıkış başarısız",
+      "sessionNotAvailable": "Oturum mevcut değil"
+    },
+    "budget": {
+      "createFailedTitle": "Bütçe oluşturma başarısız",
+      "deleteFailedTitle": "Bütçe silme başarısız",
+      "updateFailedTitle": "Bütçe güncelleme başarısız"
+    },
+    "recurring": {
+      "createFailedTitle": "Tekrarlayan kural oluşturma başarısız",
+      "deleteFailedTitle": "Tekrarlayan kural silme başarısız",
+      "updateFailedTitle": "Tekrarlayan kural güncelleme başarısız"
+    },
+    "transaction": {
+      "createFailedTitle": "İşlem oluşturma başarısız"
+    },
+    "transfer": {
+      "createFailedTitle": "Transfer başarısız"
+    },
+    "scan": {
+      "captureFailed": "Fotoğraf çekilemedi.",
+      "ocrFailed": "Fişten metin okunamadı.",
+      "libraryPermissionDenied": "Fotoğraf seçmek için galeri izni gerekli.",
+      "invalidAmount": "Sıfırdan büyük geçerli bir tutar girin.",
+      "invalidDate": "Tarihi YYYY-MM-DD formatında girin.",
+      "invalidDueDate": "Son ödeme tarihini YYYY-MM-DD formatında girin.",
+      "noExpenseCategory": "Uygun bir gider kategorisi bulunamadı."
+    },
+    "validation": {
+      "amountPositive": "Tutar sıfırdan büyük olmalıdır.",
+      "amountRequired": "Tutar zorunludur.",
+      "dateTimeRequired": "Tarih zorunludur.",
+      "dayOfMonthRange": "Ayın günü 1 ile 28 arasında olmalıdır.",
+      "dayOfWeekRange": "Haftanın günü 0 ile 6 arasında olmalıdır.",
+      "invalidIsoDateTime": "Geçerli ISO tarih/saat girin.",
+      "limitAmountPositive": "Limit tutarı sıfırdan büyük olmalıdır.",
+      "limitAmountRequired": "Limit tutarı zorunludur.",
+      "nameRequired": "Ad zorunludur.",
+      "selectAccount": "Lütfen hesap seçin.",
+      "selectCategory": "Lütfen kategori seçin.",
+      "selectDestinationAccount": "Lütfen hedef hesap seçin.",
+      "selectSourceAccount": "Lütfen kaynak hesap seçin.",
+      "sourceDestinationDifferent": "Kaynak ve hedef hesap farklı olmalıdır.",
+      "startDateTimeRequired": "Başlangıç tarihi zorunludur."
+    },
+    "sameAccount": "Kaynak ve hedef hesap aynı olamaz.",
+    "currencyMismatch": "Hesap para birimleri farklı. Aynı para birimini seçin.",
+    "boundary": {
+      "title": "Bir hata oluştu",
+      "message": "Uygulama beklenmeyen bir hatayla karşılaştı. Lütfen yeniden deneyin.",
+      "retry": "Tekrar dene"
+    },
+    "api": {
+      "AI_PROVIDER_ERROR": "AI servisi içgörü üretirken hata verdi.",
+      "AI_PROVIDER_TIMEOUT": "AI servisi zaman aşımına uğradı. Lütfen tekrar deneyin.",
+      "AI_PROVIDER_UNREACHABLE": "AI servisine şu anda ulaşılamıyor.",
+      "AI_SERVICE_NOT_CONFIGURED": "Bu ortamda AI içgörü servisi yapılandırılmamış.",
+      "ACCOUNT_NOT_FOUND": "Seçilen hesap bulunamadı.",
+      "API_REQUEST_FAILED": "İstek tamamlanamadı.",
+      "BASE_CURRENCY_NOT_SET": "Bu işlemden önce ana para birimini ayarlayın.",
+      "BASE_CURRENCY_MISMATCH": "Bu işlem farklı bir ana para birimi kullanıyor.",
+      "CATEGORY_NOT_FOUND": "Gerekli kategori bulunamadı.",
+      "EMAIL_ALREADY_EXISTS": "Bu e-posta ile zaten bir hesap var.",
+      "FORBIDDEN": "Bu işlem için yetkiniz yok.",
+      "INVALID_CREDENTIALS": "E-posta veya şifre hatalı.",
+      "INVALID_REFRESH_TOKEN": "Oturumunuz süresi doldu. Lütfen tekrar giriş yapın.",
+      "INVALID_RESPONSE_PAYLOAD": "Sunucudan geçersiz veri alındı.",
+      "NETWORK_ERROR": "Ağ bağlantısı başarısız oldu.",
+      "NOT_FOUND": "İstenen kayıt bulunamadı.",
+      "RATE_LIMITED": "Çok fazla istek gönderildi. Lütfen bekleyip tekrar deneyin.",
+      "REQUEST_TIMEOUT": "Sunucu zamanında yanıt vermedi.",
+      "SERVER_UNREACHABLE": "Sunucuya şu anda ulaşılamıyor.",
+      "UNAUTHORIZED": "Oturumunuz artık geçerli değil.",
+      "UPCOMING_PAYMENT_NOT_FOUND": "Yaklaşan ödeme kaydı bulunamadı.",
+      "UNKNOWN_ERROR": "Beklenmeyen bir hata oluştu.",
+      "ADVISOR_REGENERATE_COOLDOWN": "İçgörüleri tekrar üretmeden önce birkaç saniye bekleyin.",
+      "ADVISOR_PROVIDER_RATE_LIMIT": "AI sağlayıcı kotası doldu. Lütfen daha sonra tekrar deneyin.",
+      "ADVISOR_PROVIDER_TIMEOUT": "AI sağlayıcı isteği zaman aşımına uğradı. Lütfen tekrar deneyin.",
+      "ADVISOR_PROVIDER_INVALID_REQUEST": "AI sağlayıcı isteği geçersiz. Lütfen daha sonra tekrar deneyin.",
+      "ADVISOR_PROVIDER_RATE_LIMITED": "AI sağlayıcı kotası doldu. Lütfen daha sonra tekrar deneyin.",
+      "ADVISOR_PROVIDER_REQUEST_INVALID": "AI sağlayıcı isteği geçersiz. Lütfen daha sonra tekrar deneyin."
+    },
+    "advisor": {
+      "timeout": "Danışman isteği zaman aşımına uğradı. Yedek içgörü gösteriliyor."
+    }
+  },
+  "groups": {
+    "create": {
+      "actions": {
+        "create": "Grup Oluştur",
+        "creating": "Oluşturuluyor..."
+      },
+      "errors": {
+        "createFailedTitle": "Grup oluşturma başarısız"
+      },
+      "fields": {
+        "membersLabel": "Üyeler (virgülle ayrılmış e-postalar)",
+        "membersPlaceholder": "alice@mail.com, bob@mail.com",
+        "nameLabel": "Grup adı",
+        "namePlaceholder": "Hafta Sonu Gezi"
+      },
+      "previewCount": "{{count}} üye eklenecek",
+      "subtitle": "Paylaşımlı gider grubu oluştur",
+      "title": "Grup Oluştur",
+      "validation": {
+        "nameRequired": "Grup adı gerekli"
+      }
+    },
+    "list": {
+      "createButton": "Grup Oluştur",
+      "empty": "Henüz grup yok. Bölüşmeye başlamak için bir grup oluşturun.",
+      "errorTitle": "Gruplar yüklenemedi",
+      "loading": "Gruplar yükleniyor...",
+      "memberCount": "{{count}} üye",
+      "subtitle": "Ortak giderleri ve bakiyeleri takip edin",
+      "title": "Gruplar"
+    },
+    "settle": {
+      "actions": {
+        "markSettled": "Borcu Kapat",
+        "settling": "Kapatılıyor..."
+      },
+      "errorTitle": "Borç kapatma başarısız",
+      "loadErrorTitle": "Grup yüklenemedi",
+      "loading": "Grup verisi yükleniyor...",
+      "openAmount": "Açık tutar",
+      "openExpenses": "Açık giderler",
+      "subtitle": "Açık grup giderlerini kapat",
+      "successMessage": "Grup giderleri kapatıldı.",
+      "successTitle": "Kapatıldı",
+      "title": "Borç Kapat"
+    }
+  },
+  "navigation": {
+    "stack": {
+      "about": "Hakkında",
+      "accounts": "Hesaplar",
+      "addGroupExpense": "Grup Harcaması Ekle",
+      "aiAdvisor": "AI Danışman",
+      "analytics": "Analiz",
+      "budgets": "Bütçeler",
+      "camera": "Kamera",
+      "createGroup": "Grup Oluştur",
+      "dashboard": "Panel",
+      "editProfile": "Profili Düzenle",
+      "groupDetail": "Grup Detayı",
+      "profile": "Profil",
+      "recurring": "Tekrarlayan",
+      "reviewScan": "Taramayı İncele",
+      "scanReceipt": "Fiş Tara",
+      "security": "Güvenlik",
+      "settings": "Ayarlar",
+      "settleUp": "Hesap Kapat",
+      "splitGroups": "Paylaşım Grupları",
+      "transfer": "Para Transferi",
+      "weeklyReport": "Haftalık Rapor"
+    },
+    "tabs": {
+      "add": "Ekle",
+      "analytics": "Analiz",
+      "analyticsShort": "Analiz",
+      "groups": "Gruplar",
+      "groupsShort": "Gruplar",
+      "home": "Panel",
+      "profile": "Profil",
+      "profileShort": "Profil",
+      "transactions": "İşlemler",
+      "transactionsShort": "İşlemler"
+    }
+  },
+  "onboarding": {
+    "getStarted": "Başla",
+    "next": "İleri",
+    "skip": "Geç",
+    "step1": {
+      "subtitle": "Her gideri, geliri ve transferi tek bir zaman akışında takip edin.",
+      "title": "Her şeyi takip edin"
+    },
+    "step2": {
+      "subtitle": "Kategori dağılımını, aylık trendleri ve bütçe kullanımını görün.",
+      "title": "Harcamaları anlayın"
+    },
+    "step3": {
+      "subtitle": "Hesap açın veya giriş yapın, sonra hesap/bütçe ayarlarınızı tamamlayın.",
+      "titleGate": "Başlamaya hazır mısınız?",
+      "titlePreview": "Hazırsınız"
+    },
+    "stepLabel": "Adım {{current}}/{{total}}"
+  },
+  "profile": {
+    "about": {
+      "appNameLabel": "Uygulama Adı",
+      "buildLabel": "Derleme",
+      "buildValue": "Geliştirme",
+      "noteOne": "Mintly hesapları, işlemleri, analizleri ve bütçeleri tek para biriminde yönetir.",
+      "noteTwo": "Kimlik doğrulama erişim/yenileme tokenları ve korumalı navigasyon içerir.",
+      "notesTitle": "Notlar",
+      "subtitle": "Ürün ve sürüm bilgileri",
+      "title": "Mintly Hakkında",
+      "versionLabel": "Sürüm",
+      "versionValue": "1.0.0"
+    },
+    "accountSettings": "HESAP VE AYARLAR",
+    "accounts": "Hesap",
+    "baseCurrency": "Baz Para Birimi",
+    "defaultUserName": "Mintly Kullanıcısı",
+    "edit": {
+      "baseCurrencyLabel": "Ana Para Birimi",
+      "emailLabel": "E-posta",
+      "fullNameLabel": "Ad Soyad",
+      "fullNamePlaceholder": "Ad soyadınız",
+      "helper": "Profil güncelleme endpointi henüz mevcut değil. PATCH /me için UI hazır.",
+      "photoSubtitle": "Değiştirmek için dokunun (yalnızca UI)",
+      "photoTitle": "Profil Fotoğrafı",
+      "save": "Değişiklikleri Kaydet",
+      "updateNotAvailableCode": "PROFILE_UPDATE_NOT_AVAILABLE",
+      "title": "Profili Düzenle",
+      "nameLabel": "Ad Soyad",
+      "saveSuccess": "Profil bilgileri güncellendi."
+    },
+    "lastSync": "Son Senkron",
+    "logOut": "Çıkış Yap",
+    "loggingOut": "Çıkış yapılıyor...",
+    "premiumMember": "PREMIUM ÜYE",
+    "rows": {
+      "about": "Mintly Hakkında",
+      "aboutSubtitle": "Sürüm ve yasal bilgiler",
+      "aiAdvisor": "AI Danışman",
+      "aiAdvisorSubtitle": "Kişisel finans önerilerini aç",
+      "appSettings": "Ayarlar",
+      "appSettingsSubtitle": "Tema ve uygulama tercihleri",
+      "myAccounts": "Hesaplarım",
+      "myAccountsSubtitle": "Hesaplarını görüntüle ve yönet",
+      "personalInfo": "Kişisel bilgiler",
+      "personalInfoSubtitle": "Ad, e-posta ve profil bilgileri",
+      "security": "Güvenlik",
+      "securitySubtitle": "Şifre ve oturum koruması",
+      "weeklyReport": "Haftalık Rapor",
+      "weeklyReportSubtitle": "Skor ve haftalık görünüm",
+      "financialGoals": "Finansal Hedefler",
+      "financialGoalsSubtitle": "Birikim hedefi ve risk profili"
+    },
+    "security": {
+      "delete": {
+        "cta": "Hesabı ve tüm verileri sil",
+        "hint": "Bu işlem kalıcıdır ve geri alınamaz.",
+        "notAvailable": "Bu işlem henüz kullanılamıyor.",
+        "title": "Hesabı Sil"
+      },
+      "items": {
+        "accountActivity": {
+          "subtitle": "Son cihaz oturumlarını inceleyin",
+          "title": "Hesap Etkinliği"
+        },
+        "biometric": {
+          "subtitle": "Face ID veya Parmak izi kullan",
+          "title": "Biyometrik Giriş"
+        },
+        "downloadData": {
+          "subtitle": "Dışa aktarım paketi isteyin",
+          "title": "Kişisel Verileri İndir"
+        },
+        "privacyPolicy": {
+          "subtitle": "Mintly veriyi nasıl korur",
+          "title": "Gizlilik Politikası"
+        },
+        "thirdParty": {
+          "subtitle": "Partner veri erişimini yönet",
+          "title": "Üçüncü Taraf Paylaşımı"
+        },
+        "twoFactor": {
+          "subtitle": "Giriş için ek doğrulama",
+          "title": "İki Aşamalı Doğrulama"
+        }
+      },
+      "scoreSubtitle": "Önerilen 3 güvenlik kontrolünden 2’si aktif.",
+      "scoreTitle": "Güvenlik Skoru: Güçlü",
+      "sections": {
+        "accessControl": "ERİŞİM KONTROLÜ",
+        "dangerZone": "TEHLİKELİ BÖLGE",
+        "dataPrivacy": "VERİ VE GİZLİLİK"
+      }
+    },
+    "settings": {
+      "items": {
+        "biometric": {
+          "subtitle": "Face ID / Parmak izi kullan",
+          "title": "Biyometrik Giriş"
+        },
+        "helpCenter": {
+          "subtitle": "Rehberler ve destek",
+          "title": "Yardım Merkezi"
+        },
+        "howItWorks": {
+          "subtitle": "Onboarding ekranını tekrar görüntüle",
+          "title": "Nasıl çalışır?"
+        },
+        "language": {
+          "subtitle": "Uygulama dilini seçin",
+          "title": "Dil"
+        },
+        "notifications": {
+          "subtitle": "Önemli güncellemeleri al",
+          "title": "Bildirimler"
+        },
+        "security": {
+          "subtitle": "Gelişmiş güvenlik ayarları",
+          "title": "Güvenlik"
+        },
+        "theme": {
+          "subtitle": "Sistem, açık veya koyu",
+          "title": "Tema"
+        },
+        "version": {
+          "subtitle": "Mintly 1.0.0",
+          "title": "Sürüm"
+        }
+      },
+      "plan": "Premium Planı",
+      "sections": {
+        "application": "Uygulama",
+        "privacy": "Gizlilik",
+        "support": "Destek"
+      },
+      "userTitle": "Demo Kullanıcı",
+      "locale": {
+        "tr": "Türkçe",
+        "en": "İngilizce",
+        "ru": "Rusça"
+      },
+      "theme": {
+        "system": "Sistem",
+        "light": "Açık",
+        "dark": "Koyu"
+      }
+    },
+    "support": "DESTEK",
+    "useDifferentAccount": "Farklı hesap kullan",
+    "financialGoals": {
+      "title": "Finansal Hedefler",
+      "subtitle": "Birikim hedef oranınızı ve risk seviyenizi belirleyin.",
+      "savingsTargetRateLabel": "Birikim Hedef Oranı (%)",
+      "savingsTargetRatePlaceholder": "20",
+      "riskProfileLabel": "Risk Profili",
+      "riskProfile": {
+        "low": "Düşük",
+        "medium": "Orta",
+        "high": "Yüksek"
+      },
+      "hint": "Bu tercihler AI danışman önerilerinde kullanılır.",
+      "save": "Tercihleri Kaydet",
+      "saving": "Kaydediliyor...",
+      "validation": {
+        "targetRequired": "Birikim hedef oranı girin.",
+        "targetRange": "Birikim hedef oranı 0 ile 80 arasında olmalıdır."
+      }
+    }
+  },
+  "recurring": {
+    "actions": {
+      "create": "Kural Oluştur"
+    },
+    "cadence": {
+      "monthly": "AYLIK",
+      "weekly": "HAFTALIK"
+    },
+    "delete": {
+      "message": "Bu tekrarlayan kural silinsin mi?",
+      "title": "Tekrarlayan kuralı sil"
+    },
+    "fields": {
+      "account": "Hesap",
+      "amount": "Tutar",
+      "amountPlaceholder": "0.00",
+      "cadence": "Periyot",
+      "categoryWithType": "Kategori ({{type}})",
+      "dayOfMonth": "Ayın günü (1-28)",
+      "dayOfWeek": "Haftanın günü (0=Paz ... 6=Cmt)",
+      "dayPlaceholder": "1",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Opsiyonel not",
+      "fromAccount": "Kaynak hesap",
+      "kind": "Kural türü",
+      "startAt": "Başlangıç (ISO)",
+      "startAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "toAccount": "Hedef hesap",
+      "type": "Tür"
+    },
+    "kind": {
+      "normal": "NORMAL",
+      "transfer": "TRANSFER"
+    },
+    "rule": {
+      "account": "Hesap: {{account}}",
+      "amount": "Tutar: {{amount}}",
+      "cadence": "Periyot: {{cadence}}",
+      "category": "Kategori: {{category}}",
+      "from": "Kaynak: {{account}}",
+      "nextRun": "Sonraki çalışma: {{date}}",
+      "normal": "Normal kural",
+      "note": "Not: {{note}}",
+      "to": "Hedef: {{account}}",
+      "transfer": "Transfer kuralı",
+      "type": "Tür: {{type}}"
+    },
+    "sections": {
+      "existing": "Mevcut Kurallar",
+      "totalRules": "{{count}} kural"
+    },
+    "state": {
+      "empty": "Henüz tekrarlayan kural yok.",
+      "loading": "Tekrarlayan veriler yükleniyor..."
+    },
+    "status": {
+      "active": "AKTİF",
+      "paused": "DURAKLATILDI"
+    },
+    "subtitle": "Zamanlayıcıya hazır kurallar oluşturun",
+    "successMessage": "Kural artık aktif.",
+    "successTitle": "Tekrarlayan kural oluşturuldu",
+    "title": "Tekrarlayan Kurallar"
+  },
+  "scan": {
+    "receipt": {
+      "title": "Fiş Tara",
+      "state": {
+        "preparing": "Kamera hazırlanıyor..."
+      },
+      "permission": {
+        "title": "Kamera erişimi gerekli",
+        "subtitle": "Fatura ve kira belgelerini taramak için kamera izni verin.",
+        "allowCamera": "Kameraya İzin Ver"
+      },
+      "actions": {
+        "capture": "Çek",
+        "pickPhoto": "Fotoğraf Seç"
+      }
+    },
+    "confirm": {
+      "title": "Taramayı Onayla",
+      "previewTitle": "Fiş Önizleme",
+      "formTitle": "Çıkarılan Alanlar",
+      "defaults": {
+        "title": "Fiş"
+      },
+      "currencyWarning": "Algılanan para birimi {{detected}}, ana para biriminiz {{base}} ile farklı. Mintly {{base}} kullanmaya devam eder.",
+      "ocrMode": {
+        "mlkit": "OCR modu: Cihaz içi ML Kit",
+        "fallback": "OCR modu: Yedek ayrıştırıcı"
+      },
+      "state": {
+        "loading": "Tarama onayı yükleniyor...",
+        "loadErrorTitle": "Tarama verisi yüklenemedi"
+      },
+      "fields": {
+        "title": "Başlık",
+        "titlePlaceholder": "Elektrik Faturası",
+        "amount": "Tutar",
+        "amountPlaceholder": "0,00",
+        "date": "Tarih",
+        "datePlaceholder": "YYYY-MM-DD",
+        "dueDate": "Son Ödeme Tarihi (opsiyonel)",
+        "dueDatePlaceholder": "YYYY-MM-DD",
+        "type": "Ödeme Türü",
+        "account": "Hesap",
+        "currency": "Para Birimi",
+        "classification": "Sınıflandırma",
+        "category": "Kategori",
+        "frequency": "Sıklık",
+        "startDate": "Başlangıç tarihi",
+        "startDatePlaceholder": "YYYY-MM-DD",
+        "endDate": "Bitiş tarihi (opsiyonel)",
+        "endDatePlaceholder": "YYYY-MM-DD"
+      },
+      "types": {
+        "bill": "Fatura",
+        "rent": "Kira",
+        "subscription": "Abonelik",
+        "debt": "Borç",
+        "other": "Diğer"
+      },
+      "actions": {
+        "createUpcoming": "Yaklaşan Ödeme Oluştur",
+        "createTransaction": "Gider İşlemi Oluştur",
+        "createRecurring": "Düzenli şablon oluştur"
+      },
+      "success": {
+        "title": "Kaydedildi",
+        "upcoming": "Yaklaşan ödeme başarıyla oluşturuldu.",
+        "transaction": "Gider işlemi başarıyla oluşturuldu.",
+        "recurring": "Düzenli ödeme şablonu oluşturuldu."
+      },
+      "classification": {
+        "expense": "Harcama",
+        "bill": "Fatura / Borç",
+        "recurring": "Düzenli şablon"
+      }
+    }
+  },
+  "upcoming": {
+    "list": {
+      "title": "Yaklaşan Ödemeler",
+      "state": {
+        "loading": "Yaklaşan ödemeler yükleniyor...",
+        "errorTitle": "Yaklaşan ödemeler yüklenemedi",
+        "empty": "Önümüzdeki 45 gün için yaklaşan ödeme yok."
+      },
+      "row": {
+        "dueDate": "Vade: {{date}}"
+      }
+    },
+    "detail": {
+      "title": "Yaklaşan Ödeme",
+      "state": {
+        "loading": "Ödeme detayları yükleniyor...",
+        "errorTitle": "Ödeme detayları yüklenemedi",
+        "notFound": "Bu yaklaşan ödeme bulunamadı."
+      },
+      "dueDateValue": "Vade tarihi: {{date}}",
+      "accountTitle": "Ödenecek Hesap",
+      "markPaid": {
+        "cta": "Ödendi Olarak İşaretle",
+        "successTitle": "Ödeme tamamlandı",
+        "successMessage": "Yaklaşan ödemeden gider işlemi oluşturuldu."
+      },
+      "markSkipped": {
+        "cta": "Atla",
+        "successTitle": "Ödeme atlandı",
+        "successMessage": "Yaklaşan ödeme atlandı olarak işaretlendi."
+      }
+    },
+    "notifications": {
+      "title": "Yaklaşan ödeme hatırlatması",
+      "body": "{{title}}, {{dueDate}} tarihinden {{days}} gün önce vadesi geliyor. Tutar: {{amount}}."
+    }
+  },
+  "split": {
+    "addExpense": {
+      "actions": {
+        "submit": "Harcamayı Kaydet",
+        "submitting": "Kaydediliyor..."
+      },
+      "categoryOptions": {
+        "bills": "Faturalar",
+        "food": "Yemek",
+        "other": "Diğer",
+        "rent": "Kira",
+        "shopping": "Alışveriş",
+        "transport": "Ulaşım"
+      },
+      "equalShare": "{{amount}}",
+      "errors": {
+        "createFailedTitle": "Harcama oluşturulamadı",
+        "invalidAmountMessage": "Lütfen pozitif bir tutar girin.",
+        "invalidAmountTitle": "Geçersiz tutar",
+        "invalidCustomSplitMessage": "Her seçili üye için geçerli ve negatif olmayan tutar girin.",
+        "invalidCustomSplitTitle": "Özel bölüşüm geçersiz",
+        "membersRequiredMessage": "En az bir üye seçin.",
+        "membersRequiredTitle": "Üye gerekli",
+        "paidByRequiredMessage": "Lütfen ödeyen kişiyi seçin.",
+        "paidByRequiredTitle": "Ödeyen gerekli",
+        "requiredTitleMessage": "Lütfen harcama başlığı girin.",
+        "requiredTitleTitle": "Başlık gerekli",
+        "splitMismatchMessage": "Tutar {{amount}}, bölüşüm toplamı {{split}} ile uyuşmuyor.",
+        "splitMismatchTitle": "Bölüşüm toplamı uyuşmuyor"
+      },
+      "fields": {
+        "amountLabel": "Tutar",
+        "amountPlaceholder": "0,00",
+        "categoryLabel": "Kategori",
+        "dateLabel": "Tarih",
+        "datePlaceholder": "YYYY-AA-GG",
+        "membersLabel": "Üyeler",
+        "paidByLabel": "Ödeyen",
+        "paidByPlaceholder": "Üye seçin",
+        "splitForMemberLabel": "Pay: {{name}}",
+        "splitModeLabel": "Bölüşüm modu",
+        "titleLabel": "Başlık",
+        "titlePlaceholder": "Akşam yemeği"
+      },
+      "loadErrorTitle": "Grup yüklenemedi",
+      "loading": "Grup üyeleri yükleniyor...",
+      "memberSelectedCount": "{{count}} üye seçildi",
+      "retry": "Tekrar Dene",
+      "sections": {
+        "customPreview": "Özel bölüşüm tutarları",
+        "equalPreview": "Eşit bölüşüm önizleme"
+      },
+      "splitModes": {
+        "custom": "Özel",
+        "equal": "Eşit"
+      },
+      "subtitle": "{{group}}",
+      "title": "Grup Harcaması Ekle"
+    },
+    "common": {
+      "unknownMember": "Bilinmeyen üye"
+    },
+    "groupDetail": {
+      "actions": {
+        "addExpense": "Harcama Ekle",
+        "settleUp": "Hesap Kapat"
+      },
+      "balanceState": {
+        "creditor": "Alacaklısın",
+        "debtor": "Borçlusun",
+        "settled": "Dengede"
+      },
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "indicator": {
+        "noShare": "Pay yok",
+        "settled": "Kapandı",
+        "unknownShare": "Pay bilgisi yok",
+        "youGet": "{{amount}} alacak",
+        "youOwe": "{{amount}} borç"
+      },
+      "loadErrorTitle": "Grup detayları yüklenemedi",
+      "loading": "Grup detayları yükleniyor...",
+      "member": {
+        "balanced": "Dengede",
+        "creditor": "Alacaklı",
+        "debtor": "Borçlu"
+      },
+      "membersTitle": "Üyeler",
+      "noExpenses": "Henüz grup harcaması yok.",
+      "recentExpenses": "Son Harcamalar",
+      "retry": "Tekrar Dene",
+      "summarySubtitle": "Paylaşılan harcamaların görünümü",
+      "summaryTitle": "Grup Özeti",
+      "totalSpending": "Toplam harcama",
+      "yourBalance": "Bakiyen"
+    }
+  },
+  "stitch": {
+    "hub": {
+      "codeHtml": "code.html",
+      "dark": "dark",
+      "noApi": "No API",
+      "pngOnly": "png only",
+      "staticPlaceholders": "Static placeholders",
+      "totalScreens": "{{count}} Stitch screens"
+    },
+    "preview": {
+      "analytics": {
+        "food": "Food",
+        "highlights": "Highlights",
+        "savings": "Savings",
+        "spendingTrend": "Spending Trend",
+        "weeklyBars": "Weekly bars"
+      },
+      "auth": {
+        "authenticationForm": "Authentication Form",
+        "onboardingLoginPlaceholder": "Onboarding / login placeholder",
+        "phoneOtp": "Phone / OTP"
+      },
+      "chips": {
+        "codeHtmlUsed": "code.html hierarchy used",
+        "darkVariant": "Dark variant",
+        "lightVariant": "Light variant",
+        "pngPlaceholder": "png-driven placeholder"
+      },
+      "dashboard": {
+        "accountSnapshot": "Account Snapshot",
+        "categoryPulse": "Category Pulse",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income",
+        "overviewCards": "Overview cards",
+        "recentActivity": "Recent Activity",
+        "topCategories": "Top categories",
+        "updated1mAgo": "Updated 1m ago"
+      },
+      "errors": {
+        "notFoundBody": "The requested Stitch screen key does not exist in the inventory.",
+        "notFoundTitle": "Screen not found"
+      },
+      "other": {
+        "budgetTips": "Budget Tips",
+        "contentUtility": "Content / Utility",
+        "debtGuide": "Debt Guide",
+        "faq": "FAQ",
+        "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
+        "helpCenterDetailPages": "Help center + detail pages",
+        "helpCenterTitle": "Mintly Help Center"
+      },
+      "profile": {
+        "sampleEmail": "user@mintly.app",
+        "summary": "Profile Summary"
+      },
+      "scan": {
+        "alignReceipt": "Align receipt in frame",
+        "cameraFramePlaceholder": "Camera frame placeholder",
+        "captureReceipt": "Capture Receipt",
+        "receiptScan": "Receipt Scan"
+      },
+      "split": {
+        "accommodation": "Accommodation",
+        "aylinOwesYou": "Aylin owes you",
+        "carRental": "Car rental",
+        "expenseSplitScenario": "Expense split scenario",
+        "groupOverview": "Group Overview",
+        "memberAylin": "Aylin",
+        "memberDeniz": "Deniz",
+        "memberMert": "Mert",
+        "memberYou": "You",
+        "settleGroupExpense": "Settle Group Expense",
+        "weekendTrip": "Weekend Trip",
+        "youOweMert": "You owe Mert"
+      },
+      "transactions": {
+        "addNew": "Add New Transaction",
+        "feed": "Transaction Feed",
+        "filtersSubtitle": "List + quick filters"
+      }
+    }
+  },
+  "transactionDetail": {
+    "actions": {
+      "delete": "İşlemi Sil",
+      "downloadReceipt": "Fişi İndir",
+      "splitExpense": "Harcamayı Böl"
+    },
+    "fields": {
+      "account": "Hesap",
+      "category": "Kategori",
+      "dateTime": "Tarih ve Saat",
+      "noCategory": "Kategori yok"
+    },
+    "location": {
+      "placeholder": "Barbaros Mah. No:3, İstanbul"
+    },
+    "notes": {
+      "empty": "Bu işlem için açıklama eklenmedi.",
+      "title": "Notlarım"
+    },
+    "receipt": {
+      "title": "Dijital Fiş"
+    },
+    "state": {
+      "loadErrorTitle": "İşlem detayları yüklenemedi",
+      "loading": "İşlem detayları yükleniyor..."
+    },
+    "status": {
+      "completed": "Tamamlandı"
+    },
+    "title": "İşlem Detayı"
+  },
+  "transactions": {
+    "accountFallback": "Hesap",
+    "actions": {
+      "loadMore": "Daha Fazla Yükle",
+      "search": "Ara"
+    },
+    "create": {
+      "fields": {
+        "account": "Hesap",
+        "amount": "Tutar",
+        "amountPlaceholder": "0,00",
+        "category": "Kategori",
+        "currency": "Para Birimi",
+        "description": "Açıklama",
+        "descriptionPlaceholder": "Opsiyonel not",
+        "occurredAt": "Tarih ve Saat (ISO)",
+        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+      },
+      "systemCategories": {
+        "expense": {
+          "bills": "Faturalar",
+          "entertainment": "Eğlence",
+          "food": "Yemek",
+          "health": "Sağlık",
+          "market": "Market",
+          "rent": "Kira",
+          "shopping": "Alışveriş",
+          "transport": "Ulaşım"
+        },
+        "income": {
+          "otherIncome": "Diğer Gelir",
+          "salary": "Maaş"
+        }
+      },
+      "sections": {
+        "details": "İşlem Detayları",
+        "step": "1/1 adım"
+      },
+      "selectAccountFirst": "Önce hesap seçin",
+      "state": {
+        "loadErrorTitle": "İşlem formu yüklenemedi",
+        "loading": "İşlem formu yükleniyor..."
+      },
+      "submit": "İşlemi Kaydet",
+      "subtitle": "Yeni bir gelir veya gider kaydı oluşturun.",
+      "successMessage": "İşlem başarıyla kaydedildi.",
+      "successTitle": "İşlem oluşturuldu",
+      "title": "İşlem Ekle"
+    },
+    "filters": {
+      "all": "Tümü"
+    },
+    "group": {
+      "other": "DİĞER",
+      "today": "BUGÜN",
+      "yesterday": "DÜN"
+    },
+    "quickActions": {
+      "scanSubtitle": "Fiş OCR akışı",
+      "scanTitle": "Tara",
+      "splitSubtitle": "Gruplar ve borç kapatma",
+      "splitTitle": "Bölüş"
+    },
+    "row": {
+      "expenseTitle": "Gider",
+      "incomeTitle": "Gelir",
+      "transferBadge": "AKTARIM",
+      "transferHint": "Aktarım • {{time}}",
+      "transferTitle": "Hesap Transferi",
+      "typeHint": "{{type}} • {{time}}"
+    },
+    "searchPlaceholder": "İşlem veya mağaza ara...",
+    "state": {
+      "empty": "Bu filtrelere uyan işlem yok.",
+      "loadErrorTitle": "İşlemler yüklenemedi",
+      "loadingMore": "Daha fazla yükleniyor..."
+    },
+    "summary": {
+      "totalExpense": "TOPLAM GİDER",
+      "totalIncome": "TOPLAM GELİR"
+    },
+    "title": "İşlem Geçmişi"
+  },
+  "transfers": {
+    "form": {
+      "amount": "Tutar",
+      "amountPlaceholder": "0.00",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Opsiyonel not",
+      "fromAccount": "Kaynak hesap",
+      "occurredAt": "Tarih (ISO)",
+      "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "submit": "Transfer Oluştur",
+      "subtitle": "Eşleşmiş giriş/çıkış transfer işlemleri oluşturur",
+      "title": "Para Transferi",
+      "toAccount": "Hedef hesap"
+    },
+    "state": {
+      "loadingAccounts": "Hesaplar yükleniyor...",
+      "needTwoAccounts": "Transferden önce en az iki hesap oluşturun."
+    },
+    "successMessage": "Bakiye başarıyla taşındı.",
+    "successTitle": "Transfer oluşturuldu",
+    "title": "Transfer"
+  },
+  "weeklyReport": {
+    "highlights": "Öne Çıkanlar",
+    "nextWeekForecast": "Gelecek Hafta Tahmini",
+    "noHighlights": "Bu hafta öne çıkan bir veri yok.",
+    "noRisks": "Risk tespit edilmedi.",
+    "riskFlags": "Riskler",
+    "scoreOutOf": "/100",
+    "state": {
+      "errorTitle": "Haftalık rapor yüklenemedi",
+      "noData": "Haftalık rapor bulunamadı."
+    },
+    "subtitle": "Finansal sağlık özeti ve gelecek hafta görünümü.",
+    "title": "Haftalık Rapor"
+  },
+  "success": {
+    "transferCreated": "Transfer başarıyla oluşturuldu."
+  },
+  "settings": {
+    "general": {
+      "title": "Ayarlar"
+    },
+    "language": {
+      "label": "Dil",
+      "title": "Dil",
+      "subtitle": "Uygulama dilini seçin",
+      "options": {
+        "tr": "Türkçe",
+        "en": "İngilizce",
+        "ru": "Rusça"
+      }
+    },
+    "theme": {
+      "label": "Tema",
+      "title": "Tema",
+      "subtitle": "Sistem, açık veya koyu",
+      "options": {
+        "system": "Sistem",
+        "light": "Açık",
+        "dark": "Koyu"
+      }
+    },
+    "notifications": {
+      "label": "Bildirimler",
+      "title": "Bildirimler",
+      "subtitle": "Önemli güncellemeleri al"
+    },
+    "sections": {
+      "application": "Uygulama",
+      "privacy": "Gizlilik",
+      "support": "Destek"
+    },
+    "user": {
+      "title": "Demo Kullanıcı",
+      "plan": "Premium Planı"
+    },
+    "biometric": {
+      "title": "Biyometrik Giriş",
+      "subtitle": "Face ID / Parmak izi kullan"
+    },
+    "security": {
+      "title": "Güvenlik",
+      "subtitle": "Gelişmiş güvenlik ayarları"
+    },
+    "howItWorks": {
+      "title": "Nasıl çalışır?",
+      "subtitle": "Onboarding ekranını tekrar görüntüle"
+    },
+    "helpCenter": {
+      "title": "Yardım Merkezi",
+      "subtitle": "Rehberler ve destek"
+    },
+    "version": {
+      "title": "Sürüm",
+      "subtitle": "Mintly 1.0.0"
+    },
+    "financialGoals": {
+      "title": "Finansal Hedefler",
+      "subtitle": "Birikim hedefi ve risk profili"
+    },
+    "regularPayments": {
+      "title": "Düzenli ödemeler",
+      "subtitle": "Düzenli ödeme şablonlarını yönetin"
+    }
+  },
+  "network": {
+    "offline": {
+      "title": "Çevrimdışı mod",
+      "message": "İnternet bağlantısı yok. Bazı işlemler başarısız olabilir.",
+      "retry": "Yeniden dene"
+    }
+  }
+}

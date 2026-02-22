@@ -1,0 +1,1656 @@
+{
+  "accounts": {
+    "accountType": {
+      "bank": "Bank",
+      "bankAccount": "Bank Account",
+      "cash": "Cash",
+      "cashWallet": "Cash Wallet",
+      "credit": "Credit",
+      "creditCard": "Credit Card",
+      "savings": "Savings Account"
+    },
+    "baseCurrency": {
+      "empty": "No base currency yet. Pick one for your first account.",
+      "value": "Base currency: {{currency}}"
+    },
+    "delete": {
+      "confirmBody": "Are you sure you want to delete {{name}}?",
+      "confirmTitle": "Delete account",
+      "error": "Account could not be deleted. Please try again.",
+      "success": "Account deleted."
+    },
+    "form": {
+      "create": "Create Account",
+      "creating": "Creating...",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "USD",
+      "nameLabel": "Account name",
+      "namePlaceholder": "e.g. Main Bank",
+      "typeLabel": "Type"
+    },
+    "sections": {
+      "baseCurrency": {
+        "subtitle": "Locked for all accounts after first setup",
+        "title": "Base Currency"
+      },
+      "create": {
+        "title": "Create Account"
+      },
+      "list": {
+        "title": "Your Accounts",
+        "total": "{{count}} total"
+      },
+      "session": {
+        "title": "Account Session"
+      }
+    },
+    "session": {
+      "signedIn": "Signed in"
+    },
+    "state": {
+      "empty": "No accounts created yet.",
+      "loadErrorTitle": "Could not load accounts",
+      "loading": "Loading accounts..."
+    },
+    "update": {
+      "error": "Account could not be updated. Please try again.",
+      "success": "Account updated."
+    }
+  },
+  "add": {
+    "hub": {
+      "addTransaction": "Add Transaction",
+      "addTransactionAction": "Open Form",
+      "addTransactionHint": "Create a new income or expense record.",
+      "subtitle": "Choose transaction entry, transfer, or recurring template.",
+      "title": "What Would You Like to Add?",
+      "transfer": "Transfer Between Accounts",
+      "transferAction": "Start Transfer",
+      "transferHint": "Move balance across your accounts.",
+      "recurring": "Recurring payment",
+      "recurringHint": "Create a weekly or monthly recurring template.",
+      "recurringAction": "Open recurring"
+    },
+    "transfer": {
+      "amount": "Amount",
+      "amountPlaceholder": "0.00",
+      "date": "Date (ISO)",
+      "datePlaceholder": "2026-02-17T10:30:00.000Z",
+      "fromAccount": "From account",
+      "note": "Note",
+      "notePlaceholder": "Optional note",
+      "state": {
+        "loadingAccounts": "Loading accounts...",
+        "needTwoAccounts": "At least two accounts are required to transfer."
+      },
+      "submit": "Create Transfer",
+      "subtitle": "Move funds between accounts without selecting a category.",
+      "title": "Transfer Between Accounts",
+      "toAccount": "To account"
+    }
+  },
+  "advisor": {
+    "advice": "Advice",
+    "expense": "Expense",
+    "income": "Income",
+    "monthlySnapshot": "Monthly Snapshot",
+    "net": "Net",
+    "nextActions": "Next Actions",
+    "noActions": "No action items right now.",
+    "noAdvice": "No advice for this month yet.",
+    "severity": {
+      "info": "Info",
+      "success": "Success",
+      "warning": "Warning"
+    },
+    "state": {
+      "errorTitle": "Advisor unavailable",
+      "noData": "No advisor data available."
+    },
+    "subtitle": "Personalized insights from your monthly activity.",
+    "title": "AI Financial Advisor",
+    "actions": {
+      "title": "One-Tap Actions",
+      "subtitle": "Use advisor recommendations instantly with confirmation.",
+      "common": {
+        "amountLabel": "Amount",
+        "amountPlaceholder": "0.00",
+        "noteLabel": "Note",
+        "notePlaceholder": "Optional note"
+      },
+      "validation": {
+        "budgetAmountRequired": "Enter at least one valid budget amount."
+      },
+      "budgets": {
+        "title": "Create Suggested Budgets",
+        "subtitle": "Generate budget limits for top expense categories.",
+        "cta": "Create Budgets",
+        "modalTitle": "Create Budgets",
+        "submit": "Create",
+        "success": "Budgets created successfully."
+      },
+      "recurring": {
+        "title": "Set Up Recurring Template",
+        "subtitle": "Create a paused recurring expense template from your spending pattern.",
+        "cta": "Set Recurring",
+        "modalTitle": "Create Recurring Template",
+        "account": "Account",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "submit": "Create Rule",
+        "success": "Recurring template created as paused."
+      },
+      "transfer": {
+        "title": "Create Savings Transfer",
+        "subtitle": "Move money between your accounts in one tap.",
+        "cta": "Create Transfer",
+        "modalTitle": "Create Transfer",
+        "fromAccount": "From Account",
+        "toAccount": "To Account",
+        "submit": "Transfer",
+        "success": "Transfer created successfully."
+      }
+    }
+  },
+  "aiAdvisor": {
+    "title": "AI Advisor",
+    "subtitle": "Data-driven insights based on your monthly finance activity.",
+    "month": {
+      "title": "Month"
+    },
+    "generatedAt": "Last generated: {{value}}",
+    "actions": {
+      "regenerate": "Regenerate"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "savings": "Savings",
+      "investment": "Investment",
+      "tips": "Tips"
+    },
+    "state": {
+      "loading": "Refreshing advisor insight...",
+      "errorTitle": "Advisor unavailable",
+      "noData": "No advisor data available."
+    },
+    "summary": {
+      "sections": {
+        "overview": "Spend Overview",
+        "categoryBreakdown": "Category Breakdown",
+        "cashflowTrend": "Cashflow Trend (3 Months)",
+        "budgetAdherence": "Budget Adherence",
+        "flags": "Risk Flags"
+      },
+      "cards": {
+        "last30Income": "Last 30d Income",
+        "last30Expense": "Last 30d Expense",
+        "currentMonthNet": "Current Month Net",
+        "savingsRate": "Savings Rate"
+      },
+      "shareValue": "Share: {{value}}",
+      "emptyCategory": "No expense category data for this month.",
+      "emptyBudget": "No budget tracking for this month.",
+      "emptyFlags": "No critical risk flags detected.",
+      "noTrend": "No trend data available."
+    },
+    "budget": {
+      "usageValue": "{{spent}} / {{limit}}",
+      "status": {
+        "onTrack": "On Track",
+        "nearLimit": "Near Limit",
+        "overLimit": "Over Limit"
+      }
+    },
+    "flags": {
+      "negativeCashflow": "Cashflow is negative this month.",
+      "lowSavingsRate": "Savings rate is below target.",
+      "irregularIncome": "Income pattern appears irregular.",
+      "overspendingCategories": "Overspending categories: {{value}}"
+    },
+    "savings": {
+      "title": "Savings Plan",
+      "targetRate": "Target Savings Rate",
+      "monthlyTargetAmount": "Monthly Savings Target",
+      "next7Days": "Next 7 Days Actions",
+      "autoTransferSuggestion": "Auto-transfer Suggestion",
+      "emptyActions": "No actions available for this period."
+    },
+    "investment": {
+      "title": "Investment Guidance",
+      "emergencyFundCurrent": "Emergency Fund Current",
+      "emergencyFundTarget": "Emergency Fund Target",
+      "emergencyFundStatus": "Emergency Fund Status",
+      "profiles": "Risk Profiles",
+      "guidance": "Guidance",
+      "status": {
+        "ready": "Ready",
+        "building": "Building",
+        "not_started": "Not Started"
+      },
+      "risk": {
+        "low": "Low Risk",
+        "medium": "Medium Risk",
+        "high": "High Risk"
+      }
+    },
+    "tips": {
+      "title": "Expense Optimization",
+      "cutCandidates": "Top Cut Candidates",
+      "currentAmountValue": "Current: {{value}}",
+      "reductionValue": "Reduce by {{value}}%",
+      "quickWins": "Quick Wins",
+      "generalTips": "General Tips"
+    },
+    "disclaimer": "Mintly AI insights are informational and not financial advice.",
+    "fallback": {
+      "title": "AI response unavailable",
+      "tryAgain": "Try again",
+      "useBasicAdvice": "Use basic advice",
+      "reason": {
+        "missing_api_key": "AI provider key is not configured on the server.",
+        "provider_timeout": "AI provider timed out before returning a response.",
+        "provider_http_error": "AI provider returned a non-success response.",
+        "provider_parse_error": "AI provider response could not be parsed.",
+        "provider_validation_error": "AI provider response format was invalid.",
+        "provider_unknown_error": "AI provider failed with an unknown error."
+      }
+    },
+    "debug": {
+      "title": "Advisor diagnostics",
+      "apiBaseUrl": "API base URL: {{value}}",
+      "provider": "Provider: {{value}}",
+      "mode": "Mode: {{value}}",
+      "modeReason": "Fallback reason: {{value}}",
+      "providerStatus": "Provider status: {{value}}"
+    }
+  },
+  "analytics": {
+    "aiAdvisor": "AI Advisor",
+    "aiAdvisorCta": "Open AI Advisor",
+    "aiAdvisorSubtitle": "Review personalized action items.",
+    "aiSection": {
+      "title": "AI Modules",
+      "subtitle": "Jump to advanced insights and weekly health analysis."
+    },
+    "dailyTrends": "Daily Trends",
+    "days": {
+      "fri": "Fri",
+      "mon": "Mon",
+      "sat": "Sat",
+      "sun": "Sun",
+      "thu": "Thu",
+      "tue": "Tue",
+      "wed": "Wed"
+    },
+    "expense": "Expense",
+    "fromLastMonth": "%{{percent}} from last month",
+    "income": "Income",
+    "last7Days": "Last 7 Days",
+    "loadingCategories": "Loading categories...",
+    "mainCategory": "Main Category",
+    "noCategories": "No category data for this period.",
+    "noCategory": "Uncategorized",
+    "percentOfTotal": "{{percent}}% of total",
+    "premiumInsights": "Premium Insights",
+    "range": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "yearly": "Yearly"
+    },
+    "refreshingTrend": "Refreshing trend...",
+    "state": {
+      "errorTitle": "Analytics unavailable",
+      "noData": "No analytics data available.",
+      "emptyTitle": "No analytics yet",
+      "emptyBody": "Add a few transactions to unlock analytics insights.",
+      "emptyCta": "Add Transaction"
+    },
+    "title": "Spending Analysis",
+    "topCategories": "Top Categories",
+    "totalSpending": "Total Spending",
+    "transactionsCount": "{{count}} transactions",
+    "weeklyReport": "Weekly Report",
+    "weeklyReportCta": "Open Weekly Report",
+    "weeklyReportSubtitle": "Check your weekly health score.",
+    "summary": {
+      "title": "Monthly Summary",
+      "subtitle": "Income, expense, and net overview",
+      "totalIncome": "Total Income",
+      "totalExpense": "Total Expense",
+      "net": "Net Total",
+      "topCategory": "Top Category",
+      "topCategoryFallback": "No category data for this month.",
+      "share": "{{percent}}% share"
+    },
+    "trend": {
+      "title": "Trend",
+      "subtitle": "Last {{days}} days",
+      "range": {
+        "7d": "7D",
+        "30d": "30D",
+        "90d": "90D"
+      },
+      "legendIncome": "Income",
+      "legendExpense": "Expense",
+      "totalIncome": "Income: {{amount}}",
+      "totalExpense": "Expense: {{amount}}"
+    },
+    "categories": {
+      "title": "Category Breakdown",
+      "subtitle": "Distribution by category and percentage",
+      "empty": "No category distribution is available for this month."
+    }
+  },
+  "app": {
+    "state": {
+      "preparing": "Preparing Mintly...",
+      "restoring": "Restoring session..."
+    }
+  },
+  "auth": {
+    "brandTitle": "Smart Finance AI",
+    "common": {
+      "apple": "Apple",
+      "google": "Google",
+      "or": "OR",
+      "orContinueWith": "OR CONTINUE WITH"
+    },
+    "forgot": {
+      "fields": {
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "name@company.com"
+      },
+      "secureBadge": "SECURE FINANCIAL AI ENCRYPTION",
+      "submit": "Send Reset Link",
+      "subtitle": "Enter your email address to receive a password reset link. We'll help you get back into your financial dashboard.",
+      "success": "If this email exists, reset instructions were sent.",
+      "title": "Forgot Password"
+    },
+    "links": {
+      "haveAccount": "Already have an account?",
+      "joinNow": "Join Now",
+      "noAccount": "Don't have an account?",
+      "signIn": "Sign In"
+    },
+    "login": {
+      "fallbackError": "Unable to sign in. Please try again.",
+      "fields": {
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "name@company.com",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "••••••••"
+      },
+      "forgot": "Forgot?",
+      "hidePassword": "Hide password",
+      "secureBadge": "SECURE ENCRYPTED LOGIN",
+      "showPassword": "Show password",
+      "submit": "Sign In to Account",
+      "subtitle": "Please enter your details to sign in",
+      "welcomeBack": "Welcome Back"
+    },
+    "register": {
+      "fallbackError": "Unable to create account.",
+      "fields": {
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "ornek@mail.com",
+        "nameLabel": "Full Name",
+        "namePlaceholder": "Enter your full name",
+        "passwordLabel": "Password"
+      },
+      "submit": "Create Account",
+      "subtitle": "Start managing your financial future with AI",
+      "title": "Create Account"
+    },
+    "validation": {
+      "emailInvalid": "Enter a valid email address.",
+      "emailRequired": "Email is required.",
+      "loginInvalidInput": "Please enter a valid email and password.",
+      "nameRequired": "Name is required.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "passwordRequired": "Password is required.",
+      "registerInvalidInput": "Please check your registration details."
+    }
+  },
+  "budgets": {
+    "composer": {
+      "amountPlaceholder": "0.00",
+      "category": "Category",
+      "create": "Create Budget",
+      "creating": "Creating...",
+      "limitAmount": "Limit Amount",
+      "noCategories": "All expense categories already have budgets for this month.",
+      "title": "Add Budget"
+    },
+    "delete": {
+      "message": "Delete {{category}} budget for {{month}}?",
+      "title": "Delete budget"
+    },
+    "inline": {
+      "saveLimit": "Save Limit",
+      "updateLimit": "Update limit"
+    },
+    "overview": {
+      "aiHintPrefix": "AI suggests you're on track to save",
+      "aiHintSuffix": "this month.",
+      "leftLabel": "{{remaining}} left",
+      "spentLabel": "{{spent}} spent ({{percent}}%)",
+      "totalMonthlyBudget": "TOTAL MONTHLY BUDGET"
+    },
+    "row": {
+      "left": "{{remaining}} left",
+      "over": "OVER",
+      "spentOf": "Spent {{spent}} of {{limit}}"
+    },
+    "sections": {
+      "spendingCategories": "Spending Categories",
+      "viewHistory": "View History"
+    },
+    "state": {
+      "empty": "No budgets set for this month yet.",
+      "unavailableTitle": "Budgets unavailable",
+      "updating": "Updating budgets..."
+    },
+    "title": "Budget Planning"
+  },
+  "common": {
+    "appInitials": "M",
+    "appName": "Mintly",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "delete": "Delete",
+    "edit": "Edit",
+    "goBack": "Go back",
+    "loadingShort": "Loading...",
+    "notAvailable": "N/A",
+    "now": "Now",
+    "pause": "Pause",
+    "resume": "Resume",
+    "retry": "Retry",
+    "save": "Save",
+    "saving": "Saving...",
+    "view": "View",
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "delete": "Delete"
+    },
+    "navigation": {
+      "tabs": {
+        "home": {
+          "label": "Home"
+        },
+        "transactions": {
+          "label": "Transactions",
+          "shortLabel": "Records"
+        },
+        "analytics": {
+          "label": "Analytics",
+          "shortLabel": "Insights"
+        },
+        "groups": {
+          "label": "Groups",
+          "shortLabel": "Groups"
+        },
+        "add": {
+          "label": "Add"
+        },
+        "profile": {
+          "label": "Profile",
+          "shortLabel": "Profile"
+        }
+      },
+      "stacks": {
+        "dashboard": {
+          "header": {
+            "title": "Dashboard"
+          }
+        },
+        "analytics": {
+          "header": {
+            "title": "Analytics"
+          }
+        },
+        "aiAdvisor": {
+          "header": {
+            "title": "AI Advisor"
+          }
+        },
+        "weeklyReport": {
+          "header": {
+            "title": "Weekly Report"
+          }
+        },
+        "budgets": {
+          "header": {
+            "title": "Budgets"
+          }
+        },
+        "groups": {
+          "header": {
+            "title": "Split Groups"
+          }
+        },
+        "createGroup": {
+          "header": {
+            "title": "Create Group"
+          }
+        },
+        "groupDetail": {
+          "header": {
+            "title": "Group Detail"
+          }
+        },
+        "addGroupExpense": {
+          "header": {
+            "title": "Add Group Expense"
+          }
+        },
+        "settleUp": {
+          "header": {
+            "title": "Settle Up"
+          }
+        },
+        "addHub": {
+          "header": {
+            "title": "Add"
+          }
+        },
+        "addTransaction": {
+          "header": {
+            "title": "Add Transaction"
+          }
+        },
+        "transfer": {
+          "header": {
+            "title": "Transfer"
+          }
+        },
+        "recurring": {
+          "header": {
+            "title": "Recurring"
+          }
+        },
+        "scanReceipt": {
+          "header": {
+            "title": "Scan Receipt"
+          }
+        },
+        "camera": {
+          "header": {
+            "title": "Camera"
+          }
+        },
+        "reviewScan": {
+          "header": {
+            "title": "Review Scan"
+          }
+        },
+        "profile": {
+          "header": {
+            "title": "Profile"
+          }
+        },
+        "editProfile": {
+          "header": {
+            "title": "Edit Profile"
+          }
+        },
+        "settings": {
+          "header": {
+            "title": "Settings"
+          }
+        },
+        "security": {
+          "header": {
+            "title": "Security"
+          }
+        },
+        "about": {
+          "header": {
+            "title": "About"
+          }
+        },
+        "accounts": {
+          "header": {
+            "title": "Accounts"
+          }
+        },
+        "financialGoals": {
+          "header": {
+            "title": "Financial Goals"
+          }
+        }
+      },
+      "preview": {
+        "screen": {
+          "header": {
+            "title": "Screen Preview",
+            "suffix": "Preview"
+          }
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "accountFallback": "Account",
+    "accountTypes": {
+      "bank": "Bank",
+      "cash": "Cash",
+      "credit": "Credit"
+    },
+    "accounts": "Accounts",
+    "addExpense": "Add Expense",
+    "addIncome": "Add Income",
+    "aiAction": "Get Insight",
+    "aiActive": "AI ACTIVE",
+    "aiAdvisor": "AI Advisor",
+    "aiAnalysisTitle": "AI Analysis",
+    "currentBalance": "Current Balance",
+    "expense": "Expense",
+    "greeting": "Welcome,",
+    "income": "Income",
+    "insight": {
+      "noSavingsHighlight": "Your savings rate is",
+      "noSavingsMessage": "this month. Let's improve it with smart tips.",
+      "savingsMessage": "more than your recent average.",
+      "thisMonth": "This month you saved"
+    },
+    "premiumSection": "Premium",
+    "quickActions": "Quick Actions",
+    "recentTransactions": "Recent Transactions",
+    "scanReceipt": "Scan Receipt",
+    "state": {
+      "errorTitle": "Dashboard unavailable",
+      "loading": "Loading dashboard...",
+      "noAccounts": "No accounts found.",
+      "noData": "No dashboard data available.",
+      "noTransactions": "No recent transactions yet."
+    },
+    "time": {
+      "dayWithTime": "{{day}} • {{time}}",
+      "today": "Today, {{time}}",
+      "yesterday": "Yesterday, {{time}}"
+    },
+    "transaction": {
+      "expenseTitle": "Expense",
+      "incomeTitle": "Income",
+      "transferContext": "Transfer",
+      "transferTitle": "Transfer"
+    },
+    "trend": {
+      "decrease": "Compared to last month -{{percent}}%",
+      "increase": "Compared to last month +{{percent}}%",
+      "stable": "Compared to last month, stable"
+    },
+    "viewAll": "See All",
+    "weeklyReport": "Weekly Report",
+    "upcoming": {
+      "title": "Upcoming Payments",
+      "empty": "No upcoming payments in the next 7 days.",
+      "dueValue": "Due: {{date}}",
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    }
+  },
+  "debug": {
+    "input": {
+      "firstPlaceholder": "First input",
+      "goLogin": "Go to Login",
+      "goRegister": "Go to Register",
+      "secondPlaceholder": "Second input",
+      "subtitle": "This screen uses plain TextInput only. Check focus/blur logs in Metro console.",
+      "title": "Debug Input Isolation"
+    }
+  },
+  "errors": {
+    "account": {
+      "createFailedTitle": "Create account failed",
+      "deleteFailedTitle": "Delete account failed",
+      "updateFailedTitle": "Update account failed"
+    },
+    "auth": {
+      "logoutFailedTitle": "Logout failed",
+      "sessionNotAvailable": "Session not available"
+    },
+    "budget": {
+      "createFailedTitle": "Create budget failed",
+      "deleteFailedTitle": "Delete budget failed",
+      "updateFailedTitle": "Update budget failed"
+    },
+    "recurring": {
+      "createFailedTitle": "Create recurring failed",
+      "deleteFailedTitle": "Delete recurring failed",
+      "updateFailedTitle": "Update recurring failed"
+    },
+    "transaction": {
+      "createFailedTitle": "Create transaction failed"
+    },
+    "transfer": {
+      "createFailedTitle": "Transfer failed"
+    },
+    "scan": {
+      "captureFailed": "Photo could not be captured.",
+      "ocrFailed": "Text could not be extracted from receipt.",
+      "libraryPermissionDenied": "Photo library permission is required.",
+      "invalidAmount": "Enter a valid amount greater than zero.",
+      "invalidDate": "Enter a valid date in YYYY-MM-DD format.",
+      "invalidDueDate": "Enter a valid due date in YYYY-MM-DD format.",
+      "noExpenseCategory": "No expense category is available."
+    },
+    "validation": {
+      "amountPositive": "Amount must be greater than zero.",
+      "amountRequired": "Amount is required.",
+      "dateTimeRequired": "Date is required.",
+      "dayOfMonthRange": "Day of month must be between 1 and 28.",
+      "dayOfWeekRange": "Day of week must be between 0 and 6.",
+      "invalidIsoDateTime": "Enter a valid ISO datetime.",
+      "limitAmountPositive": "Limit amount must be greater than zero.",
+      "limitAmountRequired": "Limit amount is required.",
+      "nameRequired": "Name is required.",
+      "selectAccount": "Please select an account.",
+      "selectCategory": "Please select a category.",
+      "selectDestinationAccount": "Please select a destination account.",
+      "selectSourceAccount": "Please select a source account.",
+      "sourceDestinationDifferent": "Source and destination accounts must be different.",
+      "startDateTimeRequired": "Start datetime is required."
+    },
+    "sameAccount": "Source and destination accounts cannot be the same.",
+    "currencyMismatch": "Accounts use different currencies. Choose accounts with the same currency.",
+    "boundary": {
+      "title": "Something went wrong",
+      "message": "The app hit an unexpected error. Please retry.",
+      "retry": "Try again"
+    },
+    "api": {
+      "AI_PROVIDER_ERROR": "AI service failed to generate insights.",
+      "AI_PROVIDER_TIMEOUT": "AI service timed out. Please try again.",
+      "AI_PROVIDER_UNREACHABLE": "AI service is currently unreachable.",
+      "AI_SERVICE_NOT_CONFIGURED": "AI insights are not configured for this environment.",
+      "ACCOUNT_NOT_FOUND": "Selected account was not found.",
+      "API_REQUEST_FAILED": "The request could not be completed.",
+      "BASE_CURRENCY_NOT_SET": "Set your base currency before this action.",
+      "BASE_CURRENCY_MISMATCH": "This action uses a different base currency.",
+      "CATEGORY_NOT_FOUND": "Required category was not found.",
+      "EMAIL_ALREADY_EXISTS": "An account already exists with this email.",
+      "FORBIDDEN": "You do not have permission for this action.",
+      "INVALID_CREDENTIALS": "Email or password is incorrect.",
+      "INVALID_REFRESH_TOKEN": "Your session expired. Please sign in again.",
+      "INVALID_RESPONSE_PAYLOAD": "Received invalid data from server.",
+      "NETWORK_ERROR": "Network connection failed.",
+      "NOT_FOUND": "The requested record was not found.",
+      "RATE_LIMITED": "Too many requests. Please wait and try again.",
+      "REQUEST_TIMEOUT": "The server took too long to respond.",
+      "SERVER_UNREACHABLE": "Server is unreachable right now.",
+      "UNAUTHORIZED": "Your session is no longer valid.",
+      "UPCOMING_PAYMENT_NOT_FOUND": "Upcoming payment record was not found.",
+      "UNKNOWN_ERROR": "An unexpected error occurred.",
+      "ADVISOR_REGENERATE_COOLDOWN": "Please wait a few seconds before regenerating insights again.",
+      "ADVISOR_PROVIDER_RATE_LIMIT": "AI provider rate limit reached. Please try again later.",
+      "ADVISOR_PROVIDER_TIMEOUT": "AI provider request timed out. Please try again.",
+      "ADVISOR_PROVIDER_INVALID_REQUEST": "AI provider request is invalid. Please try again later.",
+      "ADVISOR_PROVIDER_RATE_LIMITED": "AI provider rate limit reached. Please try again later.",
+      "ADVISOR_PROVIDER_REQUEST_INVALID": "AI provider request is invalid. Please try again later."
+    },
+    "advisor": {
+      "timeout": "Advisor request timed out. Showing fallback insight."
+    }
+  },
+  "groups": {
+    "create": {
+      "actions": {
+        "create": "Create Group",
+        "creating": "Creating..."
+      },
+      "errors": {
+        "createFailedTitle": "Create group failed"
+      },
+      "fields": {
+        "membersLabel": "Members (comma separated emails)",
+        "membersPlaceholder": "alice@mail.com, bob@mail.com",
+        "nameLabel": "Group name",
+        "namePlaceholder": "Weekend trip"
+      },
+      "previewCount": "{{count}} members will be added",
+      "subtitle": "Set up a shared expense group",
+      "title": "Create Group",
+      "validation": {
+        "nameRequired": "Group name is required"
+      }
+    },
+    "list": {
+      "createButton": "Create Group",
+      "empty": "No groups yet. Create one to start splitting.",
+      "errorTitle": "Could not load groups",
+      "loading": "Loading groups...",
+      "memberCount": "{{count}} members",
+      "subtitle": "Track shared expenses and balances",
+      "title": "Groups"
+    },
+    "settle": {
+      "actions": {
+        "markSettled": "Mark Settled",
+        "settling": "Settling..."
+      },
+      "errorTitle": "Settle up failed",
+      "loadErrorTitle": "Could not load group",
+      "loading": "Loading group data...",
+      "openAmount": "Open amount",
+      "openExpenses": "Open expenses",
+      "subtitle": "Mark all open group expenses as settled",
+      "successMessage": "Group expenses were marked as settled.",
+      "successTitle": "Settled",
+      "title": "Settle Up"
+    }
+  },
+  "navigation": {
+    "stack": {
+      "about": "About",
+      "accounts": "Accounts",
+      "addGroupExpense": "Add Group Expense",
+      "aiAdvisor": "AI Advisor",
+      "analytics": "Analytics",
+      "budgets": "Budgets",
+      "camera": "Camera",
+      "createGroup": "Create Group",
+      "dashboard": "Dashboard",
+      "editProfile": "Edit Profile",
+      "groupDetail": "Group Detail",
+      "profile": "Profile",
+      "recurring": "Recurring",
+      "reviewScan": "Review Scan",
+      "scanReceipt": "Scan Receipt",
+      "security": "Security",
+      "settings": "Settings",
+      "settleUp": "Settle Up",
+      "splitGroups": "Split Groups",
+      "transfer": "Transfer",
+      "weeklyReport": "Weekly Report"
+    },
+    "tabs": {
+      "add": "Add",
+      "analytics": "Analytics",
+      "analyticsShort": "Insights",
+      "groups": "Groups",
+      "groupsShort": "Groups",
+      "home": "Home",
+      "profile": "Profile",
+      "profileShort": "Profile",
+      "transactions": "Transactions",
+      "transactionsShort": "Records"
+    }
+  },
+  "onboarding": {
+    "getStarted": "Get started",
+    "next": "Next",
+    "skip": "Skip",
+    "step1": {
+      "subtitle": "Keep every expense, income, and transfer in one clear timeline built for daily finance habits.",
+      "title": "Track everything"
+    },
+    "step2": {
+      "subtitle": "See category breakdowns, monthly trends, and budget usage so you always know where money goes.",
+      "title": "Understand spending"
+    },
+    "step3": {
+      "subtitle": "Create your account or sign in, then personalize accounts, categories, and budgets in minutes.",
+      "titleGate": "Ready to begin?",
+      "titlePreview": "You are all set"
+    },
+    "stepLabel": "Step {{current}}/{{total}}"
+  },
+  "profile": {
+    "about": {
+      "appNameLabel": "App Name",
+      "buildLabel": "Build",
+      "buildValue": "Development",
+      "noteOne": "Mintly helps track accounts, transactions, analytics, and budgets using a single base currency.",
+      "noteTwo": "Authentication includes access and refresh tokens with guarded navigation.",
+      "notesTitle": "Notes",
+      "subtitle": "Product and build information",
+      "title": "About Mintly",
+      "versionLabel": "Version",
+      "versionValue": "1.0.0"
+    },
+    "accountSettings": "ACCOUNT & SETTINGS",
+    "accounts": "Accounts",
+    "baseCurrency": "Base Currency",
+    "defaultUserName": "Mintly User",
+    "edit": {
+      "baseCurrencyLabel": "Base Currency",
+      "emailLabel": "Email",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Your full name",
+      "helper": "Profile update endpoint is not available yet. UI is ready for PATCH /me integration.",
+      "photoSubtitle": "Tap to change (UI only)",
+      "photoTitle": "Profile Photo",
+      "save": "Save Changes",
+      "updateNotAvailableCode": "PROFILE_UPDATE_NOT_AVAILABLE",
+      "title": "Edit Profile",
+      "nameLabel": "Full Name",
+      "saveSuccess": "Profile updated successfully."
+    },
+    "lastSync": "Last Sync",
+    "logOut": "Log out",
+    "loggingOut": "Signing out...",
+    "premiumMember": "PREMIUM MEMBER",
+    "rows": {
+      "about": "About Mintly",
+      "aboutSubtitle": "Version and legal information",
+      "aiAdvisor": "AI Advisor",
+      "aiAdvisorSubtitle": "Open personalized financial advice",
+      "appSettings": "Settings",
+      "appSettingsSubtitle": "Theme and application preferences",
+      "myAccounts": "My accounts",
+      "myAccountsSubtitle": "View and manage your accounts",
+      "personalInfo": "Personal info",
+      "personalInfoSubtitle": "Name, email and profile details",
+      "security": "Security",
+      "securitySubtitle": "Password and session protection",
+      "weeklyReport": "Weekly Report",
+      "weeklyReportSubtitle": "View score and weekly outlook",
+      "financialGoals": "Financial Goals",
+      "financialGoalsSubtitle": "Savings target and risk profile"
+    },
+    "security": {
+      "delete": {
+        "cta": "Delete Account and All Data",
+        "hint": "This action is permanent and cannot be undone.",
+        "notAvailable": "This action is not available yet.",
+        "title": "Delete Account"
+      },
+      "items": {
+        "accountActivity": {
+          "subtitle": "Review recent devices",
+          "title": "Account Activity"
+        },
+        "biometric": {
+          "subtitle": "Use Face ID or Fingerprint",
+          "title": "Biometric Login"
+        },
+        "downloadData": {
+          "subtitle": "Request export package",
+          "title": "Download Personal Data"
+        },
+        "privacyPolicy": {
+          "subtitle": "How Mintly protects data",
+          "title": "Privacy Policy"
+        },
+        "thirdParty": {
+          "subtitle": "Manage partner data access",
+          "title": "Third-party Sharing"
+        },
+        "twoFactor": {
+          "subtitle": "Extra verification for sign in",
+          "title": "Two-Factor Authentication"
+        }
+      },
+      "scoreSubtitle": "2 of 3 recommended controls are active.",
+      "scoreTitle": "Security Score: Strong",
+      "sections": {
+        "accessControl": "ACCESS CONTROL",
+        "dangerZone": "DANGER ZONE",
+        "dataPrivacy": "DATA & PRIVACY"
+      }
+    },
+    "settings": {
+      "items": {
+        "biometric": {
+          "subtitle": "Use Face ID / Fingerprint",
+          "title": "Biometric Login"
+        },
+        "helpCenter": {
+          "subtitle": "Guides and support",
+          "title": "Help Center"
+        },
+        "howItWorks": {
+          "subtitle": "View onboarding again",
+          "title": "How it works"
+        },
+        "language": {
+          "subtitle": "Choose app language",
+          "title": "Language"
+        },
+        "notifications": {
+          "subtitle": "Receive important updates",
+          "title": "Notifications"
+        },
+        "security": {
+          "subtitle": "Advanced security settings",
+          "title": "Security"
+        },
+        "theme": {
+          "subtitle": "System, light, or dark",
+          "title": "Theme"
+        },
+        "version": {
+          "subtitle": "Mintly 1.0.0",
+          "title": "Version"
+        }
+      },
+      "plan": "Premium Plan",
+      "sections": {
+        "application": "Application",
+        "privacy": "Privacy",
+        "support": "Support"
+      },
+      "userTitle": "Demo User",
+      "locale": {
+        "tr": "Turkish",
+        "en": "English",
+        "ru": "Russian"
+      },
+      "theme": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
+    },
+    "support": "SUPPORT",
+    "useDifferentAccount": "Use a different account",
+    "financialGoals": {
+      "title": "Financial Goals",
+      "subtitle": "Set your savings target and preferred risk level.",
+      "savingsTargetRateLabel": "Savings Target Rate (%)",
+      "savingsTargetRatePlaceholder": "20",
+      "riskProfileLabel": "Risk Profile",
+      "riskProfile": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "hint": "These preferences are used by AI advisor recommendations.",
+      "save": "Save Preferences",
+      "saving": "Saving...",
+      "validation": {
+        "targetRequired": "Enter a savings target rate.",
+        "targetRange": "Savings target rate must be between 0 and 80."
+      }
+    }
+  },
+  "recurring": {
+    "actions": {
+      "create": "Create Rule"
+    },
+    "cadence": {
+      "monthly": "MONTHLY",
+      "weekly": "WEEKLY"
+    },
+    "delete": {
+      "message": "Delete this recurring rule?",
+      "title": "Delete recurring rule"
+    },
+    "fields": {
+      "account": "Account",
+      "amount": "Amount",
+      "amountPlaceholder": "0.00",
+      "cadence": "Cadence",
+      "categoryWithType": "Category ({{type}})",
+      "dayOfMonth": "Day of month (1-28)",
+      "dayOfWeek": "Day of week (0=Sun ... 6=Sat)",
+      "dayPlaceholder": "1",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional note",
+      "fromAccount": "From account",
+      "kind": "Kind",
+      "startAt": "Start At (ISO)",
+      "startAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "toAccount": "To account",
+      "type": "Type"
+    },
+    "kind": {
+      "normal": "NORMAL",
+      "transfer": "TRANSFER"
+    },
+    "rule": {
+      "account": "Account: {{account}}",
+      "amount": "Amount: {{amount}}",
+      "cadence": "Cadence: {{cadence}}",
+      "category": "Category: {{category}}",
+      "from": "From: {{account}}",
+      "nextRun": "Next run: {{date}}",
+      "normal": "Normal rule",
+      "note": "Note: {{note}}",
+      "to": "To: {{account}}",
+      "transfer": "Transfer rule",
+      "type": "Type: {{type}}"
+    },
+    "sections": {
+      "existing": "Existing Rules",
+      "totalRules": "{{count}} rules"
+    },
+    "state": {
+      "empty": "No recurring rules yet.",
+      "loading": "Loading recurring data..."
+    },
+    "status": {
+      "active": "ACTIVE",
+      "paused": "PAUSED"
+    },
+    "subtitle": "Create scheduler-ready rules",
+    "successMessage": "The rule is now active.",
+    "successTitle": "Recurring rule created",
+    "title": "Recurring Rules"
+  },
+  "scan": {
+    "receipt": {
+      "title": "Scan Receipt",
+      "state": {
+        "preparing": "Preparing camera..."
+      },
+      "permission": {
+        "title": "Camera access required",
+        "subtitle": "Allow camera access to scan bills and rent receipts.",
+        "allowCamera": "Allow Camera"
+      },
+      "actions": {
+        "capture": "Capture",
+        "pickPhoto": "Choose Photo"
+      }
+    },
+    "confirm": {
+      "title": "Confirm Extraction",
+      "previewTitle": "Receipt Preview",
+      "formTitle": "Extracted Fields",
+      "defaults": {
+        "title": "Receipt"
+      },
+      "currencyWarning": "Detected currency {{detected}} differs from your base currency {{base}}. Mintly will keep {{base}}.",
+      "ocrMode": {
+        "mlkit": "OCR mode: On-device ML Kit",
+        "fallback": "OCR mode: Fallback parser"
+      },
+      "state": {
+        "loading": "Loading scan confirmation...",
+        "loadErrorTitle": "Could not load scan data"
+      },
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "Electricity Bill",
+        "amount": "Amount",
+        "amountPlaceholder": "0.00",
+        "date": "Date",
+        "datePlaceholder": "YYYY-MM-DD",
+        "dueDate": "Due Date (optional)",
+        "dueDatePlaceholder": "YYYY-MM-DD",
+        "type": "Payment Type",
+        "account": "Account",
+        "currency": "Currency",
+        "classification": "Classification",
+        "category": "Category",
+        "frequency": "Frequency",
+        "startDate": "Start date",
+        "startDatePlaceholder": "YYYY-MM-DD",
+        "endDate": "End date (optional)",
+        "endDatePlaceholder": "YYYY-MM-DD"
+      },
+      "types": {
+        "bill": "Bill",
+        "rent": "Rent",
+        "subscription": "Subscription",
+        "debt": "Debt",
+        "other": "Other"
+      },
+      "actions": {
+        "createUpcoming": "Create Upcoming Payment",
+        "createTransaction": "Create Expense Transaction",
+        "createRecurring": "Create recurring template"
+      },
+      "success": {
+        "title": "Saved",
+        "upcoming": "Upcoming payment created successfully.",
+        "transaction": "Expense transaction created successfully.",
+        "recurring": "Recurring template created successfully."
+      },
+      "classification": {
+        "expense": "Expense",
+        "bill": "Bill / Debt",
+        "recurring": "Recurring template"
+      }
+    }
+  },
+  "upcoming": {
+    "list": {
+      "title": "Upcoming Payments",
+      "state": {
+        "loading": "Loading upcoming payments...",
+        "errorTitle": "Could not load upcoming payments",
+        "empty": "No upcoming payments in the next 45 days."
+      },
+      "row": {
+        "dueDate": "Due: {{date}}"
+      }
+    },
+    "detail": {
+      "title": "Upcoming Payment",
+      "state": {
+        "loading": "Loading payment details...",
+        "errorTitle": "Could not load payment details",
+        "notFound": "This upcoming payment was not found."
+      },
+      "dueDateValue": "Due date: {{date}}",
+      "accountTitle": "Pay From Account",
+      "markPaid": {
+        "cta": "Mark as Paid",
+        "successTitle": "Payment completed",
+        "successMessage": "Expense transaction created from upcoming payment."
+      },
+      "markSkipped": {
+        "cta": "Skip",
+        "successTitle": "Payment skipped",
+        "successMessage": "Upcoming payment has been marked as skipped."
+      }
+    },
+    "notifications": {
+      "title": "Upcoming payment reminder",
+      "body": "{{title}} is due {{days}} day(s) before {{dueDate}}. Amount: {{amount}}."
+    }
+  },
+  "split": {
+    "addExpense": {
+      "actions": {
+        "submit": "Create Expense",
+        "submitting": "Saving..."
+      },
+      "categoryOptions": {
+        "bills": "Bills",
+        "food": "Food",
+        "other": "Other",
+        "rent": "Rent",
+        "shopping": "Shopping",
+        "transport": "Transport"
+      },
+      "equalShare": "{{amount}}",
+      "errors": {
+        "createFailedTitle": "Create expense failed",
+        "invalidAmountMessage": "Please enter a positive amount.",
+        "invalidAmountTitle": "Invalid amount",
+        "invalidCustomSplitMessage": "Enter valid non-negative amounts for each selected member.",
+        "invalidCustomSplitTitle": "Invalid custom split",
+        "membersRequiredMessage": "Please select at least one member.",
+        "membersRequiredTitle": "Members required",
+        "paidByRequiredMessage": "Please choose who paid.",
+        "paidByRequiredTitle": "Paid by required",
+        "requiredTitleMessage": "Please enter an expense title.",
+        "requiredTitleTitle": "Title required",
+        "splitMismatchMessage": "Amount {{amount}} does not match split total {{split}}.",
+        "splitMismatchTitle": "Split total mismatch"
+      },
+      "fields": {
+        "amountLabel": "Amount",
+        "amountPlaceholder": "0.00",
+        "categoryLabel": "Category",
+        "dateLabel": "Date",
+        "datePlaceholder": "YYYY-MM-DD",
+        "membersLabel": "Members",
+        "paidByLabel": "Paid by",
+        "paidByPlaceholder": "Select member",
+        "splitForMemberLabel": "Split: {{name}}",
+        "splitModeLabel": "Split mode",
+        "titleLabel": "Title",
+        "titlePlaceholder": "Dinner"
+      },
+      "loadErrorTitle": "Could not load group",
+      "loading": "Loading group members...",
+      "memberSelectedCount": "{{count}} members selected",
+      "retry": "Retry",
+      "sections": {
+        "customPreview": "Custom split amounts",
+        "equalPreview": "Equal split preview"
+      },
+      "splitModes": {
+        "custom": "Custom",
+        "equal": "Equal"
+      },
+      "subtitle": "{{group}}",
+      "title": "Add Group Expense"
+    },
+    "common": {
+      "unknownMember": "Unknown member"
+    },
+    "groupDetail": {
+      "actions": {
+        "addExpense": "Add Expense",
+        "settleUp": "Settle Up"
+      },
+      "balanceState": {
+        "creditor": "You are creditor",
+        "debtor": "You are debtor",
+        "settled": "Balanced"
+      },
+      "expenseSubtitle": "{{payer}} • {{date}}",
+      "indicator": {
+        "noShare": "No share",
+        "settled": "Settled",
+        "unknownShare": "Share unavailable",
+        "youGet": "You get {{amount}}",
+        "youOwe": "You owe {{amount}}"
+      },
+      "loadErrorTitle": "Could not load group details",
+      "loading": "Loading group details...",
+      "member": {
+        "balanced": "Balanced",
+        "creditor": "Creditor",
+        "debtor": "Debtor"
+      },
+      "membersTitle": "Members",
+      "noExpenses": "No group expenses yet.",
+      "recentExpenses": "Recent Expenses",
+      "retry": "Retry",
+      "summarySubtitle": "Shared expenses overview",
+      "summaryTitle": "Group Summary",
+      "totalSpending": "Total spending",
+      "yourBalance": "Your balance"
+    }
+  },
+  "stitch": {
+    "hub": {
+      "codeHtml": "code.html",
+      "dark": "dark",
+      "noApi": "No API",
+      "pngOnly": "png only",
+      "staticPlaceholders": "Static placeholders",
+      "totalScreens": "{{count}} Stitch screens"
+    },
+    "preview": {
+      "analytics": {
+        "food": "Food",
+        "highlights": "Highlights",
+        "savings": "Savings",
+        "spendingTrend": "Spending Trend",
+        "weeklyBars": "Weekly bars"
+      },
+      "auth": {
+        "authenticationForm": "Authentication Form",
+        "onboardingLoginPlaceholder": "Onboarding / login placeholder",
+        "phoneOtp": "Phone / OTP"
+      },
+      "chips": {
+        "codeHtmlUsed": "code.html hierarchy used",
+        "darkVariant": "Dark variant",
+        "lightVariant": "Light variant",
+        "pngPlaceholder": "png-driven placeholder"
+      },
+      "dashboard": {
+        "accountSnapshot": "Account Snapshot",
+        "categoryPulse": "Category Pulse",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income",
+        "overviewCards": "Overview cards",
+        "recentActivity": "Recent Activity",
+        "topCategories": "Top categories",
+        "updated1mAgo": "Updated 1m ago"
+      },
+      "errors": {
+        "notFoundBody": "The requested Stitch screen key does not exist in the inventory.",
+        "notFoundTitle": "Screen not found"
+      },
+      "other": {
+        "budgetTips": "Budget Tips",
+        "contentUtility": "Content / Utility",
+        "debtGuide": "Debt Guide",
+        "faq": "FAQ",
+        "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
+        "helpCenterDetailPages": "Help center + detail pages",
+        "helpCenterTitle": "Mintly Help Center"
+      },
+      "profile": {
+        "sampleEmail": "user@mintly.app",
+        "summary": "Profile Summary"
+      },
+      "scan": {
+        "alignReceipt": "Align receipt in frame",
+        "cameraFramePlaceholder": "Camera frame placeholder",
+        "captureReceipt": "Capture Receipt",
+        "receiptScan": "Receipt Scan"
+      },
+      "split": {
+        "accommodation": "Accommodation",
+        "aylinOwesYou": "Aylin owes you",
+        "carRental": "Car rental",
+        "expenseSplitScenario": "Expense split scenario",
+        "groupOverview": "Group Overview",
+        "memberAylin": "Aylin",
+        "memberDeniz": "Deniz",
+        "memberMert": "Mert",
+        "memberYou": "You",
+        "settleGroupExpense": "Settle Group Expense",
+        "weekendTrip": "Weekend Trip",
+        "youOweMert": "You owe Mert"
+      },
+      "transactions": {
+        "addNew": "Add New Transaction",
+        "feed": "Transaction Feed",
+        "filtersSubtitle": "List + quick filters"
+      }
+    }
+  },
+  "transactionDetail": {
+    "actions": {
+      "delete": "Delete Transaction",
+      "downloadReceipt": "Download Receipt",
+      "splitExpense": "Split Expense"
+    },
+    "fields": {
+      "account": "Account",
+      "category": "Category",
+      "dateTime": "Date & Time",
+      "noCategory": "No category"
+    },
+    "location": {
+      "placeholder": "Barbaros Mah. No:3, Istanbul"
+    },
+    "notes": {
+      "empty": "No description was added for this transaction.",
+      "title": "My Notes"
+    },
+    "receipt": {
+      "title": "Digital Receipt"
+    },
+    "state": {
+      "loadErrorTitle": "Could not load transaction details",
+      "loading": "Loading transaction details..."
+    },
+    "status": {
+      "completed": "Completed"
+    },
+    "title": "Transaction Detail"
+  },
+  "transactions": {
+    "accountFallback": "Account",
+    "actions": {
+      "loadMore": "Load more",
+      "search": "Search"
+    },
+    "create": {
+      "fields": {
+        "account": "Account",
+        "amount": "Amount",
+        "amountPlaceholder": "0.00",
+        "category": "Category",
+        "currency": "Currency",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional note",
+        "occurredAt": "Date & Time (ISO)",
+        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+      },
+      "systemCategories": {
+        "expense": {
+          "bills": "Bills",
+          "entertainment": "Entertainment",
+          "food": "Food",
+          "health": "Health",
+          "market": "Market",
+          "rent": "Rent",
+          "shopping": "Shopping",
+          "transport": "Transport"
+        },
+        "income": {
+          "otherIncome": "Other Income",
+          "salary": "Salary"
+        }
+      },
+      "sections": {
+        "details": "Transaction Details",
+        "step": "Step 1 of 1"
+      },
+      "selectAccountFirst": "Select account first",
+      "state": {
+        "loadErrorTitle": "Could not load transaction form",
+        "loading": "Loading add transaction form..."
+      },
+      "submit": "Save Transaction",
+      "subtitle": "Create a new income or expense record.",
+      "successMessage": "The transaction was saved successfully.",
+      "successTitle": "Transaction created",
+      "title": "Add Transaction"
+    },
+    "filters": {
+      "all": "All"
+    },
+    "group": {
+      "other": "OTHER",
+      "today": "TODAY",
+      "yesterday": "YESTERDAY"
+    },
+    "quickActions": {
+      "scanSubtitle": "Receipt OCR flow",
+      "scanTitle": "Scan",
+      "splitSubtitle": "Groups & settle up",
+      "splitTitle": "Split"
+    },
+    "row": {
+      "expenseTitle": "Expense",
+      "incomeTitle": "Income",
+      "transferBadge": "TRANSFER",
+      "transferHint": "Transfer • {{time}}",
+      "transferTitle": "Account Transfer",
+      "typeHint": "{{type}} • {{time}}"
+    },
+    "searchPlaceholder": "Search transaction or store...",
+    "state": {
+      "empty": "No transactions match these filters.",
+      "loadErrorTitle": "Could not load transactions",
+      "loadingMore": "Loading more..."
+    },
+    "summary": {
+      "totalExpense": "TOTAL EXPENSE",
+      "totalIncome": "TOTAL INCOME"
+    },
+    "title": "Transaction History"
+  },
+  "transfers": {
+    "form": {
+      "amount": "Amount",
+      "amountPlaceholder": "0.00",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional note",
+      "fromAccount": "From account",
+      "occurredAt": "Occurred At (ISO)",
+      "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z",
+      "submit": "Create Transfer",
+      "subtitle": "Creates paired in/out transfer transactions",
+      "title": "Transfer Funds",
+      "toAccount": "To account"
+    },
+    "state": {
+      "loadingAccounts": "Loading accounts...",
+      "needTwoAccounts": "Create at least two accounts before making a transfer."
+    },
+    "successMessage": "Funds were moved successfully.",
+    "successTitle": "Transfer created",
+    "title": "Transfer"
+  },
+  "weeklyReport": {
+    "highlights": "Highlights",
+    "nextWeekForecast": "Next Week Forecast",
+    "noHighlights": "No highlights this week.",
+    "noRisks": "No risks detected.",
+    "riskFlags": "Risk Flags",
+    "scoreOutOf": "/100",
+    "state": {
+      "errorTitle": "Weekly report unavailable",
+      "noData": "No weekly report available."
+    },
+    "subtitle": "Financial health summary and next-week outlook.",
+    "title": "Weekly Report"
+  },
+  "success": {
+    "transferCreated": "Transfer created successfully."
+  },
+  "settings": {
+    "general": {
+      "title": "Settings"
+    },
+    "language": {
+      "label": "Language",
+      "title": "Language",
+      "subtitle": "Choose app language",
+      "options": {
+        "tr": "Turkish",
+        "en": "English",
+        "ru": "Russian"
+      }
+    },
+    "theme": {
+      "label": "Theme",
+      "title": "Theme",
+      "subtitle": "System, light, or dark",
+      "options": {
+        "system": "System",
+        "light": "Light",
+        "dark": "Dark"
+      }
+    },
+    "notifications": {
+      "label": "Notifications",
+      "title": "Notifications",
+      "subtitle": "Receive important updates"
+    },
+    "sections": {
+      "application": "Application",
+      "privacy": "Privacy",
+      "support": "Support"
+    },
+    "user": {
+      "title": "Demo User",
+      "plan": "Premium Plan"
+    },
+    "biometric": {
+      "title": "Biometric Login",
+      "subtitle": "Use Face ID / Fingerprint"
+    },
+    "security": {
+      "title": "Security",
+      "subtitle": "Advanced security settings"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "View onboarding again"
+    },
+    "helpCenter": {
+      "title": "Help Center",
+      "subtitle": "Guides and support"
+    },
+    "version": {
+      "title": "Version",
+      "subtitle": "Mintly 1.0.0"
+    },
+    "financialGoals": {
+      "title": "Financial Goals",
+      "subtitle": "Savings target and risk profile"
+    },
+    "regularPayments": {
+      "title": "Regular payments",
+      "subtitle": "Manage recurring payment templates"
+    }
+  },
+  "network": {
+    "offline": {
+      "title": "Offline mode",
+      "message": "Internet connection is unavailable. Some actions may fail.",
+      "retry": "Retry"
+    }
+  }
+}
