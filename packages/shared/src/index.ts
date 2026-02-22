@@ -4,7 +4,7 @@ export {
   createApiClient,
   normalizeApiError,
   type NormalizedApiError,
-} from './client.js';
+} from './client';
 export {
   accountBalanceSchema,
   accountCreateInputSchema,
@@ -128,7 +128,7 @@ export {
   transactionUpdateInputSchema,
   weeklyReportQuerySchema,
   weeklyReportResponseSchema,
-} from './schemas.js';
+} from './schemas';
 export type {
   Account,
   AccountBalance,
@@ -252,4 +252,4 @@ export type {
   TransactionUpdateInput,
   WeeklyReportQuery,
   WeeklyReportResponse,
-} from './schemas.js';
+} from './schemas';
