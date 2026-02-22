@@ -1,3 +1,1 @@
-module.exports = {
-  presets: ['babel-preset-expo'],
-};
+module.exports = require('./apps/mobile/babel.config');

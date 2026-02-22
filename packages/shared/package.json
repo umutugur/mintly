@@ -3,25 +3,31 @@
   "version": "1.0.0",
   "description": "Shared types, schemas, and API client for Mintly",
   "type": "module",
+
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+
+  "react-native": "src/index.ts",
+
   "exports": {
     ".": {
+      "react-native": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     }
   },
+
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "mintly",
-    "shared"
-  ],
+
+  "keywords": ["mintly", "shared"],
   "author": "",
   "license": "MIT",
   "packageManager": "pnpm@10.29.3",
+
   "dependencies": {
     "zod": "^4.3.6"
   },
