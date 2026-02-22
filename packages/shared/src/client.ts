@@ -145,7 +145,7 @@ import {
   type TransactionUpdateInput,
   type WeeklyReportQuery,
   type WeeklyReportResponse,
-} from './schemas.js';
+} from './schemas';
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 

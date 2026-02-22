@@ -1,10 +1,12 @@
 {
   "name": "mintly",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "packageManager": "pnpm@10.29.3",
   "main": "apps/mobile/index.ts",
-
   "scripts": {
     "dev": "turbo run dev",
     "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.29.3 --activate && pnpm -v",
@@ -22,8 +24,8 @@
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.46.3",
+    "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^8.57.1",
-    "expo": "~54.0.33",
     "turbo": "^2.8.9",
     "typescript": "^5.9.3"
   }
