@@ -21,7 +21,7 @@ const dateOnlyStringSchema = z
 
 export const healthResponseSchema = z.object({
   ok: z.literal(true),
-  name: z.literal('FinSight API'),
+  name: z.literal('Mintly API'),
 });
 
 export const registerInputSchema = z.object({
