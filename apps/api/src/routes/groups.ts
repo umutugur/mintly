@@ -118,7 +118,10 @@ function validateMemberIds(group: GroupDocument, payload: GroupExpenseCreateInpu
 }
 
 function validateSplitTotal(payload: GroupExpenseCreateInput): void {
-  const total = payload.splits.reduce((sum, split) => sum + split.amount, 0);
+const total = payload.splits.reduce(
+  (sum: number, split: (typeof payload.splits)[number]) => sum + split.amount,
+  0,
+);
   const diff = Math.abs(total - payload.amount);
 
   if (diff > 0.01) {

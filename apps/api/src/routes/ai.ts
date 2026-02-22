@@ -245,8 +245,10 @@ export function registerAiRoutes(app: FastifyInstance): void {
         overAmount: roundCurrency(overAmount),
       });
     }
-    budgetOverruns.sort((a, b) => b.overAmount - a.overAmount);
-
+budgetOverruns.sort(
+  (a: (typeof budgetOverruns)[number], b: (typeof budgetOverruns)[number]) =>
+    b.overAmount - a.overAmount,
+);
     const net = totalIncome - totalExpense;
     const savingsRate = totalIncome > 0 ? net / totalIncome : 0;
 

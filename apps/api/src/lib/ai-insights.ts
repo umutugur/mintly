@@ -106,6 +106,10 @@ function roundCurrency(value: number): number {
   return Number(value.toFixed(2));
 }
 
+function isDefined<T>(value: T | null | undefined): value is T {
+  return value !== undefined && value !== null;
+}
+
 function cleanupExpiredCache(now = Date.now()): void {
   for (const [key, entry] of aiInsightsCache.entries()) {
     if (entry.expiresAt <= now) {
@@ -437,13 +441,17 @@ export async function generateAiInsights(
       category: categoryMap.get(transaction.categoryId?.toString() ?? '')?.name ?? 'Uncategorized',
     }));
 
-  const incomeOrExpenseTotal = {
+  const incomeOrExpenseTotal: Record<'income' | 'expense', number> = {
     income: totalIncome,
     expense: totalExpense,
   };
 
   const categoriesForPrompt = Array.from(categoryTotals.entries())
     .map(([categoryId, totals]) => {
+      if (totals.type !== 'income' && totals.type !== 'expense') {
+        return undefined;
+      }
+
       const denominator = incomeOrExpenseTotal[totals.type] || 0;
       const sharePercent = denominator > 0 ? (totals.total / denominator) * 100 : 0;
 
@@ -454,6 +462,7 @@ export async function generateAiInsights(
         sharePercent: roundCurrency(sharePercent),
       };
     })
+    .filter(isDefined)
     .sort((a, b) => b.total - a.total)
     .slice(0, 10);
 
