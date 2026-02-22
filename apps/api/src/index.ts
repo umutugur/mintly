@@ -25,10 +25,12 @@ async function start(): Promise<void> {
   const app = buildServer();
   const config = getConfig();
 
+  const port = Number(process.env.PORT ?? config.port ?? 10000);
+
   try {
     await app.listen({
       host: '0.0.0.0',
-      port: config.port,
+      port,
     });
   } catch (error) {
     app.log.error(error);

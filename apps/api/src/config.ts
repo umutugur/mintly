@@ -25,7 +25,7 @@ export interface RuntimeConfig {
   appleOauthClientIds: string[];
 }
 
-const apiName = 'FinSight API';
+const apiName = 'Mintly API';
 const defaultDevCorsOrigins = [
   'http://localhost:19006',
   'http://localhost:8081',
