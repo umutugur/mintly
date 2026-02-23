@@ -100,6 +100,13 @@ interface PromptPayload {
   }>;
 }
 
+
+type MoneyFlowType = 'income' | 'expense';
+
+function isMoneyFlowType(value: unknown): value is MoneyFlowType {
+  return value === 'income' || value === 'expense';
+}
+
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 function roundCurrency(value: number): number {
@@ -448,7 +455,7 @@ export async function generateAiInsights(
 
   const categoriesForPrompt = Array.from(categoryTotals.entries())
     .map(([categoryId, totals]) => {
-      if (totals.type !== 'income' && totals.type !== 'expense') {
+      if (!isMoneyFlowType(totals.type)) {
         return undefined;
       }
 
