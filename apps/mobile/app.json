@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/brand/mintly-splash.png",
+      "image": "./assets/brand/mintly-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
