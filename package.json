@@ -20,7 +20,9 @@
     "typecheck": "turbo run typecheck",
     "start:api": "pnpm -C apps/api start:prod",
     "start:mobile": "pnpm -C apps/mobile start",
-    "smoke:api": "node scripts/smoke-api.mjs"
+    "smoke:api": "node scripts/smoke-api.mjs",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.46.3",
@@ -28,5 +30,11 @@
     "eslint": "^8.57.1",
     "turbo": "^2.8.9",
     "typescript": "^5.9.3"
+  },
+  "version": "1.0.0",
+  "dependencies": {
+    "expo": "~54.0.33",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   }
 }

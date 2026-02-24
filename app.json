@@ -10,6 +10,9 @@
     },
     "android": {
       "package": "com.umutugur.mintly"
+    },
+    "ios": {
+      "bundleIdentifier": "com.umutugur.mintly"
     }
   }
 }
