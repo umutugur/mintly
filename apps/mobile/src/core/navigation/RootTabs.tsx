@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { AppIcon } from '@shared/ui';
 import { I18N_KEYS } from '@shared/i18n/keys';
 import { useI18n } from '@shared/i18n';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useT } from '@shared/i18n/t';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 
@@ -37,6 +38,7 @@ export function RootTabs() {
   const { theme } = useTheme();
   const { locale } = useI18n();
   const t = useT();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
@@ -46,8 +48,8 @@ export function RootTabs() {
         tabBarHideOnKeyboard: true,
         tabBarShowLabel: true,
         tabBarStyle: {
-          height: 78,
-          paddingBottom: 8,
+          height: 64 + (insets.bottom || 12),
+          paddingBottom: (insets.bottom || 12),
           paddingTop: 8,
           borderTopWidth: 1,
           borderTopColor: theme.colors.border,

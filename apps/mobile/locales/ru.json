@@ -18,10 +18,10 @@
       "transactions": "Операции",
       "transactionsShort": "Операции",
       "analytics": "Аналитика",
-    "analyticsShort": "Аналитика",
-    "groups": "Группы",
-    "groupsShort": "Группы",
-    "add": "Добавить",
+      "analyticsShort": "Аналитика",
+      "groups": "Группы",
+      "groupsShort": "Группы",
+      "add": "Добавить",
       "profile": "Профиль",
       "profileShort": "Профиль"
     },
@@ -77,7 +77,8 @@
       "errorTitle": "Панель недоступна",
       "noData": "Нет данных для панели.",
       "noTransactions": "Пока нет операций.",
-      "noAccounts": "Счета не найдены."
+      "noAccounts": "Счета не найдены.",
+      "createAccount": "Создать счет"
     },
     "time": {
       "today": "Сегодня, {{time}}",

@@ -17,7 +17,9 @@
       "confirmBody": "{{name}} hesabını silmek istediğinizden emin misiniz?",
       "confirmTitle": "Hesabı sil",
       "error": "Hesap silinemedi. Lütfen tekrar deneyin.",
-      "success": "Hesap silindi."
+      "success": "Hesap silindi.",
+      "hasBalanceTitle": "Hesapta Bakiye Var",
+      "hasBalanceBody": "Bu hesabı silmeden önce içindeki bakiyeyi başka bir hesaba aktarmanız gerekmektedir."
     },
     "form": {
       "create": "Hesap Oluştur",
@@ -459,6 +461,7 @@
     "close": "Kapat",
     "continue": "Devam Et",
     "delete": "Sil",
+    "deleted": "Silindi",
     "edit": "Düzenle",
     "goBack": "Geri Git",
     "loadingShort": "Yükleniyor...",
@@ -665,6 +668,7 @@
       "errorTitle": "Panel yüklenemedi",
       "loading": "Panel yükleniyor...",
       "noAccounts": "Hesap bulunamadı.",
+      "createAccount": "Hesap Oluştur",
       "noData": "Panel verisi bulunamadı.",
       "noTransactions": "Henüz işlem bulunmuyor."
     },

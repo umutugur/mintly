@@ -178,6 +178,7 @@ export const transactionSchema = z.object({
   occurredAt: dateTimeStringSchema,
   createdAt: dateTimeStringSchema,
   updatedAt: dateTimeStringSchema,
+  deletedAt: dateTimeStringSchema.nullable().optional(),
 });
 
 export const transactionCreateInputSchema = z.object({

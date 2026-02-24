@@ -17,7 +17,9 @@
       "confirmBody": "Are you sure you want to delete {{name}}?",
       "confirmTitle": "Delete account",
       "error": "Account could not be deleted. Please try again.",
-      "success": "Account deleted."
+      "success": "Account deleted.",
+      "hasBalanceTitle": "Account Has Balance",
+      "hasBalanceBody": "Please transfer the remaining balance to another account before deleting this one."
     },
     "form": {
       "create": "Create Account",
@@ -459,6 +461,7 @@
     "close": "Close",
     "continue": "Continue",
     "delete": "Delete",
+    "deleted": "Deleted",
     "edit": "Edit",
     "goBack": "Go back",
     "loadingShort": "Loading...",
@@ -665,6 +668,7 @@
       "errorTitle": "Dashboard unavailable",
       "loading": "Loading dashboard...",
       "noAccounts": "No accounts found.",
+      "createAccount": "Create Account",
       "noData": "No dashboard data available.",
       "noTransactions": "No recent transactions yet."
     },

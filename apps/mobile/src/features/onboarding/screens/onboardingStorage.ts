@@ -1,10 +1,10 @@
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ONBOARDING_COMPLETED_KEY = 'finsight:onboarding-completed';
 
 export async function getOnboardingCompleted(): Promise<boolean> {
   try {
-    return (await SecureStore.getItemAsync(ONBOARDING_COMPLETED_KEY)) === 'true';
+    return (await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY)) === 'true';
   } catch {
     return false;
   }
@@ -13,11 +13,11 @@ export async function getOnboardingCompleted(): Promise<boolean> {
 export async function setOnboardingCompleted(completed: boolean): Promise<void> {
   try {
     if (completed) {
-      await SecureStore.setItemAsync(ONBOARDING_COMPLETED_KEY, 'true');
+      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
       return;
     }
 
-    await SecureStore.deleteItemAsync(ONBOARDING_COMPLETED_KEY);
+    await AsyncStorage.removeItem(ONBOARDING_COMPLETED_KEY);
   } catch {
     // Keep onboarding flow non-blocking even if local persistence fails.
   }

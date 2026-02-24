@@ -312,7 +312,7 @@ const RecentTransactionRow = memo(function RecentTransactionRow({
         },
       ]}
     >
-      <View style={[styles.transactionIconWrap, { backgroundColor: palette.iconBg }]}> 
+      <View style={[styles.transactionIconWrap, { backgroundColor: palette.iconBg }]}>
         <Text style={[styles.transactionIcon, { color: palette.iconText }]}>{palette.icon}</Text>
       </View>
 
@@ -482,6 +482,19 @@ export function DashboardScreen() {
     };
 
     target.navigate('AddTab');
+  }, [navigation]);
+
+  const goToAccountsScreen = useCallback(() => {
+    const parent = navigation.getParent?.();
+    const root = parent?.getParent?.();
+    const target = (root ?? parent ?? navigation) as {
+      navigate: (
+        routeName: keyof RootTabParamList,
+        params?: RootTabParamList['ProfileTab']
+      ) => void;
+    };
+
+    target.navigate('ProfileTab', { screen: 'Accounts' });
   }, [navigation]);
 
   const goToTransactionsScreen = useCallback(
@@ -684,7 +697,7 @@ export function DashboardScreen() {
 
             {data.balances.length > 0 ? (
               <View style={styles.sectionWrap}>
-              <View style={styles.sectionHeaderRow}>
+                <View style={styles.sectionHeaderRow}>
                   <Text
                     numberOfLines={2}
                     style={[styles.sectionTitle, { color: mode === 'dark' ? '#F3F7FF' : '#1B2437' }]}
@@ -705,8 +718,15 @@ export function DashboardScreen() {
                 </View>
               </View>
             ) : (
-              <Card>
-                <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>{t('dashboard.state.noAccounts')}</Text>
+              <Card style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xl }}>
+                <Text style={[styles.emptyText, { color: theme.colors.textMuted, textAlign: 'center' }]}>
+                  {t('dashboard.state.noAccounts')}
+                </Text>
+                <PrimaryButton
+                  label={t('dashboard.state.createAccount')}
+                  onPress={goToAccountsScreen}
+                  iconName="add-circle-outline"
+                />
               </Card>
             )}
 

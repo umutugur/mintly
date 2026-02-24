@@ -427,6 +427,7 @@ export function TransactionsScreen() {
           date={getCategoryHint(transaction, t, locale)}
           dark={mode === 'dark'}
           kind={transaction.kind}
+          isDeleted={!!transaction.deletedAt}
           onLongPress={() => onTransactionRowLongPress(transaction)}
           onPress={() =>
             transaction.kind === 'transfer'

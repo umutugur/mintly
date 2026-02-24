@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { darkTheme, spacing, useTheme } from '@shared/theme';
@@ -20,7 +21,7 @@ export function ScreenContainer({
   dark = false,
   contentStyle,
   scrollable = true,
-  safeAreaEdges = ['top', 'left', 'right'],
+  safeAreaEdges = ['top', 'left', 'right', 'bottom'],
   keyboardDismissMode = 'on-drag',
   keyboardShouldPersistTaps = 'handled',
   showsVerticalScrollIndicator = false,
@@ -44,15 +45,18 @@ export function ScreenContainer({
       edges={safeAreaEdges}
       style={[styles.safe, { backgroundColor: activeTheme.colors.background }]}
     >
-      <ScrollView
+      <KeyboardAwareScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={[styles.content, contentStyle]}
         keyboardDismissMode={keyboardDismissMode}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={20}
       >
         {children}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

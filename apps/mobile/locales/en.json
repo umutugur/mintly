@@ -18,10 +18,10 @@
       "transactions": "Transactions",
       "transactionsShort": "Records",
       "analytics": "Analytics",
-    "analyticsShort": "Insights",
-    "groups": "Groups",
-    "groupsShort": "Groups",
-    "add": "Add",
+      "analyticsShort": "Insights",
+      "groups": "Groups",
+      "groupsShort": "Groups",
+      "add": "Add",
       "profile": "Profile",
       "profileShort": "Profile"
     },
@@ -77,7 +77,8 @@
       "errorTitle": "Dashboard unavailable",
       "noData": "No dashboard data available.",
       "noTransactions": "No recent transactions yet.",
-      "noAccounts": "No accounts found."
+      "noAccounts": "No accounts found.",
+      "createAccount": "Create Account"
     },
     "time": {
       "today": "Today, {{time}}",

@@ -18,6 +18,7 @@ interface TransactionRowProps {
   categoryIconName?: AppIconName;
   onPress?: () => void;
   onLongPress?: () => void;
+  isDeleted?: boolean;
 }
 
 export function TransactionRow({
@@ -31,6 +32,7 @@ export function TransactionRow({
   categoryIconName,
   onPress,
   onLongPress,
+  isDeleted = false,
 }: TransactionRowProps) {
   const { theme } = useTheme();
   const { t } = useI18n();
@@ -42,7 +44,7 @@ export function TransactionRow({
       accessibilityRole="button"
       onLongPress={onLongPress}
       onPress={onPress}
-      style={({ pressed }) => [pressed && styles.pressed]}
+      style={({ pressed }) => [pressed && styles.pressed, isDeleted && styles.deletedRow]}
     >
       <Card dark={dark} style={styles.card}>
         <View style={[styles.iconCircle, { backgroundColor: palette.iconBg }]}>
@@ -77,6 +79,25 @@ export function TransactionRow({
                   style={[styles.kindBadgeText, { color: activeTheme.colors.primary }]}
                 >
                   {t('transactions.row.transferBadge')}
+                </Text>
+              </View>
+            ) : null}
+            {isDeleted ? (
+              <View
+                style={[
+                  styles.kindBadge,
+                  {
+                    backgroundColor: withAlpha(activeTheme.colors.expense, 0.12),
+                  },
+                ]}
+              >
+                <AppIcon name="trash-outline" size="xs" color={activeTheme.colors.expense} />
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={[styles.kindBadgeText, { color: activeTheme.colors.expense }]}
+                >
+                  {t('common.deleted', { defaultValue: 'Silindi' })}
                 </Text>
               </View>
             ) : null}
@@ -138,6 +159,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.sm,
+  },
+  deletedRow: {
+    opacity: 0.5,
   },
   pressed: {
     opacity: 0.92,

@@ -7,6 +7,7 @@ import {
   accountCreateInputSchema,
   type AccountType,
   type AccountUpdateInput,
+  type DashboardRecentResponse,
 } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -252,6 +253,24 @@ export function AccountsScreen() {
         return;
       }
 
+      const dashboardData = queryClient.getQueryData<DashboardRecentResponse>(financeQueryKeys.dashboard.recent());
+      const accountBalance = dashboardData?.balances.find((b) => b.accountId === accountId)?.balance ?? 0;
+
+      if (accountBalance > 0) {
+        Alert.alert(
+          t('accounts.delete.hasBalanceTitle', { defaultValue: 'Hesapta Bakiye Var' }),
+          t('accounts.delete.hasBalanceBody', { defaultValue: 'Bu hesabı silmeden önce içindeki bakiyeyi başka bir hesaba aktarmanız gerekmektedir.' }),
+          [
+            { text: t('common.cancel'), style: 'cancel' },
+            {
+              text: t('add.hub.transferAction'),
+              onPress: openTransfer,
+            }
+          ]
+        );
+        return;
+      }
+
       Alert.alert(
         t('accounts.delete.confirmTitle'),
         t('accounts.delete.confirmBody', { name: accountName }),
@@ -267,7 +286,7 @@ export function AccountsScreen() {
         ],
       );
     },
-    [deleteAccountMutation, t, updateAccountMutation.isPending],
+    [deleteAccountMutation, queryClient, openTransfer, t, updateAccountMutation.isPending],
   );
 
   if (accountsQuery.isLoading) {
@@ -344,22 +363,22 @@ export function AccountsScreen() {
 
       <Section title={t('accounts.sections.create.title')}>
         <Card style={styles.formCard}>
-              <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
-              <Controller
-                control={createForm.control}
-                name="name"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    style={styles.input}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    editable={!createAccountMutation.isPending}
-                    placeholder={t('accounts.form.namePlaceholder')}
-                    placeholderTextColor={colors.textMuted}
-                  />
-                )}
+          <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
+          <Controller
+            control={createForm.control}
+            name="name"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                editable={!createAccountMutation.isPending}
+                placeholder={t('accounts.form.namePlaceholder')}
+                placeholderTextColor={colors.textMuted}
               />
+            )}
+          />
           {createForm.formState.errors.name ? (
             <Text style={styles.errorText}>{t(createForm.formState.errors.name.message ?? '')}</Text>
           ) : null}
