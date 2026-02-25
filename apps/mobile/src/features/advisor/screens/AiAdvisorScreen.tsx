@@ -145,6 +145,7 @@ export function AiAdvisorScreen() {
 
   const [month, setMonth] = useState(getCurrentMonthString());
   const [activeTab, setActiveTab] = useState<AdvisorTab>('summary');
+  const [showDetailedSections, setShowDetailedSections] = useState(false);
   const [actionModal, setActionModal] = useState<AdvisorActionModal>(null);
   const [budgetValues, setBudgetValues] = useState<Record<string, string>>({});
   const [recurringAmountText, setRecurringAmountText] = useState('');
@@ -566,6 +567,15 @@ export function AiAdvisorScreen() {
     return items;
   }, [insights, t]);
 
+  const warningItems = useMemo(() => {
+    if (!insights) {
+      return [] as string[];
+    }
+
+    const merged = [...insights.advice.warnings, ...flags];
+    return Array.from(new Set(merged.map((item) => item.trim()).filter((item) => item.length > 0)));
+  }, [flags, insights]);
+
   const advisorErrorMessage = useMemo(() => {
     if (!insightsQuery.error) {
       return '';
@@ -774,334 +784,392 @@ export function AiAdvisorScreen() {
           ) : null}
         </Card>
 
-        <View style={styles.tabsRow}>
-          {TAB_OPTIONS.map((tab) => {
-            const selected = activeTab === tab.key;
+        <Section dark={dark} title={t('aiAdvisor.primary.keyInsights')}>
+          <Card dark={dark} style={styles.panelCard}>
+            {insights.advice.topFindings.length > 0 ? (
+              <BulletList items={insights.advice.topFindings} tone="primary" />
+            ) : (
+              <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                {t('aiAdvisor.summary.emptyFlags')}
+              </Text>
+            )}
+          </Card>
+        </Section>
 
-            return (
-              <Pressable
-                key={tab.key}
-                accessibilityRole="button"
-                onPress={() => setActiveTab(tab.key)}
-                style={[
-                  styles.tab,
-                  {
-                    backgroundColor: selected
-                      ? theme.colors.primary
-                      : dark
-                        ? 'rgba(255,255,255,0.08)'
-                        : '#EEF2FB',
-                    borderColor: selected ? theme.colors.primary : theme.colors.border,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    {
-                      color: selected ? '#FFFFFF' : theme.colors.text,
-                    },
-                  ]}
-                >
-                  {t(tab.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {activeTab === 'summary' ? (
-          <View style={styles.sectionWrap}>
-            <Section dark={dark} title={t('aiAdvisor.summary.sections.overview')}>
-              <View style={styles.grid}>
-                {overviewCards.map((card) => (
-                  <StatCard
-                    key={card.key}
-                    dark={dark}
-                    label={card.label}
-                    value={card.value}
-                    tone={card.tone}
-                  />
+        <Section dark={dark} title={t('aiAdvisor.primary.actions')}>
+          <Card dark={dark} style={styles.panelCard}>
+            {insights.advice.suggestedActions.length > 0 ? (
+              <View style={styles.listWrap}>
+                {insights.advice.suggestedActions.map((item, index) => (
+                  <View key={`${item}-${index}`} style={styles.listRow}>
+                    <AppIcon name="checkmark-circle" size="sm" tone="income" />
+                    <Text style={styles.listText}>{item}</Text>
+                  </View>
                 ))}
               </View>
-            </Section>
+            ) : (
+              <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                {t('aiAdvisor.savings.emptyActions')}
+              </Text>
+            )}
+          </Card>
+        </Section>
 
-            <Section dark={dark} title={t('aiAdvisor.summary.sections.categoryBreakdown')}>
-              <Card dark={dark} style={styles.panelCard}>
-                {insights.categoryBreakdown.length > 0 ? (
-                  <View style={styles.listWrap}>
-                    {insights.categoryBreakdown.map((item) => (
-                      <View key={item.categoryId} style={[styles.rowBetween, { borderColor: theme.colors.border }]}>
-                        <View style={styles.rowLeft}>
-                          <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.name}</Text>
-                          <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
-                            {t('aiAdvisor.summary.shareValue', {
-                              value: formatPercentFromRatio(item.sharePercent / 100, locale),
-                            })}
-                          </Text>
-                        </View>
-                        <Text style={[styles.rowValue, { color: theme.colors.text }]}>{money(item.total)}</Text>
-                      </View>
+        <Section dark={dark} title={t('aiAdvisor.primary.warnings')}>
+          <Card
+            dark={dark}
+            style={[
+              styles.panelCard,
+              styles.warningPanel,
+              {
+                backgroundColor: dark ? 'rgba(239,68,68,0.12)' : '#FEF2F2',
+                borderColor: dark ? 'rgba(248,113,113,0.4)' : '#FCA5A5',
+              },
+            ]}
+          >
+            {warningItems.length > 0 ? (
+              <BulletList items={warningItems} tone="expense" />
+            ) : (
+              <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                {t('aiAdvisor.primary.noWarnings')}
+              </Text>
+            )}
+          </Card>
+        </Section>
+
+        <Card dark={dark} style={styles.detailsCard}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setShowDetailedSections((previous) => !previous)}
+            style={styles.detailsToggle}
+          >
+            <Text style={[styles.detailsToggleLabel, { color: theme.colors.text }]}>
+              {showDetailedSections ? t('aiAdvisor.primary.hideDetails') : t('aiAdvisor.primary.showDetails')}
+            </Text>
+            <AppIcon name={showDetailedSections ? 'chevron-up' : 'chevron-down'} size="sm" tone="text" />
+          </Pressable>
+        </Card>
+
+        {showDetailedSections ? (
+          <>
+            <View style={styles.tabsRow}>
+              {TAB_OPTIONS.map((tab) => {
+                const selected = activeTab === tab.key;
+
+                return (
+                  <Pressable
+                    key={tab.key}
+                    accessibilityRole="button"
+                    onPress={() => setActiveTab(tab.key)}
+                    style={[
+                      styles.tab,
+                      {
+                        backgroundColor: selected
+                          ? theme.colors.primary
+                          : dark
+                            ? 'rgba(255,255,255,0.08)'
+                            : '#EEF2FB',
+                        borderColor: selected ? theme.colors.primary : theme.colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tabLabel,
+                        {
+                          color: selected ? '#FFFFFF' : theme.colors.text,
+                        },
+                      ]}
+                    >
+                      {t(tab.labelKey)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {activeTab === 'summary' ? (
+              <View style={styles.sectionWrap}>
+                <Section dark={dark} title={t('aiAdvisor.summary.sections.overview')}>
+                  <View style={styles.grid}>
+                    {overviewCards.map((card) => (
+                      <StatCard
+                        key={card.key}
+                        dark={dark}
+                        label={card.label}
+                        value={card.value}
+                        tone={card.tone}
+                      />
                     ))}
                   </View>
-                ) : (
-                  <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
-                    {t('aiAdvisor.summary.emptyCategory')}
-                  </Text>
-                )}
-              </Card>
-            </Section>
+                </Section>
 
-            <Section dark={dark} title={t('aiAdvisor.summary.sections.cashflowTrend')}>
-              <Card dark={dark} style={styles.panelCard}>
-                {insights.cashflowTrend.length > 0 ? (
-                  <View style={styles.trendWrap}>
-                    {insights.cashflowTrend.map((point) => (
-                      <View key={point.month} style={styles.trendItem}>
-                        <Text style={[styles.trendMonth, { color: theme.colors.textMuted }]}>
-                          {formatMonthLabel(point.month, locale)}
-                        </Text>
-
-                        <View style={[styles.trendBarTrack, { backgroundColor: dark ? 'rgba(255,255,255,0.08)' : '#EEF2FB' }]}>
-                          <View
-                            style={[
-                              styles.trendBarIncome,
-                              {
-                                width: `${Math.max(4, (point.incomeTotal / trendScale) * 100)}%`,
-                                backgroundColor: theme.colors.income,
-                              },
-                            ]}
-                          />
-                        </View>
-
-                        <View style={[styles.trendBarTrack, { backgroundColor: dark ? 'rgba(255,255,255,0.08)' : '#EEF2FB' }]}>
-                          <View
-                            style={[
-                              styles.trendBarExpense,
-                              {
-                                width: `${Math.max(4, (point.expenseTotal / trendScale) * 100)}%`,
-                                backgroundColor: theme.colors.expense,
-                              },
-                            ]}
-                          />
-                        </View>
-
-                        <View style={styles.trendAmountsRow}>
-                          <Text style={[styles.trendAmountText, { color: theme.colors.income }]}>
-                            {money(point.incomeTotal)}
-                          </Text>
-                          <Text style={[styles.trendAmountText, { color: theme.colors.expense }]}>
-                            {money(point.expenseTotal)}
-                          </Text>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
-                    {t('aiAdvisor.summary.noTrend')}
-                  </Text>
-                )}
-              </Card>
-            </Section>
-
-            <Section dark={dark} title={t('aiAdvisor.summary.sections.budgetAdherence')}>
-              <Card dark={dark} style={styles.panelCard}>
-                {insights.budgetAdherence.items.length > 0 ? (
-                  <View style={styles.listWrap}>
-                    {insights.budgetAdherence.items.map((item) => (
-                      <View key={item.budgetId} style={[styles.rowBetween, { borderColor: theme.colors.border }]}>
-                        <View style={styles.rowLeft}>
-                          <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.categoryName}</Text>
-                          <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
-                            {t('aiAdvisor.budget.usageValue', {
-                              spent: money(item.spentAmount),
-                              limit: money(item.limitAmount),
-                            })}
-                          </Text>
-                        </View>
-                        <Chip
-                          dark={dark}
-                          tone={
-                            item.status === 'on_track'
-                              ? 'income'
-                              : item.status === 'near_limit'
-                                ? 'primary'
-                                : 'expense'
-                          }
-                          label={t(BUDGET_STATUS_LABEL_KEY[item.status])}
-                        />
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
-                    {t('aiAdvisor.summary.emptyBudget')}
-                  </Text>
-                )}
-              </Card>
-            </Section>
-
-            <Section dark={dark} title={t('aiAdvisor.summary.sections.flags')}>
-              <Card dark={dark} style={styles.panelCard}>
-                {flags.length > 0 ? (
-                  <BulletList items={flags} tone="expense" />
-                ) : (
-                  <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
-                    {t('aiAdvisor.summary.emptyFlags')}
-                  </Text>
-                )}
-              </Card>
-            </Section>
-          </View>
-        ) : null}
-
-        {activeTab === 'savings' ? (
-          <View style={styles.sectionWrap}>
-            <Section dark={dark} title={t('aiAdvisor.savings.title')}>
-              <View style={styles.grid}>
-                <StatCard
-                  dark={dark}
-                  label={t('aiAdvisor.savings.targetRate')}
-                  value={formatPercentFromRatio(insights.advice.savings.targetRate, locale)}
-                  tone="primary"
-                />
-                <StatCard
-                  dark={dark}
-                  label={t('aiAdvisor.savings.monthlyTargetAmount')}
-                  value={money(insights.advice.savings.monthlyTargetAmount)}
-                  tone="income"
-                />
-              </View>
-
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.savings.next7Days')}</Text>
-                {insights.advice.savings.next7DaysActions.length > 0 ? (
-                  <BulletList items={insights.advice.savings.next7DaysActions} tone="income" />
-                ) : (
-                  <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
-                    {t('aiAdvisor.savings.emptyActions')}
-                  </Text>
-                )}
-              </Card>
-
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.savings.autoTransferSuggestion')}</Text>
-                <Text style={[styles.panelBodyText, { color: theme.colors.textMuted }]}>
-                  {insights.advice.savings.autoTransferSuggestion}
-                </Text>
-              </Card>
-            </Section>
-          </View>
-        ) : null}
-
-        {activeTab === 'investment' ? (
-          <View style={styles.sectionWrap}>
-            <Section dark={dark} title={t('aiAdvisor.investment.title')}>
-              <View style={styles.grid}>
-                <StatCard
-                  dark={dark}
-                  label={t('aiAdvisor.investment.emergencyFundCurrent')}
-                  value={money(insights.advice.investment.emergencyFundCurrent)}
-                  tone="primary"
-                />
-                <StatCard
-                  dark={dark}
-                  label={t('aiAdvisor.investment.emergencyFundTarget')}
-                  value={money(insights.advice.investment.emergencyFundTarget)}
-                  tone="expense"
-                />
-              </View>
-
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.investment.emergencyFundStatus')}</Text>
-                <Chip
-                  dark={dark}
-                  tone={
-                    insights.advice.investment.emergencyFundStatus === 'ready'
-                      ? 'income'
-                      : insights.advice.investment.emergencyFundStatus === 'building'
-                        ? 'primary'
-                        : 'expense'
-                  }
-                  label={t(`aiAdvisor.investment.status.${insights.advice.investment.emergencyFundStatus}`)}
-                />
-              </Card>
-
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.investment.profiles')}</Text>
-                <View style={styles.listWrap}>
-                  {insights.advice.investment.profiles.map((profile) => (
-                    <View key={profile.level} style={[styles.profileCard, { borderColor: theme.colors.border }]}>
-                      <View style={styles.profileHeader}>
-                        <Chip dark={dark} tone="primary" label={t(`aiAdvisor.investment.risk.${profile.level}`)} />
-                        <Text style={[styles.profileTitle, { color: theme.colors.text }]}>{profile.title}</Text>
-                      </View>
-
-                      <Text style={[styles.profileBody, { color: theme.colors.textMuted }]}>{profile.rationale}</Text>
-
-                      <View style={styles.profileOptionsWrap}>
-                        {profile.options.map((option, index) => (
-                          <Text key={`${profile.level}-${index}`} style={[styles.profileOption, { color: theme.colors.textMuted }]}>
-                            {option}
-                          </Text>
+                <Section dark={dark} title={t('aiAdvisor.summary.sections.categoryBreakdown')}>
+                  <Card dark={dark} style={styles.panelCard}>
+                    {insights.categoryBreakdown.length > 0 ? (
+                      <View style={styles.listWrap}>
+                        {insights.categoryBreakdown.map((item) => (
+                          <View key={item.categoryId} style={[styles.rowBetween, { borderColor: theme.colors.border }]}>
+                            <View style={styles.rowLeft}>
+                              <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.name}</Text>
+                              <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
+                                {t('aiAdvisor.summary.shareValue', {
+                                  value: formatPercentFromRatio(item.sharePercent / 100, locale),
+                                })}
+                              </Text>
+                            </View>
+                            <Text style={[styles.rowValue, { color: theme.colors.text }]}>{money(item.total)}</Text>
+                          </View>
                         ))}
                       </View>
-                    </View>
-                  ))}
-                </View>
-              </Card>
+                    ) : (
+                      <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                        {t('aiAdvisor.summary.emptyCategory')}
+                      </Text>
+                    )}
+                  </Card>
+                </Section>
 
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.investment.guidance')}</Text>
-                <BulletList items={insights.advice.investment.guidance} tone="primary" />
-              </Card>
-            </Section>
-          </View>
-        ) : null}
+                <Section dark={dark} title={t('aiAdvisor.summary.sections.cashflowTrend')}>
+                  <Card dark={dark} style={styles.panelCard}>
+                    {insights.cashflowTrend.length > 0 ? (
+                      <View style={styles.trendWrap}>
+                        {insights.cashflowTrend.map((point) => (
+                          <View key={point.month} style={styles.trendItem}>
+                            <Text style={[styles.trendMonth, { color: theme.colors.textMuted }]}>
+                              {formatMonthLabel(point.month, locale)}
+                            </Text>
 
-        {activeTab === 'tips' ? (
-          <View style={styles.sectionWrap}>
-            <Section dark={dark} title={t('aiAdvisor.tips.title')}>
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.tips.cutCandidates')}</Text>
-                <View style={styles.listWrap}>
-                  {insights.advice.expenseOptimization.cutCandidates.map((item, index) => (
-                    <View key={`${item.label}-${index}`} style={[styles.tipCard, { borderColor: theme.colors.border }]}>
-                      <View style={styles.rowBetween}>
-                        <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.label}</Text>
-                        <Text style={[styles.rowValue, { color: theme.colors.expense }]}>
-                          {t('aiAdvisor.tips.reductionValue', {
-                            value: formatReductionPercent(item.suggestedReductionPercent, locale),
-                          })}
-                        </Text>
+                            <View style={[styles.trendBarTrack, { backgroundColor: dark ? 'rgba(255,255,255,0.08)' : '#EEF2FB' }]}>
+                              <View
+                                style={[
+                                  styles.trendBarIncome,
+                                  {
+                                    width: `${Math.max(4, (point.incomeTotal / trendScale) * 100)}%`,
+                                    backgroundColor: theme.colors.income,
+                                  },
+                                ]}
+                              />
+                            </View>
+
+                            <View style={[styles.trendBarTrack, { backgroundColor: dark ? 'rgba(255,255,255,0.08)' : '#EEF2FB' }]}>
+                              <View
+                                style={[
+                                  styles.trendBarExpense,
+                                  {
+                                    width: `${Math.max(4, (point.expenseTotal / trendScale) * 100)}%`,
+                                    backgroundColor: theme.colors.expense,
+                                  },
+                                ]}
+                              />
+                            </View>
+
+                            <View style={styles.trendAmountsRow}>
+                              <Text style={[styles.trendAmountText, { color: theme.colors.income }]}>
+                                {money(point.incomeTotal)}
+                              </Text>
+                              <Text style={[styles.trendAmountText, { color: theme.colors.expense }]}>
+                                {money(point.expenseTotal)}
+                              </Text>
+                            </View>
+                          </View>
+                        ))}
                       </View>
-
-                      <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
-                        {t('aiAdvisor.tips.currentAmountValue', {
-                          value: money(item.currentAmount),
-                        })}
+                    ) : (
+                      <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                        {t('aiAdvisor.summary.noTrend')}
                       </Text>
+                    )}
+                  </Card>
+                </Section>
 
-                      <Text style={[styles.panelBodyText, { color: theme.colors.textMuted }]}>
-                        {item.alternativeAction}
+                <Section dark={dark} title={t('aiAdvisor.summary.sections.budgetAdherence')}>
+                  <Card dark={dark} style={styles.panelCard}>
+                    {insights.budgetAdherence.items.length > 0 ? (
+                      <View style={styles.listWrap}>
+                        {insights.budgetAdherence.items.map((item) => (
+                          <View key={item.budgetId} style={[styles.rowBetween, { borderColor: theme.colors.border }]}>
+                            <View style={styles.rowLeft}>
+                              <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.categoryName}</Text>
+                              <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
+                                {t('aiAdvisor.budget.usageValue', {
+                                  spent: money(item.spentAmount),
+                                  limit: money(item.limitAmount),
+                                })}
+                              </Text>
+                            </View>
+                            <Chip
+                              dark={dark}
+                              tone={
+                                item.status === 'on_track'
+                                  ? 'income'
+                                  : item.status === 'near_limit'
+                                    ? 'primary'
+                                    : 'expense'
+                              }
+                              label={t(BUDGET_STATUS_LABEL_KEY[item.status])}
+                            />
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                        {t('aiAdvisor.summary.emptyBudget')}
                       </Text>
+                    )}
+                  </Card>
+                </Section>
+              </View>
+            ) : null}
+
+            {activeTab === 'savings' ? (
+              <View style={styles.sectionWrap}>
+                <Section dark={dark} title={t('aiAdvisor.savings.title')}>
+                  <View style={styles.grid}>
+                    <StatCard
+                      dark={dark}
+                      label={t('aiAdvisor.savings.targetRate')}
+                      value={formatPercentFromRatio(insights.advice.savings.targetRate, locale)}
+                      tone="primary"
+                    />
+                    <StatCard
+                      dark={dark}
+                      label={t('aiAdvisor.savings.monthlyTargetAmount')}
+                      value={money(insights.advice.savings.monthlyTargetAmount)}
+                      tone="income"
+                    />
+                  </View>
+
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.savings.next7Days')}</Text>
+                    {insights.advice.savings.next7DaysActions.length > 0 ? (
+                      <BulletList items={insights.advice.savings.next7DaysActions} tone="income" />
+                    ) : (
+                      <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>
+                        {t('aiAdvisor.savings.emptyActions')}
+                      </Text>
+                    )}
+                  </Card>
+
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.savings.autoTransferSuggestion')}</Text>
+                    <Text style={[styles.panelBodyText, { color: theme.colors.textMuted }]}>
+                      {insights.advice.savings.autoTransferSuggestion}
+                    </Text>
+                  </Card>
+                </Section>
+              </View>
+            ) : null}
+
+            {activeTab === 'investment' ? (
+              <View style={styles.sectionWrap}>
+                <Section dark={dark} title={t('aiAdvisor.investment.title')}>
+                  <View style={styles.grid}>
+                    <StatCard
+                      dark={dark}
+                      label={t('aiAdvisor.investment.emergencyFundCurrent')}
+                      value={money(insights.advice.investment.emergencyFundCurrent)}
+                      tone="primary"
+                    />
+                    <StatCard
+                      dark={dark}
+                      label={t('aiAdvisor.investment.emergencyFundTarget')}
+                      value={money(insights.advice.investment.emergencyFundTarget)}
+                      tone="expense"
+                    />
+                  </View>
+
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.investment.emergencyFundStatus')}</Text>
+                    <Chip
+                      dark={dark}
+                      tone={
+                        insights.advice.investment.emergencyFundStatus === 'ready'
+                          ? 'income'
+                          : insights.advice.investment.emergencyFundStatus === 'building'
+                            ? 'primary'
+                            : 'expense'
+                      }
+                      label={t(`aiAdvisor.investment.status.${insights.advice.investment.emergencyFundStatus}`)}
+                    />
+                  </Card>
+
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.investment.profiles')}</Text>
+                    <View style={styles.listWrap}>
+                      {insights.advice.investment.profiles.map((profile) => (
+                        <View key={profile.level} style={[styles.profileCard, { borderColor: theme.colors.border }]}>
+                          <View style={styles.profileHeader}>
+                            <Chip dark={dark} tone="primary" label={t(`aiAdvisor.investment.risk.${profile.level}`)} />
+                            <Text style={[styles.profileTitle, { color: theme.colors.text }]}>{profile.title}</Text>
+                          </View>
+
+                          <Text style={[styles.profileBody, { color: theme.colors.textMuted }]}>{profile.rationale}</Text>
+
+                          <View style={styles.profileOptionsWrap}>
+                            {profile.options.map((option, index) => (
+                              <Text key={`${profile.level}-${index}`} style={[styles.profileOption, { color: theme.colors.textMuted }]}>
+                                {option}
+                              </Text>
+                            ))}
+                          </View>
+                        </View>
+                      ))}
                     </View>
-                  ))}
-                </View>
-              </Card>
+                  </Card>
 
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.tips.quickWins')}</Text>
-                <BulletList items={insights.advice.expenseOptimization.quickWins} tone="income" />
-              </Card>
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.investment.guidance')}</Text>
+                    <BulletList items={insights.advice.investment.guidance} tone="primary" />
+                  </Card>
+                </Section>
+              </View>
+            ) : null}
 
-              <Card dark={dark} style={styles.panelCard}>
-                <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.tips.generalTips')}</Text>
-                <BulletList items={insights.advice.tips} tone="primary" />
-              </Card>
-            </Section>
-          </View>
+            {activeTab === 'tips' ? (
+              <View style={styles.sectionWrap}>
+                <Section dark={dark} title={t('aiAdvisor.tips.title')}>
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.tips.cutCandidates')}</Text>
+                    <View style={styles.listWrap}>
+                      {insights.advice.expenseOptimization.cutCandidates.map((item, index) => (
+                        <View key={`${item.label}-${index}`} style={[styles.tipCard, { borderColor: theme.colors.border }]}>
+                          <View style={styles.rowBetween}>
+                            <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{item.label}</Text>
+                            <Text style={[styles.rowValue, { color: theme.colors.expense }]}>
+                              {t('aiAdvisor.tips.reductionValue', {
+                                value: formatReductionPercent(item.suggestedReductionPercent, locale),
+                              })}
+                            </Text>
+                          </View>
+
+                          <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
+                            {t('aiAdvisor.tips.currentAmountValue', {
+                              value: money(item.currentAmount),
+                            })}
+                          </Text>
+
+                          <Text style={[styles.panelBodyText, { color: theme.colors.textMuted }]}>
+                            {item.alternativeAction}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </Card>
+
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.tips.quickWins')}</Text>
+                    <BulletList items={insights.advice.expenseOptimization.quickWins} tone="income" />
+                  </Card>
+
+                  <Card dark={dark} style={styles.panelCard}>
+                    <Text style={[styles.panelTitle, { color: theme.colors.text }]}>{t('aiAdvisor.tips.generalTips')}</Text>
+                    <BulletList items={insights.advice.tips} tone="primary" />
+                  </Card>
+                </Section>
+              </View>
+            ) : null}
+          </>
         ) : null}
 
         <Section dark={dark} title={t('advisor.actions.title')} subtitle={t('advisor.actions.subtitle')}>
@@ -1445,6 +1513,22 @@ const styles = StyleSheet.create({
   },
   panelCard: {
     gap: spacing.sm,
+  },
+  warningPanel: {
+    borderWidth: 1,
+  },
+  detailsCard: {
+    paddingVertical: spacing.xs,
+  },
+  detailsToggle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
+  detailsToggleLabel: {
+    ...typography.subheading,
+    fontSize: 14,
   },
   panelTitle: {
     ...typography.subheading,

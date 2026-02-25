@@ -187,5 +187,7 @@ describe('GET /advisor/insights (fallback mode)', () => {
     expect(parsed.data.preferences.savingsTargetRate).toBe(25);
     expect(parsed.data.preferences.riskProfile).toBe('low');
     expect(parsed.data.advice.summary.length).toBeGreaterThan(0);
+    expect(parsed.data.advice.topFindings.length).toBeGreaterThan(0);
+    expect(parsed.data.advice.suggestedActions.length).toBeGreaterThan(0);
   });
 });

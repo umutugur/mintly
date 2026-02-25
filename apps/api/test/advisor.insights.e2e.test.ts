@@ -222,6 +222,17 @@ describe('GET /advisor/insights', () => {
         result: {
           response: JSON.stringify({
             summary,
+            topFindings: [
+              'Gelir-gider dengesi pozitif seyrediyor.',
+              'Market kategorisi gider değişimini sürüklüyor.',
+              'Birikim hedefi korunabilir seviyede.',
+            ],
+            suggestedActions: [
+              'Market kategorisi için haftalık limit belirleyin.',
+              'Maaş günü sonrası otomatik birikim transferi planlayın.',
+              'Bu hafta bir zorunlu olmayan harcamayı erteleyin.',
+            ],
+            warnings: [],
             savings: {
               targetRate: 0.22,
               monthlyTargetAmount: 9500,
@@ -327,6 +338,8 @@ describe('GET /advisor/insights', () => {
     expect(parsedInitial.data.providerStatus).toBe(200);
     expect(parsedInitial.data.overview.currentMonthExpense).toBeGreaterThan(0);
     expect(parsedInitial.data.advice.summary.length).toBeGreaterThan(0);
+    expect(parsedInitial.data.advice.topFindings.length).toBeGreaterThan(0);
+    expect(parsedInitial.data.advice.suggestedActions.length).toBeGreaterThan(0);
     expect(parsedInitial.data.advice.savings.next7DaysActions.length).toBeGreaterThan(0);
 
     const regenerateResponse = await request(app.server)

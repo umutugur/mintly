@@ -34,6 +34,7 @@ export interface ParsedReceiptDraft {
   categoryHint: ScanCategoryHint;
   detectedCurrency: string | null;
   currencyWarning: boolean;
+  parseConfidence: number;
 }
 
 function normalizeText(value: string): string {
@@ -269,6 +270,52 @@ function pickDueDate(rawText: string, dateTokens: DateToken[]): string | null {
   return closest?.isoDate ?? null;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function computeParseConfidence(params: {
+  rawText: string;
+  title: string;
+  amount: number | null;
+  dateTokenCount: number;
+  detectedCurrency: string | null;
+  dueDate: string | null;
+  hasRecurringHint: boolean;
+}): number {
+  let confidence = 0.1;
+
+  if (params.rawText.length >= 40) {
+    confidence += 0.12;
+  }
+
+  if (params.title.trim().length > 0) {
+    confidence += 0.2;
+  }
+
+  if (params.amount !== null) {
+    confidence += 0.34;
+  }
+
+  if (params.dateTokenCount > 0) {
+    confidence += 0.18;
+  }
+
+  if (params.detectedCurrency) {
+    confidence += 0.08;
+  }
+
+  if (params.dueDate) {
+    confidence += 0.06;
+  }
+
+  if (params.hasRecurringHint) {
+    confidence += 0.04;
+  }
+
+  return Number(clamp(confidence, 0.05, 0.98).toFixed(2));
+}
+
 export function parseReceiptText(input: {
   rawText: string;
   baseCurrency: string;
@@ -301,6 +348,15 @@ export function parseReceiptText(input: {
       : null;
 
   const normalizedBaseCurrency = input.baseCurrency.trim().toUpperCase();
+  const parseConfidence = computeParseConfidence({
+    rawText: cleanedText,
+    title,
+    amount,
+    dateTokenCount: dateTokens.length,
+    detectedCurrency,
+    dueDate,
+    hasRecurringHint,
+  });
 
   return {
     title,
@@ -315,5 +371,6 @@ export function parseReceiptText(input: {
     currencyWarning:
       Boolean(detectedCurrency) &&
       detectedCurrency !== normalizedBaseCurrency,
+    parseConfidence,
   };
 }

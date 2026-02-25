@@ -164,6 +164,14 @@
     "actions": {
       "regenerate": "Regenerate"
     },
+    "primary": {
+      "keyInsights": "Key Insights",
+      "actions": "Next Actions",
+      "warnings": "Warnings",
+      "showDetails": "Show detailed data",
+      "hideDetails": "Hide detailed data",
+      "noWarnings": "No warnings for this period."
+    },
     "tabs": {
       "summary": "Summary",
       "savings": "Savings",

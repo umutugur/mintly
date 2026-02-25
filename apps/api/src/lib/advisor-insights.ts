@@ -32,6 +32,9 @@ const languageNameMap: Record<AiInsightsLanguage, string> = {
 
 const providerOutputSchema = z.object({
   summary: z.string().min(1).max(1500),
+  topFindings: z.array(z.string().min(1).max(320)).min(1).max(8),
+  suggestedActions: z.array(z.string().min(1).max(320)).min(1).max(8),
+  warnings: z.array(z.string().min(1).max(320)).max(8),
   savings: z.object({
     targetRate: z.number().min(0).max(1),
     monthlyTargetAmount: z.number().min(0),
@@ -89,6 +92,10 @@ function coerceProviderOutputShape(candidate: unknown): unknown {
   }
 
   const root = candidate as Record<string, unknown>;
+
+  root.topFindings = coerceStringArray(root.topFindings);
+  root.suggestedActions = coerceStringArray(root.suggestedActions);
+  root.warnings = coerceStringArray(root.warnings);
 
   // savings.next7DaysActions
   if (root.savings && typeof root.savings === 'object' && !Array.isArray(root.savings)) {
@@ -199,6 +206,21 @@ interface PromptPayload {
     negativeCashflow: boolean;
     lowSavingsRate: boolean;
     irregularIncome: boolean;
+  };
+  derivedMetrics: {
+    incomeMoMPercent: number | null;
+    expenseMoMPercent: number | null;
+    topExpenseDrivers: Array<{
+      name: string;
+      changeAmount: number;
+      changePercent: number;
+    }>;
+    recurringBurdenRatio: number;
+    anomalyTransactions: Array<{
+      label: string;
+      amount: number;
+      occurredAt: string;
+    }>;
   };
 }
 
@@ -375,6 +397,36 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function formatSignedPercent(value: number): string {
+  const rounded = roundCurrency(value);
+  const sign = rounded > 0 ? '+' : '';
+  return `${sign}${rounded}%`;
+}
+
+function calculateMoMPercent(current: number, previous: number): number | null {
+  if (previous <= 0) {
+    return current > 0 ? 100 : null;
+  }
+
+  return roundCurrency(((current - previous) / previous) * 100);
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    const left = sorted[mid - 1] ?? 0;
+    const right = sorted[mid] ?? left;
+    return (left + right) / 2;
+  }
+
+  return sorted[mid] ?? 0;
+}
+
 function shiftMonth(month: string, delta: number): string {
   const [yearRaw, monthRaw] = month.split('-');
   const year = Number(yearRaw);
@@ -528,6 +580,9 @@ function buildPrompt(language: AiInsightsLanguage, payload: PromptPayload): stri
     'Return strict JSON only with this exact shape:',
     JSON.stringify({
       summary: 'string',
+      topFindings: ['string'],
+      suggestedActions: ['string'],
+      warnings: ['string'],
       savings: {
         targetRate: 0.2,
         monthlyTargetAmount: 0,
@@ -559,13 +614,16 @@ function buildPrompt(language: AiInsightsLanguage, payload: PromptPayload): stri
     }),
     'Rules:',
     '- summary: 2-4 sentences',
+    '- topFindings: 3-5 concise insights and include: MoM trend, top expense drivers, budget pressure, recurring burden ratio, anomaly risks',
+    '- suggestedActions: 3-5 concrete next actions',
+    '- warnings: include risk-only bullets, can be empty',
     '- savings.next7DaysActions: 3-5 actionable bullets',
     '- investment.profiles: include low, medium, and high risk profiles if possible',
     '- expenseOptimization.cutCandidates: choose realistic top 3 categories or merchants',
     '- reflect preferred savings target rate and preferred risk profile in recommendations',
     '- keep concise and practical',
     '- IMPORTANT: every list field must be a JSON array (never a single string).',
-'- Do not wrap the JSON in markdown fences.',
+    '- Do not wrap the JSON in markdown fences.',
     `Input JSON: ${JSON.stringify(payload)}`,
   ].join('\n');
 }
@@ -578,6 +636,12 @@ function buildFallbackAdvice(params: {
   savingsRate: number;
   totalBalance: number;
   categoryBreakdown: Array<{ name: string; total: number }>;
+  incomeMoMPercent: number | null;
+  expenseMoMPercent: number | null;
+  topExpenseDrivers: Array<{ name: string; changeAmount: number; changePercent: number }>;
+  recurringBurdenRatio: number;
+  anomalyTransactions: Array<{ label: string; amount: number; occurredAt: string }>;
+  overspendingCategoryNames: string[];
   preferredSavingsTargetRate: number;
   preferredRiskProfile: RiskProfile;
 }): ProviderOutput {
@@ -630,8 +694,183 @@ function buildFallbackAdvice(params: {
     return 0;
   });
 
+  const recurringBurdenPercent = roundCurrency(params.recurringBurdenRatio * 100);
+  const incomeMoMText = params.incomeMoMPercent === null
+    ? null
+    : formatSignedPercent(params.incomeMoMPercent);
+  const expenseMoMText = params.expenseMoMPercent === null
+    ? null
+    : formatSignedPercent(params.expenseMoMPercent);
+  const primaryDriver = params.topExpenseDrivers[0] ?? null;
+  const anomalyCount = params.anomalyTransactions.length;
+  const overspendingNames = params.overspendingCategoryNames.slice(0, 3).join(', ');
+
+  const topFindings: string[] = [];
+  const suggestedActions: string[] = [];
+  const warnings: string[] = [];
+
+  if (params.language === 'tr') {
+    topFindings.push(
+      incomeMoMText && expenseMoMText
+        ? `Gelir geçen aya göre ${incomeMoMText}, gider ise ${expenseMoMText} değişti.`
+        : 'Aylık trend verisi sınırlı; gelir ve gider değişimini haftalık takip et.',
+    );
+    topFindings.push(
+      primaryDriver
+        ? `${primaryDriver.name} gider değişimini en çok etkileyen kalem (${formatSignedPercent(primaryDriver.changePercent)}).`
+        : 'Bu ay gider artışını tek başına sürükleyen belirgin bir kalem görünmüyor.',
+    );
+    topFindings.push(`Düzenli gider yükü toplam giderin yaklaşık %${recurringBurdenPercent} seviyesinde.`);
+    topFindings.push(
+      params.overspendingCategoryNames.length > 0
+        ? `Bütçe baskısı olan kategoriler: ${overspendingNames}.`
+        : 'Bütçe uyumu genel olarak kontrol altında.',
+    );
+    if (anomalyCount > 0) {
+      topFindings.push(`${anomalyCount} sıra dışı işlem tespit edildi.`);
+    }
+
+    suggestedActions.push(copy.savingsActions[0], copy.savingsActions[1], copy.savingsActions[2]);
+    if (params.overspendingCategoryNames.length > 0) {
+      suggestedActions.push(`${params.overspendingCategoryNames[0]} için 7 günlük harcama tavanı uygula.`);
+    }
+    if (recurringBurdenPercent >= 35) {
+      suggestedActions.push('Bu hafta düşük kullanımda kalan bir aboneliği duraklat veya düşür.');
+    }
+    if (anomalyCount > 0) {
+      suggestedActions.push('Sıra dışı işlemleri doğrula ve tek seferlik giderleri etiketle.');
+    }
+
+    if (params.currentMonthNet < 0) {
+      warnings.push('Bu ay nakit akışı negatif seyrediyor.');
+    }
+    if (params.savingsRate < targetRate) {
+      warnings.push('Birikim oranı hedefin altında.');
+    }
+    if (params.overspendingCategoryNames.length > 0) {
+      warnings.push(`Bütçe aşımı riski: ${overspendingNames}.`);
+    }
+    if (recurringBurdenPercent >= 45) {
+      warnings.push('Düzenli gider oranı yüksek, esnek harcama alanını daraltıyor.');
+    }
+    if (anomalyCount > 0) {
+      warnings.push('Sıra dışı tutarlı işlemler manuel kontrol gerektiriyor.');
+    }
+  } else if (params.language === 'ru') {
+    topFindings.push(
+      incomeMoMText && expenseMoMText
+        ? `Доход изменился на ${incomeMoMText}, расход на ${expenseMoMText} относительно прошлого месяца.`
+        : 'Данных по тренду мало: отслеживайте динамику доходов и расходов еженедельно.',
+    );
+    topFindings.push(
+      primaryDriver
+        ? `${primaryDriver.name} главный драйвер изменения расходов (${formatSignedPercent(primaryDriver.changePercent)}).`
+        : 'Явного одного драйвера изменения расходов в этом месяце не обнаружено.',
+    );
+    topFindings.push(`Доля регулярных списаний около ${recurringBurdenPercent}% от текущих расходов.`);
+    topFindings.push(
+      params.overspendingCategoryNames.length > 0
+        ? `Категории с бюджетным давлением: ${overspendingNames}.`
+        : 'Исполнение бюджета в целом под контролем.',
+    );
+    if (anomalyCount > 0) {
+      topFindings.push(`Обнаружено необычных операций: ${anomalyCount}.`);
+    }
+
+    suggestedActions.push(copy.savingsActions[0], copy.savingsActions[1], copy.savingsActions[2]);
+    if (params.overspendingCategoryNames.length > 0) {
+      suggestedActions.push(`Установите недельный лимит для категории ${params.overspendingCategoryNames[0]}.`);
+    }
+    if (recurringBurdenPercent >= 35) {
+      suggestedActions.push('Отключите или понизьте хотя бы один малоиспользуемый регулярный платеж.');
+    }
+    if (anomalyCount > 0) {
+      suggestedActions.push('Проверьте необычные операции и отметьте разовые расходы.');
+    }
+
+    if (params.currentMonthNet < 0) {
+      warnings.push('Денежный поток за текущий месяц отрицательный.');
+    }
+    if (params.savingsRate < targetRate) {
+      warnings.push('Норма сбережений ниже целевого уровня.');
+    }
+    if (params.overspendingCategoryNames.length > 0) {
+      warnings.push(`Риск перерасхода бюджета: ${overspendingNames}.`);
+    }
+    if (recurringBurdenPercent >= 45) {
+      warnings.push('Высокая доля регулярных списаний снижает гибкость бюджета.');
+    }
+    if (anomalyCount > 0) {
+      warnings.push('Необычные операции требуют ручной проверки.');
+    }
+  } else {
+    topFindings.push(
+      incomeMoMText && expenseMoMText
+        ? `Income changed ${incomeMoMText} and expenses changed ${expenseMoMText} versus last month.`
+        : 'Monthly trend data is limited; monitor income and expense movement weekly.',
+    );
+    topFindings.push(
+      primaryDriver
+        ? `${primaryDriver.name} is the main expense driver (${formatSignedPercent(primaryDriver.changePercent)} month-over-month).`
+        : 'No single category is dominating expense change this month.',
+    );
+    topFindings.push(`Recurring burden ratio is about ${recurringBurdenPercent}% of current month expenses.`);
+    topFindings.push(
+      params.overspendingCategoryNames.length > 0
+        ? `Budget pressure is concentrated in: ${overspendingNames}.`
+        : 'Budget adherence is mostly on track.',
+    );
+    if (anomalyCount > 0) {
+      topFindings.push(`${anomalyCount} unusual transactions were detected.`);
+    }
+
+    suggestedActions.push(copy.savingsActions[0], copy.savingsActions[1], copy.savingsActions[2]);
+    if (params.overspendingCategoryNames.length > 0) {
+      suggestedActions.push(`Set a 7-day spending cap for ${params.overspendingCategoryNames[0]}.`);
+    }
+    if (recurringBurdenPercent >= 35) {
+      suggestedActions.push('Pause or downgrade one low-value recurring payment this week.');
+    }
+    if (anomalyCount > 0) {
+      suggestedActions.push('Review unusual transactions and tag one-off expenses.');
+    }
+
+    if (params.currentMonthNet < 0) {
+      warnings.push('Current month cashflow is negative.');
+    }
+    if (params.savingsRate < targetRate) {
+      warnings.push('Savings rate is below your target.');
+    }
+    if (params.overspendingCategoryNames.length > 0) {
+      warnings.push(`Budget overrun risk in ${overspendingNames}.`);
+    }
+    if (recurringBurdenPercent >= 45) {
+      warnings.push('Recurring burden is high versus total monthly expenses.');
+    }
+    if (anomalyCount > 0) {
+      warnings.push('Unusual high-value transactions require verification.');
+    }
+  }
+
+  const dedupe = (items: string[]): string[] =>
+    Array.from(new Set(items.map((item) => item.trim()).filter((item) => item.length > 0)));
+  const summary = params.currentMonthNet >= 0
+    ? copy.summary
+    : params.language === 'tr'
+      ? 'Aylık nakit akışı negatif. Önceliği giderleri dengelemeye ve kritik olmayan harcamaları azaltmaya ver.'
+      : params.language === 'ru'
+        ? 'Денежный поток за месяц отрицательный. Сначала стабилизируйте расходы и сократите необязательные траты.'
+        : 'Monthly cashflow is negative. Prioritize expense stabilization before taking additional risk.';
+
+  const finalTopFindings = dedupe(topFindings).slice(0, 8);
+  const finalSuggestedActions = dedupe(suggestedActions).slice(0, 8);
+  const finalWarnings = dedupe(warnings).slice(0, 8);
+
   return {
-    summary: copy.summary,
+    summary,
+    topFindings: finalTopFindings.length > 0 ? finalTopFindings : [copy.summary],
+    suggestedActions: finalSuggestedActions.length > 0 ? finalSuggestedActions : copy.savingsActions,
+    warnings: finalWarnings,
     savings: {
       targetRate,
       monthlyTargetAmount,
@@ -758,11 +997,20 @@ export async function generateAdvisorInsight(
   const accountNameById = new Map(accounts.map((account) => [account.id, sanitizeFreeText(account.name)]));
 
   const expenseByCategoryCurrentMonth = new Map<string, number>();
+  const expenseByCategoryPreviousMonth = new Map<string, number>();
   const currentMonthTotals = { income: 0, expense: 0 };
   const last30Totals = { income: 0, expense: 0 };
   const trendByMonth = new Map<string, { income: number; expense: number }>(
     trendMonths.map((month) => [month, { income: 0, expense: 0 }]),
   );
+  const previousMonth = trendMonths[1] ?? shiftMonth(input.month, -1);
+  const recentExpenseAmounts: number[] = [];
+  const currentMonthExpenseCandidates: Array<{
+    amount: number;
+    categoryId: string | null;
+    description: string | null;
+    occurredAt: Date;
+  }> = [];
 
   const merchantStats = new Map<string, { label: string; total: number; count: number }>();
 
@@ -788,8 +1036,19 @@ export async function generateAdvisorInsight(
       }
     }
 
-    if (transaction.categoryId) {
-      categoryIds.add(transaction.categoryId.toString());
+    const categoryId = transaction.categoryId?.toString() ?? null;
+    if (categoryId) {
+      categoryIds.add(categoryId);
+    }
+
+    if (transaction.type === 'expense') {
+      recentExpenseAmounts.push(transaction.amount);
+      if (txMonth === previousMonth && categoryId) {
+        expenseByCategoryPreviousMonth.set(
+          categoryId,
+          (expenseByCategoryPreviousMonth.get(categoryId) ?? 0) + transaction.amount,
+        );
+      }
     }
 
     const txTime = transaction.occurredAt.getTime();
@@ -801,13 +1060,18 @@ export async function generateAdvisorInsight(
         currentMonthTotals.income += transaction.amount;
       } else {
         currentMonthTotals.expense += transaction.amount;
-        const categoryId = transaction.categoryId?.toString();
         if (categoryId) {
           expenseByCategoryCurrentMonth.set(
             categoryId,
             (expenseByCategoryCurrentMonth.get(categoryId) ?? 0) + transaction.amount,
           );
         }
+        currentMonthExpenseCandidates.push({
+          amount: transaction.amount,
+          categoryId,
+          description: transaction.description ?? null,
+          occurredAt: transaction.occurredAt,
+        });
       }
     }
 
@@ -856,6 +1120,32 @@ export async function generateAdvisorInsight(
     })
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
+
+  const topExpenseDrivers = Array.from(
+    new Set([
+      ...expenseByCategoryCurrentMonth.keys(),
+      ...expenseByCategoryPreviousMonth.keys(),
+    ]),
+  )
+    .map((categoryId) => {
+      const current = expenseByCategoryCurrentMonth.get(categoryId) ?? 0;
+      const previous = expenseByCategoryPreviousMonth.get(categoryId) ?? 0;
+      const changeAmount = current - previous;
+      const changePercent = previous > 0
+        ? (changeAmount / previous) * 100
+        : current > 0
+          ? 100
+          : 0;
+
+      return {
+        name: categoryNameById.get(categoryId) ?? 'Uncategorized',
+        changeAmount: roundCurrency(changeAmount),
+        changePercent: roundCurrency(changePercent),
+      };
+    })
+    .filter((item) => Math.abs(item.changeAmount) > 0.01)
+    .sort((a, b) => Math.abs(b.changeAmount) - Math.abs(a.changeAmount))
+    .slice(0, 3);
 
   const budgetItems = budgets
     .map((budget) => {
@@ -959,6 +1249,41 @@ export async function generateAdvisorInsight(
     ? roundCurrency(currentMonthNet / currentMonthIncome)
     : 0;
 
+  const previousTrendPoint = cashflowTrend[cashflowTrend.length - 2] ?? null;
+  const currentTrendPoint = cashflowTrend[cashflowTrend.length - 1] ?? null;
+  const incomeMoMPercent = previousTrendPoint && currentTrendPoint
+    ? calculateMoMPercent(currentTrendPoint.incomeTotal, previousTrendPoint.incomeTotal)
+    : null;
+  const expenseMoMPercent = previousTrendPoint && currentTrendPoint
+    ? calculateMoMPercent(currentTrendPoint.expenseTotal, previousTrendPoint.expenseTotal)
+    : null;
+
+  const recurringMonthlyOutflow = roundCurrency(
+    recurringRules.reduce((sum, rule) => {
+      const cadenceFactor = rule.cadence === 'weekly' ? 4.345 : 1;
+      return sum + rule.amount * cadenceFactor;
+    }, 0),
+  );
+  const recurringBurdenRatio = currentMonthExpense > 0
+    ? clamp(roundCurrency(recurringMonthlyOutflow / currentMonthExpense), 0, 5)
+    : 0;
+
+  const anomalyThreshold = Math.max(200, roundCurrency(median(recentExpenseAmounts) * 2.2));
+  const anomalyTransactions = currentMonthExpenseCandidates
+    .filter((candidate) => candidate.amount >= anomalyThreshold)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5)
+    .map((candidate) => {
+      const descriptionLabel = sanitizeFreeText(candidate.description ?? '');
+      const categoryLabel = candidate.categoryId ? categoryNameById.get(candidate.categoryId) : null;
+
+      return {
+        label: descriptionLabel || categoryLabel || 'Expense',
+        amount: roundCurrency(candidate.amount),
+        occurredAt: toDateOnlyUtc(candidate.occurredAt),
+      };
+    });
+
   const trendIncomes = cashflowTrend.map((point) => point.incomeTotal);
   const positiveIncomes = trendIncomes.filter((value) => value > 0);
   const irregularIncome = positiveIncomes.length >= 2
@@ -1031,6 +1356,13 @@ export async function generateAdvisorInsight(
       merchants: merchantItems,
     },
     flags,
+    derivedMetrics: {
+      incomeMoMPercent,
+      expenseMoMPercent,
+      topExpenseDrivers,
+      recurringBurdenRatio,
+      anomalyTransactions,
+    },
   };
 
   let providerAdvice: ProviderOutput | null = null;
@@ -1049,10 +1381,10 @@ export async function generateAdvisorInsight(
           model: config.cloudflareAiModel,
           timeoutMs: config.cloudflareHttpTimeoutMs,
           maxAttempts: config.cloudflareMaxAttempts,
-maxTokens: 900,
-systemPrompt:
-  'You are Mintly AI. Return a single valid JSON object only (RFC 8259). Use double quotes for all keys/strings. No trailing commas. No markdown fences. No extra text.',
-     userPrompt: prompt,
+          maxTokens: 900,
+          systemPrompt:
+            'You are Mintly AI. Return a single valid JSON object only (RFC 8259). Use double quotes for all keys/strings. No trailing commas. No markdown fences. No extra text.',
+          userPrompt: prompt,
           onDiagnostic: input.onDiagnostic
             ? (event) => {
                 input.onDiagnostic?.({
@@ -1085,57 +1417,58 @@ systemPrompt:
       try {
         parsedProviderJson = parseStrictJsonPayload(providerText);
       } catch (parseError) {
-  fallbackReason = 'provider_parse_error';
-  input.onDiagnostic?.({
-    stage: 'fallback',
-    provider: 'cloudflare',
-    reason: fallbackReason,
-    status: providerStatus,
-    detail: `provider JSON parse failed: ${
-      parseError instanceof Error ? parseError.message : 'unknown'
-    } | preview=${JSON.stringify(sanitizeFreeText(providerText))}`,
-  });
-}
+        fallbackReason = 'provider_parse_error';
+        input.onDiagnostic?.({
+          stage: 'fallback',
+          provider: 'cloudflare',
+          reason: fallbackReason,
+          status: providerStatus,
+          detail: `provider JSON parse failed: ${
+            parseError instanceof Error ? parseError.message : 'unknown'
+          } | preview=${JSON.stringify(sanitizeFreeText(providerText))}`,
+        });
+      }
+
       if (parsedProviderJson !== undefined) {
-  const coerced = coerceProviderOutputShape(parsedProviderJson);
-  const parsedProvider = providerOutputSchema.safeParse(coerced);
+        const coerced = coerceProviderOutputShape(parsedProviderJson);
+        const parsedProvider = providerOutputSchema.safeParse(coerced);
 
-  if (!parsedProvider.success) {
-    fallbackReason = 'provider_validation_error';
-    const firstIssue = parsedProvider.error.issues[0];
+        if (!parsedProvider.success) {
+          fallbackReason = 'provider_validation_error';
+          const firstIssue = parsedProvider.error.issues[0];
 
-    input.onDiagnostic?.({
-      stage: 'fallback',
-      provider: 'cloudflare',
-      reason: fallbackReason,
-      status: providerStatus,
-      detail: `provider output schema validation failed: ${
-        firstIssue ? describeZodIssue(firstIssue) : 'unknown'
-      } | preview=${JSON.stringify(sanitizeFreeText(providerText))}`,
-    });
-  } else {
-    providerAdvice = parsedProvider.data;
-    fallbackReason = null;
-  }
-}
+          input.onDiagnostic?.({
+            stage: 'fallback',
+            provider: 'cloudflare',
+            reason: fallbackReason,
+            status: providerStatus,
+            detail: `provider output schema validation failed: ${
+              firstIssue ? describeZodIssue(firstIssue) : 'unknown'
+            } | preview=${JSON.stringify(sanitizeFreeText(providerText))}`,
+          });
+        } else {
+          providerAdvice = parsedProvider.data;
+          fallbackReason = null;
+        }
+      }
     } catch (error) {
       if (error instanceof CloudflareProviderError) {
         provider = 'cloudflare';
         providerStatus = error.status;
 
         if (error.reason === 'rate_limited') {
-            throw new ApiError({
-              code: 'ADVISOR_PROVIDER_RATE_LIMIT',
-              message: 'Advisor provider rate limited this request',
-              statusCode: 429,
-              details: {
+          throw new ApiError({
+            code: 'ADVISOR_PROVIDER_RATE_LIMIT',
+            message: 'Advisor provider rate limited this request',
+            statusCode: 429,
+            details: {
               provider: 'cloudflare',
               providerStatus: error.status ?? 429,
               retryAfterSec: error.retryAfterSec ?? 60,
               cfRay: error.cfRay,
               providerErrorCode: error.providerCode,
             },
-            });
+          });
         }
 
         if (error.reason === 'request_invalid') {
@@ -1234,6 +1567,12 @@ systemPrompt:
       name: item.name,
       total: item.total,
     })),
+    incomeMoMPercent,
+    expenseMoMPercent,
+    topExpenseDrivers,
+    recurringBurdenRatio,
+    anomalyTransactions,
+    overspendingCategoryNames: flags.overspendingCategoryNames,
     preferredSavingsTargetRate,
     preferredRiskProfile,
   });
@@ -1291,6 +1630,9 @@ systemPrompt:
     flags,
     advice: {
       summary: mergedAdvice.summary,
+      topFindings: mergedAdvice.topFindings,
+      suggestedActions: mergedAdvice.suggestedActions,
+      warnings: mergedAdvice.warnings,
       savings: {
         targetRate: clamp(mergedAdvice.savings.targetRate, 0, 1),
         monthlyTargetAmount: roundCurrency(Math.max(0, mergedAdvice.savings.monthlyTargetAmount)),

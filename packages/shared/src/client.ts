@@ -15,6 +15,8 @@ import {
   aiAdviceResponseSchema,
   aiInsightsQuerySchema,
   aiInsightsResponseSchema,
+  aiReceiptParseInputSchema,
+  aiReceiptParseResponseSchema,
   advisorInsightSchema,
   advisorInsightsQuerySchema,
   advisorActionBudgetInputSchema,
@@ -87,6 +89,8 @@ import {
   type AiAdviceResponse,
   type AiInsightsQuery,
   type AiInsightsResponse,
+  type AiReceiptParseInput,
+  type AiReceiptParseResponse,
   type AdvisorInsight,
   type AdvisorInsightsQuery,
   type AdvisorActionBudgetInput,
@@ -596,6 +600,17 @@ export class ApiClient {
       method: 'GET',
       accessToken,
       query: aiInsightsQuerySchema.parse(query),
+    });
+  }
+
+  async parseReceiptWithAi(
+    input: AiReceiptParseInput,
+    accessToken: string,
+  ): Promise<AiReceiptParseResponse> {
+    return this.request('/ai/receipt-parse', aiReceiptParseResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: aiReceiptParseInputSchema.parse(input),
     });
   }
 

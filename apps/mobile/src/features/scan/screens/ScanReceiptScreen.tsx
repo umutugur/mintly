@@ -11,21 +11,81 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { AiReceiptParseResponse } from '@mintly/shared';
 
 import { useAuth } from '@app/providers/AuthProvider';
+import { apiClient } from '@core/api/client';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { Card, PrimaryButton, ScreenContainer } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 
-import { parseReceiptText } from '../lib/ocrParsing';
+import { parseReceiptText, type ParsedReceiptDraft, type ScanCategoryHint } from '../lib/ocrParsing';
 import { recognizeReceiptText } from '../lib/ocrRecognition';
+
+const MIN_PARSE_CONFIDENCE_FOR_LOCAL = 0.72;
+
+function needsAiAssist(draft: ParsedReceiptDraft, rawText: string): boolean {
+  const missingCoreField = draft.title.trim().length === 0 || draft.amount.trim().length === 0;
+  return rawText.trim().length >= 12 && (missingCoreField || draft.parseConfidence < MIN_PARSE_CONFIDENCE_FOR_LOCAL);
+}
+
+function normalizeCategoryHint(value: string | null): ScanCategoryHint {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.toLowerCase();
+  if (normalized.includes('fuel') || normalized.includes('akaryak') || normalized.includes('benzin')) {
+    return 'fuel';
+  }
+  if (normalized.includes('grocery') || normalized.includes('market') || normalized.includes('food') || normalized.includes('gida') || normalized.includes('gıda')) {
+    return 'grocery';
+  }
+
+  return null;
+}
+
+function mergeDraftWithAiAssist(
+  draft: ParsedReceiptDraft,
+  ai: AiReceiptParseResponse,
+  baseCurrency: string,
+): ParsedReceiptDraft {
+  const parsedAmountNumber = Number(draft.amount.replace(',', '.'));
+  const hasLocalAmount = Number.isFinite(parsedAmountNumber) && parsedAmountNumber > 0;
+
+  let amount = draft.amount;
+  if (!hasLocalAmount && ai.amount !== null) {
+    amount = ai.amount.toFixed(2);
+  } else if (hasLocalAmount && ai.amount !== null && draft.parseConfidence < 0.6) {
+    const diffRatio = Math.abs(parsedAmountNumber - ai.amount) / Math.max(parsedAmountNumber, ai.amount, 1);
+    if (diffRatio >= 0.4) {
+      amount = ai.amount.toFixed(2);
+    }
+  }
+
+  const title = draft.title.trim().length > 0 ? draft.title : ai.merchant ?? draft.title;
+  const occurredDate = ai.date && draft.parseConfidence < 0.85 ? ai.date : draft.occurredDate;
+  const detectedCurrency = draft.detectedCurrency ?? ai.currency;
+  const categoryHint = draft.categoryHint ?? normalizeCategoryHint(ai.categorySuggestion);
+
+  return {
+    ...draft,
+    title,
+    amount,
+    occurredDate,
+    categoryHint,
+    detectedCurrency,
+    currencyWarning: Boolean(detectedCurrency) && detectedCurrency !== baseCurrency,
+    parseConfidence: Math.max(draft.parseConfidence, ai.confidence),
+  };
+}
 
 export function ScanReceiptScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackParamList>>();
-  const { user } = useAuth();
+  const { user, withAuth } = useAuth();
   const { theme, mode } = useTheme();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [libraryPermission, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -43,16 +103,36 @@ export function ScanReceiptScreen() {
 
     try {
       const recognition = await recognizeReceiptText(uri);
-      const parsed = parseReceiptText({
+      const parsedDraft = parseReceiptText({
         rawText: recognition.rawText,
         baseCurrency,
       });
+      let draft = parsedDraft;
+
+      if (needsAiAssist(parsedDraft, recognition.rawText)) {
+        try {
+          const aiDraft = await withAuth((token) =>
+            apiClient.parseReceiptWithAi(
+              {
+                rawText: recognition.rawText,
+                locale,
+                currencyHint: baseCurrency,
+              },
+              token,
+            ),
+          );
+
+          draft = mergeDraftWithAiAssist(parsedDraft, aiDraft, baseCurrency);
+        } catch {
+          // Keep local OCR parse when AI assist is unavailable.
+        }
+      }
 
       navigation.navigate('ScanConfirm', {
         photoUri: uri,
         rawText: recognition.rawText,
         ocrMode: recognition.mode,
-        draft: parsed,
+        draft,
       });
     } catch {
       setErrorCode('errors.scan.ocrFailed');

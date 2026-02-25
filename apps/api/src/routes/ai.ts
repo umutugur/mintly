@@ -1,9 +1,11 @@
 import {
   aiAdviceQuerySchema,
   aiInsightsQuerySchema,
+  aiReceiptParseInputSchema,
   aiAdviceResponseSchema,
   type AiAdviceQuery,
   type AiInsightsQuery,
+  type AiReceiptParseInput,
   type AiAdviceResponse,
 } from '@mintly/shared';
 import type { FastifyInstance } from 'fastify';
@@ -12,17 +14,20 @@ import type { Types } from 'mongoose';
 import { authenticate } from '../auth/middleware.js';
 import { ApiError } from '../errors.js';
 import { generateAiInsights } from '../lib/ai-insights.js';
+import { parseReceiptWithAiAssist } from '../lib/receipt-ai-assist.js';
 import { getMonthBoundaries } from '../lib/month.js';
 import { BudgetModel } from '../models/Budget.js';
 import { CategoryModel } from '../models/Category.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { UserModel } from '../models/User.js';
 
-import { parseObjectId, parseQuery, requireUser } from './utils.js';
+import { parseBody, parseObjectId, parseQuery, requireUser } from './utils.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const AI_INSIGHTS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const AI_INSIGHTS_RATE_LIMIT_MAX = 8;
+const AI_RECEIPT_PARSE_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const AI_RECEIPT_PARSE_RATE_LIMIT_MAX = 12;
 
 interface UserRateLimitEntry {
   count: number;
@@ -30,6 +35,7 @@ interface UserRateLimitEntry {
 }
 
 const aiInsightsRateLimitByUser = new Map<string, UserRateLimitEntry>();
+const aiReceiptParseRateLimitByUser = new Map<string, UserRateLimitEntry>();
 
 function clampToPositive(value: number): number {
   return value < 0 ? 0 : value;
@@ -147,6 +153,34 @@ function enforceAiInsightsRateLimit(userId: string): void {
     for (const [key, entry] of aiInsightsRateLimitByUser.entries()) {
       if (entry.resetAt <= now) {
         aiInsightsRateLimitByUser.delete(key);
+      }
+    }
+  }
+}
+
+function enforceAiReceiptParseRateLimit(userId: string): void {
+  const now = Date.now();
+  const existing = aiReceiptParseRateLimitByUser.get(userId);
+
+  if (!existing || existing.resetAt <= now) {
+    aiReceiptParseRateLimitByUser.set(userId, {
+      count: 1,
+      resetAt: now + AI_RECEIPT_PARSE_RATE_LIMIT_WINDOW_MS,
+    });
+  } else if (existing.count >= AI_RECEIPT_PARSE_RATE_LIMIT_MAX) {
+    throw new ApiError({
+      code: 'RATE_LIMITED',
+      message: 'Too many receipt parse requests. Please retry in a minute.',
+      statusCode: 429,
+    });
+  } else {
+    existing.count += 1;
+  }
+
+  if (aiReceiptParseRateLimitByUser.size > 500) {
+    for (const [key, entry] of aiReceiptParseRateLimitByUser.entries()) {
+      if (entry.resetAt <= now) {
+        aiReceiptParseRateLimitByUser.delete(key);
       }
     }
   }
@@ -353,6 +387,19 @@ budgetOverruns.sort(
       fromLabel: dateRange.fromLabel,
       toLabel: dateRange.toLabel,
       language: query.language,
+    });
+  });
+
+  app.post('/ai/receipt-parse', { preHandler: authenticate }, async (request) => {
+    const user = requireUser(request);
+    enforceAiReceiptParseRateLimit(user.id);
+
+    const input = parseBody<AiReceiptParseInput>(aiReceiptParseInputSchema, request.body);
+    return parseReceiptWithAiAssist({
+      userId: user.id,
+      rawText: input.rawText,
+      locale: input.locale,
+      currencyHint: input.currencyHint ?? null,
     });
   });
 }

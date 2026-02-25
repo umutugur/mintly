@@ -164,6 +164,14 @@
     "actions": {
       "regenerate": "Yeniden Üret"
     },
+    "primary": {
+      "keyInsights": "Öne Çıkan İçgörüler",
+      "actions": "Sonraki Aksiyonlar",
+      "warnings": "Uyarılar",
+      "showDetails": "Detaylı verileri göster",
+      "hideDetails": "Detaylı verileri gizle",
+      "noWarnings": "Bu dönem için kritik uyarı yok."
+    },
     "tabs": {
       "summary": "Özet",
       "savings": "Birikim",

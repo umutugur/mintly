@@ -542,6 +542,25 @@ export const aiInsightsResponseSchema = z.object({
   warnings: z.array(z.string().min(1).max(320)).max(8),
 });
 
+export const aiReceiptParseInputSchema = z.object({
+  rawText: z.string().trim().min(8).max(12000),
+  locale: aiInsightsLanguageSchema.default('tr'),
+  currencyHint: currencySchema.nullable().optional(),
+});
+
+export const aiReceiptParseSourceSchema = z.enum(['ai', 'heuristic']);
+
+export const aiReceiptParseResponseSchema = z.object({
+  merchant: z.string().trim().min(1).max(120).nullable(),
+  date: dateOnlyStringSchema.nullable(),
+  amount: z.number().positive().max(10000000).nullable(),
+  currency: currencySchema.nullable(),
+  categorySuggestion: z.string().trim().min(1).max(40).nullable(),
+  confidence: z.number().min(0).max(1),
+  source: aiReceiptParseSourceSchema,
+  cacheHit: z.boolean().default(false),
+});
+
 export const advisorInsightsQuerySchema = z.object({
   month: monthStringSchema,
   language: aiInsightsLanguageSchema.default('tr'),
@@ -648,6 +667,9 @@ export const advisorExpenseOptimizationSchema = z.object({
 
 export const advisorAdviceSchema = z.object({
   summary: z.string().min(1).max(1500),
+  topFindings: z.array(z.string().min(1).max(320)).min(1).max(8),
+  suggestedActions: z.array(z.string().min(1).max(320)).min(1).max(8),
+  warnings: z.array(z.string().min(1).max(320)).max(8),
   savings: advisorSavingsAdviceSchema,
   investment: advisorInvestmentAdviceSchema,
   expenseOptimization: advisorExpenseOptimizationSchema,
@@ -1071,6 +1093,9 @@ export type WeeklyReportResponse = z.infer<typeof weeklyReportResponseSchema>;
 export type AiInsightsLanguage = z.infer<typeof aiInsightsLanguageSchema>;
 export type AiInsightsQuery = z.infer<typeof aiInsightsQuerySchema>;
 export type AiInsightsResponse = z.infer<typeof aiInsightsResponseSchema>;
+export type AiReceiptParseInput = z.infer<typeof aiReceiptParseInputSchema>;
+export type AiReceiptParseSource = z.infer<typeof aiReceiptParseSourceSchema>;
+export type AiReceiptParseResponse = z.infer<typeof aiReceiptParseResponseSchema>;
 export type AdvisorInsightsQuery = z.infer<typeof advisorInsightsQuerySchema>;
 export type AdvisorInsightMode = z.infer<typeof advisorInsightModeSchema>;
 export type AdvisorInsightProvider = z.infer<typeof advisorInsightProviderSchema>;
