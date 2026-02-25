@@ -1,21 +1,109 @@
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { Card, ScreenContainer } from '@shared/ui';
+import { useMutation } from '@tanstack/react-query';
+
+import { useAuth } from '@app/providers/AuthProvider';
+import { apiClient } from '@core/api/client';
 import { useI18n } from '@shared/i18n';
-import { radius, spacing, typography, useTheme } from '@shared/theme';
-
-// stitch asset: stitch/export/stitch_ana_ekran_dashboard/güvenlik_ve_gizlilik_ayarları/screen.png
-// no touch/keyboard behavior changed by this PR.
+import { spacing, typography, useTheme } from '@shared/theme';
+import { Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
+import { apiErrorText } from '@shared/utils/apiErrorText';
 
 export function SecurityScreen() {
+  const { user, withAuth, logout } = useAuth();
   const { theme, mode } = useTheme();
   const { t } = useI18n();
   const dark = mode === 'dark';
 
-  const [biometricEnabled, setBiometricEnabled] = useState(true);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [sharingEnabled, setSharingEnabled] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const canChangePassword = user?.canChangePassword ?? false;
+
+  const changePasswordMutation = useMutation({
+    mutationFn: () =>
+      withAuth((token) =>
+        apiClient.changeMePassword(
+          {
+            currentPassword,
+            newPassword,
+          },
+          token,
+        ),
+      ),
+    onSuccess: () => {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      Alert.alert(t('profile.security.password.success'));
+    },
+    onError: (error) => {
+      Alert.alert(t('common.error'), apiErrorText(error));
+    },
+  });
+
+  const logoutAllMutation = useMutation({
+    mutationFn: () => withAuth((token) => apiClient.logoutAll(token)),
+    onSuccess: async () => {
+      Alert.alert(t('profile.security.sessions.logoutAllSuccess'));
+      await logout();
+    },
+    onError: (error) => {
+      Alert.alert(t('common.error'), apiErrorText(error));
+    },
+  });
+
+  const handleChangePassword = async () => {
+    if (!canChangePassword || changePasswordMutation.isPending) {
+      return;
+    }
+
+    if (!currentPassword.trim()) {
+      Alert.alert(t('common.error'), t('profile.security.password.currentRequired'));
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      Alert.alert(t('common.error'), t('profile.security.password.minLength'));
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert(t('common.error'), t('profile.security.password.mismatch'));
+      return;
+    }
+
+    try {
+      await changePasswordMutation.mutateAsync();
+    } catch {
+      // Error is handled in mutation onError.
+    }
+  };
+
+  const handleLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+    await logout();
+    setIsLoggingOut(false);
+  };
+
+  const handleLogoutAll = async () => {
+    if (logoutAllMutation.isPending || isLoggingOut) {
+      return;
+    }
+
+    try {
+      await logoutAllMutation.mutateAsync();
+    } catch {
+      // Error is handled in mutation onError.
+    }
+  };
 
   const panelBg = dark ? '#15192A' : '#FFFFFF';
   const panelBorder = dark ? '#2A2D42' : '#E4EAF5';
@@ -33,179 +121,123 @@ export function SecurityScreen() {
             },
           ]}
         >
-          <View style={[styles.scoreIconWrap, { backgroundColor: theme.colors.primary }]}>
-            <Text style={styles.scoreIcon}>🛡️</Text>
-          </View>
-          <View style={styles.scoreTextWrap}>
-            <Text style={[styles.scoreTitle, { color: theme.colors.text }]}>{t('profile.security.scoreTitle')}</Text>
-            <Text style={[styles.scoreSubtitle, { color: theme.colors.textMuted }]}>{t('profile.security.scoreSubtitle')}</Text>
-          </View>
+          <Text style={[styles.scoreTitle, { color: theme.colors.text }]}>{t('profile.security.scoreTitle')}</Text>
+          <Text style={[styles.scoreSubtitle, { color: theme.colors.textMuted }]}>{t('profile.security.scoreSubtitle')}</Text>
         </Card>
 
-        <SectionTitle title={t('profile.security.sections.accessControl')} />
-        <Card
-          dark={dark}
-          style={[
-            styles.groupCard,
-            {
-              borderColor: panelBorder,
-              backgroundColor: panelBg,
-            },
-          ]}
-        >
-          <ToggleRow
-            icon="🧬"
-            label={t('profile.security.items.biometric.title')}
-            subtitle={t('profile.security.items.biometric.subtitle')}
-            value={biometricEnabled}
-            onValueChange={setBiometricEnabled}
-          />
-          <Divider />
-          <ToggleRow
-            icon="🔐"
-            label={t('profile.security.items.twoFactor.title')}
-            subtitle={t('profile.security.items.twoFactor.subtitle')}
-            value={twoFactorEnabled}
-            onValueChange={setTwoFactorEnabled}
-          />
-          <Divider />
-          <ActionRow
-            icon="🕘"
-            label={t('profile.security.items.accountActivity.title')}
-            subtitle={t('profile.security.items.accountActivity.subtitle')}
-          />
-        </Card>
-
-        <SectionTitle title={t('profile.security.sections.dataPrivacy')} />
-        <Card
-          dark={dark}
-          style={[
-            styles.groupCard,
-            {
-              borderColor: panelBorder,
-              backgroundColor: panelBg,
-            },
-          ]}
-        >
-          <ToggleRow
-            icon="🤝"
-            label={t('profile.security.items.thirdParty.title')}
-            subtitle={t('profile.security.items.thirdParty.subtitle')}
-            value={sharingEnabled}
-            onValueChange={setSharingEnabled}
-          />
-          <Divider />
-          <ActionRow
-            icon="⬇️"
-            label={t('profile.security.items.downloadData.title')}
-            subtitle={t('profile.security.items.downloadData.subtitle')}
-          />
-          <Divider />
-          <ActionRow
-            icon="📜"
-            label={t('profile.security.items.privacyPolicy.title')}
-            subtitle={t('profile.security.items.privacyPolicy.subtitle')}
-          />
-        </Card>
-
-        <SectionTitle title={t('profile.security.sections.dangerZone')} accent />
-        <Card
-          dark={dark}
-          style={[
-            styles.dangerCard,
-            {
-              borderColor: dark ? 'rgba(240,68,56,0.30)' : '#FFD4D2',
-              backgroundColor: dark ? 'rgba(240,68,56,0.09)' : '#FFF4F4',
-            },
-          ]}
-        >
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              Alert.alert(t('profile.security.delete.title'), t('profile.security.delete.notAvailable'));
-            }}
-            style={({ pressed }) => [styles.dangerButton, pressed && styles.dangerPressed]}
+        <SectionTitle title={t('profile.security.password.sectionTitle')} />
+        {canChangePassword ? (
+          <Card
+            dark={dark}
+            style={[
+              styles.groupCard,
+              {
+                borderColor: panelBorder,
+                backgroundColor: panelBg,
+              },
+            ]}
           >
-            <Text style={styles.dangerButtonText}>{t('profile.security.delete.cta')}</Text>
-          </Pressable>
-          <Text style={[styles.dangerHint, { color: theme.colors.textMuted }]}>
-            {t('profile.security.delete.hint')}
+            <TextField
+              autoCapitalize="none"
+              autoComplete="password"
+              label={t('profile.security.password.currentLabel')}
+              onChangeText={setCurrentPassword}
+              placeholder={t('auth.login.fields.passwordPlaceholder')}
+              secureTextEntry
+              textContentType="password"
+              value={currentPassword}
+            />
+            <TextField
+              autoCapitalize="none"
+              autoComplete="password"
+              label={t('profile.security.password.newLabel')}
+              onChangeText={setNewPassword}
+              placeholder={t('auth.login.fields.passwordPlaceholder')}
+              secureTextEntry
+              textContentType="newPassword"
+              value={newPassword}
+            />
+            <TextField
+              autoCapitalize="none"
+              autoComplete="password"
+              label={t('profile.security.password.confirmLabel')}
+              onChangeText={setConfirmPassword}
+              placeholder={t('auth.login.fields.passwordPlaceholder')}
+              secureTextEntry
+              textContentType="newPassword"
+              value={confirmPassword}
+            />
+            <PrimaryButton
+              disabled={changePasswordMutation.isPending}
+              label={
+                changePasswordMutation.isPending
+                  ? t('profile.security.password.changing')
+                  : t('profile.security.password.change')
+              }
+              onPress={() => {
+                void handleChangePassword();
+              }}
+            />
+          </Card>
+        ) : (
+          <Card
+            dark={dark}
+            style={[
+              styles.groupCard,
+              {
+                borderColor: panelBorder,
+                backgroundColor: panelBg,
+              },
+            ]}
+          >
+            <Text style={[styles.infoText, { color: theme.colors.textMuted }]}>
+              {t('profile.security.password.notAvailable')}
+            </Text>
+          </Card>
+        )}
+
+        <SectionTitle title={t('profile.security.sessions.sectionTitle')} />
+        <Card
+          dark={dark}
+          style={[
+            styles.groupCard,
+            {
+              borderColor: panelBorder,
+              backgroundColor: panelBg,
+            },
+          ]}
+        >
+          <Text style={[styles.infoText, { color: theme.colors.textMuted }]}>
+            {t('profile.security.sessions.subtitle')}
           </Text>
+          <PrimaryButton
+            disabled={logoutAllMutation.isPending || isLoggingOut}
+            label={
+              logoutAllMutation.isPending
+                ? t('profile.security.sessions.loggingOutAll')
+                : t('profile.security.sessions.logoutAll')
+            }
+            onPress={() => {
+              void handleLogoutAll();
+            }}
+          />
+          <PrimaryButton
+            disabled={logoutAllMutation.isPending || isLoggingOut}
+            label={isLoggingOut ? t('profile.loggingOut') : t('profile.logOut')}
+            onPress={() => {
+              void handleLogout();
+            }}
+          />
         </Card>
       </View>
     </ScreenContainer>
   );
 }
 
-function SectionTitle({ title, accent = false }: { title: string; accent?: boolean }) {
+function SectionTitle({ title }: { title: string }) {
   const { theme } = useTheme();
 
-  return (
-    <Text style={[styles.sectionTitle, { color: accent ? '#F04438' : theme.colors.primary }]}>{title}</Text>
-  );
-}
-
-function ToggleRow({
-  icon,
-  label,
-  subtitle,
-  value,
-  onValueChange,
-}: {
-  icon: string;
-  label: string;
-  subtitle: string;
-  value: boolean;
-  onValueChange: (next: boolean) => void;
-}) {
-  const { theme, mode } = useTheme();
-  const dark = mode === 'dark';
-
-  return (
-    <View style={styles.row}>
-      <View style={[styles.iconWrap, { backgroundColor: dark ? 'rgba(66,17,212,0.18)' : '#ECF2FF' }]}>
-        <Text style={styles.iconText}>{icon}</Text>
-      </View>
-
-      <View style={styles.rowTextWrap}>
-        <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{label}</Text>
-        <Text style={[styles.rowSubtitle, { color: theme.colors.textMuted }]}>{subtitle}</Text>
-      </View>
-
-      <Switch
-        trackColor={{ false: dark ? '#3A3F56' : '#CBD5E1', true: dark ? '#3A238A' : '#CAD8FF' }}
-        thumbColor={value ? theme.colors.primary : '#E2E8F0'}
-        onValueChange={onValueChange}
-        value={value}
-      />
-    </View>
-  );
-}
-
-function ActionRow({ icon, label, subtitle }: { icon: string; label: string; subtitle: string }) {
-  const { theme, mode } = useTheme();
-  const dark = mode === 'dark';
-
-  return (
-    <Pressable accessibilityRole="button" style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
-      <View style={[styles.iconWrap, { backgroundColor: dark ? 'rgba(66,17,212,0.18)' : '#ECF2FF' }]}>
-        <Text style={styles.iconText}>{icon}</Text>
-      </View>
-
-      <View style={styles.rowTextWrap}>
-        <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{label}</Text>
-        <Text style={[styles.rowSubtitle, { color: theme.colors.textMuted }]}>{subtitle}</Text>
-      </View>
-
-      <Text style={[styles.chevron, { color: theme.colors.textMuted }]}>{'>'}</Text>
-    </Pressable>
-  );
-}
-
-function Divider() {
-  const { mode } = useTheme();
-
-  return <View style={[styles.divider, { backgroundColor: mode === 'dark' ? '#2A2D42' : '#E4EAF5' }]} />;
+  return <Text style={[styles.sectionTitle, { color: theme.colors.primary }]}>{title}</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -213,22 +245,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   scoreCard: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  scoreIconWrap: {
-    alignItems: 'center',
-    borderRadius: radius.full,
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-  },
-  scoreIcon: {
-    fontSize: 18,
-  },
-  scoreTextWrap: {
-    flex: 1,
     gap: spacing.xxs,
   },
   scoreTitle: {
@@ -247,73 +263,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
   },
   groupCard: {
-    paddingHorizontal: 0,
-    paddingVertical: spacing.xs,
-  },
-  row: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    minHeight: 58,
-    paddingHorizontal: spacing.md,
-  },
-  rowPressed: {
-    opacity: 0.86,
-  },
-  iconWrap: {
-    alignItems: 'center',
-    borderRadius: radius.md,
-    height: 36,
-    justifyContent: 'center',
-    width: 36,
-  },
-  iconText: {
-    fontSize: 16,
-  },
-  rowTextWrap: {
-    flex: 1,
-    gap: 2,
-  },
-  rowTitle: {
-    ...typography.body,
-    fontWeight: '600',
-  },
-  rowSubtitle: {
-    ...typography.caption,
-    fontSize: 11,
-  },
-  chevron: {
-    ...typography.subheading,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  divider: {
-    height: 1,
-    marginHorizontal: spacing.md,
-  },
-  dangerCard: {
     gap: spacing.sm,
   },
-  dangerButton: {
-    alignItems: 'center',
-    borderColor: '#F04438',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  dangerPressed: {
-    opacity: 0.86,
-  },
-  dangerButtonText: {
+  infoText: {
     ...typography.caption,
-    color: '#F04438',
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  dangerHint: {
-    ...typography.caption,
-    fontSize: 11,
-    textAlign: 'center',
+    fontSize: 12,
   },
 });

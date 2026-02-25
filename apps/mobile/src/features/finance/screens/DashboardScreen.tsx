@@ -23,6 +23,7 @@ import type { RootTabParamList } from '@core/navigation/types';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import type { ThemeMode } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
+import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
 import { MintlyLogo } from '../../../components/brand/MintlyLogo';
 
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/ana_ekran_(dashboard)_1/screen.png
@@ -417,17 +418,7 @@ export function DashboardScreen() {
     return map;
   }, [dashboardQuery.data?.balances]);
 
-  const profileName = useMemo(() => {
-    if (user?.name?.trim()) {
-      return user.name.trim();
-    }
-
-    if (user?.email) {
-      return user.email.split('@')[0];
-    }
-
-    return t('common.appName');
-  }, [t, user?.email, user?.name]);
+  const profileName = useMemo(() => resolveUserDisplayName(user), [user]);
 
   const recentTotals = useMemo(() => {
     let incomeTotal = 0;

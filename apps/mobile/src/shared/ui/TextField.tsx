@@ -49,6 +49,7 @@ interface TextFieldProps {
   labelRight?: ReactNode;
   multiline?: boolean;
   numberOfLines?: number;
+  maxLength?: number;
 }
 
 export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
@@ -78,6 +79,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
     labelRight,
     multiline = false,
     numberOfLines,
+    maxLength,
   },
   ref,
 ) {
@@ -134,6 +136,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
           placeholderTextColor={theme.colors.inputPlaceholder}
           returnKeyType={returnKeyType}
           secureTextEntry={secureTextEntry}
+          maxLength={maxLength}
           multiline={multiline}
           numberOfLines={numberOfLines}
           style={[

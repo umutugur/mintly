@@ -225,7 +225,7 @@ function LoadingSkeleton() {
 }
 
 export function TransactionsScreen() {
-  const { withAuth } = useAuth();
+  const { withAuth, user } = useAuth();
   const { theme, mode } = useTheme();
   const { t, locale } = useI18n();
   const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackParamList>>();
@@ -410,6 +410,11 @@ export function TransactionsScreen() {
       expense,
     };
   }, [transactions]);
+
+  const summaryCurrency = useMemo(
+    () => transactions[0]?.currency ?? user?.baseCurrency ?? 'TRY',
+    [transactions, user?.baseCurrency],
+  );
 
   const listItems = useMemo(() => buildListItems(transactions, t, locale), [locale, t, transactions]);
 
@@ -648,7 +653,7 @@ export function TransactionsScreen() {
                   {t('transactions.summary.totalIncome')}
                 </Text>
                 <Text adjustsFontSizeToFit numberOfLines={1} style={styles.summaryIncome}>
-                  {formatCurrency(totals.income, transactions[0]?.currency ?? 'TRY', locale)}
+                  {formatCurrency(totals.income, summaryCurrency, locale)}
                 </Text>
               </View>
 
@@ -665,7 +670,7 @@ export function TransactionsScreen() {
                   {t('transactions.summary.totalExpense')}
                 </Text>
                 <Text adjustsFontSizeToFit numberOfLines={1} style={styles.summaryExpense}>
-                  {formatCurrency(totals.expense, transactions[0]?.currency ?? 'TRY', locale)}
+                  {formatCurrency(totals.expense, summaryCurrency, locale)}
                 </Text>
               </View>
             </View>

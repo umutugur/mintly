@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StackActions } from '@react-navigation/native';
 import { StyleSheet } from 'react-native';
 
 import { AppIcon } from '@shared/ui';
@@ -67,6 +68,30 @@ export function RootTabs() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
       }}
+      screenListeners={({ navigation, route }) => ({
+        tabPress: () => {
+          const activeTabState = navigation
+            .getState()
+            .routes.find((stateRoute) => stateRoute.key === route.key)?.state as
+            | { type?: string; index?: number; key?: string }
+            | undefined;
+
+          if (
+            !activeTabState
+            || activeTabState.type !== 'stack'
+            || !activeTabState.key
+            || typeof activeTabState.index !== 'number'
+            || activeTabState.index <= 0
+          ) {
+            return;
+          }
+
+          navigation.dispatch({
+            ...StackActions.popToTop(),
+            target: activeTabState.key,
+          });
+        },
+      })}
     >
       <Tab.Screen
         name="HomeTab"

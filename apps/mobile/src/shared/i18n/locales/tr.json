@@ -32,7 +32,7 @@
     },
     "sections": {
       "baseCurrency": {
-        "subtitle": "İlk kurulumdan sonra tüm hesaplar için kilitlenir",
+        "subtitle": "Bunu istediğiniz zaman Profil > Profili Düzenle üzerinden değiştirebilirsiniz",
         "title": "Ana Para Birimi"
       },
       "create": {
@@ -781,6 +781,7 @@
       "FORBIDDEN": "Bu işlem için yetkiniz yok.",
       "INVALID_CREDENTIALS": "E-posta veya şifre hatalı.",
       "INVALID_REFRESH_TOKEN": "Oturumunuz süresi doldu. Lütfen tekrar giriş yapın.",
+      "PASSWORD_CHANGE_NOT_AVAILABLE": "Bu hesap için şifre değişikliği kullanılamıyor.",
       "INVALID_RESPONSE_PAYLOAD": "Sunucudan geçersiz veri alındı.",
       "NETWORK_ERROR": "Ağ bağlantısı başarısız oldu.",
       "NOT_FOUND": "İstenen kayıt bulunamadı.",
@@ -923,10 +924,13 @@
     "defaultUserName": "Mintly Kullanıcısı",
     "edit": {
       "baseCurrencyLabel": "Ana Para Birimi",
+      "currencyInvalid": "Geçerli 3 harfli para birimi kodu girin.",
+      "currencyRequired": "Bir kez ayarlandıktan sonra ana para birimi boş bırakılamaz.",
       "emailLabel": "E-posta",
       "fullNameLabel": "Ad Soyad",
       "fullNamePlaceholder": "Ad soyadınız",
       "helper": "Profil güncelleme endpointi henüz mevcut değil. PATCH /me için UI hazır.",
+      "noChanges": "Profilde değişiklik bulunamadı.",
       "photoSubtitle": "Değiştirmek için dokunun (yalnızca UI)",
       "photoTitle": "Profil Fotoğrafı",
       "save": "Değişiklikleri Kaydet",
@@ -958,6 +962,26 @@
       "financialGoalsSubtitle": "Birikim hedefi ve risk profili"
     },
     "security": {
+      "password": {
+        "sectionTitle": "ŞİFRE",
+        "currentLabel": "Mevcut Şifre",
+        "newLabel": "Yeni Şifre",
+        "confirmLabel": "Yeni Şifre (Tekrar)",
+        "change": "Şifreyi Değiştir",
+        "changing": "Değiştiriliyor...",
+        "success": "Şifre başarıyla güncellendi.",
+        "notAvailable": "Apple/Google ile giriş yapan hesaplarda şifre değişikliği desteklenmiyor.",
+        "currentRequired": "Mevcut şifrenizi girin.",
+        "minLength": "Yeni şifre en az 8 karakter olmalıdır.",
+        "mismatch": "Yeni şifre ve doğrulama aynı değil."
+      },
+      "sessions": {
+        "sectionTitle": "OTURUMLAR",
+        "subtitle": "Bu cihazdan çıkış yapın veya tüm aktif oturumları kapatın.",
+        "logoutAll": "Tüm cihazlardan çıkış yap",
+        "loggingOutAll": "Tüm oturumlar kapatılıyor...",
+        "logoutAllSuccess": "Tüm oturumlar kapatıldı."
+      },
       "delete": {
         "cta": "Hesabı ve tüm verileri sil",
         "hint": "Bu işlem kalıcıdır ve geri alınamaz.",
@@ -1039,7 +1063,7 @@
         "privacy": "Gizlilik",
         "support": "Destek"
       },
-      "userTitle": "Demo Kullanıcı",
+      "userTitle": "Mintly Kullanıcısı",
       "locale": {
         "tr": "Türkçe",
         "en": "İngilizce",
@@ -1610,7 +1634,8 @@
     "notifications": {
       "label": "Bildirimler",
       "title": "Bildirimler",
-      "subtitle": "Önemli güncellemeleri al"
+      "subtitle": "Önemli güncellemeleri al",
+      "permissionRequired": "Bu ayarı açmak için bildirim izni gereklidir."
     },
     "sections": {
       "application": "Uygulama",
@@ -1618,12 +1643,15 @@
       "support": "Destek"
     },
     "user": {
-      "title": "Demo Kullanıcı",
+      "title": "Mintly Kullanıcısı",
       "plan": "Premium Planı"
     },
     "biometric": {
       "title": "Biyometrik Giriş",
-      "subtitle": "Face ID / Parmak izi kullan"
+      "subtitle": "Face ID / Parmak izi kullan",
+      "notSupported": "Bu cihazda biyometrik giriş desteklenmiyor.",
+      "prompt": "Biyometrik girişi etkinleştirmek için doğrulayın",
+      "enableFailed": "Biyometrik doğrulama başarısız oldu. Tekrar deneyin."
     },
     "security": {
       "title": "Güvenlik",
@@ -1635,7 +1663,8 @@
     },
     "helpCenter": {
       "title": "Yardım Merkezi",
-      "subtitle": "Rehberler ve destek"
+      "subtitle": "Rehberler ve destek",
+      "openFailed": "Yardım merkezi açılamadı."
     },
     "version": {
       "title": "Sürüm",

@@ -69,6 +69,7 @@ export const authResponseSchema = z.object({
 export const meResponseSchema = z.object({
   user: authUserSchema.extend({
     baseCurrency: currencySchema.nullable(),
+    canChangePassword: z.boolean(),
     savingsTargetRate: z.number().int().min(0).max(80),
     riskProfile: riskProfileSchema,
   }),
@@ -77,6 +78,7 @@ export const meResponseSchema = z.object({
 export const meUpdateInputSchema = z
   .object({
     name: z.string().trim().min(1).max(120).optional(),
+    baseCurrency: currencySchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
@@ -85,6 +87,7 @@ export const meUpdateInputSchema = z
 export const mePreferencesSchema = z.object({
   savingsTargetRate: z.number().int().min(0).max(80),
   riskProfile: riskProfileSchema,
+  notificationsEnabled: z.boolean().default(true),
 });
 
 export const mePreferencesResponseSchema = z.object({
@@ -95,9 +98,20 @@ export const mePreferencesUpdateInputSchema = z
   .object({
     savingsTargetRate: z.number().int().min(0).max(80).optional(),
     riskProfile: riskProfileSchema.optional(),
+    notificationsEnabled: z.boolean().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
+  });
+
+export const meChangePasswordInputSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: passwordSchema,
+  })
+  .refine((value) => value.currentPassword !== value.newPassword, {
+    message: 'New password must be different from current password',
+    path: ['newPassword'],
   });
 
 export const logoutResponseSchema = z.object({
@@ -989,6 +1003,7 @@ export type MeUpdateInput = z.infer<typeof meUpdateInputSchema>;
 export type MePreferences = z.infer<typeof mePreferencesSchema>;
 export type MePreferencesResponse = z.infer<typeof mePreferencesResponseSchema>;
 export type MePreferencesUpdateInput = z.infer<typeof mePreferencesUpdateInputSchema>;
+export type MeChangePasswordInput = z.infer<typeof meChangePasswordInputSchema>;
 export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
 export type AccountType = z.infer<typeof accountTypeSchema>;
 export type CategoryType = z.infer<typeof categoryTypeSchema>;

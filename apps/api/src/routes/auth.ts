@@ -18,6 +18,7 @@ import type { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 
+import { authenticate } from '../auth/middleware.js';
 import { verifyOauthIdToken } from '../auth/oauth.js';
 import { ApiError } from '../errors.js';
 import { RefreshTokenModel } from '../models/RefreshToken.js';
@@ -351,6 +352,41 @@ export function registerAuthRoutes(app: FastifyInstance): void {
 
       currentRefresh.revokedAt = new Date();
       await currentRefresh.save();
+
+      return logoutResponseSchema.parse({
+        ok: true,
+      });
+    },
+  );
+
+  app.post(
+    '/auth/logout-all',
+    {
+      preHandler: authenticate,
+      config: {
+        rateLimit: AUTH_RATE_LIMIT,
+      },
+    },
+    async (request) => {
+      if (!request.user) {
+        throw new ApiError({
+          code: 'UNAUTHORIZED',
+          message: 'Unauthorized',
+          statusCode: 401,
+        });
+      }
+
+      const revokedAt = new Date();
+      await RefreshTokenModel.updateMany(
+        {
+          userId: request.user.id,
+          revokedAt: null,
+          expiresAt: { $gt: revokedAt },
+        },
+        {
+          $set: { revokedAt },
+        },
+      );
 
       return logoutResponseSchema.parse({
         ok: true,

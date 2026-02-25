@@ -79,6 +79,7 @@ describe('/me/preferences', () => {
       preferences: {
         savingsTargetRate: 20,
         riskProfile: 'medium',
+        notificationsEnabled: true,
       },
     });
 
@@ -92,6 +93,7 @@ describe('/me/preferences', () => {
       preferences: {
         savingsTargetRate: 32,
         riskProfile: 'high',
+        notificationsEnabled: true,
       },
     });
 
@@ -100,6 +102,14 @@ describe('/me/preferences', () => {
     expect(getUpdated.status).toBe(200);
     expect(getUpdated.body.user.savingsTargetRate).toBe(32);
     expect(getUpdated.body.user.riskProfile).toBe('high');
+
+    const disableNotifications = await request(app.server)
+      .patch('/me/preferences')
+      .set(authHeader)
+      .send({ notificationsEnabled: false });
+
+    expect(disableNotifications.status).toBe(200);
+    expect(disableNotifications.body.preferences.notificationsEnabled).toBe(false);
   });
 
   it('validates input and requires auth', async () => {

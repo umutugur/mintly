@@ -96,4 +96,49 @@ describe('PATCH /me', () => {
     expect(invalidBody.status).toBe(400);
     expect(invalidBody.body.error.code).toBe('VALIDATION_ERROR');
   });
+
+  it('updates base currency and synchronizes account + transaction currency values', async () => {
+    const session = await registerUser('currency-sync@example.com', 'Currency User');
+    const authHeader = { Authorization: `Bearer ${session.accessToken}` };
+
+    const account = await request(app.server).post('/accounts').set(authHeader).send({
+      name: 'Main',
+      type: 'bank',
+      currency: 'USD',
+    });
+    expect(account.status).toBe(201);
+
+    const category = await request(app.server).post('/categories').set(authHeader).send({
+      name: 'Groceries',
+      type: 'expense',
+      color: '#12AA34',
+      icon: 'cart',
+    });
+    expect(category.status).toBe(201);
+
+    const transaction = await request(app.server).post('/transactions').set(authHeader).send({
+      accountId: account.body.id,
+      categoryId: category.body.id,
+      type: 'expense',
+      amount: 42,
+      currency: 'USD',
+      description: 'Market',
+      occurredAt: new Date().toISOString(),
+    });
+    expect(transaction.status).toBe(201);
+
+    const patchResponse = await request(app.server).patch('/me').set(authHeader).send({
+      baseCurrency: 'EUR',
+    });
+    expect(patchResponse.status).toBe(200);
+    expect(patchResponse.body.user.baseCurrency).toBe('EUR');
+
+    const accountsResponse = await request(app.server).get('/accounts').set(authHeader);
+    expect(accountsResponse.status).toBe(200);
+    expect(accountsResponse.body.accounts[0].currency).toBe('EUR');
+
+    const transactionsResponse = await request(app.server).get('/transactions').set(authHeader);
+    expect(transactionsResponse.status).toBe(200);
+    expect(transactionsResponse.body.transactions[0].currency).toBe('EUR');
+  });
 });

@@ -52,6 +52,7 @@ import {
   groupSettleResponseSchema,
   healthResponseSchema,
   logoutResponseSchema,
+  meChangePasswordInputSchema,
   meUpdateInputSchema,
   mePreferencesResponseSchema,
   mePreferencesUpdateInputSchema,
@@ -124,6 +125,7 @@ import {
   type LoginInput,
   type OauthInput,
   type LogoutInput,
+  type MeChangePasswordInput,
   type MeResponse,
   type MeUpdateInput,
   type MePreferencesResponse,
@@ -338,6 +340,13 @@ export class ApiClient {
     });
   }
 
+  async logoutAll(accessToken: string): Promise<void> {
+    await this.request('/auth/logout-all', logoutResponseSchema, {
+      method: 'POST',
+      accessToken,
+    });
+  }
+
   async getMe(accessToken: string): Promise<MeResponse> {
     return this.request('/me', meResponseSchema, {
       method: 'GET',
@@ -350,6 +359,14 @@ export class ApiClient {
       method: 'PATCH',
       accessToken,
       body: meUpdateInputSchema.parse(input),
+    });
+  }
+
+  async changeMePassword(input: MeChangePasswordInput, accessToken: string): Promise<void> {
+    await this.request('/me/password', logoutResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: meChangePasswordInputSchema.parse(input),
     });
   }
 

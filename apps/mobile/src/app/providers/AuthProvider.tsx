@@ -73,6 +73,7 @@ function toSessionUser(user: AuthUser): SessionUser {
     email: user.email,
     name: user.name,
     baseCurrency: null,
+    canChangePassword: true,
     savingsTargetRate: 20,
     riskProfile: 'medium',
   };

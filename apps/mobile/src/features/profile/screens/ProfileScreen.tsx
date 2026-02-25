@@ -12,6 +12,7 @@ import { useI18n } from '@shared/i18n';
 import type { RootTabParamList } from '@core/navigation/types';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
+import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
 import { MintlyLogo } from '../../../components/brand/MintlyLogo';
 
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/profil_(dark)_2/screen.png
@@ -33,7 +34,7 @@ export function ProfileScreen() {
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
 
-  const displayName = user?.name?.trim() || t('profile.defaultUserName');
+  const displayName = resolveUserDisplayName(user);
   const displayEmail = user?.email ?? t('common.notAvailable');
   const accountCount = accountsQuery.data?.accounts.length ?? 0;
   const lastSyncLabel = useMemo(() => formatSync(new Date()), []);

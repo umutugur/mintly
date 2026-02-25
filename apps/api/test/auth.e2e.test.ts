@@ -105,6 +105,7 @@ describe('Auth + Finance API', () => {
         email: 'user@example.com',
         name: 'Fin User',
         baseCurrency: null,
+        canChangePassword: true,
         savingsTargetRate: 20,
         riskProfile: 'medium',
       },
@@ -219,6 +220,73 @@ describe('Auth + Finance API', () => {
 
     expect(response.status).toBe(401);
     expect(response.body.error?.code).toBe('INVALID_REFRESH_TOKEN');
+  });
+
+  it('logout-all revokes every active refresh token for the current user', async () => {
+    await request(app.server).post('/auth/register').send({
+      email: 'logout-all@example.com',
+      password: 'Password123',
+      name: 'Logout All',
+    });
+
+    const firstLogin = await request(app.server).post('/auth/login').send({
+      email: 'logout-all@example.com',
+      password: 'Password123',
+    });
+    expect(firstLogin.status).toBe(200);
+
+    const secondLogin = await request(app.server).post('/auth/login').send({
+      email: 'logout-all@example.com',
+      password: 'Password123',
+    });
+    expect(secondLogin.status).toBe(200);
+
+    const logoutAll = await request(app.server)
+      .post('/auth/logout-all')
+      .set('Authorization', `Bearer ${firstLogin.body.accessToken}`);
+    expect(logoutAll.status).toBe(200);
+    expect(logoutAll.body).toEqual({ ok: true });
+
+    const refreshFirst = await request(app.server).post('/auth/refresh').send({
+      refreshToken: firstLogin.body.refreshToken,
+    });
+    expect(refreshFirst.status).toBe(401);
+
+    const refreshSecond = await request(app.server).post('/auth/refresh').send({
+      refreshToken: secondLogin.body.refreshToken,
+    });
+    expect(refreshSecond.status).toBe(401);
+  });
+
+  it('me/password updates password for password accounts', async () => {
+    const register = await request(app.server).post('/auth/register').send({
+      email: 'password-change@example.com',
+      password: 'Password123',
+      name: 'Password Owner',
+    });
+    expect(register.status).toBe(201);
+
+    const changePassword = await request(app.server)
+      .post('/me/password')
+      .set('Authorization', `Bearer ${register.body.accessToken}`)
+      .send({
+        currentPassword: 'Password123',
+        newPassword: 'Password456',
+      });
+    expect(changePassword.status).toBe(200);
+    expect(changePassword.body).toEqual({ ok: true });
+
+    const oldPasswordLogin = await request(app.server).post('/auth/login').send({
+      email: 'password-change@example.com',
+      password: 'Password123',
+    });
+    expect(oldPasswordLogin.status).toBe(401);
+
+    const newPasswordLogin = await request(app.server).post('/auth/login').send({
+      email: 'password-change@example.com',
+      password: 'Password456',
+    });
+    expect(newPasswordLogin.status).toBe(200);
   });
 
   it('/me requires auth token', async () => {

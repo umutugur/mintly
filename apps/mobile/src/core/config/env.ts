@@ -29,6 +29,7 @@ export const mobileEnv = {
   sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   sentryEnvironment: process.env.EXPO_PUBLIC_SENTRY_ENV,
   apiTimeoutMs: readNumberEnv('EXPO_PUBLIC_API_TIMEOUT_MS', DEFAULT_API_TIMEOUT_MS),
+  helpCenterUrl: process.env.EXPO_PUBLIC_HELP_CENTER_URL,
   googleOauthWebClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID,
   googleOauthIosClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID,
   googleOauthAndroidClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID,

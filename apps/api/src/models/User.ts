@@ -72,6 +72,11 @@ const userSchema = new Schema(
       enum: ['low', 'medium', 'high'],
       default: 'medium',
     },
+    notificationsEnabled: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
     passwordHash: {
       type: String,
       required: true,

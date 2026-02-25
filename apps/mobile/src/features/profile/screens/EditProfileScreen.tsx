@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { type MeUpdateInput } from '@mintly/shared';
 import { useMutation } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
+import { invalidateFinanceQueries } from '@core/api/invalidateFinanceQueries';
 import { Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
+import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
 
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/profil_düzenle_(dark)/screen.png
 // no touch/keyboard behavior changed by this PR.
@@ -17,28 +21,37 @@ export function EditProfileScreen() {
   const { user, clearAuthError, withAuth, setSessionUser } = useAuth();
   const { theme, mode } = useTheme();
   const { t } = useI18n();
+  const queryClient = useQueryClient();
 
   const [name, setName] = useState(user?.name ?? '');
+  const [baseCurrency, setBaseCurrency] = useState(user?.baseCurrency ?? '');
   const [nameError, setNameError] = useState<string | null>(null);
+  const [currencyError, setCurrencyError] = useState<string | null>(null);
 
   useEffect(() => {
     setName(user?.name ?? '');
-  }, [user?.name]);
+    setBaseCurrency(user?.baseCurrency ?? '');
+  }, [user?.baseCurrency, user?.name]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: (nextName: string) =>
+    mutationFn: (payload: MeUpdateInput) =>
       withAuth((token) =>
         apiClient.updateMe(
-          {
-            name: nextName,
-          },
+          payload,
           token,
         ),
       ),
-    onSuccess: (response) => {
+    onSuccess: async (response, variables) => {
       setSessionUser(response.user);
       setName(response.user.name ?? '');
+      setBaseCurrency(response.user.baseCurrency ?? '');
       setNameError(null);
+      setCurrencyError(null);
+
+      if (variables.baseCurrency !== undefined) {
+        await invalidateFinanceQueries(queryClient);
+      }
+
       Alert.alert(t('profile.edit.saveSuccess'));
     },
     onError: (error) => {
@@ -50,13 +63,46 @@ export function EditProfileScreen() {
     clearAuthError();
 
     const trimmedName = name.trim();
-    if (!trimmedName) {
+    const previousName = user?.name?.trim() ?? '';
+    const nextBaseCurrency = baseCurrency.trim().toUpperCase();
+    const previousBaseCurrency = user?.baseCurrency?.trim().toUpperCase() ?? '';
+
+    if (!trimmedName && previousName) {
       setNameError(t('auth.validation.nameRequired'));
       return;
     }
 
+    if (nextBaseCurrency && !/^[A-Z]{3}$/.test(nextBaseCurrency)) {
+      setCurrencyError(t('profile.edit.currencyInvalid'));
+      return;
+    }
+
+    if (!nextBaseCurrency && previousBaseCurrency) {
+      setCurrencyError(t('profile.edit.currencyRequired'));
+      return;
+    }
+
     setNameError(null);
-    await updateProfileMutation.mutateAsync(trimmedName);
+    setCurrencyError(null);
+
+    const payload: MeUpdateInput = {};
+    if (trimmedName && trimmedName !== previousName) {
+      payload.name = trimmedName;
+    }
+    if (nextBaseCurrency && nextBaseCurrency !== previousBaseCurrency) {
+      payload.baseCurrency = nextBaseCurrency;
+    }
+
+    if (Object.keys(payload).length === 0) {
+      Alert.alert(t('profile.edit.noChanges'));
+      return;
+    }
+
+    try {
+      await updateProfileMutation.mutateAsync(payload);
+    } catch {
+      // Error is handled in mutation onError.
+    }
   };
 
   const dark = mode === 'dark';
@@ -79,7 +125,7 @@ export function EditProfileScreen() {
           <View style={styles.avatarWrap}>
             <View style={[styles.avatar, { backgroundColor: dark ? '#242B42' : '#EAF1FF' }]}> 
               <Text style={[styles.avatarInitial, { color: theme.colors.primary }]}> 
-                {(user?.name?.trim() || user?.email || 'F').charAt(0).toUpperCase()}
+                {resolveUserDisplayName(user).charAt(0).toUpperCase()}
               </Text>
             </View>
             <Pressable
@@ -134,11 +180,15 @@ export function EditProfileScreen() {
           <TextField
             autoCapitalize="characters"
             autoComplete="off"
-            editable={false}
+            error={currencyError}
             label={t('profile.edit.baseCurrencyLabel')}
-            onChangeText={() => {}}
-            placeholder="-"
-            value={user?.baseCurrency ?? '-'}
+            onChangeText={(value) => {
+              setBaseCurrency(value.toUpperCase());
+              setCurrencyError(null);
+            }}
+            placeholder="USD"
+            value={baseCurrency}
+            maxLength={3}
           />
 
           <PrimaryButton

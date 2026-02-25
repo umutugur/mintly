@@ -32,7 +32,7 @@
     },
     "sections": {
       "baseCurrency": {
-        "subtitle": "Locked for all accounts after first setup",
+        "subtitle": "Change this anytime from Profile > Edit Profile",
         "title": "Base Currency"
       },
       "create": {
@@ -781,6 +781,7 @@
       "FORBIDDEN": "You do not have permission for this action.",
       "INVALID_CREDENTIALS": "Email or password is incorrect.",
       "INVALID_REFRESH_TOKEN": "Your session expired. Please sign in again.",
+      "PASSWORD_CHANGE_NOT_AVAILABLE": "Password change is unavailable for this account.",
       "INVALID_RESPONSE_PAYLOAD": "Received invalid data from server.",
       "NETWORK_ERROR": "Network connection failed.",
       "NOT_FOUND": "The requested record was not found.",
@@ -923,10 +924,13 @@
     "defaultUserName": "Mintly User",
     "edit": {
       "baseCurrencyLabel": "Base Currency",
+      "currencyInvalid": "Enter a valid 3-letter currency code.",
+      "currencyRequired": "Base currency cannot be empty once it is set.",
       "emailLabel": "Email",
       "fullNameLabel": "Full Name",
       "fullNamePlaceholder": "Your full name",
       "helper": "Profile update endpoint is not available yet. UI is ready for PATCH /me integration.",
+      "noChanges": "No profile changes detected.",
       "photoSubtitle": "Tap to change (UI only)",
       "photoTitle": "Profile Photo",
       "save": "Save Changes",
@@ -958,6 +962,26 @@
       "financialGoalsSubtitle": "Savings target and risk profile"
     },
     "security": {
+      "password": {
+        "sectionTitle": "PASSWORD",
+        "currentLabel": "Current Password",
+        "newLabel": "New Password",
+        "confirmLabel": "Confirm New Password",
+        "change": "Change Password",
+        "changing": "Changing...",
+        "success": "Password updated successfully.",
+        "notAvailable": "Password change is unavailable for Apple/Google sign-in accounts.",
+        "currentRequired": "Enter your current password.",
+        "minLength": "New password must be at least 8 characters.",
+        "mismatch": "New password and confirmation do not match."
+      },
+      "sessions": {
+        "sectionTitle": "SESSIONS",
+        "subtitle": "Sign out from this device or revoke all active sessions.",
+        "logoutAll": "Log out from all devices",
+        "loggingOutAll": "Logging out all sessions...",
+        "logoutAllSuccess": "All sessions were revoked."
+      },
       "delete": {
         "cta": "Delete Account and All Data",
         "hint": "This action is permanent and cannot be undone.",
@@ -1039,7 +1063,7 @@
         "privacy": "Privacy",
         "support": "Support"
       },
-      "userTitle": "Demo User",
+      "userTitle": "Mintly User",
       "locale": {
         "tr": "Turkish",
         "en": "English",
@@ -1610,7 +1634,8 @@
     "notifications": {
       "label": "Notifications",
       "title": "Notifications",
-      "subtitle": "Receive important updates"
+      "subtitle": "Receive important updates",
+      "permissionRequired": "Notification permission is required to enable this setting."
     },
     "sections": {
       "application": "Application",
@@ -1618,12 +1643,15 @@
       "support": "Support"
     },
     "user": {
-      "title": "Demo User",
+      "title": "Mintly User",
       "plan": "Premium Plan"
     },
     "biometric": {
       "title": "Biometric Login",
-      "subtitle": "Use Face ID / Fingerprint"
+      "subtitle": "Use Face ID / Fingerprint",
+      "notSupported": "Biometric login is not supported on this device.",
+      "prompt": "Verify to enable biometric login",
+      "enableFailed": "Biometric verification failed. Try again."
     },
     "security": {
       "title": "Security",
@@ -1635,7 +1663,8 @@
     },
     "helpCenter": {
       "title": "Help Center",
-      "subtitle": "Guides and support"
+      "subtitle": "Guides and support",
+      "openFailed": "Help center could not be opened."
     },
     "version": {
       "title": "Version",
