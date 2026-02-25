@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
+import { AdBanner } from '@core/ads/AdBanner';
 import type { RootTabParamList } from '@core/navigation/types';
 import {
   AppIcon,
@@ -530,6 +531,8 @@ export function AnalyticsScreen() {
           </View>
         </Section>
 
+        <AdBanner style={styles.adBanner} />
+
         <Section dark={dark} title={t('analytics.trend.title')} subtitle={t('analytics.trend.subtitle', { days: trendOption.days })}>
           <View style={styles.rangeChipRow}>
             {TREND_RANGE_OPTIONS.map((option) => {
@@ -763,6 +766,9 @@ const styles = StyleSheet.create({
   contentWrap: {
     gap: spacing.md,
     paddingBottom: spacing.xl,
+  },
+  adBanner: {
+    marginVertical: spacing.xs,
   },
   monthHeader: {
     alignItems: 'center',

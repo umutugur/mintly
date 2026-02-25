@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
+import { AdBanner } from '@core/ads/AdBanner';
 import { useI18n } from '@shared/i18n';
 import { Card, PrimaryButton, ScreenContainer } from '@shared/ui';
 import type { AnalyticsStackParamList } from '@core/navigation/stacks/AnalyticsStack';
@@ -804,6 +805,8 @@ export function DashboardScreen() {
               </View>
             </View>
 
+            <AdBanner style={styles.adBanner} />
+
             <View style={styles.sectionWrap}>
               <Text style={[styles.sectionTitle, { color: mode === 'dark' ? '#F3F7FF' : '#1B2437' }]}>{t('dashboard.quickActions')}</Text>
               <View style={styles.quickActionsRow}>
@@ -995,6 +998,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
+  },
+  adBanner: {
+    marginBottom: spacing.xs,
+    marginTop: spacing.xs,
   },
   headerWrap: {
     gap: spacing.md,

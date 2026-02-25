@@ -7,6 +7,7 @@ import { AuthProvider } from '@app/providers/AuthProvider';
 import { NetworkProvider } from '@app/providers/NetworkProvider';
 import { QueryProvider } from '@app/providers/QueryProvider';
 import { ThemeProvider } from '@app/providers/ThemeProvider';
+import { AdProvider } from '@core/ads/AdProvider';
 import { I18nProvider } from '@shared/i18n';
 import { AppNavigator } from '@core/navigation/AppNavigator';
 import { OfflineBanner } from '@shared/ui';
@@ -21,8 +22,10 @@ export function AppRoot() {
               <NetworkProvider>
                 <QueryProvider>
                   <AuthProvider>
-                    <AppNavigator />
-                    <OfflineBanner />
+                    <AdProvider>
+                      <AppNavigator />
+                      <OfflineBanner />
+                    </AdProvider>
                   </AuthProvider>
                 </QueryProvider>
               </NetworkProvider>

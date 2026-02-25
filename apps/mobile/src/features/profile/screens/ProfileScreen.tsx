@@ -91,15 +91,6 @@ export function ProfileScreen() {
 
           <Text style={[styles.name, { color: theme.colors.text }]}>{displayName}</Text>
           <Text style={[styles.email, { color: theme.colors.textMuted }]}>{displayEmail}</Text>
-
-          <View
-            style={[
-              styles.premiumPill,
-              { backgroundColor: dark ? 'rgba(66,17,212,0.22)' : 'rgba(47,107,255,0.12)' },
-            ]}
-          >
-            <Text style={[styles.premiumText, { color: theme.colors.primary }]}>{t('profile.premiumMember')}</Text>
-          </View>
         </Card>
 
         <Card

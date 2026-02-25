@@ -42,7 +42,14 @@
     "plugins": [
       "expo-apple-authentication",
       "expo-image-picker",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-6114268066977057~1007298901",
+          "iosAppId": "ca-app-pub-6114268066977057~4699131909"
+        }
+      ]
     ],
     "extra": {
       "cameraUsageDescription": "Camera access is needed to scan receipts.",

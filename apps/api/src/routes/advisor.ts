@@ -35,8 +35,52 @@ interface UserRateLimitEntry {
   resetAt: number;
 }
 
+interface AdvisorDailyFreeUsageEntry {
+  dayKey: string;
+  updatedAt: number;
+}
+
 const advisorInsightsRateLimitByUser = new Map<string, UserRateLimitEntry>();
 const advisorInsightsRegenerateCooldownByUser = new Map<string, number>();
+const advisorDailyFreeUsageByUser = new Map<string, AdvisorDailyFreeUsageEntry>();
+const ADVISOR_DAILY_FREE_USAGE_SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const ADVISOR_DAILY_FREE_USAGE_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
+
+let lastAdvisorDailyUsageSweepAt = 0;
+
+function getCurrentUtcDayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function consumeAdvisorDailyFreeUsage(userId: string): { allowFree: boolean; dayKey: string } {
+  const now = Date.now();
+  const dayKey = getCurrentUtcDayKey();
+  const existing = advisorDailyFreeUsageByUser.get(userId);
+
+  if (!existing || existing.dayKey !== dayKey) {
+    advisorDailyFreeUsageByUser.set(userId, {
+      dayKey,
+      updatedAt: now,
+    });
+  } else {
+    existing.updatedAt = now;
+  }
+
+  if (now - lastAdvisorDailyUsageSweepAt >= ADVISOR_DAILY_FREE_USAGE_SWEEP_INTERVAL_MS) {
+    lastAdvisorDailyUsageSweepAt = now;
+
+    for (const [key, entry] of advisorDailyFreeUsageByUser.entries()) {
+      if (now - entry.updatedAt > ADVISOR_DAILY_FREE_USAGE_RETENTION_MS) {
+        advisorDailyFreeUsageByUser.delete(key);
+      }
+    }
+  }
+
+  return {
+    allowFree: !existing || existing.dayKey !== dayKey,
+    dayKey,
+  };
+}
 
 function enforceAdvisorInsightsRateLimit(userId: string): void {
   const now = Date.now();
@@ -202,6 +246,11 @@ function toRecurringDto(rule: RecurringRuleDocument): RecurringRule {
 }
 
 export function registerAdvisorRoutes(app: FastifyInstance): void {
+  app.post('/advisor/insights/free-check', { preHandler: authenticate }, async (request) => {
+    const user = requireUser(request);
+    return consumeAdvisorDailyFreeUsage(user.id);
+  });
+
   app.get('/advisor/insights', { preHandler: authenticate }, async (request) => {
     const startedAt = Date.now();
     const user = requireUser(request);

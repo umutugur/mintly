@@ -23,6 +23,7 @@ import { registerCategoryRoutes } from './routes/categories.js';
 import { registerDashboardRoutes } from './routes/dashboard.js';
 import { registerExportRoutes } from './routes/export.js';
 import { registerGroupRoutes } from './routes/groups.js';
+import { registerInternalCronRoutes } from './routes/internal-cron.js';
 import { registerMeRoute } from './routes/me.js';
 import { registerRecurringRoutes } from './routes/recurring.js';
 import { registerReportRoutes } from './routes/reports.js';
@@ -267,6 +268,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
   registerTransactionRoutes(app);
   registerTransferRoutes(app);
   registerRecurringRoutes(app);
+  registerInternalCronRoutes(app);
   registerDashboardRoutes(app);
   registerUpcomingPaymentRoutes(app);
   registerAnalyticsRoutes(app);
