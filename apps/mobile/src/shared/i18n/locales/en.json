@@ -692,10 +692,14 @@
     "weeklyReport": "Weekly Report",
     "upcoming": {
       "title": "Upcoming Payments",
-      "empty": "No upcoming payments in the next 7 days.",
+      "empty": "No upcoming payments in the next 30 days.",
       "dueValue": "Due: {{date}}",
       "today": "Today",
-      "tomorrow": "Tomorrow"
+      "tomorrow": "Tomorrow",
+      "source": {
+        "recurring": "Recurring",
+        "oneOff": "One-time"
+      }
     }
   },
   "debug": {

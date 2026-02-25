@@ -890,11 +890,16 @@ export function DashboardScreen() {
                   <Pressable
                     key={payment.id}
                     accessibilityRole="button"
-                    onPress={() =>
+                    onPress={() => {
+                      if (payment.sourceType === 'recurring') {
+                        goToTransactionsScreen('Recurring');
+                        return;
+                      }
+
                       goToTransactionsScreen('UpcomingPaymentDetail', {
                         paymentId: payment.id,
-                      })
-                    }
+                      });
+                    }}
                     style={({ pressed }) => [styles.upcomingRowPressable, pressed && styles.quickTilePressed]}
                   >
                     <View
@@ -907,9 +912,35 @@ export function DashboardScreen() {
                       ]}
                     >
                       <View style={styles.upcomingRowMeta}>
-                        <Text numberOfLines={1} style={[styles.upcomingTitle, { color: theme.colors.text }]}>
-                          {payment.title}
-                        </Text>
+                        <View style={styles.upcomingTitleRow}>
+                          <Text numberOfLines={1} style={[styles.upcomingTitle, { color: theme.colors.text }]}>
+                            {payment.title}
+                          </Text>
+                          <View
+                            style={[
+                              styles.upcomingSourceBadge,
+                              payment.sourceType === 'recurring'
+                                ? styles.upcomingSourceBadgeRecurring
+                                : styles.upcomingSourceBadgeOneOff,
+                              mode === 'dark'
+                                ? styles.upcomingSourceBadgeDark
+                                : styles.upcomingSourceBadgeLight,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.upcomingSourceLabel,
+                                payment.sourceType === 'recurring'
+                                  ? styles.upcomingSourceLabelRecurring
+                                  : styles.upcomingSourceLabelOneOff,
+                              ]}
+                            >
+                              {payment.sourceType === 'recurring'
+                                ? t('dashboard.upcoming.source.recurring')
+                                : t('dashboard.upcoming.source.oneOff')}
+                            </Text>
+                          </View>
+                        </View>
                         <Text style={[styles.upcomingSubtitle, { color: theme.colors.textMuted }]}>
                           {t('dashboard.upcoming.dueValue', {
                             date: formatDueDateLabel(payment.dueDate, locale, t),
@@ -1279,10 +1310,46 @@ const styles = StyleSheet.create({
     gap: 2,
     minWidth: 0,
   },
+  upcomingTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
   upcomingTitle: {
     ...typography.subheading,
     fontSize: 15,
     fontWeight: '700',
+    flex: 1,
+    minWidth: 0,
+  },
+  upcomingSourceBadge: {
+    borderRadius: radius.full,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  upcomingSourceBadgeRecurring: {
+    borderColor: '#16A965',
+  },
+  upcomingSourceBadgeOneOff: {
+    borderColor: '#8FA0BC',
+  },
+  upcomingSourceBadgeLight: {
+    backgroundColor: '#F5F8FD',
+  },
+  upcomingSourceBadgeDark: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  upcomingSourceLabel: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  upcomingSourceLabelRecurring: {
+    color: '#16A965',
+  },
+  upcomingSourceLabelOneOff: {
+    color: '#8FA0BC',
   },
   upcomingSubtitle: {
     ...typography.caption,

@@ -355,11 +355,22 @@ export const upcomingPaymentMarkPaidResponseSchema = z.object({
   transaction: transactionSchema.nullable(),
 });
 
+export const dashboardUpcomingSourceTypeSchema = z.enum(['oneOff', 'recurring']);
+
+export const dashboardUpcomingPaymentSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(160),
+  amount: z.number().positive(),
+  currency: currencySchema,
+  dueDate: dateTimeStringSchema,
+  sourceType: dashboardUpcomingSourceTypeSchema,
+});
+
 export const dashboardRecentResponseSchema = z.object({
   recentTransactions: z.array(transactionSchema),
   totalBalance: z.number(),
   balances: z.array(accountBalanceSchema),
-  upcomingPaymentsDueSoon: z.array(upcomingPaymentSchema),
+  upcomingPaymentsDueSoon: z.array(dashboardUpcomingPaymentSchema),
 });
 
 export const transferCreateInputSchema = z
@@ -1036,6 +1047,8 @@ export type UpcomingPaymentCreateInput = z.infer<typeof upcomingPaymentCreateInp
 export type UpcomingPaymentUpdateInput = z.infer<typeof upcomingPaymentUpdateInputSchema>;
 export type UpcomingPaymentMarkPaidInput = z.infer<typeof upcomingPaymentMarkPaidInputSchema>;
 export type UpcomingPaymentMarkPaidResponse = z.infer<typeof upcomingPaymentMarkPaidResponseSchema>;
+export type DashboardUpcomingSourceType = z.infer<typeof dashboardUpcomingSourceTypeSchema>;
+export type DashboardUpcomingPayment = z.infer<typeof dashboardUpcomingPaymentSchema>;
 export type DashboardRecentResponse = z.infer<typeof dashboardRecentResponseSchema>;
 export type TransferCreateInput = z.infer<typeof transferCreateInputSchema>;
 export type TransferCreateResponse = z.infer<typeof transferCreateResponseSchema>;

@@ -199,7 +199,10 @@ export function RecurringScreen() {
   }, [categoryOptions, form, selectedCategoryValue]);
 
   async function refreshRecurringList(): Promise<void> {
-    await queryClient.invalidateQueries({ queryKey: financeQueryKeys.recurring.all() });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: financeQueryKeys.recurring.all() }),
+      queryClient.invalidateQueries({ queryKey: financeQueryKeys.dashboard.recent() }),
+    ]);
   }
 
   const createRecurringMutation = useMutation({

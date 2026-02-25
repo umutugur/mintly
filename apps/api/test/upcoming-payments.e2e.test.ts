@@ -234,7 +234,7 @@ describe('/upcoming-payments', () => {
     const dueSoon = new Date(now);
     dueSoon.setDate(dueSoon.getDate() + 2);
     const notDueSoon = new Date(now);
-    notDueSoon.setDate(notDueSoon.getDate() + 12);
+    notDueSoon.setDate(notDueSoon.getDate() + 45);
 
     const createDueSoon = await request(app.server).post('/upcoming-payments').set(authHeader).send({
       title: 'Electricity',
@@ -262,6 +262,104 @@ describe('/upcoming-payments', () => {
     expect(Array.isArray(dashboard.body.upcomingPaymentsDueSoon)).toBe(true);
     expect(dashboard.body.upcomingPaymentsDueSoon).toHaveLength(1);
     expect(dashboard.body.upcomingPaymentsDueSoon[0].title).toBe('Electricity');
+    expect(dashboard.body.upcomingPaymentsDueSoon[0].sourceType).toBe('oneOff');
+  });
+
+  it('dashboard merges recurring projections with one-off upcoming items and dedupes overlaps', async () => {
+    const owner = await registerUser('upcoming-dashboard-recurring@example.com', 'Owner');
+    const authHeader = { Authorization: `Bearer ${owner.accessToken}` };
+    const account = await createAccount(owner.accessToken, 'Main', 'bank');
+    const expenseCategory = await createExpenseCategory(owner.accessToken, 'Utilities');
+
+    const now = new Date();
+    const recurringOneDate = new Date(now);
+    recurringOneDate.setUTCDate(recurringOneDate.getUTCDate() + 3);
+    recurringOneDate.setUTCHours(10, 0, 0, 0);
+
+    const recurringTwoDate = new Date(now);
+    recurringTwoDate.setUTCDate(recurringTwoDate.getUTCDate() + 6);
+    recurringTwoDate.setUTCHours(10, 0, 0, 0);
+
+    const recurringOne = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      type: 'expense',
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      amount: 320,
+      cadence: 'weekly',
+      dayOfWeek: recurringOneDate.getUTCDay(),
+      startAt: recurringOneDate.toISOString(),
+      description: 'Water Bill',
+    });
+    expect(recurringOne.status).toBe(201);
+
+    const recurringTwo = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      type: 'expense',
+      accountId: account.id,
+      categoryId: expenseCategory.id,
+      amount: 650,
+      cadence: 'weekly',
+      dayOfWeek: recurringTwoDate.getUTCDay(),
+      startAt: recurringTwoDate.toISOString(),
+      description: 'Gym Plan',
+    });
+    expect(recurringTwo.status).toBe(201);
+
+    const createDuplicateOneOff = await request(app.server).post('/upcoming-payments').set(authHeader).send({
+      title: 'Water Bill',
+      type: 'bill',
+      amount: 320,
+      currency: 'TRY',
+      dueDate: recurringOneDate.toISOString(),
+      source: 'manual',
+    });
+    expect(createDuplicateOneOff.status).toBe(201);
+
+    const oneOffDueSoon = new Date(now);
+    oneOffDueSoon.setUTCDate(oneOffDueSoon.getUTCDate() + 2);
+    oneOffDueSoon.setUTCHours(10, 0, 0, 0);
+
+    const createOneOff = await request(app.server).post('/upcoming-payments').set(authHeader).send({
+      title: 'Electricity',
+      type: 'bill',
+      amount: 450,
+      currency: 'TRY',
+      dueDate: oneOffDueSoon.toISOString(),
+      source: 'ocr',
+    });
+    expect(createOneOff.status).toBe(201);
+
+    const dashboard = await request(app.server).get('/dashboard/recent').set(authHeader);
+
+    expect(dashboard.status).toBe(200);
+    expect(Array.isArray(dashboard.body.upcomingPaymentsDueSoon)).toBe(true);
+
+    const items = dashboard.body.upcomingPaymentsDueSoon as Array<{
+      amount: number;
+      dueDate: string;
+      sourceType: 'oneOff' | 'recurring';
+      title: string;
+    }>;
+
+    expect(items.some((item) => item.title === 'Electricity' && item.sourceType === 'oneOff')).toBe(true);
+    expect(items.some((item) => item.title === 'Gym Plan' && item.sourceType === 'recurring')).toBe(true);
+
+    const waterItems = items.filter((item) => item.title === 'Water Bill' && item.amount === 320);
+    expect(waterItems).toHaveLength(1);
+    expect(waterItems[0].sourceType).toBe('oneOff');
+
+    const sortedItems = [...items].sort((left, right) => {
+      const leftDue = new Date(left.dueDate).getTime();
+      const rightDue = new Date(right.dueDate).getTime();
+      if (leftDue !== rightDue) {
+        return leftDue - rightDue;
+      }
+
+      return left.title.localeCompare(right.title);
+    });
+
+    expect(items.map((item) => item.dueDate)).toEqual(sortedItems.map((item) => item.dueDate));
   });
 
   it('enforces single-currency invariant for upcoming payment creation', async () => {

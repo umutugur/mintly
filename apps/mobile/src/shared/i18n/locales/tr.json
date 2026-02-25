@@ -692,10 +692,14 @@
     "weeklyReport": "Haftalık Rapor",
     "upcoming": {
       "title": "Yaklaşan Ödemeler",
-      "empty": "Önümüzdeki 7 gün için yaklaşan ödeme yok.",
+      "empty": "Önümüzdeki 30 gün için yaklaşan ödeme yok.",
       "dueValue": "Vade: {{date}}",
       "today": "Bugün",
-      "tomorrow": "Yarın"
+      "tomorrow": "Yarın",
+      "source": {
+        "recurring": "Düzenli",
+        "oneOff": "Tek Sefer"
+      }
     }
   },
   "debug": {
