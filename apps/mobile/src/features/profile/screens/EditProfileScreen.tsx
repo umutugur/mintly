@@ -186,7 +186,7 @@ export function EditProfileScreen() {
               setBaseCurrency(value.toUpperCase());
               setCurrencyError(null);
             }}
-            placeholder="USD"
+            placeholder={t('profile.edit.baseCurrencyPlaceholder')}
             value={baseCurrency}
             maxLength={3}
           />

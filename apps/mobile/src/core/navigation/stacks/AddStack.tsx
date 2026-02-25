@@ -11,6 +11,12 @@ import { useT } from '@shared/i18n/t';
 import { useTheme } from '@shared/theme';
 import { HeaderActionButton } from '../HeaderActionButton';
 
+export type TransferScreenParams = {
+  deleteSourceAccountId?: string;
+  deleteSourceAccountName?: string;
+  deleteSourceBalance?: number;
+};
+
 export type AddStackParamList = {
   AddHub: undefined;
   AddTransaction:
@@ -22,7 +28,7 @@ export type AddStackParamList = {
         };
       }
     | undefined;
-  Transfer: undefined;
+  Transfer: TransferScreenParams | undefined;
   Recurring: undefined;
 };
 

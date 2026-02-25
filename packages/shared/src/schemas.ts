@@ -18,6 +18,27 @@ const dateOnlyStringSchema = z
   .string()
   .trim()
   .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, 'Date must be YYYY-MM-DD');
+const queryBooleanSchema = z.preprocess((value) => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1') {
+      return true;
+    }
+    if (normalized === 'false' || normalized === '0') {
+      return false;
+    }
+  }
+
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+
+  return value;
+}, z.boolean());
 
 export const healthResponseSchema = z.object({
   ok: z.literal(true),
@@ -231,7 +252,7 @@ export const transactionListQuerySchema = z
     from: dateTimeStringSchema.optional(),
     to: dateTimeStringSchema.optional(),
     search: z.string().trim().min(1).max(120).optional(),
-    includeDeleted: z.coerce.boolean().default(false),
+    includeDeleted: queryBooleanSchema.default(false),
   })
   .refine(
     (value) => {
@@ -564,7 +585,7 @@ export const aiReceiptParseResponseSchema = z.object({
 export const advisorInsightsQuerySchema = z.object({
   month: monthStringSchema,
   language: aiInsightsLanguageSchema.default('tr'),
-  regenerate: z.coerce.boolean().default(false),
+  regenerate: queryBooleanSchema.default(false),
 });
 
 export const advisorInsightModeSchema = z.enum(['ai', 'fallback']);
@@ -840,7 +861,7 @@ export const budgetSchema = z.object({
 
 export const budgetListQuerySchema = z.object({
   month: monthStringSchema,
-  includeDeleted: z.coerce.boolean().default(false),
+  includeDeleted: queryBooleanSchema.default(false),
 });
 
 export const budgetListItemSchema = z.object({
@@ -977,7 +998,7 @@ export const recurringUpdateInputSchema = z
 
 export const recurringListQuerySchema = z.object({
   month: monthStringSchema.optional(),
-  includeDeleted: z.coerce.boolean().default(false),
+  includeDeleted: queryBooleanSchema.default(false),
 });
 
 export const recurringListResponseSchema = z.object({

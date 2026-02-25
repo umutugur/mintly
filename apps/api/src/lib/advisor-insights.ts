@@ -1425,7 +1425,7 @@ export async function generateAdvisorInsight(
           status: providerStatus,
           detail: `provider JSON parse failed: ${
             parseError instanceof Error ? parseError.message : 'unknown'
-          } | preview=${JSON.stringify(sanitizeFreeText(providerText))}`,
+          }`,
         });
       }
 
@@ -1444,7 +1444,7 @@ export async function generateAdvisorInsight(
             status: providerStatus,
             detail: `provider output schema validation failed: ${
               firstIssue ? describeZodIssue(firstIssue) : 'unknown'
-            } | preview=${JSON.stringify(sanitizeFreeText(providerText))}`,
+            }`,
           });
         } else {
           providerAdvice = parsedProvider.data;

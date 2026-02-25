@@ -891,11 +891,6 @@ export function DashboardScreen() {
                     key={payment.id}
                     accessibilityRole="button"
                     onPress={() => {
-                      if (payment.sourceType === 'recurring') {
-                        goToTransactionsScreen('Recurring');
-                        return;
-                      }
-
                       goToTransactionsScreen('UpcomingPaymentDetail', {
                         paymentId: payment.id,
                       });

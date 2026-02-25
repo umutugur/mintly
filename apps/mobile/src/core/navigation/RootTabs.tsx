@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StackActions } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 import { StyleSheet } from 'react-native';
 
 import { AppIcon } from '@shared/ui';
@@ -20,6 +20,13 @@ import type { RootTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 type StandardTabName = Exclude<keyof RootTabParamList, 'AddTab'>;
+type TabRootRouteName =
+  | 'Dashboard'
+  | 'Transactions'
+  | 'AddHub'
+  | 'Analytics'
+  | 'Groups'
+  | 'ProfileHome';
 
 const TAB_ICON_MAP: Record<
   StandardTabName,
@@ -34,6 +41,49 @@ const TAB_ICON_MAP: Record<
   GroupsTab: { active: 'people', inactive: 'people-outline' },
   ProfileTab: { active: 'person-circle', inactive: 'person-circle-outline' },
 };
+
+const TAB_ROOT_ROUTES: Record<keyof RootTabParamList, TabRootRouteName> = {
+  HomeTab: 'Dashboard',
+  TransactionsTab: 'Transactions',
+  AddTab: 'AddHub',
+  AnalyticsTab: 'Analytics',
+  GroupsTab: 'Groups',
+  ProfileTab: 'ProfileHome',
+};
+
+function resetTabStackToRoot(
+  navigation: {
+    getState: () => {
+      routes: Array<{
+        key: string;
+        state?: unknown;
+      }>;
+    };
+    dispatch: (action: any) => void;
+  },
+  routeKey: string,
+  rootRouteName: TabRootRouteName,
+): void {
+  const tabRoute = navigation.getState().routes.find((stateRoute) => stateRoute.key === routeKey);
+  const stackState = tabRoute?.state as
+    | {
+        type?: string;
+        key?: string;
+      }
+    | undefined;
+
+  if (!stackState?.key || stackState.type !== 'stack') {
+    return;
+  }
+
+  navigation.dispatch({
+    ...CommonActions.reset({
+      index: 0,
+      routes: [{ name: rootRouteName }],
+    }),
+    target: stackState.key,
+  });
+}
 
 export function RootTabs() {
   const { theme } = useTheme();
@@ -68,34 +118,15 @@ export function RootTabs() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
       }}
-      screenListeners={({ navigation, route }) => ({
-        tabPress: () => {
-          const activeTabState = navigation
-            .getState()
-            .routes.find((stateRoute) => stateRoute.key === route.key)?.state as
-            | { type?: string; index?: number; key?: string }
-            | undefined;
-
-          if (
-            !activeTabState
-            || activeTabState.type !== 'stack'
-            || !activeTabState.key
-            || typeof activeTabState.index !== 'number'
-            || activeTabState.index <= 0
-          ) {
-            return;
-          }
-
-          navigation.dispatch({
-            ...StackActions.popToTop(),
-            target: activeTabState.key,
-          });
-        },
-      })}
     >
       <Tab.Screen
         name="HomeTab"
         component={HomeStack}
+        listeners={({ navigation, route }) => ({
+          tabPress: () => {
+            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.HomeTab);
+          },
+        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.home.label),
           tabBarLabel: t(I18N_KEYS.common.navigation.tabs.home.label),
@@ -113,6 +144,11 @@ export function RootTabs() {
       <Tab.Screen
         name="TransactionsTab"
         component={TransactionsStack}
+        listeners={({ navigation, route }) => ({
+          tabPress: () => {
+            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.TransactionsTab);
+          },
+        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.transactions.label),
           tabBarLabel: t(I18N_KEYS.common.navigation.tabs.transactions.shortLabel),
@@ -130,6 +166,11 @@ export function RootTabs() {
       <Tab.Screen
         name="AddTab"
         component={AddStack}
+        listeners={({ navigation, route }) => ({
+          tabPress: () => {
+            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.AddTab);
+          },
+        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.add.label),
           tabBarButton: ({ onPress, accessibilityState }) => (
@@ -144,6 +185,11 @@ export function RootTabs() {
       <Tab.Screen
         name="AnalyticsTab"
         component={AnalyticsStack}
+        listeners={({ navigation, route }) => ({
+          tabPress: () => {
+            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.AnalyticsTab);
+          },
+        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.analytics.label),
           tabBarLabel: t(I18N_KEYS.common.navigation.tabs.analytics.shortLabel),
@@ -161,6 +207,11 @@ export function RootTabs() {
       <Tab.Screen
         name="GroupsTab"
         component={GroupsStack}
+        listeners={({ navigation, route }) => ({
+          tabPress: () => {
+            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.GroupsTab);
+          },
+        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.groups.label),
           tabBarLabel: t(I18N_KEYS.common.navigation.tabs.groups.shortLabel),
@@ -178,6 +229,11 @@ export function RootTabs() {
       <Tab.Screen
         name="ProfileTab"
         component={ProfileStack}
+        listeners={({ navigation, route }) => ({
+          tabPress: () => {
+            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.ProfileTab);
+          },
+        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.profile.label),
           tabBarLabel: t(I18N_KEYS.common.navigation.tabs.profile.shortLabel),

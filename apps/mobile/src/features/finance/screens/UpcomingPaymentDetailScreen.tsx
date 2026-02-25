@@ -28,6 +28,8 @@ import {
 } from '../utils/upcomingPaymentAccountPreference';
 import { cancelUpcomingPaymentNotifications } from '../utils/notificationsForUpcomingPayment';
 
+type UpcomingPaymentView = Pick<UpcomingPayment, 'id' | 'title' | 'amount' | 'currency' | 'dueDate'>;
+
 function formatMoney(amount: number, currency: string, locale: string): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -58,6 +60,7 @@ export function UpcomingPaymentDetailScreen() {
   const { t, locale } = useI18n();
 
   const [accountId, setAccountId] = useState('');
+  const isRecurringProjection = route.params.paymentId.startsWith('recurring:');
 
   const listFilter = useMemo(() => {
     const from = new Date();
@@ -90,11 +93,44 @@ export function UpcomingPaymentDetailScreen() {
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
 
-  const payment: UpcomingPayment | null = useMemo(() => {
-    return (
-      upcomingQuery.data?.upcomingPayments.find((entry) => entry.id === route.params.paymentId) ?? null
+  const dashboardQuery = useQuery({
+    queryKey: financeQueryKeys.dashboard.recent(),
+    queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
+    enabled: isRecurringProjection,
+  });
+
+  const payment: UpcomingPaymentView | null = useMemo(() => {
+    const foundUpcoming =
+      upcomingQuery.data?.upcomingPayments.find((entry) => entry.id === route.params.paymentId) ?? null;
+    if (foundUpcoming) {
+      return foundUpcoming;
+    }
+
+    if (!isRecurringProjection) {
+      return null;
+    }
+
+    const foundDashboard = dashboardQuery.data?.upcomingPaymentsDueSoon.find(
+      (entry) => entry.id === route.params.paymentId,
     );
-  }, [route.params.paymentId, upcomingQuery.data?.upcomingPayments]);
+
+    if (!foundDashboard) {
+      return null;
+    }
+
+    return {
+      id: foundDashboard.id,
+      title: foundDashboard.title,
+      amount: foundDashboard.amount,
+      currency: foundDashboard.currency,
+      dueDate: foundDashboard.dueDate,
+    };
+  }, [
+    dashboardQuery.data?.upcomingPaymentsDueSoon,
+    isRecurringProjection,
+    route.params.paymentId,
+    upcomingQuery.data?.upcomingPayments,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -142,6 +178,7 @@ export function UpcomingPaymentDetailScreen() {
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.transactions.all() }),
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.analytics.all() }),
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.budgets.all() }),
+        queryClient.invalidateQueries({ queryKey: financeQueryKeys.recurring.all() }),
       ]);
 
       Alert.alert(t('upcoming.detail.markPaid.successTitle'), t('upcoming.detail.markPaid.successMessage'));
@@ -178,7 +215,11 @@ export function UpcomingPaymentDetailScreen() {
     },
   });
 
-  if (upcomingQuery.isLoading || accountsQuery.isLoading) {
+  if (
+    upcomingQuery.isLoading
+    || accountsQuery.isLoading
+    || (isRecurringProjection && dashboardQuery.isLoading)
+  ) {
     return (
       <ScreenContainer dark={mode === 'dark'}>
         <Card dark={mode === 'dark'} style={styles.stateCard}>
@@ -189,8 +230,8 @@ export function UpcomingPaymentDetailScreen() {
     );
   }
 
-  if (upcomingQuery.isError || accountsQuery.isError) {
-    const error = upcomingQuery.error ?? accountsQuery.error;
+  if (upcomingQuery.isError || accountsQuery.isError || (isRecurringProjection && dashboardQuery.isError)) {
+    const error = upcomingQuery.error ?? accountsQuery.error ?? dashboardQuery.error;
 
     return (
       <ScreenContainer dark={mode === 'dark'}>
@@ -267,25 +308,27 @@ export function UpcomingPaymentDetailScreen() {
         </Card>
 
         <View style={styles.actionsRow}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              void markSkippedMutation.mutateAsync();
-            }}
-            disabled={markSkippedMutation.isPending || markPaidMutation.isPending}
-            style={({ pressed }) => [
-              styles.skipButton,
-              {
-                borderColor: theme.colors.border,
-                backgroundColor: mode === 'dark' ? '#121826' : '#FFFFFF',
-              },
-              (pressed || markSkippedMutation.isPending || markPaidMutation.isPending) && styles.skipButtonPressed,
-            ]}
-          >
-            <Text style={[styles.skipButtonLabel, { color: theme.colors.textMuted }]}>
-              {t('upcoming.detail.markSkipped.cta')}
-            </Text>
-          </Pressable>
+          {isRecurringProjection ? null : (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                void markSkippedMutation.mutateAsync();
+              }}
+              disabled={markSkippedMutation.isPending || markPaidMutation.isPending}
+              style={({ pressed }) => [
+                styles.skipButton,
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: mode === 'dark' ? '#121826' : '#FFFFFF',
+                },
+                (pressed || markSkippedMutation.isPending || markPaidMutation.isPending) && styles.skipButtonPressed,
+              ]}
+            >
+              <Text style={[styles.skipButtonLabel, { color: theme.colors.textMuted }]}>
+                {t('upcoming.detail.markSkipped.cta')}
+              </Text>
+            </Pressable>
+          )}
 
           <View style={styles.markPaidWrap}>
             <PrimaryButton

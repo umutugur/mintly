@@ -35,6 +35,13 @@ const GLOBAL_CATEGORIES: readonly BootstrapCategory[] = [
   { key: 'expense_health', name: 'Health', type: 'expense', color: '#EF4444', icon: 'medkit-outline' },
   { key: 'expense_entertainment', name: 'Entertainment', type: 'expense', color: '#F59E0B', icon: 'film-outline' },
   { key: 'income_salary', name: 'Salary', type: 'income', color: '#16A34A', icon: 'cash-outline' },
+  { key: 'income_freelance', name: 'Freelance', type: 'income', color: '#059669', icon: 'briefcase-outline' },
+  { key: 'income_interest', name: 'Interest', type: 'income', color: '#10B981', icon: 'trending-up-outline' },
+  { key: 'income_rent_income', name: 'Rent Income', type: 'income', color: '#0EA5A5', icon: 'home-outline' },
+  { key: 'income_investment', name: 'Investment', type: 'income', color: '#0EA5E9', icon: 'stats-chart-outline' },
+  { key: 'income_refund', name: 'Refund', type: 'income', color: '#14B8A6', icon: 'refresh-outline' },
+  { key: 'income_gift', name: 'Gift', type: 'income', color: '#22C55E', icon: 'gift-outline' },
+  { key: 'income_bonus', name: 'Bonus', type: 'income', color: '#65A30D', icon: 'trophy-outline' },
   { key: 'income_other_income', name: 'Other Income', type: 'income', color: '#059669', icon: 'wallet-outline' },
 ];
 

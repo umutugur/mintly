@@ -270,17 +270,42 @@ function normalizeTextContent(value: unknown): string | null {
   }
 
   if (isRecord(value)) {
-    if (typeof value.text === 'string') {
-      const trimmed = value.text.trim();
+    const directTextFields = [
+      value.text,
+      value.content,
+      value.value,
+      value.output_text,
+      value.generated_text,
+      value.completion,
+    ];
+
+    for (const field of directTextFields) {
+      if (typeof field !== 'string') {
+        continue;
+      }
+
+      const trimmed = field.trim();
       if (trimmed.length > 0) {
         return trimmed;
       }
     }
 
-    if (typeof value.content === 'string') {
-      const trimmed = value.content.trim();
-      if (trimmed.length > 0) {
-        return trimmed;
+    const nestedCollections = [
+      value.parts,
+      value.content,
+      value.output,
+      value.messages,
+      value.choices,
+      value.response,
+      value.message,
+      value.delta,
+      value.data,
+    ];
+
+    for (const nested of nestedCollections) {
+      const nestedText = normalizeTextContent(nested);
+      if (nestedText) {
+        return nestedText;
       }
     }
   }
@@ -304,16 +329,19 @@ function normalizeTextContent(value: unknown): string | null {
 
 function extractFromMessages(resultRecord: Record<string, unknown>): string | null {
   const messages = Array.isArray(resultRecord.messages)
-    ? (resultRecord.messages as Array<{ role?: string; content?: unknown }>)
+    ? (resultRecord.messages as Array<{ role?: string; content?: unknown; text?: unknown; message?: unknown }>)
     : [];
 
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index];
-    if (message?.role !== 'assistant') {
+    const role = typeof message?.role === 'string' ? message.role.toLowerCase() : '';
+    if (role !== 'assistant' && role !== 'model') {
       continue;
     }
 
-    const assistantContent = normalizeTextContent(message.content);
+    const assistantContent = normalizeTextContent(
+      message.content ?? message.text ?? message.message,
+    );
     if (assistantContent) {
       return assistantContent;
     }
@@ -324,10 +352,40 @@ function extractFromMessages(resultRecord: Record<string, unknown>): string | nu
 
 function extractFromChoices(resultRecord: Record<string, unknown>): string | null {
   const choices = Array.isArray(resultRecord.choices)
-    ? (resultRecord.choices as Array<{ message?: { content?: unknown } }>)
+    ? (resultRecord.choices as Array<Record<string, unknown>>)
     : [];
 
-  return normalizeTextContent(choices[0]?.message?.content);
+  for (let index = choices.length - 1; index >= 0; index -= 1) {
+    const choice = choices[index];
+    if (!choice || typeof choice !== 'object') {
+      continue;
+    }
+
+    const messageContent = isRecord(choice.message)
+      ? normalizeTextContent((choice.message as Record<string, unknown>).content)
+        ?? normalizeTextContent((choice.message as Record<string, unknown>).text)
+      : null;
+
+    if (messageContent) {
+      return messageContent;
+    }
+
+    const deltaContent = isRecord(choice.delta)
+      ? normalizeTextContent((choice.delta as Record<string, unknown>).content)
+        ?? normalizeTextContent((choice.delta as Record<string, unknown>).text)
+      : null;
+
+    if (deltaContent) {
+      return deltaContent;
+    }
+
+    const directContent = normalizeTextContent(choice.content) ?? normalizeTextContent(choice.text);
+    if (directContent) {
+      return directContent;
+    }
+  }
+
+  return null;
 }
 
 function extractFromOutput(resultRecord: Record<string, unknown>): string | null {
@@ -335,14 +393,27 @@ function extractFromOutput(resultRecord: Record<string, unknown>): string | null
     return null;
   }
 
-  const firstOutput = resultRecord.output[0];
-  const direct = normalizeTextContent(firstOutput);
-  if (direct) {
-    return direct;
-  }
+  for (let index = resultRecord.output.length - 1; index >= 0; index -= 1) {
+    const entry = resultRecord.output[index];
+    const direct = normalizeTextContent(entry);
+    if (direct) {
+      return direct;
+    }
 
-  if (isRecord(firstOutput)) {
-    return normalizeTextContent(firstOutput.text) ?? normalizeTextContent(firstOutput.content);
+    if (!isRecord(entry)) {
+      continue;
+    }
+
+    const entryRole = typeof entry.role === 'string' ? entry.role.toLowerCase() : '';
+    if (entryRole === 'assistant' || entryRole === 'model' || !entryRole) {
+      const fromContent =
+        normalizeTextContent(entry.content)
+        ?? normalizeTextContent(entry.text)
+        ?? normalizeTextContent(entry.message);
+      if (fromContent) {
+        return fromContent;
+      }
+    }
   }
 
   return null;
@@ -351,6 +422,11 @@ function extractFromOutput(resultRecord: Record<string, unknown>): string | null
 function extractFromResponseObject(resultRecord: Record<string, unknown>): string | null {
   if (!isRecord(resultRecord.response)) {
     return null;
+  }
+
+  const direct = normalizeTextContent(resultRecord.response);
+  if (direct) {
+    return direct;
   }
 
   return normalizeTextContent(resultRecord.response.text)
@@ -794,8 +870,6 @@ export async function generateCloudflareText(
           responseTopLevelKeys: keyDiag.responseTopLevelKeys,
           responseResultKeys: keyDiag.responseResultKeys,
           responseNestedResultKeys: keyDiag.responseNestedResultKeys,
-          // Preview only (never full body). This is capped by summarizeDetail.
-          responseBodyPreview: summarizeDetail(rawBody),
           detail: summarizeDetail(error instanceof Error ? error.message : 'unknown'),
         });
         throw new CloudflareProviderError({

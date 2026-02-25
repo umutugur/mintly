@@ -78,6 +78,10 @@
       "amountPlaceholder": "0.00",
       "date": "Tarih (ISO)",
       "datePlaceholder": "2026-02-17T10:30:00.000Z",
+      "deleteFlow": {
+        "balanceLabel": "Transfer edilecek bakiye",
+        "balanceValue": "{{account}}: {{amount}}"
+      },
       "fromAccount": "Kaynak hesap",
       "note": "Not",
       "notePlaceholder": "Opsiyonel not",
@@ -936,6 +940,7 @@
     "defaultUserName": "Mintly Kullanıcısı",
     "edit": {
       "baseCurrencyLabel": "Ana Para Birimi",
+      "baseCurrencyPlaceholder": "USD",
       "currencyInvalid": "Geçerli 3 harfli para birimi kodu girin.",
       "currencyRequired": "Bir kez ayarlandıktan sonra ana para birimi boş bırakılamaz.",
       "emailLabel": "E-posta",
@@ -1527,7 +1532,14 @@
           "transport": "Ulaşım"
         },
         "income": {
+          "bonus": "Prim/Bonus",
+          "freelance": "Serbest Çalışma",
+          "gift": "Hediye",
+          "interest": "Faiz",
+          "investment": "Yatırım",
           "otherIncome": "Diğer Gelir",
+          "refund": "İade",
+          "rentIncome": "Kira Geliri",
           "salary": "Maaş"
         }
       },

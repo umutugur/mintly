@@ -25,11 +25,15 @@ import {
 import { toTransactionDto } from '../lib/transaction-dto.js';
 import { AccountModel } from '../models/Account.js';
 import { CategoryModel, type CategoryDocument } from '../models/Category.js';
+import { RecurringRuleModel, type RecurringRuleDocument } from '../models/RecurringRule.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { UpcomingPaymentModel, type UpcomingPaymentDocument } from '../models/UpcomingPayment.js';
 import { UserModel } from '../models/User.js';
 
 import { parseBody, parseObjectId, parseQuery, requireUser } from './utils.js';
+
+const RECURRING_UPCOMING_PREFIX = 'recurring';
+const RECURRING_FALLBACK_TITLE = 'Recurring payment';
 
 function toUpcomingPaymentDto(payment: UpcomingPaymentDocument): UpcomingPayment {
   const stamped = payment as UpcomingPaymentDocument & { createdAt: Date; updatedAt: Date };
@@ -100,8 +104,18 @@ async function requireBaseCurrency(userId: Types.ObjectId): Promise<string> {
 async function resolvePreferredExpenseCategory(
   userId: Types.ObjectId,
   paymentType: UpcomingPayment['type'],
+  paymentTitle?: string,
 ): Promise<CategoryDocument> {
-  const preferredRegex = paymentType === 'rent' ? /(rent|kira)/i : /(bill|fatura|utility|invoice)/i;
+  const normalizedTitle = (paymentTitle ?? '').toLowerCase();
+  const hasRentHint = /(rent|kira)/i.test(normalizedTitle);
+  const hasBillHint = /(bill|fatura|utility|invoice)/i.test(normalizedTitle);
+
+  const preferredRegex =
+    paymentType === 'rent' || hasRentHint
+      ? /(rent|kira)/i
+      : paymentType === 'bill' || hasBillHint
+        ? /(bill|fatura|utility|invoice)/i
+        : /(bill|fatura|utility|invoice|rent|kira)/i;
 
   const preferred = await CategoryModel.findOne({
     type: 'expense',
@@ -138,6 +152,140 @@ async function resolvePreferredExpenseCategory(
   }
 
   return fallback;
+}
+
+function inferUpcomingTypeFromText(title: string): UpcomingPayment['type'] {
+  if (/(rent|kira)/i.test(title)) {
+    return 'rent';
+  }
+  if (/(subscription|abonelik)/i.test(title)) {
+    return 'subscription';
+  }
+  if (/(debt|borc|borç)/i.test(title)) {
+    return 'debt';
+  }
+  if (/(bill|fatura|utility|invoice)/i.test(title)) {
+    return 'bill';
+  }
+
+  return 'other';
+}
+
+function parseRecurringProjectionId(value: string): { ruleId: Types.ObjectId; dueDate: Date } | null {
+  if (!value.startsWith(`${RECURRING_UPCOMING_PREFIX}:`)) {
+    return null;
+  }
+
+  const [prefix, ruleIdRaw, ...dueDateParts] = value.split(':');
+  if (prefix !== RECURRING_UPCOMING_PREFIX || !ruleIdRaw || dueDateParts.length === 0) {
+    throw new ApiError({
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid recurring projection id',
+      statusCode: 400,
+    });
+  }
+
+  const dueDateRaw = dueDateParts.join(':');
+  const dueDate = new Date(dueDateRaw);
+  if (Number.isNaN(dueDate.getTime())) {
+    throw new ApiError({
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid recurring projection due date',
+      statusCode: 400,
+    });
+  }
+
+  return {
+    ruleId: parseObjectId(ruleIdRaw, 'ruleId'),
+    dueDate,
+  };
+}
+
+async function resolveRecurringProjectionUpcoming(params: {
+  userId: Types.ObjectId;
+  projection: { ruleId: Types.ObjectId; dueDate: Date };
+}): Promise<{ upcomingPayment: UpcomingPaymentDocument; rule: RecurringRuleDocument }> {
+  const rule = await RecurringRuleModel.findOne({
+    _id: params.projection.ruleId,
+    userId: params.userId,
+    deletedAt: null,
+    kind: 'normal',
+    type: 'expense',
+  });
+
+  if (!rule) {
+    throw new ApiError({
+      code: 'RECURRING_RULE_NOT_FOUND',
+      message: 'Recurring rule not found',
+      statusCode: 404,
+    });
+  }
+
+  if (!rule.accountId) {
+    throw new ApiError({
+      code: 'RECURRING_RULE_INVALID',
+      message: 'Recurring rule is missing account',
+      statusCode: 400,
+    });
+  }
+
+  const [account, category] = await Promise.all([
+    AccountModel.findOne({
+      _id: rule.accountId,
+      userId: params.userId,
+      deletedAt: null,
+    }),
+    rule.categoryId
+      ? CategoryModel.findOne({
+          _id: rule.categoryId,
+          deletedAt: null,
+          $or: [{ userId: params.userId }, { userId: null }],
+        }).select('_id name')
+      : Promise.resolve(null),
+  ]);
+
+  if (!account) {
+    throw new ApiError({
+      code: 'ACCOUNT_NOT_FOUND',
+      message: 'Account not found',
+      statusCode: 404,
+    });
+  }
+
+  const recurringTitle = rule.description?.trim() || category?.name?.trim() || RECURRING_FALLBACK_TITLE;
+  const recurringType = inferUpcomingTypeFromText(recurringTitle);
+
+  const existing = await UpcomingPaymentModel.findOne({
+    userId: params.userId,
+    recurringTemplateId: rule._id,
+    dueDate: params.projection.dueDate,
+  });
+
+  if (existing) {
+    return {
+      upcomingPayment: existing,
+      rule,
+    };
+  }
+
+  const created = await UpcomingPaymentModel.create({
+    userId: params.userId,
+    title: recurringTitle,
+    type: recurringType,
+    amount: rule.amount,
+    currency: account.currency,
+    dueDate: params.projection.dueDate,
+    status: 'upcoming',
+    source: 'template',
+    linkedTransactionId: null,
+    recurringTemplateId: rule._id,
+    meta: null,
+  });
+
+  return {
+    upcomingPayment: created,
+    rule,
+  };
 }
 
 export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
@@ -250,19 +398,37 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
   app.post('/upcoming-payments/:id/mark-paid', { preHandler: authenticate }, async (request) => {
     const user = requireUser(request);
     const userId = parseObjectId(user.id, 'userId');
-    const id = parseObjectId((request.params as { id?: string }).id ?? '', 'id');
+    const rawId = ((request.params as { id?: string }).id ?? '').trim();
     const input = parseBody<UpcomingPaymentMarkPaidInput>(upcomingPaymentMarkPaidInputSchema, request.body);
 
-    const upcomingPayment = await UpcomingPaymentModel.findOne({
-      _id: id,
-      userId,
-    });
+    const recurringProjection = parseRecurringProjectionId(rawId);
+    let recurringRule: RecurringRuleDocument | null = null;
+    let upcomingPayment: UpcomingPaymentDocument | null = null;
+
+    if (recurringProjection) {
+      const resolved = await resolveRecurringProjectionUpcoming({ userId, projection: recurringProjection });
+      upcomingPayment = resolved.upcomingPayment;
+      recurringRule = resolved.rule;
+    } else {
+      upcomingPayment = await UpcomingPaymentModel.findOne({
+        _id: parseObjectId(rawId, 'id'),
+        userId,
+      });
+    }
 
     if (!upcomingPayment) {
       throw new ApiError({
         code: 'UPCOMING_PAYMENT_NOT_FOUND',
         message: 'Upcoming payment not found',
         statusCode: 404,
+      });
+    }
+
+    if (!recurringRule && upcomingPayment.recurringTemplateId) {
+      recurringRule = await RecurringRuleModel.findOne({
+        _id: upcomingPayment.recurringTemplateId,
+        userId,
+        deletedAt: null,
       });
     }
 
@@ -282,7 +448,9 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
 
     const account = input.accountId
       ? await resolveActiveAccount(userId, parseObjectId(input.accountId, 'accountId'))
-      : await AccountModel.findOne({ userId, deletedAt: null }).sort({ createdAt: -1 });
+      : recurringRule?.accountId
+        ? await resolveActiveAccount(userId, recurringRule.accountId)
+        : await AccountModel.findOne({ userId, deletedAt: null }).sort({ createdAt: -1 });
 
     if (!account) {
       throw new ApiError({
@@ -294,7 +462,20 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
 
     validateCurrency(account.currency, upcomingPayment.currency);
 
-    const category = await resolvePreferredExpenseCategory(userId, upcomingPayment.type);
+    let category: CategoryDocument | null = null;
+    if (recurringRule?.categoryId) {
+      category = await CategoryModel.findOne({
+        _id: recurringRule.categoryId,
+        type: 'expense',
+        deletedAt: null,
+        $or: [{ userId }, { userId: null }],
+      });
+    }
+
+    if (!category) {
+      category = await resolvePreferredExpenseCategory(userId, upcomingPayment.type, upcomingPayment.title);
+    }
+
     const occurredAt = input.occurredAt ? new Date(input.occurredAt) : new Date();
 
     const transaction = await createNormalTransaction({

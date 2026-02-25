@@ -3,7 +3,11 @@ import type { Transaction } from '@mintly/shared';
 import type { TransactionDocument } from '../models/Transaction.js';
 
 export function toTransactionDto(transaction: TransactionDocument): Transaction {
-  const stamped = transaction as TransactionDocument & { createdAt: Date; updatedAt: Date };
+  const stamped = transaction as TransactionDocument & {
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt?: Date | null;
+  };
 
   return {
     id: transaction.id,
@@ -20,5 +24,6 @@ export function toTransactionDto(transaction: TransactionDocument): Transaction 
     occurredAt: transaction.occurredAt.toISOString(),
     createdAt: stamped.createdAt.toISOString(),
     updatedAt: stamped.updatedAt.toISOString(),
+    deletedAt: stamped.deletedAt ? stamped.deletedAt.toISOString() : null,
   };
 }

@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
+import type { TransferScreenParams } from '@core/navigation/stacks/AddStack';
 import type { ProfileStackParamList } from '@core/navigation/stacks/ProfileStack';
 import type { RootTabParamList } from '@core/navigation/types';
 import { Card, Chip, PrimaryButton, ScreenContainer, Section } from '@shared/ui';
@@ -236,7 +237,7 @@ export function AccountsScreen() {
     }
   }, [logout, t]);
 
-  const openTransfer = useCallback(() => {
+  const openTransfer = useCallback((params?: TransferScreenParams) => {
     const parent = navigation.getParent?.();
     if (!parent || !('navigate' in parent)) {
       return;
@@ -244,7 +245,10 @@ export function AccountsScreen() {
 
     (parent as {
       navigate: (routeName: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
-    }).navigate('AddTab', { screen: 'Transfer' });
+    }).navigate('AddTab', {
+      screen: 'Transfer',
+      params,
+    });
   }, [navigation]);
 
   const confirmDeleteAccount = useCallback(
@@ -264,7 +268,12 @@ export function AccountsScreen() {
             { text: t('common.cancel'), style: 'cancel' },
             {
               text: t('add.hub.transferAction'),
-              onPress: openTransfer,
+              onPress: () =>
+                openTransfer({
+                  deleteSourceAccountId: accountId,
+                  deleteSourceAccountName: accountName,
+                  deleteSourceBalance: accountBalance,
+                }),
             }
           ]
         );

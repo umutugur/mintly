@@ -46,6 +46,55 @@ describe('Cloudflare provider response parser', () => {
     expect(text).toBe('first line\nsecond line');
   });
 
+  it('extracts text from output entries with assistant role', () => {
+    const text = extractCloudflareAssistantText({
+      success: true,
+      result: {
+        output: [
+          {
+            role: 'assistant',
+            content: [{ type: 'output_text', text: '{"summary":"ok"}' }],
+          },
+        ],
+      },
+      errors: [],
+    });
+
+    expect(text).toBe('{"summary":"ok"}');
+  });
+
+  it('extracts text from choices delta content', () => {
+    const text = extractCloudflareAssistantText({
+      success: true,
+      result: {
+        choices: [
+          {
+            delta: {
+              content: '{"summary":"delta"}',
+            },
+          },
+        ],
+      },
+      errors: [],
+    });
+
+    expect(text).toBe('{"summary":"delta"}');
+  });
+
+  it('extracts text from nested result.result payload', () => {
+    const text = extractCloudflareAssistantText({
+      success: true,
+      result: {
+        result: {
+          output_text: '{"summary":"nested"}',
+        },
+      },
+      errors: [],
+    });
+
+    expect(text).toBe('{"summary":"nested"}');
+  });
+
   it('throws on unsupported payload shape', () => {
     expect(() =>
       extractCloudflareAssistantText({

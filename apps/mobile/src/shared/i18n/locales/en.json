@@ -78,6 +78,10 @@
       "amountPlaceholder": "0.00",
       "date": "Date (ISO)",
       "datePlaceholder": "2026-02-17T10:30:00.000Z",
+      "deleteFlow": {
+        "balanceLabel": "Balance to transfer",
+        "balanceValue": "{{account}}: {{amount}}"
+      },
       "fromAccount": "From account",
       "note": "Note",
       "notePlaceholder": "Optional note",
@@ -936,6 +940,7 @@
     "defaultUserName": "Mintly User",
     "edit": {
       "baseCurrencyLabel": "Base Currency",
+      "baseCurrencyPlaceholder": "USD",
       "currencyInvalid": "Enter a valid 3-letter currency code.",
       "currencyRequired": "Base currency cannot be empty once it is set.",
       "emailLabel": "Email",
@@ -1527,7 +1532,14 @@
           "transport": "Transport"
         },
         "income": {
+          "bonus": "Bonus",
+          "freelance": "Freelance",
+          "gift": "Gift",
+          "interest": "Interest",
+          "investment": "Investment",
           "otherIncome": "Other Income",
+          "refund": "Refund",
+          "rentIncome": "Rent Income",
           "salary": "Salary"
         }
       },

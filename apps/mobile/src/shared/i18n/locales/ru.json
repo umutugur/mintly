@@ -78,6 +78,10 @@
       "amountPlaceholder": "0.00",
       "date": "Дата (ISO)",
       "datePlaceholder": "2026-02-17T10:30:00.000Z",
+      "deleteFlow": {
+        "balanceLabel": "Баланс к переводу",
+        "balanceValue": "{{account}}: {{amount}}"
+      },
       "fromAccount": "Со счета",
       "note": "Заметка",
       "notePlaceholder": "Необязательная заметка",
@@ -936,6 +940,7 @@
     "defaultUserName": "Пользователь Mintly",
     "edit": {
       "baseCurrencyLabel": "Базовая валюта",
+      "baseCurrencyPlaceholder": "USD",
       "currencyInvalid": "Введите корректный 3-буквенный код валюты.",
       "currencyRequired": "После установки базовая валюта не может быть пустой.",
       "emailLabel": "Эл. почта",
@@ -1527,7 +1532,14 @@
           "transport": "Транспорт"
         },
         "income": {
+          "bonus": "Премия/бонус",
+          "freelance": "Фриланс",
+          "gift": "Подарок",
+          "interest": "Проценты",
+          "investment": "Инвестиции",
           "otherIncome": "Другой доход",
+          "refund": "Возврат",
+          "rentIncome": "Доход от аренды",
           "salary": "Зарплата"
         }
       },

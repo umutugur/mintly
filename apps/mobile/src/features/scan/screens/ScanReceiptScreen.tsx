@@ -23,11 +23,62 @@ import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { parseReceiptText, type ParsedReceiptDraft, type ScanCategoryHint } from '../lib/ocrParsing';
 import { recognizeReceiptText } from '../lib/ocrRecognition';
 
-const MIN_PARSE_CONFIDENCE_FOR_LOCAL = 0.72;
+const MIN_PARSE_CONFIDENCE_FOR_TRUSTED_TITLE = 0.72;
+const MAX_AI_TITLE_LENGTH = 40;
+const GENERIC_TITLE_PATTERNS = [
+  /general\s+expense/i,
+  /receipt/i,
+  /expense/i,
+  /payment/i,
+  /transaction/i,
+  /fis/i,
+  /fiş/i,
+];
 
-function needsAiAssist(draft: ParsedReceiptDraft, rawText: string): boolean {
-  const missingCoreField = draft.title.trim().length === 0 || draft.amount.trim().length === 0;
-  return rawText.trim().length >= 12 && (missingCoreField || draft.parseConfidence < MIN_PARSE_CONFIDENCE_FOR_LOCAL);
+function normalizeTitleCandidate(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (/^[\d\W_]+$/u.test(normalized)) {
+    return null;
+  }
+
+  return normalized.slice(0, MAX_AI_TITLE_LENGTH);
+}
+
+function hasLowQualityTitle(title: string): boolean {
+  const normalized = title.trim();
+  if (!normalized) {
+    return true;
+  }
+
+  if (/^[\d\W_]+$/u.test(normalized)) {
+    return true;
+  }
+
+  return GENERIC_TITLE_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+function needsAiTitleAssist(draft: ParsedReceiptDraft, rawText: string): boolean {
+  if (rawText.trim().length < 12) {
+    return false;
+  }
+
+  const lowQualityTitle = hasLowQualityTitle(draft.title);
+  return lowQualityTitle || draft.parseConfidence < MIN_PARSE_CONFIDENCE_FOR_TRUSTED_TITLE;
+}
+
+function deriveTitleFromAi(ai: AiReceiptParseResponse): string | null {
+  return normalizeTitleCandidate(ai.merchant);
 }
 
 function normalizeCategoryHint(value: string | null): ScanCategoryHint {
@@ -46,38 +97,24 @@ function normalizeCategoryHint(value: string | null): ScanCategoryHint {
   return null;
 }
 
-function mergeDraftWithAiAssist(
+function mergeDraftWithAiTitleAssist(
   draft: ParsedReceiptDraft,
   ai: AiReceiptParseResponse,
-  baseCurrency: string,
 ): ParsedReceiptDraft {
-  const parsedAmountNumber = Number(draft.amount.replace(',', '.'));
-  const hasLocalAmount = Number.isFinite(parsedAmountNumber) && parsedAmountNumber > 0;
-
-  let amount = draft.amount;
-  if (!hasLocalAmount && ai.amount !== null) {
-    amount = ai.amount.toFixed(2);
-  } else if (hasLocalAmount && ai.amount !== null && draft.parseConfidence < 0.6) {
-    const diffRatio = Math.abs(parsedAmountNumber - ai.amount) / Math.max(parsedAmountNumber, ai.amount, 1);
-    if (diffRatio >= 0.4) {
-      amount = ai.amount.toFixed(2);
-    }
+  const aiTitle = deriveTitleFromAi(ai);
+  if (!aiTitle) {
+    return draft;
   }
 
-  const title = draft.title.trim().length > 0 ? draft.title : ai.merchant ?? draft.title;
-  const occurredDate = ai.date && draft.parseConfidence < 0.85 ? ai.date : draft.occurredDate;
-  const detectedCurrency = draft.detectedCurrency ?? ai.currency;
-  const categoryHint = draft.categoryHint ?? normalizeCategoryHint(ai.categorySuggestion);
+  const shouldOverride = hasLowQualityTitle(draft.title) || draft.title.trim().length === 0;
+  if (!shouldOverride) {
+    return draft;
+  }
 
   return {
     ...draft,
-    title,
-    amount,
-    occurredDate,
-    categoryHint,
-    detectedCurrency,
-    currencyWarning: Boolean(detectedCurrency) && detectedCurrency !== baseCurrency,
-    parseConfidence: Math.max(draft.parseConfidence, ai.confidence),
+    title: aiTitle,
+    categoryHint: draft.categoryHint ?? normalizeCategoryHint(ai.categorySuggestion),
   };
 }
 
@@ -109,7 +146,7 @@ export function ScanReceiptScreen() {
       });
       let draft = parsedDraft;
 
-      if (needsAiAssist(parsedDraft, recognition.rawText)) {
+      if (needsAiTitleAssist(parsedDraft, recognition.rawText)) {
         try {
           const aiDraft = await withAuth((token) =>
             apiClient.parseReceiptWithAi(
@@ -122,9 +159,9 @@ export function ScanReceiptScreen() {
             ),
           );
 
-          draft = mergeDraftWithAiAssist(parsedDraft, aiDraft, baseCurrency);
+          draft = mergeDraftWithAiTitleAssist(parsedDraft, aiDraft);
         } catch {
-          // Keep local OCR parse when AI assist is unavailable.
+          // Keep local OCR title when AI assist is unavailable.
         }
       }
 

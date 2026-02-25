@@ -20,12 +20,13 @@ import { TransferScreen } from '@features/finance/screens/TransferScreen';
 import { TransactionsScreen } from '@features/finance/screens/TransactionsScreen';
 import { useTheme } from '@shared/theme';
 import type { ParsedReceiptDraft } from '@features/scan/lib/ocrParsing';
+import type { TransferScreenParams } from './AddStack';
 
 export type TransactionsStackParamList = {
   Transactions: undefined;
   TransactionDetail: { transactionId: string };
   EditTransaction: { transactionId: string };
-  Transfer: undefined;
+  Transfer: TransferScreenParams | undefined;
   Recurring: undefined;
   ScanReceipt: undefined;
   ScanConfirm: {

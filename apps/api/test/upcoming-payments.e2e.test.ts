@@ -224,6 +224,62 @@ describe('/upcoming-payments', () => {
     expect(attackerMarkPaid.body.error.code).toBe('UPCOMING_PAYMENT_NOT_FOUND');
   });
 
+  it('mark-paid supports recurring projection ids and keeps recurring category', async () => {
+    const owner = await registerUser('upcoming-recurring-projection@example.com', 'Owner');
+    const authHeader = { Authorization: `Bearer ${owner.accessToken}` };
+    const account = await createAccount(owner.accessToken, 'Home Account', 'bank');
+    const rentCategory = await createExpenseCategory(owner.accessToken, 'Kira');
+
+    const dueAt = new Date();
+    dueAt.setUTCDate(dueAt.getUTCDate() + 2);
+    dueAt.setUTCHours(11, 0, 0, 0);
+
+    const recurringCreate = await request(app.server).post('/recurring').set(authHeader).send({
+      kind: 'normal',
+      type: 'expense',
+      accountId: account.id,
+      categoryId: rentCategory.id,
+      amount: 17000,
+      cadence: 'weekly',
+      dayOfWeek: dueAt.getUTCDay(),
+      startAt: dueAt.toISOString(),
+      description: 'kira',
+    });
+
+    expect(recurringCreate.status).toBe(201);
+
+    const dashboard = await request(app.server).get('/dashboard/recent').set(authHeader);
+    expect(dashboard.status).toBe(200);
+
+    const recurringUpcoming = (dashboard.body.upcomingPaymentsDueSoon as Array<{
+      id: string;
+      sourceType: 'oneOff' | 'recurring';
+      title: string;
+    }>).find((item) => item.sourceType === 'recurring' && item.title.toLowerCase().includes('kira'));
+
+    expect(recurringUpcoming).toBeTruthy();
+
+    const markPaid = await request(app.server)
+      .post(`/upcoming-payments/${encodeURIComponent(recurringUpcoming!.id)}/mark-paid`)
+      .set(authHeader)
+      .send({ accountId: account.id });
+
+    expect(markPaid.status).toBe(200);
+    expect(markPaid.body.upcomingPayment.status).toBe('paid');
+    expect(markPaid.body.upcomingPayment.source).toBe('template');
+    expect(markPaid.body.transaction).toBeTruthy();
+    expect(markPaid.body.transaction.type).toBe('expense');
+    expect(markPaid.body.transaction.categoryId).toBe(rentCategory.id);
+
+    const secondMarkPaid = await request(app.server)
+      .post(`/upcoming-payments/${encodeURIComponent(recurringUpcoming!.id)}/mark-paid`)
+      .set(authHeader)
+      .send({ accountId: account.id });
+
+    expect(secondMarkPaid.status).toBe(200);
+    expect(secondMarkPaid.body.transaction.id).toBe(markPaid.body.transaction.id);
+  });
+
   it('dashboard includes due-soon upcoming payments', async () => {
     const owner = await registerUser('upcoming-dashboard@example.com', 'Owner');
     const authHeader = { Authorization: `Bearer ${owner.accessToken}` };
