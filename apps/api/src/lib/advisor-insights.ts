@@ -42,24 +42,84 @@ const providerOutputSchema = z.object({
     autoTransferSuggestion: z.string().min(1).max(320),
   }),
   investment: z.object({
-    profiles: z.array(z.object({
-      level: z.enum(['low', 'medium', 'high']),
-      title: z.string().min(1).max(180),
-      rationale: z.string().min(1).max(400),
-      options: z.array(z.string().min(1).max(260)).min(1).max(6),
-    })).min(1).max(3),
+    profiles: z.array(
+      z.object({
+        level: z.enum(['low', 'medium', 'high']),
+        title: z.string().min(1).max(180),
+        rationale: z.string().min(1).max(400),
+        options: z.array(z.string().min(1).max(260)).min(1).max(6),
+      }),
+    ).min(1).max(3),
     guidance: z.array(z.string().min(1).max(320)).min(1).max(8),
   }),
   expenseOptimization: z.object({
-    cutCandidates: z.array(z.object({
-      label: z.string().min(1).max(120),
-      suggestedReductionPercent: z.number().min(0).max(100),
-      alternativeAction: z.string().min(1).max(320),
-    })).min(1).max(6),
+    cutCandidates: z
+      .array(
+        z.object({
+          label: z.string().min(1).max(120),
+          suggestedReductionPercent: z.number().min(0).max(100),
+          alternativeAction: z.string().min(1).max(320),
+        }),
+      )
+      .min(1)
+      .max(6),
     quickWins: z.array(z.string().min(1).max(320)).min(1).max(8),
   }),
   tips: z.array(z.string().min(1).max(320)).min(1).max(10),
 });
+
+// Looser schema to salvage partial provider JSON (Cloudflare sometimes omits fields).
+// We will merge with fallbackAdvice to fill missing pieces.
+const providerOutputLooseSchema = z
+  .object({
+    summary: z.string().min(1).max(1500).optional(),
+    topFindings: z.array(z.string().min(1).max(320)).min(1).max(12).optional(),
+    suggestedActions: z.array(z.string().min(1).max(320)).min(1).max(12).optional(),
+    warnings: z.array(z.string().min(1).max(320)).max(12).optional(),
+    savings: z
+      .object({
+        targetRate: z.number().min(0).max(1).optional(),
+        monthlyTargetAmount: z.number().min(0).optional(),
+        next7DaysActions: z.array(z.string().min(1).max(320)).min(1).max(12).optional(),
+        autoTransferSuggestion: z.string().min(1).max(320).optional(),
+      })
+      .optional(),
+    investment: z
+      .object({
+        profiles: z
+          .array(
+            z.object({
+              level: z.enum(['low', 'medium', 'high']),
+              title: z.string().min(1).max(180),
+              rationale: z.string().min(1).max(400),
+              options: z.array(z.string().min(1).max(260)).min(1).max(8),
+            }),
+          )
+          .min(1)
+          .max(6)
+          .optional(),
+        guidance: z.array(z.string().min(1).max(320)).min(1).max(12).optional(),
+      })
+      .optional(),
+    expenseOptimization: z
+      .object({
+        cutCandidates: z
+          .array(
+            z.object({
+              label: z.string().min(1).max(120),
+              suggestedReductionPercent: z.number().min(0).max(100),
+              alternativeAction: z.string().min(1).max(320),
+            }),
+          )
+          .min(1)
+          .max(12)
+          .optional(),
+        quickWins: z.array(z.string().min(1).max(320)).min(1).max(12).optional(),
+      })
+      .optional(),
+    tips: z.array(z.string().min(1).max(320)).min(1).max(16).optional(),
+  })
+  .passthrough();
 
 type ProviderOutput = z.infer<typeof providerOutputSchema>;
 function describeZodIssue(issue: z.ZodIssue): string {
@@ -484,6 +544,103 @@ function normalizeForMatch(value: string): string {
     .trim();
 }
 
+function normalizeInsightLine(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function uniqByNormalized(items: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+
+  for (const raw of items) {
+    const trimmed = String(raw ?? '').trim();
+    if (trimmed.length === 0) continue;
+
+    const key = normalizeInsightLine(trimmed);
+    if (key.length === 0) continue;
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    out.push(trimmed);
+  }
+
+  return out;
+}
+
+function isLowValueInsight(line: string): boolean {
+  const n = normalizeInsightLine(line);
+
+  // Very generic / repetitive filler patterns (TR + EN). Keep this list small and safe.
+  const bannedSubstrings = [
+    'dikkatlice izleyin',
+    'dikkatle izleyin',
+    'izlemeniz gereken',
+    'izleyin',
+    'artirmak icin',
+    'increase your',
+    'monitor',
+    'keep an eye',
+    'takip edin',
+  ];
+
+  if (bannedSubstrings.some((s) => n.includes(s))) {
+    return true;
+  }
+
+  // If it is extremely short, it is usually useless.
+  if (n.length < 18) return true;
+
+  return false;
+}
+
+function cleanProviderList(items: string[] | undefined, max: number): string[] | undefined {
+  if (!items) return undefined;
+  const deduped = uniqByNormalized(items);
+  const filtered = deduped.filter((line) => !isLowValueInsight(line));
+  const chosen = (filtered.length > 0 ? filtered : deduped).slice(0, max);
+  return chosen.length > 0 ? chosen : undefined;
+}
+
+function mergeProviderWithFallback(providerPartial: Partial<ProviderOutput>, fallback: ProviderOutput): ProviderOutput {
+  const topFindings = cleanProviderList(providerPartial.topFindings, 5) ?? fallback.topFindings;
+  const suggestedActions = cleanProviderList(providerPartial.suggestedActions, 5) ?? fallback.suggestedActions;
+  const warnings = cleanProviderList(providerPartial.warnings ?? [], 6) ?? fallback.warnings;
+  const tips = cleanProviderList(providerPartial.tips, 6) ?? fallback.tips;
+
+  const merged: ProviderOutput = {
+    summary: providerPartial.summary?.trim() ? providerPartial.summary : fallback.summary,
+    topFindings,
+    suggestedActions,
+    warnings,
+    savings: {
+      targetRate: providerPartial.savings?.targetRate ?? fallback.savings.targetRate,
+      monthlyTargetAmount: providerPartial.savings?.monthlyTargetAmount ?? fallback.savings.monthlyTargetAmount,
+      next7DaysActions:
+        cleanProviderList(providerPartial.savings?.next7DaysActions, 5) ?? fallback.savings.next7DaysActions,
+      autoTransferSuggestion:
+        providerPartial.savings?.autoTransferSuggestion ?? fallback.savings.autoTransferSuggestion,
+    },
+    investment: {
+      profiles: providerPartial.investment?.profiles ?? fallback.investment.profiles,
+      guidance: cleanProviderList(providerPartial.investment?.guidance, 6) ?? fallback.investment.guidance,
+    },
+    expenseOptimization: {
+      cutCandidates: providerPartial.expenseOptimization?.cutCandidates ?? fallback.expenseOptimization.cutCandidates,
+      quickWins: cleanProviderList(providerPartial.expenseOptimization?.quickWins, 6) ?? fallback.expenseOptimization.quickWins,
+    },
+    tips,
+  };
+
+  // Ensure arrays meet minimums (fallback already satisfies them)
+  return providerOutputSchema.parse(merged);
+}
+
 function resolveAnchorDate(monthEndExclusive: Date): Date {
   const monthLastDate = new Date(monthEndExclusive.getTime() - DAY_MS);
   const now = new Date();
@@ -734,15 +891,18 @@ function buildPrompt(language: AiInsightsLanguage, payload: PromptPayload): stri
       tips: ['string'],
     }),
     'Rules:',
-    '- summary: 2-4 sentences',
-    '- topFindings: 3-5 concise insights and include: MoM trend, top expense drivers, budget pressure, recurring burden ratio, anomaly risks',
-    '- suggestedActions: 3-5 concrete next actions',
-    '- warnings: include risk-only bullets, can be empty',
-    '- savings.next7DaysActions: 3-5 actionable bullets',
-    '- investment.profiles: include low, medium, and high risk profiles if possible',
-    '- expenseOptimization.cutCandidates: choose realistic top 3 categories or merchants',
-    '- reflect preferred savings target rate and preferred risk profile in recommendations',
-    '- keep concise and practical',
+    '- Output MUST be strict JSON only (no prose outside JSON).',
+    '- Do NOT repeat the same idea across different fields. Each bullet must be distinct.',
+    '- Avoid generic filler (e.g., "izleyin", "dikkatle takip edin", "monitor"). Write specific actions.',
+    '- summary: exactly 2 sentences. Sentence 1 must mention currentMonthNet and savingsRate as numbers/percent. Sentence 2 must mention one biggest category from categoryBreakdown by name.',
+    '- topFindings: exactly 4 bullets. Each bullet MUST contain at least one number (% or currency) pulled from Input JSON.',
+    '- suggestedActions: exactly 3 bullets. Each bullet MUST be doable within 7 days and start with an imperative verb.',
+    '- warnings: 0-3 bullets, ONLY if there is an actual risk flag (negativeCashflow, lowSavingsRate, overspendingCategoryNames, irregularIncome).',
+    '- savings.next7DaysActions: exactly 3 bullets (can reuse the actions style but MUST be different from suggestedActions).',
+    '- investment.profiles: include exactly 3 profiles (low, medium, high). Keep them short and non-repetitive.',
+    '- expenseOptimization.cutCandidates: exactly 3 items using labels from categoryBreakdown or recurringOutflows (no invented labels).',
+    '- expenseOptimization.quickWins: exactly 3 bullets, all different.',
+    '- tips: exactly 4 bullets, all different.',
     '- IMPORTANT: every list field must be a JSON array (never a single string).',
     '- Do not wrap the JSON in markdown fences.',
     `Input JSON: ${JSON.stringify(payload)}`,
@@ -1491,6 +1651,27 @@ export async function generateAdvisorInsight(
   let providerStatus: number | null = null;
   let provider: 'cloudflare' | null = null;
 
+  const fallbackAdvice = buildFallbackAdvice({
+    language: input.language,
+    currentMonthIncome,
+    currentMonthExpense,
+    currentMonthNet,
+    savingsRate,
+    totalBalance,
+    categoryBreakdown: categoryBreakdown.map((item) => ({
+      name: item.name,
+      total: item.total,
+    })),
+    incomeMoMPercent,
+    expenseMoMPercent,
+    topExpenseDrivers,
+    recurringBurdenRatio,
+    anomalyTransactions,
+    overspendingCategoryNames: flags.overspendingCategoryNames,
+    preferredSavingsTargetRate,
+    preferredRiskProfile,
+  });
+
   if (cloudflareConfigured && config.cloudflareAuthToken && config.cloudflareAccountId) {
     const prompt = buildPrompt(input.language, promptPayload);
 
@@ -1554,22 +1735,61 @@ export async function generateAdvisorInsight(
         const coerced = coerceProviderOutputShape(parsedProviderJson);
         const parsedProvider = providerOutputSchema.safeParse(coerced);
 
-        if (!parsedProvider.success) {
-          fallbackReason = 'provider_validation_error';
-          const firstIssue = parsedProvider.error.issues[0];
-
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'cloudflare',
-            reason: fallbackReason,
-            status: providerStatus,
-            detail: `provider output schema validation failed: ${
-              firstIssue ? describeZodIssue(firstIssue) : 'unknown'
-            }`,
-          });
-        } else {
-          providerAdvice = parsedProvider.data;
+        if (parsedProvider.success) {
+          // Clean + dedupe even on valid output
+          providerAdvice = mergeProviderWithFallback(parsedProvider.data, fallbackAdvice);
           fallbackReason = null;
+        } else {
+          // Try to salvage partial JSON and merge with fallback.
+          const loose = providerOutputLooseSchema.safeParse(coerced);
+          if (loose.success) {
+            try {
+              providerAdvice = mergeProviderWithFallback(loose.data as Partial<ProviderOutput>, fallbackAdvice);
+              fallbackReason = null;
+            } catch (mergeError) {
+              fallbackReason = 'provider_validation_error';
+              const firstIssue = parsedProvider.error.issues[0];
+              input.onDiagnostic?.({
+                stage: 'fallback',
+                provider: 'cloudflare',
+                reason: fallbackReason,
+                status: providerStatus,
+                detail: `provider output schema validation failed: ${
+                  firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
+                }`,
+              });
+              input.onDiagnostic?.({
+                stage: 'fallback',
+                provider: 'cloudflare',
+                reason: fallbackReason,
+                status: providerStatus,
+                detail: `provider salvage merge failed: ${
+                  mergeError instanceof Error ? mergeError.message : 'unknown'
+                }`,
+              });
+            }
+          } else {
+            fallbackReason = 'provider_validation_error';
+            const firstIssue = parsedProvider.error.issues[0];
+            input.onDiagnostic?.({
+              stage: 'fallback',
+              provider: 'cloudflare',
+              reason: fallbackReason,
+              status: providerStatus,
+              detail: `provider output schema validation failed: ${
+                firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
+              }`,
+            });
+            input.onDiagnostic?.({
+              stage: 'fallback',
+              provider: 'cloudflare',
+              reason: fallbackReason,
+              status: providerStatus,
+              detail: `provider loose schema validation failed: ${
+                loose.error ? formatZodIssues(loose.error) : 'unknown'
+              }`,
+            });
+          }
         }
       }
     } catch (error) {
@@ -1676,27 +1896,6 @@ export async function generateAdvisorInsight(
     provider = null;
     providerStatus = null;
   }
-
-  const fallbackAdvice = buildFallbackAdvice({
-    language: input.language,
-    currentMonthIncome,
-    currentMonthExpense,
-    currentMonthNet,
-    savingsRate,
-    totalBalance,
-    categoryBreakdown: categoryBreakdown.map((item) => ({
-      name: item.name,
-      total: item.total,
-    })),
-    incomeMoMPercent,
-    expenseMoMPercent,
-    topExpenseDrivers,
-    recurringBurdenRatio,
-    anomalyTransactions,
-    overspendingCategoryNames: flags.overspendingCategoryNames,
-    preferredSavingsTargetRate,
-    preferredRiskProfile,
-  });
 
   const mergedAdvice = providerAdvice ?? fallbackAdvice;
   const mode = providerAdvice ? 'ai' : 'fallback';
