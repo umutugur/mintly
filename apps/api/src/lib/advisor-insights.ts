@@ -13,7 +13,13 @@ import {
   CloudflareProviderError,
   generateCloudflareText,
 } from './ai/cloudflare.js';
-import { OnysoftProviderError, generateOnysoftText } from './ai/onysoft.js';
+import {
+  OnysoftProviderError,
+  discoverOnysoftModels,
+  generateOnysoftText,
+  isOnysoftModelUnavailable,
+  markOnysoftModelUnavailable,
+} from './ai/onysoft.js';
 import { getMonthBoundaries } from './month.js';
 import { AccountModel } from '../models/Account.js';
 import { BudgetModel } from '../models/Budget.js';
@@ -822,15 +828,23 @@ function mapOnysoftErrorToFallbackReason(error: OnysoftProviderError): FallbackR
     return 'provider_parse_error';
   }
 
-  if (error.reason === 'http_error') {
+  if (
+    error.reason === 'http_error'
+    || error.reason === 'rate_limited'
+    || error.reason === 'model_unavailable'
+  ) {
     return 'provider_http_error';
   }
 
   return 'provider_unknown_error';
 }
 
-function buildOnysoftModelChain(primaryModel: string): string[] {
-  const candidates = [primaryModel, ...ONYSOFT_MODEL_FALLBACK_CHAIN];
+function buildOnysoftModelChain(params: {
+  primaryModel: string;
+  discoveredModels: string[];
+  baseUrl: string;
+}): string[] {
+  const candidates = [params.primaryModel, ...ONYSOFT_MODEL_FALLBACK_CHAIN];
   const uniqueModels: string[] = [];
 
   for (const candidate of candidates) {
@@ -841,7 +855,14 @@ function buildOnysoftModelChain(primaryModel: string): string[] {
     uniqueModels.push(model);
   }
 
-  return uniqueModels;
+  const discoveredSet = params.discoveredModels.length > 0
+    ? new Set(params.discoveredModels.map((model) => model.trim()))
+    : null;
+  const discoveryFiltered = discoveredSet
+    ? uniqueModels.filter((model) => discoveredSet.has(model))
+    : uniqueModels;
+
+  return discoveryFiltered.filter((model) => !isOnysoftModelUnavailable(params.baseUrl, model));
 }
 
 function cleanupExpiredCache(now = Date.now()): void {
@@ -1726,7 +1747,64 @@ export async function generateAdvisorInsight(
 
   if (config.advisorProvider === 'onysoft') {
     if (onysoftConfigured && config.onysoftApiKey) {
-      const modelChain = buildOnysoftModelChain(config.onysoftModel);
+      const discoveryStartedAt = Date.now();
+      input.onDiagnostic?.({
+        stage: 'provider_request',
+        provider: 'onysoft',
+        attempt: 0,
+        model: 'v1/models',
+      });
+
+      const modelDiscovery = await discoverOnysoftModels(
+        {
+          apiKey: config.onysoftApiKey,
+          baseUrl: config.onysoftBaseUrl,
+          timeoutMs: config.cloudflareHttpTimeoutMs,
+        },
+        fetchImpl,
+      );
+
+      const discoveryDurationMs = Date.now() - discoveryStartedAt;
+      input.onDiagnostic?.({
+        stage: 'provider_response',
+        provider: 'onysoft',
+        attempt: 0,
+        durationMs: discoveryDurationMs,
+        model: 'v1/models',
+        status: modelDiscovery.status ?? undefined,
+        ok: modelDiscovery.ok,
+      });
+      input.onDiagnostic?.({
+        stage: 'provider_response_body',
+        provider: 'onysoft',
+        attempt: 0,
+        durationMs: discoveryDurationMs,
+        model: 'v1/models',
+        status: modelDiscovery.status ?? undefined,
+        ok: modelDiscovery.ok,
+        detail: modelDiscovery.ok
+          ? `models=${modelDiscovery.models.length}; fromCache=${modelDiscovery.fromCache}`
+          : modelDiscovery.detail ?? 'model discovery failed',
+      });
+
+      const modelChain = buildOnysoftModelChain({
+        primaryModel: config.onysoftModel,
+        discoveredModels: modelDiscovery.ok ? modelDiscovery.models : [],
+        baseUrl: config.onysoftBaseUrl,
+      });
+
+      if (modelChain.length === 0) {
+        provider = 'onysoft';
+        providerStatus = modelDiscovery.status;
+        fallbackReason = 'provider_http_error';
+        input.onDiagnostic?.({
+          stage: 'fallback',
+          provider: 'onysoft',
+          reason: fallbackReason,
+          status: providerStatus ?? undefined,
+          detail: 'no available Onysoft models found for advisor chain',
+        });
+      }
 
       for (let index = 0; index < modelChain.length; index += 1) {
         const model = modelChain[index] as string;
@@ -1755,7 +1833,9 @@ export async function generateAdvisorInsight(
               model,
               timeoutMs: config.cloudflareHttpTimeoutMs,
               temperature: 0.2,
+              topP: 0.9,
               maxTokens: 900,
+              maxAttempts: 3,
               systemPrompt: onysoftSystemPrompt,
               userPrompt: prompt,
             },
@@ -1879,6 +1959,9 @@ export async function generateAdvisorInsight(
             provider = 'onysoft';
             providerStatus = error.status;
             fallbackReason = mapOnysoftErrorToFallbackReason(error);
+            if (error.reason === 'model_unavailable') {
+              markOnysoftModelUnavailable(config.onysoftBaseUrl, model);
+            }
 
             input.onDiagnostic?.({
               stage: 'provider_response',
