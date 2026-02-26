@@ -15,6 +15,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import * as Crypto from 'expo-crypto';
+import * as WebBrowser from 'expo-web-browser';
 
 import { useAuth } from '@app/providers/AuthProvider';
 import { MintlyLogo } from '../../../components/brand/MintlyLogo';
@@ -40,6 +41,8 @@ interface LoginErrors {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FALLBACK_GOOGLE_CLIENT_ID = 'mintly-google-missing-client-id';
+
+WebBrowser.maybeCompleteAuthSession();
 
 function validateLogin(email: string, password: string, t: (key: string) => string): LoginErrors {
   const next: LoginErrors = {};
@@ -208,7 +211,11 @@ export function LoginScreen({ navigation }: Props) {
     setActiveOauthProvider('google');
 
     try {
-      const result = await promptGoogleAsync();
+      const promptOptions = {
+        useProxy: false,
+        showInRecents: true,
+      } as unknown as Parameters<typeof promptGoogleAsync>[0];
+      const result = await promptGoogleAsync(promptOptions);
       const idToken = extractGoogleIdToken(result);
 
       if (!idToken) {
@@ -486,9 +493,15 @@ export function LoginScreen({ navigation }: Props) {
         ) : null}
       </View>
 
-      {__DEV__ && !googleRequestReady ? (
+      {__DEV__ && !googleConfigured ? (
         <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
-          {googleConfigured ? t('common.loadingShort') : t('auth.login.oauth.googleUnavailable')}
+          {t('auth.login.oauth.googleEnvMissingInBuild')}
+        </Text>
+      ) : null}
+
+      {__DEV__ && googleConfigured && !googleRequestReady ? (
+        <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
+          {t('common.loadingShort')}
         </Text>
       ) : null}
     </AuthLayout>

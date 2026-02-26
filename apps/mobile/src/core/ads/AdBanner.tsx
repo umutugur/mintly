@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { ComponentType } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { useRoute } from '@react-navigation/native';
 
@@ -11,7 +11,6 @@ import { getGoogleMobileAdsModule } from './mobileAdsModule';
 const IOS_BANNER_UNIT_ID = 'ca-app-pub-6114268066977057/2072968561';
 const ANDROID_BANNER_UNIT_ID = 'ca-app-pub-6114268066977057/8163045830';
 
-const ALLOWED_ROUTE_NAMES = new Set(['Dashboard', 'Analytics']);
 const BLOCKED_ROUTE_NAMES = new Set([
   'AddTransaction',
   'Transfer',
@@ -47,10 +46,6 @@ export function AdBanner({ style }: { style?: StyleProp<ViewStyle> }) {
     blockedReason = 'blocked_route';
   }
 
-  if (!blockedReason && !ALLOWED_ROUTE_NAMES.has(routeName)) {
-    blockedReason = 'route_not_allowed';
-  }
-
   if (!blockedReason && !googleMobileAds) {
     blockedReason = 'module_unavailable';
   }
@@ -69,6 +64,13 @@ export function AdBanner({ style }: { style?: StyleProp<ViewStyle> }) {
   }, [blockedReason, isPremium, routeName, unitId]);
 
   if (blockedReason || !googleMobileAds) {
+    if (__DEV__ && blockedReason) {
+      return (
+        <View style={[styles.container, style]}>
+          <Text style={styles.debugText}>{blockedReason}</Text>
+        </View>
+      );
+    }
     return null;
   }
 
@@ -91,5 +93,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 56,
     width: '100%',
+  },
+  debugText: {
+    color: '#64748B',
+    fontSize: 10,
+    letterSpacing: 0.2,
   },
 });
