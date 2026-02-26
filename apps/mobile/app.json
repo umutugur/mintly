@@ -2,7 +2,10 @@
   "expo": {
     "name": "Mintly",
     "slug": "mintly",
-    "scheme": "mintly",
+    "scheme": [
+      "mintly",
+      "com.mintly.app"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/brand/mintly-icon.png",

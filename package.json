@@ -21,8 +21,8 @@
     "start:api": "pnpm -C apps/api start:prod",
     "start:mobile": "pnpm -C apps/mobile start",
     "smoke:api": "node scripts/smoke-api.mjs",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "android": "pnpm -C apps/mobile exec expo run:android",
+    "ios": "pnpm -C apps/mobile exec expo run:ios"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.46.3",

@@ -11,6 +11,7 @@ import { AdProvider } from '@core/ads/AdProvider';
 import { I18nProvider } from '@shared/i18n';
 import { AppNavigator } from '@core/navigation/AppNavigator';
 import { OfflineBanner } from '@shared/ui';
+import { DevDiagnosticsOverlay } from './DevDiagnosticsOverlay';
 
 export function AppRoot() {
   return (
@@ -25,6 +26,7 @@ export function AppRoot() {
                     <AdProvider>
                       <AppNavigator />
                       <OfflineBanner />
+                      <DevDiagnosticsOverlay />
                     </AdProvider>
                   </AuthProvider>
                 </QueryProvider>

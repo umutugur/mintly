@@ -433,6 +433,36 @@ function extractFromResponseObject(resultRecord: Record<string, unknown>): strin
     ?? normalizeTextContent(resultRecord.response.output_text);
 }
 
+const STRUCTURED_ASSISTANT_KEYS = new Set([
+  'summary',
+  'topFindings',
+  'suggestedActions',
+  'warnings',
+  'savings',
+  'investment',
+  'expenseOptimization',
+  'tips',
+]);
+
+function serializeStructuredAssistantPayload(resultRecord: Record<string, unknown>): string | null {
+  const keys = Object.keys(resultRecord);
+  if (keys.length === 0) {
+    return null;
+  }
+
+  const hasStructuredKeys = keys.some((key) => STRUCTURED_ASSISTANT_KEYS.has(key));
+  if (!hasStructuredKeys) {
+    return null;
+  }
+
+  try {
+    const serialized = JSON.stringify(resultRecord);
+    return serialized.length > 2 ? serialized : null;
+  } catch {
+    return null;
+  }
+}
+
 function extractFromResultRecord(resultRecord: Record<string, unknown>, depth: 0 | 1): string | null {
   const responseValue = resultRecord.response;
 
@@ -488,6 +518,11 @@ function extractFromResultRecord(resultRecord: Record<string, unknown>, depth: 0
   const responseObjectText = extractFromResponseObject(resultRecord);
   if (responseObjectText) {
     return responseObjectText;
+  }
+
+  const structuredPayload = serializeStructuredAssistantPayload(resultRecord);
+  if (structuredPayload) {
+    return structuredPayload;
   }
 
   return null;
@@ -570,6 +605,13 @@ export function extractCloudflareAssistantText(payload: unknown): string {
     const extractedText = extractFromAnyResult(result);
     if (extractedText) {
       return extractedText;
+    }
+
+    if (isRecord(result)) {
+      const structuredPayload = serializeStructuredAssistantPayload(result);
+      if (structuredPayload) {
+        return structuredPayload;
+      }
     }
   }
 

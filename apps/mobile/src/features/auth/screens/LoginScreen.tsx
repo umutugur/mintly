@@ -124,19 +124,34 @@ export function LoginScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeOauthProvider, setActiveOauthProvider] = useState<OauthProvider | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [googleResultType, setGoogleResultType] = useState('idle');
   const googleRedirectUri = useMemo(
     () =>
       makeRedirectUri({
         scheme: 'mintly',
+        path: 'oauthredirect',
       }),
+    [],
+  );
+  const googlePrimaryClientId = useMemo(
+    () =>
+      Platform.select({
+        ios: mobileEnv.googleOauthIosClientId,
+        android: mobileEnv.googleOauthAndroidClientId,
+        default: mobileEnv.googleOauthWebClientId,
+      }) ??
+      mobileEnv.googleOauthIosClientId ??
+      mobileEnv.googleOauthAndroidClientId ??
+      mobileEnv.googleOauthWebClientId ??
+      FALLBACK_GOOGLE_CLIENT_ID,
     [],
   );
 
   const [googleRequest, , promptGoogleAsync] = Google.useIdTokenAuthRequest({
-    clientId: mobileEnv.googleOauthWebClientId ?? FALLBACK_GOOGLE_CLIENT_ID,
+    clientId: googlePrimaryClientId,
     webClientId: mobileEnv.googleOauthWebClientId,
-    iosClientId: mobileEnv.googleOauthIosClientId ?? mobileEnv.googleOauthWebClientId,
-    androidClientId: mobileEnv.googleOauthAndroidClientId ?? mobileEnv.googleOauthWebClientId,
+    iosClientId: mobileEnv.googleOauthIosClientId,
+    androidClientId: mobileEnv.googleOauthAndroidClientId,
     selectAccount: true,
     redirectUri: googleRedirectUri,
   });
@@ -159,7 +174,7 @@ export function LoginScreen({ navigation }: Props) {
       requestReady: Boolean(googleRequest),
       redirectUriSet: Boolean(googleRedirectUri),
     });
-  }, [googleRedirectUri, googleRequest]);
+  }, [googlePrimaryClientId, googleRedirectUri, googleRequest]);
 
   const submit = async () => {
     if (isSubmitting || activeOauthProvider) {
@@ -202,6 +217,7 @@ export function LoginScreen({ navigation }: Props) {
 
     if (!googleRequestReady || !googleRequest) {
       setRequestError(t('auth.login.oauth.googleUnavailable'));
+      setGoogleResultType('unavailable');
       if (__DEV__) {
         Alert.alert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.googleUnavailable'));
       }
@@ -216,6 +232,7 @@ export function LoginScreen({ navigation }: Props) {
         showInRecents: true,
       } as unknown as Parameters<typeof promptGoogleAsync>[0];
       const result = await promptGoogleAsync(promptOptions);
+      setGoogleResultType(typeof result?.type === 'string' ? result.type : 'unknown');
       const idToken = extractGoogleIdToken(result);
 
       if (!idToken) {
@@ -502,6 +519,12 @@ export function LoginScreen({ navigation }: Props) {
       {__DEV__ && googleConfigured && !googleRequestReady ? (
         <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
           {t('common.loadingShort')}
+        </Text>
+      ) : null}
+
+      {__DEV__ ? (
+        <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
+          {`redirectUri=${googleRedirectUri} requestReady=${String(googleRequestReady)} result=${googleResultType}`}
         </Text>
       ) : null}
     </AuthLayout>

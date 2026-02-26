@@ -95,6 +95,74 @@ describe('Cloudflare provider response parser', () => {
     expect(text).toBe('{"summary":"nested"}');
   });
 
+  it('extracts text from structured advisor object payload', () => {
+    const text = extractCloudflareAssistantText({
+      success: true,
+      result: {
+        summary: 'ok',
+        topFindings: ['f1'],
+        suggestedActions: ['a1'],
+        warnings: [],
+        savings: {
+          targetRate: 0.2,
+          monthlyTargetAmount: 1000,
+          next7DaysActions: ['s1'],
+          autoTransferSuggestion: 'auto',
+        },
+        investment: {
+          profiles: [],
+          guidance: [],
+        },
+        expenseOptimization: {
+          cutCandidates: [],
+          quickWins: [],
+        },
+        tips: ['t1'],
+      },
+      errors: [],
+    });
+
+    expect(JSON.parse(text)).toMatchObject({
+      summary: 'ok',
+      topFindings: ['f1'],
+    });
+  });
+
+  it('extracts text from stringified payload containing structured advisor object', () => {
+    const text = extractCloudflareAssistantText(
+      JSON.stringify({
+        success: true,
+        result: {
+          summary: 'stringified-structured',
+          topFindings: ['f1'],
+          suggestedActions: ['a1'],
+          warnings: [],
+          savings: {
+            targetRate: 0.2,
+            monthlyTargetAmount: 1000,
+            next7DaysActions: ['s1'],
+            autoTransferSuggestion: 'auto',
+          },
+          investment: {
+            profiles: [],
+            guidance: [],
+          },
+          expenseOptimization: {
+            cutCandidates: [],
+            quickWins: [],
+          },
+          tips: ['t1'],
+        },
+        errors: [],
+      }),
+    );
+
+    expect(JSON.parse(text)).toMatchObject({
+      summary: 'stringified-structured',
+      suggestedActions: ['a1'],
+    });
+  });
+
   it('extracts text when assistant content exists at root payload keys', () => {
     const text = extractCloudflareAssistantText({
       success: true,

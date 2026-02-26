@@ -67,7 +67,7 @@ export function AdBanner({ style }: { style?: StyleProp<ViewStyle> }) {
     if (__DEV__ && blockedReason) {
       return (
         <View style={[styles.container, style]}>
-          <Text style={styles.debugText}>{blockedReason}</Text>
+          <Text style={styles.debugText}>{`ADS DISABLED: ${blockedReason}`}</Text>
         </View>
       );
     }

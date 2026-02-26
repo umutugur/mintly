@@ -678,12 +678,16 @@ export function AiAdvisorScreen() {
     return Array.from(new Set(merged.map((item) => item.trim()).filter((item) => item.length > 0)));
   }, [flags, insights]);
 
+  const normalizedAdvisorError = useMemo(
+    () => (insightsQuery.error ? normalizeApiErrorForUi(insightsQuery.error) : null),
+    [insightsQuery.error],
+  );
   const advisorErrorMessage = useMemo(() => {
-    if (!insightsQuery.error) {
+    if (!normalizedAdvisorError) {
       return '';
     }
 
-    const normalized = normalizeApiErrorForUi(insightsQuery.error);
+    const normalized = normalizedAdvisorError;
     if (
       normalized.code === 'REQUEST_TIMEOUT' ||
       normalized.code === 'AI_PROVIDER_TIMEOUT' ||
@@ -693,7 +697,8 @@ export function AiAdvisorScreen() {
     }
 
     return apiErrorText(insightsQuery.error);
-  }, [insightsQuery.error, t]);
+  }, [insightsQuery.error, normalizedAdvisorError, t]);
+  const advisorErrorCode = normalizedAdvisorError?.code ?? '';
   const regenerateErrorMessage = useMemo(() => {
     if (!regenerateMutation.isError) {
       return '';
@@ -733,6 +738,11 @@ export function AiAdvisorScreen() {
           <AppIcon name="sparkles-outline" size="lg" tone="expense" />
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('aiAdvisor.state.errorTitle')}</Text>
           <Text style={[styles.errorText, { color: theme.colors.expense }]}>{advisorErrorMessage}</Text>
+          {advisorErrorCode ? (
+            <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
+              {`code=${advisorErrorCode}`}
+            </Text>
+          ) : null}
           <PrimaryButton
             label={t('common.retry')}
             iconName="refresh-outline"
