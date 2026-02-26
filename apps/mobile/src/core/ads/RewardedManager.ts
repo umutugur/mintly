@@ -8,6 +8,9 @@ const ANDROID_REWARDED_UNIT_ID = 'ca-app-pub-6114268066977057/1278761649';
 const ADVISOR_USAGE_STORAGE_KEY = 'mintly:advisor-insight-free-usage:v1';
 
 type AdvisorUsageMap = Record<string, string>;
+interface RewardedInsightAdOptions {
+  onAdStarted?: () => void;
+}
 
 function getRewardedUnitId(): string {
   const googleMobileAds = getGoogleMobileAdsModule();
@@ -18,8 +21,12 @@ function getRewardedUnitId(): string {
   return Platform.OS === 'ios' ? IOS_REWARDED_UNIT_ID : ANDROID_REWARDED_UNIT_ID;
 }
 
-function getTodayUtcDayKey(): string {
-  return new Date().toISOString().slice(0, 10);
+function getTodayLocalDayKey(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 async function readUsageMap(): Promise<AdvisorUsageMap> {
@@ -41,12 +48,12 @@ async function writeUsageMap(value: AdvisorUsageMap): Promise<void> {
 }
 
 export function getAdvisorUsageDayKey(): string {
-  return getTodayUtcDayKey();
+  return getTodayLocalDayKey();
 }
 
 export async function hasUsedDailyAdvisorFreeUsage(
   userId: string,
-  dayKey: string = getTodayUtcDayKey(),
+  dayKey: string = getTodayLocalDayKey(),
 ): Promise<boolean> {
   if (!userId) {
     return false;
@@ -66,7 +73,7 @@ export async function markDailyAdvisorFreeUsage(userId: string, dayKey: string):
   await writeUsageMap(map);
 }
 
-export async function showRewardedInsightAd(): Promise<boolean> {
+export async function showRewardedInsightAd(options?: RewardedInsightAdOptions): Promise<boolean> {
   const googleMobileAds = getGoogleMobileAdsModule();
   if (!googleMobileAds) {
     return false;
@@ -102,6 +109,12 @@ export async function showRewardedInsightAd(): Promise<boolean> {
         } catch {
           finalize(false);
         }
+      }),
+    );
+
+    cleanupHandlers.push(
+      rewardedAd.addAdEventListener(googleMobileAds.AdEventType.OPENED, () => {
+        options?.onAdStarted?.();
       }),
     );
 

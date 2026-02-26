@@ -2,7 +2,6 @@ const DEFAULT_ONYSOFT_HTTP_TIMEOUT_MS = 45_000;
 const DEFAULT_TEMPERATURE = 0.2;
 const DEFAULT_TOP_P = 0.9;
 const DEFAULT_MAX_TOKENS = 900;
-const DEFAULT_RATE_LIMIT_ATTEMPTS = 3;
 const MODEL_DISCOVERY_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -19,7 +18,13 @@ export type OnysoftProviderErrorReason =
 export interface OnysoftProviderResult {
   provider: 'onysoft';
   status: number;
+  ok: boolean;
   text: string;
+  errorReason?: OnysoftProviderErrorReason;
+  detail?: string;
+  bodyPreview?: string;
+  retryAfterSec?: number | null;
+  responseFormatUsed?: boolean;
 }
 
 export interface OnysoftModelDiscoveryResult {
@@ -40,13 +45,18 @@ interface GenerateOnysoftTextInput {
   temperature?: number;
   topP?: number;
   maxTokens?: number;
-  maxAttempts?: number;
+  includeResponseFormat?: boolean;
+  allowRetryWithoutResponseFormat?: boolean;
+  maxRateLimitRetries?: number;
+  validateJsonText?: ((text: string) => boolean) | undefined;
+  deadlineAtMs?: number;
 }
 
-interface DiscoverOnysoftModelsInput {
+interface ListOnysoftModelsInput {
   apiKey: string;
   baseUrl: string;
   timeoutMs?: number;
+  deadlineAtMs?: number;
 }
 
 interface OnysoftModelCacheEntry {
@@ -65,17 +75,21 @@ export class OnysoftProviderError extends Error {
 
   public readonly bodyPreview: string | null;
 
+  public readonly retryAfterSec: number | null;
+
   constructor(params: {
     message: string;
     reason: OnysoftProviderErrorReason;
     status?: number | null;
     bodyPreview?: string | null;
+    retryAfterSec?: number | null;
   }) {
     super(params.message);
     this.name = 'OnysoftProviderError';
     this.reason = params.reason;
     this.status = params.status ?? null;
     this.bodyPreview = params.bodyPreview ?? null;
+    this.retryAfterSec = params.retryAfterSec ?? null;
   }
 }
 
@@ -133,6 +147,73 @@ function getRateLimitBackoffMs(attempt: number): number {
   return base * (2 ** Math.max(0, attempt - 1));
 }
 
+function getRemainingMs(deadlineAtMs: number | undefined): number | null {
+  if (!deadlineAtMs) {
+    return null;
+  }
+
+  return deadlineAtMs - Date.now();
+}
+
+function parseRetryAfterHeader(value: string | null): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const asNumber = Number(value);
+  if (Number.isFinite(asNumber) && asNumber >= 0) {
+    return Math.floor(asNumber);
+  }
+
+  const asDate = Date.parse(value);
+  if (!Number.isNaN(asDate)) {
+    return Math.max(0, Math.ceil((asDate - Date.now()) / 1000));
+  }
+
+  return null;
+}
+
+function extractRetryAfterFromPayload(payload: unknown): number | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  const candidates = [
+    payload.retry_after,
+    payload.retryAfter,
+    payload.retry_after_seconds,
+    payload.retryAfterSeconds,
+  ];
+
+  if (isRecord(payload.error)) {
+    candidates.push(
+      payload.error.retry_after,
+      payload.error.retryAfter,
+      payload.error.retry_after_seconds,
+      payload.error.retryAfterSeconds,
+    );
+  }
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'number' && Number.isFinite(candidate) && candidate >= 0) {
+      return Math.floor(candidate);
+    }
+
+    if (typeof candidate === 'string') {
+      const parsed = Number(candidate);
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        return Math.floor(parsed);
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractRetryAfterSec(response: Response, payload: unknown): number | null {
+  return parseRetryAfterHeader(response.headers.get('retry-after')) ?? extractRetryAfterFromPayload(payload);
+}
+
 function extractProviderErrorMessage(payload: unknown): string | null {
   if (!isRecord(payload)) {
     return null;
@@ -148,6 +229,18 @@ function extractProviderErrorMessage(payload: unknown): string | null {
   }
 
   return null;
+}
+
+function unwrapOnysoftBody(payload: unknown): unknown {
+  if (!isRecord(payload)) {
+    return payload;
+  }
+
+  if ('data' in payload) {
+    return payload.data;
+  }
+
+  return payload;
 }
 
 export function isOnysoftNoEndpointsMessage(value: string | null | undefined): boolean {
@@ -207,9 +300,18 @@ function extractTextFromContentParts(value: unknown): string | null {
       continue;
     }
 
-    const textField = part.text;
-    if (typeof textField === 'string' && textField.trim().length > 0) {
-      segments.push(textField.trim());
+    if (typeof part.text === 'string' && part.text.trim().length > 0) {
+      segments.push(part.text.trim());
+      continue;
+    }
+
+    if (isRecord(part.text) && typeof part.text.value === 'string' && part.text.value.trim().length > 0) {
+      segments.push(part.text.value.trim());
+      continue;
+    }
+
+    if (typeof part.content === 'string' && part.content.trim().length > 0) {
+      segments.push(part.content.trim());
     }
   }
 
@@ -220,42 +322,70 @@ function extractTextFromContentParts(value: unknown): string | null {
   return segments.join('\n');
 }
 
-function extractOnysoftAssistantText(payload: unknown): string {
+function extractOnysoftChoices(payload: unknown): unknown[] {
   if (!isRecord(payload)) {
-    throw new Error('Onysoft response payload is not an object');
+    return [];
   }
 
-  if (typeof payload.output_text === 'string' && payload.output_text.trim().length > 0) {
-    return payload.output_text.trim();
+  if (Array.isArray(payload.choices)) {
+    return payload.choices;
   }
 
-  const choices = payload.choices;
-  if (!Array.isArray(choices) || choices.length === 0) {
-    throw new Error('Onysoft response has no choices');
+  if (isRecord(payload.data) && Array.isArray(payload.data.choices)) {
+    return payload.data.choices;
   }
 
-  const firstChoice = choices[0];
-  if (!isRecord(firstChoice)) {
-    throw new Error('Onysoft choice is not an object');
-  }
+  return [];
+}
 
-  const message = firstChoice.message;
-  if (isRecord(message)) {
-    if (typeof message.content === 'string' && message.content.trim().length > 0) {
-      return message.content.trim();
+function extractOnysoftAssistantText(rawPayload: unknown, bodyPayload: unknown): string {
+  const candidatePayloads = [bodyPayload, rawPayload];
+
+  for (const payload of candidatePayloads) {
+    if (!isRecord(payload)) {
+      continue;
     }
 
-    const contentPartsText = extractTextFromContentParts(message.content);
-    if (contentPartsText) {
-      return contentPartsText;
+    if (typeof payload.output_text === 'string' && payload.output_text.trim().length > 0) {
+      return payload.output_text.trim();
+    }
+
+    const choices = extractOnysoftChoices(payload);
+    const firstChoice = choices[0];
+    if (!isRecord(firstChoice)) {
+      continue;
+    }
+
+    const message = firstChoice.message;
+    if (isRecord(message)) {
+      if (typeof message.content === 'string' && message.content.trim().length > 0) {
+        return message.content.trim();
+      }
+
+      const contentPartsText = extractTextFromContentParts(message.content);
+      if (contentPartsText) {
+        return contentPartsText;
+      }
+    }
+
+    const delta = firstChoice.delta;
+    if (isRecord(delta)) {
+      if (typeof delta.content === 'string' && delta.content.trim().length > 0) {
+        return delta.content.trim();
+      }
+
+      const deltaPartsText = extractTextFromContentParts(delta.content);
+      if (deltaPartsText) {
+        return deltaPartsText;
+      }
+    }
+
+    if (typeof firstChoice.text === 'string' && firstChoice.text.trim().length > 0) {
+      return firstChoice.text.trim();
     }
   }
 
-  if (typeof firstChoice.text === 'string' && firstChoice.text.trim().length > 0) {
-    return firstChoice.text.trim();
-  }
-
-  throw new Error('Onysoft response has no assistant text');
+  return '';
 }
 
 function extractModelName(value: unknown): string | null {
@@ -285,36 +415,51 @@ function parseOnysoftModels(payload: unknown): string[] {
     if (!model || seen.has(model)) {
       return;
     }
+
     seen.add(model);
     discovered.push(model);
   };
 
-  if (Array.isArray(payload)) {
-    for (const item of payload) {
-      addModel(item);
+  const scanPayload = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        addModel(item);
+      }
+      return;
     }
-    return discovered;
-  }
 
-  if (!isRecord(payload)) {
-    return discovered;
-  }
-
-  const data = payload.data;
-  if (Array.isArray(data)) {
-    for (const item of data) {
-      addModel(item);
+    if (!isRecord(value)) {
+      return;
     }
-  }
 
-  const models = payload.models;
-  if (Array.isArray(models)) {
-    for (const item of models) {
-      addModel(item);
+    const containers = [value.data, value.models, value.result];
+    for (const container of containers) {
+      if (Array.isArray(container)) {
+        for (const item of container) {
+          addModel(item);
+        }
+      }
     }
+  };
+
+  scanPayload(payload);
+  if (isRecord(payload) && 'data' in payload) {
+    scanPayload(payload.data);
   }
 
   return discovered;
+}
+
+function classifyProviderFailure(status: number, message: string): OnysoftProviderErrorReason {
+  if (isOnysoftRateLimit(status, message)) {
+    return 'rate_limited';
+  }
+
+  if (isOnysoftNoEndpointsMessage(message)) {
+    return 'model_unavailable';
+  }
+
+  return 'http_error';
 }
 
 export function markOnysoftModelUnavailable(baseUrl: string, model: string): void {
@@ -335,8 +480,8 @@ export function isOnysoftModelUnavailable(baseUrl: string, model: string): boole
   return unavailableOnysoftModelsCache.has(unavailableModelCacheKey(baseUrl, model));
 }
 
-export async function discoverOnysoftModels(
-  input: DiscoverOnysoftModelsInput,
+export async function listOnysoftModels(
+  input: ListOnysoftModelsInput,
   fetchImpl: FetchLike = (requestUrl, init) => fetch(requestUrl, init),
 ): Promise<OnysoftModelDiscoveryResult> {
   cleanupModelCaches();
@@ -352,8 +497,11 @@ export async function discoverOnysoftModels(
     };
   }
 
-  const timeoutMs = input.timeoutMs ?? DEFAULT_ONYSOFT_HTTP_TIMEOUT_MS;
+  const defaultTimeoutMs = input.timeoutMs ?? DEFAULT_ONYSOFT_HTTP_TIMEOUT_MS;
+  const remainingMs = getRemainingMs(input.deadlineAtMs);
+  const timeoutMs = remainingMs === null ? defaultTimeoutMs : Math.max(250, Math.min(defaultTimeoutMs, remainingMs));
   const endpoint = `${normalizeBaseUrl(input.baseUrl)}/v1/models`;
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
     controller.abort();
@@ -369,49 +517,62 @@ export async function discoverOnysoftModels(
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
     const status = response.status;
     const rawBody = await response.text();
-    if (!response.ok) {
-      return {
-        ok: false,
-        status,
-        fromCache: false,
-        models: [],
-        detail: summarizeBody(rawBody),
-      };
-    }
+    const bodyPreview = summarizeBody(rawBody);
 
     let parsedBody: unknown;
-    try {
-      parsedBody = rawBody.trim().length > 0 ? (JSON.parse(rawBody) as unknown) : {};
-    } catch (error) {
+    if (rawBody.trim().length === 0) {
+      parsedBody = {};
+    } else {
+      try {
+        parsedBody = JSON.parse(rawBody) as unknown;
+      } catch (error) {
+        return {
+          ok: false,
+          status,
+          fromCache: false,
+          models: [],
+          detail: error instanceof Error ? error.message : 'invalid JSON payload',
+        };
+      }
+    }
+
+    const rawRecord = isRecord(parsedBody) ? parsedBody : null;
+    const ok = response.ok && rawRecord?.success !== false;
+    if (!ok) {
+      const providerMessage =
+        extractProviderErrorMessage(parsedBody)
+        ?? (bodyPreview.length > 0 ? bodyPreview : `Onysoft models endpoint returned status ${status}`);
       return {
         ok: false,
         status,
         fromCache: false,
         models: [],
-        detail: error instanceof Error ? error.message : 'invalid JSON payload',
+        detail: providerMessage,
       };
     }
 
-    const models = parseOnysoftModels(parsedBody);
-    onysoftModelsCache.set(key, {
-      expiresAt: Date.now() + MODEL_DISCOVERY_CACHE_TTL_MS,
-      status,
-      models,
-    });
+    const body = unwrapOnysoftBody(parsedBody);
+    const models = parseOnysoftModels(body);
+    if (models.length > 0) {
+      onysoftModelsCache.set(key, {
+        expiresAt: Date.now() + MODEL_DISCOVERY_CACHE_TTL_MS,
+        status,
+        models,
+      });
+    } else {
+      onysoftModelsCache.delete(key);
+    }
 
     return {
       ok: true,
       status,
       fromCache: false,
       models,
+      detail: models.length === 0 ? 'no models discovered from /v1/models payload' : undefined,
     };
   } catch (error) {
-    clearTimeout(timeoutId);
-
     const isAbortError =
       typeof error === 'object'
       && error !== null
@@ -434,21 +595,39 @@ export async function discoverOnysoftModels(
   }
 }
 
+export const discoverOnysoftModels = listOnysoftModels;
+
 export async function generateOnysoftText(
   input: GenerateOnysoftTextInput,
   fetchImpl: FetchLike = (requestUrl, init) => fetch(requestUrl, init),
 ): Promise<OnysoftProviderResult> {
-  const timeoutMs = input.timeoutMs ?? DEFAULT_ONYSOFT_HTTP_TIMEOUT_MS;
+  const defaultTimeoutMs = input.timeoutMs ?? DEFAULT_ONYSOFT_HTTP_TIMEOUT_MS;
   const temperature = input.temperature ?? DEFAULT_TEMPERATURE;
   const topP = input.topP ?? DEFAULT_TOP_P;
   const maxTokens = input.maxTokens ?? DEFAULT_MAX_TOKENS;
-  const maxAttempts = Math.max(1, input.maxAttempts ?? DEFAULT_RATE_LIMIT_ATTEMPTS);
+  const maxRateLimitRetries = Math.max(0, input.maxRateLimitRetries ?? 1);
+  const allowRetryWithoutResponseFormat = input.allowRetryWithoutResponseFormat ?? true;
   const endpoint = `${normalizeBaseUrl(input.baseUrl)}/v1/chat/completions`;
 
-  let includeResponseFormat = true;
-  let attempt = 1;
+  let includeResponseFormat = input.includeResponseFormat ?? true;
+  let retriedWithoutResponseFormat = false;
+  let rateLimitRetryCount = 0;
 
-  while (attempt <= maxAttempts) {
+  while (true) {
+    const remainingMs = getRemainingMs(input.deadlineAtMs);
+    if (remainingMs !== null && remainingMs <= 0) {
+      return {
+        provider: 'onysoft',
+        status: 0,
+        ok: false,
+        text: '',
+        errorReason: 'timeout',
+        detail: 'Onysoft provider deadline exceeded before request',
+        responseFormatUsed: includeResponseFormat,
+      };
+    }
+
+    const timeoutMs = remainingMs === null ? defaultTimeoutMs : Math.max(250, Math.min(defaultTimeoutMs, remainingMs));
     const payload: Record<string, unknown> = {
       model: input.model,
       messages: [
@@ -480,110 +659,140 @@ export async function generateOnysoftText(
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-
       const status = response.status;
       const rawBody = await response.text();
       const bodyPreview = summarizeBody(rawBody);
+      let parsedJson: unknown | undefined;
 
-      let parsedBody: unknown | undefined;
       if (rawBody.trim().length > 0) {
         try {
-          parsedBody = JSON.parse(rawBody) as unknown;
+          parsedJson = JSON.parse(rawBody) as unknown;
         } catch {
-          parsedBody = undefined;
+          parsedJson = undefined;
         }
+      } else {
+        parsedJson = {};
       }
 
-      if (!response.ok) {
-        if (includeResponseFormat && shouldRetryWithoutResponseFormat(status, parsedBody, rawBody)) {
+      const rawRecord = isRecord(parsedJson) ? parsedJson : null;
+      const body = unwrapOnysoftBody(parsedJson);
+      const providerMessage = extractProviderErrorMessage(parsedJson) ?? bodyPreview;
+      const retryAfterSec = extractRetryAfterSec(response, parsedJson);
+      const ok = response.ok && rawRecord?.success !== false;
+
+      if (!ok) {
+        if (
+          includeResponseFormat
+          && allowRetryWithoutResponseFormat
+          && !retriedWithoutResponseFormat
+          && shouldRetryWithoutResponseFormat(status, parsedJson, rawBody)
+        ) {
           includeResponseFormat = false;
+          retriedWithoutResponseFormat = true;
           continue;
         }
 
-        const providerMessage = extractProviderErrorMessage(parsedBody)
-          ?? `Onysoft provider returned status ${status}`;
-        const fullMessage = `${providerMessage} ${rawBody}`;
-
-        if (isOnysoftRateLimit(status, fullMessage)) {
-          if (attempt < maxAttempts) {
-            const backoffMs = getRateLimitBackoffMs(attempt);
-            attempt += 1;
+        const failureReason = classifyProviderFailure(status, providerMessage);
+        if (failureReason === 'rate_limited' && rateLimitRetryCount < maxRateLimitRetries) {
+          const backoffMs = getRateLimitBackoffMs(rateLimitRetryCount + 1);
+          const remainingForBackoff = getRemainingMs(input.deadlineAtMs);
+          if (remainingForBackoff === null || remainingForBackoff > backoffMs + 200) {
+            rateLimitRetryCount += 1;
             await sleep(backoffMs);
             continue;
           }
-
-          throw new OnysoftProviderError({
-            message: providerMessage,
-            reason: 'rate_limited',
-            status,
-            bodyPreview,
-          });
         }
 
-        throw new OnysoftProviderError({
-          message: providerMessage,
-          reason: isOnysoftNoEndpointsMessage(fullMessage) ? 'model_unavailable' : 'http_error',
+        return {
+          provider: 'onysoft',
           status,
+          ok: false,
+          text: '',
+          errorReason: failureReason,
+          detail: providerMessage || `Onysoft provider returned status ${status}`,
           bodyPreview,
-        });
+          retryAfterSec,
+          responseFormatUsed: includeResponseFormat,
+        };
       }
 
-      if (parsedBody === undefined) {
-        throw new OnysoftProviderError({
-          message: `Onysoft provider returned invalid JSON (status ${status})`,
-          reason: 'response_parse_error',
+      if (parsedJson === undefined) {
+        return {
+          provider: 'onysoft',
           status,
+          ok: false,
+          text: '',
+          errorReason: 'response_parse_error',
+          detail: `Onysoft provider returned invalid JSON (status ${status})`,
           bodyPreview,
-        });
+          retryAfterSec,
+          responseFormatUsed: includeResponseFormat,
+        };
       }
 
-      let text: string;
-      try {
-        text = extractOnysoftAssistantText(parsedBody);
-      } catch (error) {
-        throw new OnysoftProviderError({
-          message: error instanceof Error ? error.message : 'Onysoft response missing assistant text',
-          reason: 'response_shape_error',
+      const text = extractOnysoftAssistantText(parsedJson, body).trim();
+      if (text.length === 0) {
+        if (includeResponseFormat && allowRetryWithoutResponseFormat && !retriedWithoutResponseFormat) {
+          includeResponseFormat = false;
+          retriedWithoutResponseFormat = true;
+          continue;
+        }
+
+        return {
+          provider: 'onysoft',
           status,
+          ok: false,
+          text: '',
+          errorReason: 'response_shape_error',
+          detail: 'Onysoft provider returned an empty assistant message',
           bodyPreview,
-        });
+          retryAfterSec,
+          responseFormatUsed: includeResponseFormat,
+        };
+      }
+
+      if (
+        includeResponseFormat
+        && allowRetryWithoutResponseFormat
+        && !retriedWithoutResponseFormat
+        && input.validateJsonText
+        && !input.validateJsonText(text)
+      ) {
+        includeResponseFormat = false;
+        retriedWithoutResponseFormat = true;
+        continue;
       }
 
       return {
         provider: 'onysoft',
         status,
+        ok: true,
         text,
+        retryAfterSec,
+        responseFormatUsed: includeResponseFormat,
       };
     } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (error instanceof OnysoftProviderError) {
-        throw error;
-      }
-
       const isAbortError =
         typeof error === 'object'
         && error !== null
         && 'name' in error
         && (error as { name?: string }).name === 'AbortError';
 
-      if (isAbortError) {
-        throw new OnysoftProviderError({
-          message: 'Onysoft provider request timed out',
-          reason: 'timeout',
-        });
-      }
-
-      throw new OnysoftProviderError({
-        message: error instanceof Error ? error.message : 'Onysoft provider request failed',
-        reason: 'request_error',
-      });
+      return {
+        provider: 'onysoft',
+        status: 0,
+        ok: false,
+        text: '',
+        errorReason: isAbortError ? 'timeout' : 'request_error',
+        detail: isAbortError
+          ? 'Onysoft provider request timed out'
+          : error instanceof Error
+            ? error.message
+            : 'Onysoft provider request failed',
+        responseFormatUsed: includeResponseFormat,
+      };
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
-
-  throw new OnysoftProviderError({
-    message: 'Onysoft provider request failed',
-    reason: 'request_error',
-  });
 }

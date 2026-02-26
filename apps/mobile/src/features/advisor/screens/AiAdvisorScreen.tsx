@@ -6,16 +6,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdvisorBudgetStatus } from '@mintly/shared';
 
 import { useAuth } from '@app/providers/AuthProvider';
-import {
-  getAdvisorUsageDayKey,
-  hasUsedDailyAdvisorFreeUsage,
-  markDailyAdvisorFreeUsage,
-  showRewardedInsightAd,
-} from '@core/ads/RewardedManager';
 import { apiClient } from '@core/api/client';
 import { mobileEnv } from '@core/config/env';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAdvisorInsights } from '@features/advisor/hooks/useAdvisorInsights';
+import { useAdvisorInsightRegenerateWithRewarded } from '@features/advisor/hooks/useAdvisorInsightRegenerateWithRewarded';
 import { useI18n } from '@shared/i18n';
 import { AppIcon, Card, Chip, PrimaryButton, ScreenContainer, Section, StatCard, TextField } from '@shared/ui';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
@@ -111,51 +106,6 @@ function formatDateTimeLabel(value: string, locale: string): string {
   }).format(date);
 }
 
-interface AdvisorFreeUsageCheckResponse {
-  allowFree: boolean;
-  dayKey: string;
-}
-
-function normalizeBaseUrl(value: string): string {
-  return value.endsWith('/') ? value.slice(0, -1) : value;
-}
-
-async function consumeAdvisorFreeUsageOnBackend(input: {
-  apiBaseUrl: string;
-  accessToken: string;
-}): Promise<AdvisorFreeUsageCheckResponse | null> {
-  try {
-    const response = await fetch(`${normalizeBaseUrl(input.apiBaseUrl)}/advisor/insights/free-check`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${input.accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: '{}',
-    });
-
-    const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload || typeof payload !== 'object') {
-      return null;
-    }
-
-    const allowFree = (payload as { allowFree?: unknown }).allowFree === true;
-    const dayKeyCandidate = (payload as { dayKey?: unknown }).dayKey;
-    const dayKey =
-      typeof dayKeyCandidate === 'string' && dayKeyCandidate.length > 0
-        ? dayKeyCandidate
-        : getAdvisorUsageDayKey();
-
-    return {
-      allowFree,
-      dayKey,
-    };
-  } catch {
-    return null;
-  }
-}
-
 function LoadingSkeleton({ dark }: { dark: boolean }) {
   const blockColor = dark ? '#1A2133' : '#E7EDF8';
 
@@ -208,31 +158,20 @@ export function AiAdvisorScreen() {
   const [transferFromAccountId, setTransferFromAccountId] = useState<string | null>(null);
   const [transferToAccountId, setTransferToAccountId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [isRewardGatePending, setIsRewardGatePending] = useState(false);
   const responseDiagnosticsKeyRef = useRef<string | null>(null);
 
   const currentMonth = useMemo(() => getCurrentMonthString(), []);
   const insightsQuery = useAdvisorInsights(month);
+  const {
+    regenerate: triggerRegenerate,
+    isPending: isRegeneratePending,
+    isInsightInFlight,
+    error: regenerateError,
+    clearError: clearRegenerateError,
+  } = useAdvisorInsightRegenerateWithRewarded(month);
   const accountsQuery = useQuery({
     queryKey: financeQueryKeys.accounts.list(),
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
-  });
-
-  const regenerateMutation = useMutation({
-    mutationFn: () =>
-      withAuth((token) =>
-        apiClient.getAdvisorInsights(
-          {
-            month,
-            language: locale,
-            regenerate: true,
-          },
-          token,
-        ),
-      ),
-    onSuccess: (data) => {
-      queryClient.setQueryData(financeQueryKeys.ai.advisorInsights(month, locale), data);
-    },
   });
 
   const dark = mode === 'dark';
@@ -389,59 +328,10 @@ export function AiAdvisorScreen() {
     void insightsQuery.refetch();
   }, [insightsQuery]);
 
-  const consumeDailyFreeAdvisorUsage = useCallback(async (): Promise<boolean> => {
-    const userId = user?.id ?? null;
-    if (!userId) {
-      return true;
-    }
-
-    const localDayKey = getAdvisorUsageDayKey();
-    const hasUsedLocalFreeAccess = await hasUsedDailyAdvisorFreeUsage(userId, localDayKey);
-    if (hasUsedLocalFreeAccess) {
-      return false;
-    }
-
-    let backendValidation: AdvisorFreeUsageCheckResponse | null = null;
-    try {
-      backendValidation = await withAuth((token) =>
-        consumeAdvisorFreeUsageOnBackend({
-          apiBaseUrl,
-          accessToken: token,
-        }),
-      );
-    } catch {
-      backendValidation = null;
-    }
-
-    if (!backendValidation) {
-      await markDailyAdvisorFreeUsage(userId, localDayKey);
-      return true;
-    }
-
-    await markDailyAdvisorFreeUsage(userId, backendValidation.dayKey);
-    return backendValidation.allowFree;
-  }, [apiBaseUrl, user?.id, withAuth]);
-
   const handleRegenerate = useCallback(() => {
-    if (regenerateMutation.isPending || isRewardGatePending) {
-      return;
-    }
-
-    setIsRewardGatePending(true);
-    void (async () => {
-      const isFreeUsageAllowed = await consumeDailyFreeAdvisorUsage();
-      if (!isFreeUsageAllowed) {
-        const rewarded = await showRewardedInsightAd();
-        if (!rewarded) {
-          return;
-        }
-      }
-
-      regenerateMutation.mutate();
-    })().finally(() => {
-      setIsRewardGatePending(false);
-    });
-  }, [consumeDailyFreeAdvisorUsage, isRewardGatePending, regenerateMutation]);
+    clearRegenerateError();
+    triggerRegenerate();
+  }, [clearRegenerateError, triggerRegenerate]);
 
   const handlePrevMonth = useCallback(() => {
     setMonth((prev) => shiftMonth(prev, -1));
@@ -707,12 +597,12 @@ export function AiAdvisorScreen() {
   }, [insightsQuery.error, normalizedAdvisorError, t]);
   const advisorErrorCode = normalizedAdvisorError?.code ?? '';
   const regenerateErrorMessage = useMemo(() => {
-    if (!regenerateMutation.isError) {
+    if (!regenerateError) {
       return '';
     }
 
-    return apiErrorText(regenerateMutation.error);
-  }, [regenerateMutation.error, regenerateMutation.isError]);
+    return apiErrorText(regenerateError);
+  }, [regenerateError]);
 
   const fallbackReasonMessage = useMemo(() => {
     if (!insights || insights.mode !== 'fallback') {
@@ -873,7 +763,7 @@ export function AiAdvisorScreen() {
           <PrimaryButton
             label={t('aiAdvisor.actions.regenerate')}
             iconName="sparkles-outline"
-            loading={regenerateMutation.isPending || isRewardGatePending}
+            loading={isRegeneratePending}
             onPress={handleRegenerate}
           />
 
@@ -881,7 +771,7 @@ export function AiAdvisorScreen() {
             <Text style={[styles.errorText, { color: theme.colors.expense }]}>{regenerateErrorMessage}</Text>
           ) : null}
 
-          {(insightsQuery.isFetching || regenerateMutation.isPending || isRewardGatePending) && !insightsQuery.isLoading ? (
+          {(insightsQuery.isFetching || isInsightInFlight) && !insightsQuery.isLoading ? (
             <View style={styles.inlineLoadingWrap}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
               <Text style={[styles.inlineLoadingText, { color: theme.colors.textMuted }]}>

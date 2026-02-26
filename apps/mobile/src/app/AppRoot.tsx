@@ -8,10 +8,16 @@ import { NetworkProvider } from '@app/providers/NetworkProvider';
 import { QueryProvider } from '@app/providers/QueryProvider';
 import { ThemeProvider } from '@app/providers/ThemeProvider';
 import { AdProvider } from '@core/ads/AdProvider';
+import { useAdvisorInsightPrefetch } from '@features/advisor/hooks/useAdvisorInsightPrefetch';
 import { I18nProvider } from '@shared/i18n';
 import { AppNavigator } from '@core/navigation/AppNavigator';
 import { OfflineBanner } from '@shared/ui';
 import { DevDiagnosticsOverlay } from './DevDiagnosticsOverlay';
+
+function AdvisorInsightPrefetchBootstrap() {
+  useAdvisorInsightPrefetch();
+  return null;
+}
 
 export function AppRoot() {
   return (
@@ -24,6 +30,7 @@ export function AppRoot() {
                 <QueryProvider>
                   <AuthProvider>
                     <AdProvider>
+                      <AdvisorInsightPrefetchBootstrap />
                       <AppNavigator />
                       <OfflineBanner />
                       <DevDiagnosticsOverlay />

@@ -14,8 +14,7 @@ import {
   generateCloudflareText,
 } from './ai/cloudflare.js';
 import {
-  OnysoftProviderError,
-  discoverOnysoftModels,
+  listOnysoftModels,
   generateOnysoftText,
   isOnysoftModelUnavailable,
   markOnysoftModelUnavailable,
@@ -35,6 +34,11 @@ const ONYSOFT_MODEL_FALLBACK_CHAIN = [
   'deepseek/deepseek-r1-0528:free',
   'mistralai/mistral-small-3.1-24b-instruct:free',
 ] as const;
+const ONYSOFT_PROVIDER_DEADLINE_MS = 8_000;
+const ONYSOFT_MODEL_ATTEMPT_TIMEOUT_MS = 3_600;
+const ONYSOFT_MIN_REMAINING_MS = 500;
+const ONYSOFT_MAX_MODEL_ATTEMPTS = 2;
+const ONYSOFT_RATE_LIMIT_BACKOFFS_MS = [800, 1600] as const;
 
 const languageNameMap: Record<AiInsightsLanguage, string> = {
   tr: 'Turkish',
@@ -537,6 +541,12 @@ function previewAiOutput(value: string, maxLen = 420): string {
   return `${redacted.slice(0, maxLen)}...`;
 }
 
+async function sleep(ms: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function formatZodIssues(error: z.ZodError): string {
   const first = error.issues[0];
   if (!first) {
@@ -819,19 +829,19 @@ function mapCloudflareErrorToFallbackReason(error: CloudflareProviderError): Fal
   return 'provider_unknown_error';
 }
 
-function mapOnysoftErrorToFallbackReason(error: OnysoftProviderError): FallbackReason {
-  if (error.reason === 'timeout') {
+function mapOnysoftFailureReason(reason: string | undefined): FallbackReason {
+  if (reason === 'timeout') {
     return 'provider_timeout';
   }
 
-  if (error.reason === 'response_parse_error' || error.reason === 'response_shape_error') {
+  if (reason === 'response_parse_error' || reason === 'response_shape_error') {
     return 'provider_parse_error';
   }
 
   if (
-    error.reason === 'http_error'
-    || error.reason === 'rate_limited'
-    || error.reason === 'model_unavailable'
+    reason === 'http_error'
+    || reason === 'rate_limited'
+    || reason === 'model_unavailable'
   ) {
     return 'provider_http_error';
   }
@@ -1747,6 +1757,7 @@ export async function generateAdvisorInsight(
 
   if (config.advisorProvider === 'onysoft') {
     if (onysoftConfigured && config.onysoftApiKey) {
+      const providerDeadlineAtMs = Date.now() + ONYSOFT_PROVIDER_DEADLINE_MS;
       const discoveryStartedAt = Date.now();
       input.onDiagnostic?.({
         stage: 'provider_request',
@@ -1755,11 +1766,21 @@ export async function generateAdvisorInsight(
         model: 'v1/models',
       });
 
-      const modelDiscovery = await discoverOnysoftModels(
+      const discoveryRemainingMs = providerDeadlineAtMs - Date.now();
+      const discoveryTimeoutMs = Math.max(
+        500,
+        Math.min(
+          ONYSOFT_MODEL_ATTEMPT_TIMEOUT_MS,
+          Math.max(500, discoveryRemainingMs - ONYSOFT_MIN_REMAINING_MS),
+        ),
+      );
+
+      const modelDiscovery = await listOnysoftModels(
         {
           apiKey: config.onysoftApiKey,
           baseUrl: config.onysoftBaseUrl,
-          timeoutMs: config.cloudflareHttpTimeoutMs,
+          timeoutMs: discoveryTimeoutMs,
+          deadlineAtMs: providerDeadlineAtMs,
         },
         fetchImpl,
       );
@@ -1791,7 +1812,7 @@ export async function generateAdvisorInsight(
         primaryModel: config.onysoftModel,
         discoveredModels: modelDiscovery.ok ? modelDiscovery.models : [],
         baseUrl: config.onysoftBaseUrl,
-      });
+      }).slice(0, ONYSOFT_MAX_MODEL_ATTEMPTS);
 
       if (modelChain.length === 0) {
         provider = 'onysoft';
@@ -1806,9 +1827,33 @@ export async function generateAdvisorInsight(
         });
       }
 
+      let rateLimitedAttemptCount = 0;
       for (let index = 0; index < modelChain.length; index += 1) {
         const model = modelChain[index] as string;
         const attempt = index + 1;
+        const remainingBeforeAttemptMs = providerDeadlineAtMs - Date.now();
+
+        if (remainingBeforeAttemptMs < ONYSOFT_MIN_REMAINING_MS) {
+          fallbackReason = 'provider_timeout';
+          input.onDiagnostic?.({
+            stage: 'fallback',
+            provider: 'onysoft',
+            attempt,
+            model,
+            reason: fallbackReason,
+            status: providerStatus ?? undefined,
+            detail: `provider budget exhausted before attempt (remaining=${remainingBeforeAttemptMs}ms)`,
+          });
+          break;
+        }
+
+        const attemptTimeoutMs = Math.max(
+          500,
+          Math.min(
+            ONYSOFT_MODEL_ATTEMPT_TIMEOUT_MS,
+            Math.max(500, remainingBeforeAttemptMs - 150),
+          ),
+        );
 
         input.onDiagnostic?.({
           stage: 'provider_attempt',
@@ -1821,169 +1866,132 @@ export async function generateAdvisorInsight(
           provider: 'onysoft',
           attempt,
           model,
+          detail: `timeoutMs=${attemptTimeoutMs}; remainingMs=${remainingBeforeAttemptMs}`,
         });
 
         const startedAt = Date.now();
-
-        try {
-          const providerResult = await generateOnysoftText(
-            {
-              apiKey: config.onysoftApiKey,
-              baseUrl: config.onysoftBaseUrl,
-              model,
-              timeoutMs: config.cloudflareHttpTimeoutMs,
-              temperature: 0.2,
-              topP: 0.9,
-              maxTokens: 900,
-              maxAttempts: 3,
-              systemPrompt: onysoftSystemPrompt,
-              userPrompt: prompt,
+        const providerResult = await generateOnysoftText(
+          {
+            apiKey: config.onysoftApiKey,
+            baseUrl: config.onysoftBaseUrl,
+            model,
+            timeoutMs: attemptTimeoutMs,
+            deadlineAtMs: providerDeadlineAtMs,
+            temperature: 0.2,
+            topP: 0.9,
+            maxTokens: 900,
+            maxRateLimitRetries: 0,
+            allowRetryWithoutResponseFormat: true,
+            includeResponseFormat: true,
+            validateJsonText: (value) => {
+              try {
+                parseStrictJsonPayload(value);
+                return true;
+              } catch {
+                return false;
+              }
             },
-            fetchImpl,
-          );
+            systemPrompt: onysoftSystemPrompt,
+            userPrompt: prompt,
+          },
+          fetchImpl,
+        );
 
-          const durationMs = Date.now() - startedAt;
-          provider = providerResult.provider;
-          providerStatus = providerResult.status;
+        const durationMs = Date.now() - startedAt;
+        provider = providerResult.provider;
+        providerStatus = providerResult.status > 0 ? providerResult.status : null;
 
-          input.onDiagnostic?.({
-            stage: 'provider_response',
-            provider: 'onysoft',
-            attempt,
-            durationMs,
-            model,
-            status: providerResult.status,
-            ok: true,
-          });
-          input.onDiagnostic?.({
-            stage: 'provider_response_body',
-            provider: 'onysoft',
-            attempt,
-            durationMs,
-            model,
-            status: providerResult.status,
-            ok: true,
-            detail: previewAiOutput(providerResult.text),
-          });
+        input.onDiagnostic?.({
+          stage: 'provider_response',
+          provider: 'onysoft',
+          attempt,
+          durationMs,
+          model,
+          status: providerStatus ?? undefined,
+          ok: providerResult.ok,
+          retryAfterSec: providerResult.retryAfterSec,
+        });
+        input.onDiagnostic?.({
+          stage: 'provider_response_body',
+          provider: 'onysoft',
+          attempt,
+          durationMs,
+          model,
+          status: providerStatus ?? undefined,
+          ok: providerResult.ok,
+          detail: providerResult.ok
+            ? previewAiOutput(providerResult.text)
+            : providerResult.bodyPreview ?? providerResult.detail ?? 'empty provider body',
+        });
 
-          let parsedProviderJson: unknown | undefined;
-          try {
-            parsedProviderJson = parseStrictJsonPayload(providerResult.text);
-          } catch (parseError) {
-            fallbackReason = 'provider_parse_error';
-            input.onDiagnostic?.({
-              stage: 'fallback',
-              provider: 'onysoft',
-              attempt,
-              model,
-              reason: fallbackReason,
-              status: providerStatus,
-              detail: `provider JSON parse failed: ${
-                parseError instanceof Error ? parseError.message : 'unknown'
-              }; preview=${previewAiOutput(providerResult.text)}`,
-            });
-            continue;
+        if (!providerResult.ok) {
+          fallbackReason = mapOnysoftFailureReason(providerResult.errorReason);
+          if (providerResult.errorReason === 'model_unavailable') {
+            markOnysoftModelUnavailable(config.onysoftBaseUrl, model);
+          }
+          if (providerResult.errorReason === 'rate_limited') {
+            rateLimitedAttemptCount += 1;
           }
 
-          const coerced = coerceProviderOutputShape(parsedProviderJson);
-          const parsedProvider = providerOutputSchema.safeParse(coerced);
-          if (parsedProvider.success) {
-            providerAdvice = mergeProviderWithFallback(parsedProvider.data, fallbackAdvice);
-            fallbackReason = null;
-            break;
-          }
-
-          const loose = providerOutputLooseSchema.safeParse(coerced);
-          if (loose.success) {
-            try {
-              providerAdvice = mergeProviderWithFallback(loose.data as Partial<ProviderOutput>, fallbackAdvice);
-              fallbackReason = null;
-              break;
-            } catch (mergeError) {
-              fallbackReason = 'provider_validation_error';
-              const firstIssue = parsedProvider.error.issues[0];
-              input.onDiagnostic?.({
-                stage: 'fallback',
-                provider: 'onysoft',
-                attempt,
-                model,
-                reason: fallbackReason,
-                status: providerStatus,
-                detail: `provider output schema validation failed: ${
-                  firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
-                }; preview=${previewAiOutput(providerResult.text)}`,
-              });
-              input.onDiagnostic?.({
-                stage: 'fallback',
-                provider: 'onysoft',
-                attempt,
-                model,
-                reason: fallbackReason,
-                status: providerStatus,
-                detail: `provider salvage merge failed: ${
-                  mergeError instanceof Error ? mergeError.message : 'unknown'
-                }`,
-              });
-              continue;
-            }
-          }
-
-          fallbackReason = 'provider_validation_error';
-          const firstIssue = parsedProvider.error.issues[0];
           input.onDiagnostic?.({
             stage: 'fallback',
             provider: 'onysoft',
             attempt,
             model,
             reason: fallbackReason,
-            status: providerStatus,
-            detail: `provider output schema validation failed: ${
-              firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
+            status: providerStatus ?? undefined,
+            retryAfterSec: providerResult.retryAfterSec,
+            detail: providerResult.detail ?? 'Onysoft request failed',
+          });
+
+          if (providerResult.errorReason === 'rate_limited') {
+            const backoffMs = ONYSOFT_RATE_LIMIT_BACKOFFS_MS[
+              Math.min(rateLimitedAttemptCount - 1, ONYSOFT_RATE_LIMIT_BACKOFFS_MS.length - 1)
+            ] ?? ONYSOFT_RATE_LIMIT_BACKOFFS_MS[ONYSOFT_RATE_LIMIT_BACKOFFS_MS.length - 1];
+            const remainingAfterFailureMs = providerDeadlineAtMs - Date.now();
+            if (remainingAfterFailureMs > backoffMs + ONYSOFT_MIN_REMAINING_MS) {
+              await sleep(backoffMs);
+            }
+          }
+          continue;
+        }
+
+        let parsedProviderJson: unknown | undefined;
+        try {
+          parsedProviderJson = parseStrictJsonPayload(providerResult.text);
+        } catch (parseError) {
+          fallbackReason = 'provider_parse_error';
+          input.onDiagnostic?.({
+            stage: 'fallback',
+            provider: 'onysoft',
+            attempt,
+            model,
+            reason: fallbackReason,
+            status: providerStatus ?? undefined,
+            detail: `provider JSON parse failed: ${
+              parseError instanceof Error ? parseError.message : 'unknown'
             }; preview=${previewAiOutput(providerResult.text)}`,
           });
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'onysoft',
-            attempt,
-            model,
-            reason: fallbackReason,
-            status: providerStatus,
-            detail: `provider loose schema validation failed: ${
-              loose.error ? formatZodIssues(loose.error) : 'unknown'
-            }`,
-          });
-        } catch (error) {
-          const durationMs = Date.now() - startedAt;
+          continue;
+        }
 
-          if (error instanceof OnysoftProviderError) {
-            provider = 'onysoft';
-            providerStatus = error.status;
-            fallbackReason = mapOnysoftErrorToFallbackReason(error);
-            if (error.reason === 'model_unavailable') {
-              markOnysoftModelUnavailable(config.onysoftBaseUrl, model);
-            }
+        const coerced = coerceProviderOutputShape(parsedProviderJson);
+        const parsedProvider = providerOutputSchema.safeParse(coerced);
+        if (parsedProvider.success) {
+          providerAdvice = mergeProviderWithFallback(parsedProvider.data, fallbackAdvice);
+          fallbackReason = null;
+          break;
+        }
 
-            input.onDiagnostic?.({
-              stage: 'provider_response',
-              provider: 'onysoft',
-              attempt,
-              durationMs,
-              model,
-              status: providerStatus ?? undefined,
-              ok: false,
-            });
-            if (error.bodyPreview) {
-              input.onDiagnostic?.({
-                stage: 'provider_response_body',
-                provider: 'onysoft',
-                attempt,
-                durationMs,
-                model,
-                status: providerStatus ?? undefined,
-                ok: false,
-                detail: error.bodyPreview,
-              });
-            }
+        const loose = providerOutputLooseSchema.safeParse(coerced);
+        if (loose.success) {
+          try {
+            providerAdvice = mergeProviderWithFallback(loose.data as Partial<ProviderOutput>, fallbackAdvice);
+            fallbackReason = null;
+            break;
+          } catch (mergeError) {
+            fallbackReason = 'provider_validation_error';
+            const firstIssue = parsedProvider.error.issues[0];
             input.onDiagnostic?.({
               stage: 'fallback',
               provider: 'onysoft',
@@ -1991,31 +1999,60 @@ export async function generateAdvisorInsight(
               model,
               reason: fallbackReason,
               status: providerStatus ?? undefined,
-              detail: `${error.message}${error.bodyPreview ? `; body=${error.bodyPreview}` : ''}`,
+              detail: `provider output schema validation failed: ${
+                firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
+              }; preview=${previewAiOutput(providerResult.text)}`,
+            });
+            input.onDiagnostic?.({
+              stage: 'fallback',
+              provider: 'onysoft',
+              attempt,
+              model,
+              reason: fallbackReason,
+              status: providerStatus ?? undefined,
+              detail: `provider salvage merge failed: ${
+                mergeError instanceof Error ? mergeError.message : 'unknown'
+              }`,
             });
             continue;
           }
-
-          provider = 'onysoft';
-          providerStatus = null;
-          fallbackReason = 'provider_unknown_error';
-          input.onDiagnostic?.({
-            stage: 'provider_response',
-            provider: 'onysoft',
-            attempt,
-            durationMs,
-            model,
-            ok: false,
-          });
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'onysoft',
-            attempt,
-            model,
-            reason: fallbackReason,
-            detail: error instanceof Error ? error.message : 'unknown',
-          });
         }
+
+        fallbackReason = 'provider_validation_error';
+        const firstIssue = parsedProvider.error.issues[0];
+        input.onDiagnostic?.({
+          stage: 'fallback',
+          provider: 'onysoft',
+          attempt,
+          model,
+          reason: fallbackReason,
+          status: providerStatus ?? undefined,
+          detail: `provider output schema validation failed: ${
+            firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
+          }; preview=${previewAiOutput(providerResult.text)}`,
+        });
+        input.onDiagnostic?.({
+          stage: 'fallback',
+          provider: 'onysoft',
+          attempt,
+          model,
+          reason: fallbackReason,
+          status: providerStatus ?? undefined,
+          detail: `provider loose schema validation failed: ${
+            loose.error ? formatZodIssues(loose.error) : 'unknown'
+          }`,
+        });
+      }
+
+      if (!providerAdvice && !fallbackReason) {
+        fallbackReason = 'provider_timeout';
+        input.onDiagnostic?.({
+          stage: 'fallback',
+          provider: 'onysoft',
+          reason: fallbackReason,
+          status: providerStatus ?? undefined,
+          detail: 'Onysoft advisor chain completed without a valid response',
+        });
       }
     } else {
       fallbackReason = 'missing_api_key';
