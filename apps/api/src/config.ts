@@ -12,13 +12,16 @@ export interface RuntimeConfig {
   refreshTtlDays: number;
   cronSecret: string;
   corsOrigins: string[];
-  advisorProvider: 'cloudflare';
+  advisorProvider: 'cloudflare' | 'onysoft';
   cloudflareAuthToken: string | null;
   cloudflareAccountId: string | null;
   cloudflareAiModel: string;
   cloudflareStrictMode: boolean;
   cloudflareHttpTimeoutMs: number;
   cloudflareMaxAttempts: number;
+  onysoftApiKey: string | null;
+  onysoftModel: string;
+  onysoftBaseUrl: string;
   geminiApiKey: string | null;
   geminiModel: string;
   googleOauthClientIds: string[];
@@ -47,11 +50,14 @@ const envSchema = z
     REFRESH_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
     CRON_SECRET: z.string().trim().optional(),
     CORS_ORIGINS: z.string().trim().optional(),
-    ADVISOR_PROVIDER: z.enum(['cloudflare']).default('cloudflare'),
+    ADVISOR_PROVIDER: z.enum(['cloudflare', 'onysoft']).default('cloudflare'),
     ADVISOR_CLOUDFLARE_API_TOKEN: z.string().trim().optional(),
     ADVISOR_CLOUDFLARE_ACCOUNT_ID: z.string().trim().optional(),
     ADVISOR_CLOUDFLARE_MODEL: z.string().trim().min(1).optional(),
     ADVISOR_CLOUDFLARE_STRICT: z.coerce.boolean().optional(),
+    ONYSOFT_API_KEY: z.string().trim().optional(),
+    ONYSOFT_MODEL: z.string().trim().min(1).default('meta-llama/llama-3.3-70b-instruct:free'),
+    ONYSOFT_BASE_URL: z.string().trim().url().default('https://api.onysoft.com'),
     CLOUDFLARE_HTTP_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(45000),
     CLOUDFLARE_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(2),
     GEMINI_API_KEY: z.string().trim().optional(),
@@ -138,6 +144,8 @@ const envSchema = z
 
     const resolvedCloudflareAuthToken = env.ADVISOR_CLOUDFLARE_API_TOKEN?.trim() || null;
     const resolvedCloudflareAccountId = env.ADVISOR_CLOUDFLARE_ACCOUNT_ID?.trim() || null;
+    const resolvedOnysoftApiKey = env.ONYSOFT_API_KEY?.trim() || null;
+    const resolvedOnysoftBaseUrl = env.ONYSOFT_BASE_URL.replace(/\/+$/, '');
     const resolvedGeminiApiKey = env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() || env.GEMINI_API_KEY?.trim() || null;
 
     return {
@@ -159,6 +167,9 @@ const envSchema = z
       cloudflareStrictMode,
       cloudflareHttpTimeoutMs: env.CLOUDFLARE_HTTP_TIMEOUT_MS,
       cloudflareMaxAttempts: env.CLOUDFLARE_MAX_ATTEMPTS,
+      onysoftApiKey: resolvedOnysoftApiKey,
+      onysoftModel: env.ONYSOFT_MODEL,
+      onysoftBaseUrl: resolvedOnysoftBaseUrl,
       geminiApiKey: resolvedGeminiApiKey,
       geminiModel: env.GEMINI_MODEL,
       googleOauthClientIds,

@@ -589,7 +589,7 @@ export const advisorInsightsQuerySchema = z.object({
 });
 
 export const advisorInsightModeSchema = z.enum(['ai', 'fallback']);
-export const advisorInsightProviderSchema = z.enum(['cloudflare']);
+export const advisorInsightProviderSchema = z.enum(['cloudflare', 'onysoft']);
 
 export const advisorCashflowPointSchema = z.object({
   month: monthStringSchema,
