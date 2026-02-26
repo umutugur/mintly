@@ -27,7 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.umutugur.mintly</string>
+          <string>mintly</string>
+          <string>com.mintly.app</string>
         </array>
       </dict>
     </array>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,11 +7,13 @@ import {
   View,
 } from 'react-native';
 
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AiReceiptParseResponse } from '@mintly/shared';
+import { detectText } from 'react-native-vision-camera-text-detector';
+import { Camera, runAtTargetFps, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+import { Worklets } from 'react-native-worklets-core';
 
 import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
@@ -123,23 +125,53 @@ export function ScanReceiptScreen() {
   const { user, withAuth } = useAuth();
   const { theme, mode } = useTheme();
   const { locale, t } = useI18n();
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const { hasPermission: permissionGranted, requestPermission: requestCameraPermission } = useCameraPermission();
+  const device = useCameraDevice('back');
   const [libraryPermission, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
-  const cameraRef = useRef<CameraView | null>(null);
+  const cameraRef = useRef<Camera | null>(null);
+  const latestDetectedTextRef = useRef<string>('');
 
   const dark = mode === 'dark';
   const baseCurrency = user?.baseCurrency ?? 'TRY';
 
-  const permissionGranted = cameraPermission?.granted ?? false;
+  const handleDetectedText = useCallback((text: string) => {
+    if (text.trim().length === 0) {
+      return;
+    }
+    latestDetectedTextRef.current = text;
+  }, []);
+  const runDetectedTextOnJs = useMemo(
+    () => Worklets.createRunOnJS(handleDetectedText),
+    [handleDetectedText],
+  );
 
-  async function processImageUri(uri: string): Promise<void> {
+  const frameProcessor = useFrameProcessor((frame) => {
+    'worklet';
+    runAtTargetFps(2, () => {
+      'worklet';
+      try {
+        const detection = detectText(frame);
+        const text = detection?.text;
+        if (typeof text === 'string' && text.trim().length > 0) {
+          runDetectedTextOnJs(text);
+        }
+      } catch {
+        // Keep capture flow running if frame processor plugin is temporarily unavailable.
+      }
+    });
+  }, [runDetectedTextOnJs]);
+
+  async function processImageUri(uri: string, frameText: string | null): Promise<void> {
     setErrorCode(null);
     setIsProcessing(true);
 
     try {
-      const recognition = await recognizeReceiptText(uri);
+      const recognition = await recognizeReceiptText({
+        photoUri: uri,
+        frameText,
+      });
       const parsedDraft = parseReceiptText({
         rawText: recognition.rawText,
         baseCurrency,
@@ -183,13 +215,14 @@ export function ScanReceiptScreen() {
       return;
     }
 
-    const image = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-    if (!image?.uri) {
+    const image = await cameraRef.current.takePhoto();
+    if (!image?.path) {
       setErrorCode('errors.scan.captureFailed');
       return;
     }
 
-    await processImageUri(image.uri);
+    const photoUri = image.path.startsWith('file://') ? image.path : `file://${image.path}`;
+    await processImageUri(photoUri, latestDetectedTextRef.current);
   }
 
   async function handlePickFromLibrary(): Promise<void> {
@@ -216,10 +249,10 @@ export function ScanReceiptScreen() {
       return;
     }
 
-    await processImageUri(result.assets[0].uri);
+    await processImageUri(result.assets[0].uri, null);
   }
 
-  if (!cameraPermission) {
+  if (!device) {
     return (
       <ScreenContainer dark={dark}>
         <Card dark={dark} style={styles.stateCard}>
@@ -257,8 +290,15 @@ export function ScanReceiptScreen() {
   return (
     <ScreenContainer dark={dark} scrollable={false} contentStyle={styles.containerContent}>
       <View style={styles.container}>
-        <View style={[styles.cameraWrap, { borderColor: theme.colors.border }]}> 
-          <CameraView ref={cameraRef} facing="back" mode="picture" style={StyleSheet.absoluteFill} />
+        <View style={[styles.cameraWrap, { borderColor: theme.colors.border }]}>
+          <Camera
+            ref={cameraRef}
+            device={device}
+            frameProcessor={frameProcessor}
+            isActive={!isProcessing}
+            photo
+            style={StyleSheet.absoluteFill}
+          />
 
           <View pointerEvents="none" style={styles.overlayFrameWrap}>
             <View style={[styles.overlayFrame, { borderColor: theme.colors.primary }]} />

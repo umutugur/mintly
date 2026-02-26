@@ -1203,7 +1203,7 @@
       },
       "currencyWarning": "Detected currency {{detected}} differs from your base currency {{base}}. Mintly will keep {{base}}.",
       "ocrMode": {
-        "mlkit": "OCR mode: On-device ML Kit",
+        "vision": "OCR mode: Vision Camera",
         "fallback": "OCR mode: Fallback parser"
       },
       "state": {

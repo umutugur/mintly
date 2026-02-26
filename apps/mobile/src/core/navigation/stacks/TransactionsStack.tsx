@@ -32,7 +32,7 @@ export type TransactionsStackParamList = {
   ScanConfirm: {
     photoUri: string;
     rawText: string;
-    ocrMode: 'mlkit' | 'fallback';
+    ocrMode: 'vision' | 'fallback';
     draft: ParsedReceiptDraft;
   };
   UpcomingPayments: undefined;

@@ -1203,7 +1203,7 @@
       },
       "currencyWarning": "Определена валюта {{detected}}, она отличается от вашей базовой {{base}}. Mintly сохранит {{base}}.",
       "ocrMode": {
-        "mlkit": "Режим OCR: ML Kit на устройстве",
+        "vision": "Режим OCR: Vision Camera",
         "fallback": "Режим OCR: резервный парсер"
       },
       "state": {

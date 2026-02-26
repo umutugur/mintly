@@ -119,6 +119,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshToken: string;
       user: SessionUser;
     }) => {
+      console.log('Setting session with accessToken:', params.accessToken);
+      console.log('Setting session with refreshToken:', params.refreshToken);
       setAccessToken(params.accessToken);
       setRefreshToken(params.refreshToken);
       applySessionUser(params.user);

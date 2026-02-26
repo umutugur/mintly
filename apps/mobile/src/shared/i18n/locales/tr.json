@@ -1203,7 +1203,7 @@
       },
       "currencyWarning": "Algılanan para birimi {{detected}}, ana para biriminiz {{base}} ile farklı. Mintly {{base}} kullanmaya devam eder.",
       "ocrMode": {
-        "mlkit": "OCR modu: Cihaz içi ML Kit",
+        "vision": "OCR modu: Vision Camera",
         "fallback": "OCR modu: Yedek ayrıştırıcı"
       },
       "state": {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -208,8 +208,8 @@ export function AiAdvisorScreen() {
   const [transferFromAccountId, setTransferFromAccountId] = useState<string | null>(null);
   const [transferToAccountId, setTransferToAccountId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [fallbackApprovalSignature, setFallbackApprovalSignature] = useState<string | null>(null);
   const [isRewardGatePending, setIsRewardGatePending] = useState(false);
+  const responseDiagnosticsKeyRef = useRef<string | null>(null);
 
   const currentMonth = useMemo(() => getCurrentMonthString(), []);
   const insightsQuery = useAdvisorInsights(month);
@@ -239,18 +239,18 @@ export function AiAdvisorScreen() {
   const insights = insightsQuery.data ?? null;
   const currency = insights?.currency ?? user?.baseCurrency ?? 'TRY';
   const notAvailableLabel = t('common.notAvailable');
-  const fallbackSignature = useMemo(
-    () => (insights ? `${insights.month}|${insights.generatedAt}|${insights.modeReason ?? 'none'}` : null),
-    [insights],
-  );
-  const fallbackNeedsApproval = Boolean(
-    insights &&
-    insights.mode === 'fallback' &&
-    fallbackSignature &&
-    fallbackApprovalSignature !== fallbackSignature,
-  );
   const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || 'http://localhost:4000';
   const providerName = insights?.provider ?? notAvailableLabel;
+  const hasAdviceSummary = Boolean(insights?.advice.summary?.trim());
+  const hasAdviceContent = Boolean(
+    insights && (
+      hasAdviceSummary ||
+      insights.advice.topFindings.length > 0 ||
+      insights.advice.suggestedActions.length > 0 ||
+      insights.advice.warnings.length > 0 ||
+      insights.advice.tips.length > 0
+    ),
+  );
 
   useEffect(() => {
     if (!insights) {
@@ -286,16 +286,6 @@ export function AiAdvisorScreen() {
   }, [accountsQuery.data]);
 
   useEffect(() => {
-    if (!insights || !fallbackSignature) {
-      return;
-    }
-
-    if (insights.mode === 'ai') {
-      setFallbackApprovalSignature(fallbackSignature);
-    }
-  }, [fallbackSignature, insights]);
-
-  useEffect(() => {
     if (!__DEV__ || !insights) {
       return;
     }
@@ -310,6 +300,23 @@ export function AiAdvisorScreen() {
       requestTimeoutMs: mobileEnv.apiTimeoutMs,
     });
   }, [apiBaseUrl, insights, month, providerName]);
+
+  useEffect(() => {
+    if (!__DEV__ || !insights) {
+      return;
+    }
+
+    const diagnosticsKey = `${insights.month}|${insights.generatedAt}`;
+    if (responseDiagnosticsKeyRef.current === diagnosticsKey) {
+      return;
+    }
+
+    responseDiagnosticsKeyRef.current = diagnosticsKey;
+    console.info('[advisor][mobile-diagnostics][response]', {
+      statusCode: 200,
+      hasAdviceSummary,
+    });
+  }, [hasAdviceSummary, insights]);
 
   useEffect(() => {
     if (!__DEV__ || !insightsQuery.error) {
@@ -768,47 +775,17 @@ export function AiAdvisorScreen() {
     );
   }
 
-  if (fallbackNeedsApproval && fallbackSignature) {
+  if (!hasAdviceContent) {
     return (
       <ScreenContainer dark={dark}>
         <Card dark={dark} style={styles.errorCard}>
-          <AppIcon name="warning-outline" size="lg" tone="expense" />
-          <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('aiAdvisor.fallback.title')}</Text>
-          <Text style={[styles.errorText, { color: theme.colors.expense }]}>
-            {fallbackReasonMessage || t('aiAdvisor.fallback.reason.provider_unknown_error')}
-          </Text>
+          <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('aiAdvisor.state.noData')}</Text>
           <PrimaryButton
-            label={t('aiAdvisor.fallback.tryAgain')}
+            label={t('common.retry')}
             iconName="refresh-outline"
-            loading={regenerateMutation.isPending || isRewardGatePending}
-            onPress={handleRegenerate}
-          />
-          <PrimaryButton
-            label={t('aiAdvisor.fallback.useBasicAdvice')}
-            onPress={() => setFallbackApprovalSignature(fallbackSignature)}
+            onPress={handleRetry}
           />
         </Card>
-
-        {__DEV__ ? (
-          <Card dark={dark} style={styles.debugCard}>
-            <Text style={[styles.debugTitle, { color: theme.colors.text }]}>{t('aiAdvisor.debug.title')}</Text>
-            <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
-              {t('aiAdvisor.debug.apiBaseUrl', { value: apiBaseUrl })}
-            </Text>
-            <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
-              {t('aiAdvisor.debug.provider', { value: providerName })}
-            </Text>
-            <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
-              {t('aiAdvisor.debug.mode', { value: insights.mode })}
-            </Text>
-            <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
-              {t('aiAdvisor.debug.modeReason', { value: insights.modeReason ?? notAvailableLabel })}
-            </Text>
-            <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
-              {t('aiAdvisor.debug.providerStatus', { value: insights.providerStatus ?? notAvailableLabel })}
-            </Text>
-          </Card>
-        ) : null}
       </ScreenContainer>
     );
   }
@@ -855,6 +832,24 @@ export function AiAdvisorScreen() {
             </Text>
           </View>
 
+          {insights.mode === 'fallback' ? (
+            <View
+              style={[
+                styles.panelCard,
+                styles.warningPanel,
+                {
+                  backgroundColor: dark ? 'rgba(245, 158, 11, 0.14)' : '#FFFBEB',
+                  borderColor: dark ? 'rgba(245, 158, 11, 0.35)' : '#FCD34D',
+                },
+              ]}
+            >
+              <Text style={[styles.rowTitle, { color: theme.colors.text }]}>{t('aiAdvisor.fallback.useBasicAdvice')}</Text>
+              <Text style={[styles.rowHint, { color: theme.colors.textMuted }]}>
+                {fallbackReasonMessage || t('aiAdvisor.fallback.reason.provider_unknown_error')}
+              </Text>
+            </View>
+          ) : null}
+
           {__DEV__ ? (
             <View style={styles.devModeWrap}>
               <View style={styles.devModeRow}>
@@ -898,6 +893,10 @@ export function AiAdvisorScreen() {
 
         <Section dark={dark} title={t('aiAdvisor.primary.keyInsights')}>
           <Card dark={dark} style={styles.panelCard}>
+            <Text style={[styles.panelBodyText, { color: theme.colors.textMuted }]}>
+              {insights.advice.summary}
+            </Text>
+
             {insights.advice.topFindings.length > 0 ? (
               <BulletList items={insights.advice.topFindings} tone="primary" />
             ) : (
