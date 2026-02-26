@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   Pressable,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { makeRedirectUri } from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import * as Crypto from 'expo-crypto';
 
@@ -119,6 +121,13 @@ export function LoginScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeOauthProvider, setActiveOauthProvider] = useState<OauthProvider | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const googleRedirectUri = useMemo(
+    () =>
+      makeRedirectUri({
+        scheme: 'mintly',
+      }),
+    [],
+  );
 
   const [googleRequest, , promptGoogleAsync] = Google.useIdTokenAuthRequest({
     clientId: mobileEnv.googleOauthWebClientId ?? FALLBACK_GOOGLE_CLIENT_ID,
@@ -126,12 +135,28 @@ export function LoginScreen({ navigation }: Props) {
     iosClientId: mobileEnv.googleOauthIosClientId ?? mobileEnv.googleOauthWebClientId,
     androidClientId: mobileEnv.googleOauthAndroidClientId ?? mobileEnv.googleOauthWebClientId,
     selectAccount: true,
+    redirectUri: googleRedirectUri,
   });
 
   const googleConfigured =
     Boolean(mobileEnv.googleOauthWebClientId) ||
     Boolean(mobileEnv.googleOauthIosClientId) ||
     Boolean(mobileEnv.googleOauthAndroidClientId);
+  const googleRequestReady = googleConfigured && Boolean(googleRequest);
+
+  useEffect(() => {
+    if (!__DEV__) {
+      return;
+    }
+
+    console.info('[auth][google][dev-config]', {
+      hasWebClientId: Boolean(mobileEnv.googleOauthWebClientId),
+      hasIosClientId: Boolean(mobileEnv.googleOauthIosClientId),
+      hasAndroidClientId: Boolean(mobileEnv.googleOauthAndroidClientId),
+      requestReady: Boolean(googleRequest),
+      redirectUriSet: Boolean(googleRedirectUri),
+    });
+  }, [googleRedirectUri, googleRequest]);
 
   const submit = async () => {
     if (isSubmitting || activeOauthProvider) {
@@ -172,8 +197,11 @@ export function LoginScreen({ navigation }: Props) {
     clearAuthError();
     setRequestError(null);
 
-    if (!googleConfigured || !googleRequest) {
+    if (!googleRequestReady || !googleRequest) {
       setRequestError(t('auth.login.oauth.googleUnavailable'));
+      if (__DEV__) {
+        Alert.alert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.googleUnavailable'));
+      }
       return;
     }
 
@@ -184,8 +212,14 @@ export function LoginScreen({ navigation }: Props) {
       const idToken = extractGoogleIdToken(result);
 
       if (!idToken) {
-        if ((result as { type?: string }).type !== 'dismiss' && (result as { type?: string }).type !== 'cancel') {
+        const resultType = (result as { type?: string }).type;
+        if (resultType !== 'dismiss' && resultType !== 'cancel') {
           setRequestError(t('auth.login.oauth.tokenMissing'));
+          if (__DEV__) {
+            Alert.alert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.tokenMissing'));
+          }
+        } else if (__DEV__) {
+          Alert.alert(t('auth.login.oauth.googleCta'), t('common.cancel'));
         }
         return;
       }
@@ -200,6 +234,9 @@ export function LoginScreen({ navigation }: Props) {
       }
     } catch (error) {
       setRequestError(apiErrorText(error));
+      if (__DEV__) {
+        Alert.alert(t('auth.login.oauth.googleCta'), apiErrorText(error));
+      }
     } finally {
       setActiveOauthProvider(null);
     }
@@ -398,7 +435,7 @@ export function LoginScreen({ navigation }: Props) {
       <View style={styles.socialRow}>
         <Pressable
           accessibilityRole="button"
-          disabled={isBusy || !googleConfigured}
+          disabled={isBusy || !googleRequestReady}
           onPress={() => {
             void submitGoogle();
           }}
@@ -408,7 +445,7 @@ export function LoginScreen({ navigation }: Props) {
               backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.04)' : theme.colors.surface,
               borderColor: theme.colors.border,
             },
-            (pressed || isBusy || !googleConfigured) && styles.socialButtonPressed,
+            (pressed || isBusy || !googleRequestReady) && styles.socialButtonPressed,
           ]}
         >
           {activeOauthProvider === 'google' ? (
@@ -448,6 +485,12 @@ export function LoginScreen({ navigation }: Props) {
           </Pressable>
         ) : null}
       </View>
+
+      {__DEV__ && !googleRequestReady ? (
+        <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
+          {googleConfigured ? t('common.loadingShort') : t('auth.login.oauth.googleUnavailable')}
+        </Text>
+      ) : null}
     </AuthLayout>
   );
 }

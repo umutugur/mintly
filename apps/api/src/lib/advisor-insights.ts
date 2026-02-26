@@ -496,21 +496,142 @@ function resolveAnchorDate(monthEndExclusive: Date): Date {
   return todayUtc;
 }
 
+function tryParseJsonCandidate(value: string): unknown | undefined {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
+function extractFirstJsonObject(value: string): string | null {
+  const start = value.indexOf('{');
+  if (start === -1) {
+    return null;
+  }
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = start; index < value.length; index += 1) {
+    const char = value[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === '{') {
+      depth += 1;
+      continue;
+    }
+
+    if (char === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        return value.slice(start, index + 1);
+      }
+    }
+  }
+
+  return null;
+}
+
+function parseJsonFromUnknown(value: unknown, depth = 0): unknown | undefined {
+  if (depth > 4) {
+    return undefined;
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return undefined;
+    }
+
+    const directParsed = tryParseJsonCandidate(trimmed);
+    if (directParsed !== undefined) {
+      const recursive = parseJsonFromUnknown(directParsed, depth + 1);
+      return recursive ?? directParsed;
+    }
+
+    const objectCandidate = extractFirstJsonObject(trimmed);
+    if (!objectCandidate) {
+      return undefined;
+    }
+
+    const objectParsed = tryParseJsonCandidate(objectCandidate);
+    if (objectParsed !== undefined) {
+      const recursive = parseJsonFromUnknown(objectParsed, depth + 1);
+      return recursive ?? objectParsed;
+    }
+
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const parsed = parseJsonFromUnknown(item, depth + 1);
+      if (parsed !== undefined) {
+        return parsed;
+      }
+    }
+    return undefined;
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    const nestedKeys = [
+      'result',
+      'response',
+      'output_text',
+      'generated_text',
+      'content',
+      'message',
+      'text',
+      'completion',
+    ] as const;
+
+    for (const key of nestedKeys) {
+      const parsed = parseJsonFromUnknown(record[key], depth + 1);
+      if (parsed !== undefined) {
+        return parsed;
+      }
+    }
+  }
+
+  return undefined;
+}
+
 function parseStrictJsonPayload(text: string): unknown {
   const trimmed = text.trim();
   const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   const candidate = fencedMatch ? fencedMatch[1] : trimmed;
 
-  try {
-    return JSON.parse(candidate);
-  } catch {
-    const objectMatch = candidate.match(/\{[\s\S]*\}/);
-    if (!objectMatch) {
-      throw new Error('No JSON object found');
-    }
-
-    return JSON.parse(objectMatch[0]);
+  const parsed = parseJsonFromUnknown(candidate);
+  if (parsed !== undefined) {
+    return parsed;
   }
+
+  throw new Error('No JSON object found');
 }
 
 function mapCloudflareErrorToFallbackReason(error: CloudflareProviderError): FallbackReason {

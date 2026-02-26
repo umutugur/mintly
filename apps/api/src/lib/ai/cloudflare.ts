@@ -533,6 +533,30 @@ function collectModelNames(payload: unknown): string[] {
 }
 
 export function extractCloudflareAssistantText(payload: unknown): string {
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim();
+    if (!trimmed) {
+      throw new Error('Cloudflare AI response payload is empty');
+    }
+
+    try {
+      return extractCloudflareAssistantText(JSON.parse(trimmed) as unknown);
+    } catch {
+      const direct = normalizeTextContent(trimmed);
+      if (direct) {
+        return direct;
+      }
+    }
+  }
+
+  if (Array.isArray(payload)) {
+    const extractedFromArray = extractFromAnyResult(payload);
+    if (extractedFromArray) {
+      return extractedFromArray;
+    }
+    throw new Error('Cloudflare AI response payload is empty');
+  }
+
   if (!isRecord(payload)) {
     throw new Error('Cloudflare AI response payload is empty');
   }
@@ -542,13 +566,20 @@ export function extractCloudflareAssistantText(payload: unknown): string {
   // Cloudflare Workers AI usually nests text in `result`, but `result` can be a record,
   // array, or direct string depending on the model / endpoint behavior.
   const result = data.result;
-  if (result === null || result === undefined) {
-    throw new Error('Cloudflare AI response payload does not include result');
+  if (result !== null && result !== undefined) {
+    const extractedText = extractFromAnyResult(result);
+    if (extractedText) {
+      return extractedText;
+    }
   }
 
-  const extractedText = extractFromAnyResult(result);
-  if (extractedText) {
-    return extractedText;
+  const extractedFromRoot = extractFromAnyResult(payload);
+  if (extractedFromRoot) {
+    return extractedFromRoot;
+  }
+
+  if (result === null || result === undefined) {
+    throw new Error('Cloudflare AI response payload does not include result');
   }
 
   throw new Error('Cloudflare AI response did not contain assistant text');
@@ -816,10 +847,10 @@ export async function generateCloudflareText(
             : status >= 400 && status < 500
               ? 'request_invalid'
               : 'http_error';
-        const fallbackBodyDetail =
-          parsedError.message ??
-          (typeof payload === 'string' ? payload : rawBody);
-        const detail = summarizeDetail(fallbackBodyDetail);
+        const keyDiag = getNestedResultKeys(payload);
+        const detail = summarizeDetail(
+          parsedError.message ?? `cloudflare provider returned status ${status}`,
+        );
 
         input.onDiagnostic?.({
           stage: reason === 'request_invalid' ? 'provider_request_invalid' : 'provider_error',
@@ -832,6 +863,9 @@ export async function generateCloudflareText(
           reason,
           errorCode: parsedError.code ?? undefined,
           detail,
+          responseTopLevelKeys: keyDiag.responseTopLevelKeys,
+          responseResultKeys: keyDiag.responseResultKeys,
+          responseNestedResultKeys: keyDiag.responseNestedResultKeys,
           payloadKeys,
           retryAfterSec,
         });

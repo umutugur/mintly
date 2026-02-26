@@ -5,8 +5,11 @@
   "scripts": {
     "dev": "expo start --port 8089",
     "start": "expo start",
+    "start:clear": "expo start --clear",
     "android": "expo run:android",
+    "android:clean": "expo run:android --no-build-cache --no-bundler",
     "ios": "expo run:ios",
+    "ios:clean": "expo run:ios --no-build-cache --no-bundler",
     "web": "expo start --web",
     "lint": "pnpm lint:i18n",
     "lint:i18n": "pnpm run i18n:check && eslint --config ../../.eslintrc.cjs --ext .ts,.tsx src --max-warnings=0",

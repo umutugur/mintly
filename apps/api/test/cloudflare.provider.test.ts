@@ -95,6 +95,43 @@ describe('Cloudflare provider response parser', () => {
     expect(text).toBe('{"summary":"nested"}');
   });
 
+  it('extracts text when assistant content exists at root payload keys', () => {
+    const text = extractCloudflareAssistantText({
+      success: true,
+      response: {
+        text: '{"summary":"root-response"}',
+      },
+      errors: [],
+    });
+
+    expect(text).toBe('{"summary":"root-response"}');
+  });
+
+  it('extracts text from stringified JSON payload', () => {
+    const text = extractCloudflareAssistantText(
+      JSON.stringify({
+        success: true,
+        result: {
+          output_text: '{"summary":"stringified"}',
+        },
+        errors: [],
+      }),
+    );
+
+    expect(text).toBe('{"summary":"stringified"}');
+  });
+
+  it('extracts text from array payload shape', () => {
+    const text = extractCloudflareAssistantText([
+      {
+        role: 'assistant',
+        content: [{ text: '{"summary":"array-shape"}' }],
+      },
+    ]);
+
+    expect(text).toBe('{"summary":"array-shape"}');
+  });
+
   it('throws on unsupported payload shape', () => {
     expect(() =>
       extractCloudflareAssistantText({

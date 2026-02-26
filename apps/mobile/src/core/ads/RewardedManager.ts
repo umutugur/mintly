@@ -1,11 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import {
-  AdEventType,
-  RewardedAd,
-  RewardedAdEventType,
-  TestIds,
-} from 'react-native-google-mobile-ads';
+
+import { getGoogleMobileAdsModule } from './mobileAdsModule';
 
 const IOS_REWARDED_UNIT_ID = 'ca-app-pub-6114268066977057/7381135567';
 const ANDROID_REWARDED_UNIT_ID = 'ca-app-pub-6114268066977057/1278761649';
@@ -14,8 +10,9 @@ const ADVISOR_USAGE_STORAGE_KEY = 'mintly:advisor-insight-free-usage:v1';
 type AdvisorUsageMap = Record<string, string>;
 
 function getRewardedUnitId(): string {
+  const googleMobileAds = getGoogleMobileAdsModule();
   if (__DEV__) {
-    return TestIds.REWARDED;
+    return googleMobileAds?.TestIds.REWARDED ?? 'test-rewarded-unavailable';
   }
 
   return Platform.OS === 'ios' ? IOS_REWARDED_UNIT_ID : ANDROID_REWARDED_UNIT_ID;
@@ -70,7 +67,12 @@ export async function markDailyAdvisorFreeUsage(userId: string, dayKey: string):
 }
 
 export async function showRewardedInsightAd(): Promise<boolean> {
-  const rewardedAd = RewardedAd.createForAdRequest(getRewardedUnitId(), {
+  const googleMobileAds = getGoogleMobileAdsModule();
+  if (!googleMobileAds) {
+    return false;
+  }
+
+  const rewardedAd = googleMobileAds.RewardedAd.createForAdRequest(getRewardedUnitId(), {
     requestNonPersonalizedAdsOnly: true,
   });
 
@@ -94,7 +96,7 @@ export async function showRewardedInsightAd(): Promise<boolean> {
     };
 
     cleanupHandlers.push(
-      rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
+      rewardedAd.addAdEventListener(googleMobileAds.RewardedAdEventType.LOADED, () => {
         try {
           rewardedAd.show();
         } catch {
@@ -104,19 +106,19 @@ export async function showRewardedInsightAd(): Promise<boolean> {
     );
 
     cleanupHandlers.push(
-      rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+      rewardedAd.addAdEventListener(googleMobileAds.RewardedAdEventType.EARNED_REWARD, () => {
         earnedReward = true;
       }),
     );
 
     cleanupHandlers.push(
-      rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
+      rewardedAd.addAdEventListener(googleMobileAds.AdEventType.CLOSED, () => {
         finalize(earnedReward);
       }),
     );
 
     cleanupHandlers.push(
-      rewardedAd.addAdEventListener(AdEventType.ERROR, () => {
+      rewardedAd.addAdEventListener(googleMobileAds.AdEventType.ERROR, () => {
         finalize(false);
       }),
     );
