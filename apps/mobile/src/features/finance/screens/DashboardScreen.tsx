@@ -16,6 +16,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
 import { AdBanner } from '@core/ads/AdBanner';
+import { getCategoryLabel } from '@features/finance/categories/categoryCatalog';
 import { useI18n } from '@shared/i18n';
 import { Card, PrimaryButton, ScreenContainer } from '@shared/ui';
 import type { AnalyticsStackParamList } from '@core/navigation/stacks/AnalyticsStack';
@@ -402,10 +403,6 @@ export function DashboardScreen() {
     queryKey: financeQueryKeys.dashboard.recent(),
     queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
   });
-  const categoriesQuery = useQuery({
-    queryKey: financeQueryKeys.categories.list(),
-    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
-  });
 
   const currency = useMemo(() => {
     if (dashboardQuery.data?.balances[0]?.currency) {
@@ -422,13 +419,6 @@ export function DashboardScreen() {
     }
     return map;
   }, [dashboardQuery.data?.balances]);
-  const categoryNameById = useMemo(() => {
-    const map: Record<string, string> = {};
-    for (const category of categoriesQuery.data?.categories ?? []) {
-      map[category.id] = category.name;
-    }
-    return map;
-  }, [categoriesQuery.data?.categories]);
 
   const profileName = useMemo(() => resolveUserDisplayName(user), [user]);
 
@@ -543,15 +533,19 @@ export function DashboardScreen() {
 
       const categoryLabel = item.kind === 'transfer'
         ? t('dashboard.transaction.transferContext')
-        : item.categoryId
-          ? (categoryNameById[item.categoryId]?.trim() || t('dashboard.transaction.uncategorized'))
+        : item.categoryKey
+          ? (getCategoryLabel(item.categoryKey, locale) || t('dashboard.transaction.uncategorized'))
           : t('dashboard.transaction.uncategorized');
 
       const title =
         item.description?.trim() ||
         (item.kind === 'transfer'
           ? t('dashboard.transaction.transferTitle')
-          : categoryLabel);
+          : item.categoryKey
+            ? categoryLabel
+            : (item.type === 'income'
+              ? t('dashboard.transaction.incomeTitle')
+              : t('dashboard.transaction.expenseTitle')));
 
       const subtitle = item.kind === 'transfer'
         ? `${formatOccurredAt(item.occurredAt, locale, t)} • ${context}`
@@ -568,7 +562,7 @@ export function DashboardScreen() {
         />
       );
     },
-    [accountNameById, categoryNameById, locale, mode, t],
+    [accountNameById, locale, mode, t],
   );
 
   if (dashboardQuery.isLoading) {

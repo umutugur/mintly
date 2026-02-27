@@ -20,7 +20,7 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { AddStackParamList } from '@core/navigation/stacks/AddStack';
-import { buildSystemCategoryOptions } from '@features/finance/utils/categoryCatalog';
+import { listCategories } from '@features/finance/categories/categoryCatalog';
 import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
@@ -35,7 +35,7 @@ const typeOptions: TransactionType[] = ['expense', 'income'];
 const transactionFormSchema = z.object({
   type: z.enum(typeOptions),
   accountId: z.string().trim().min(1, 'errors.validation.selectAccount'),
-  categoryId: z.string().trim().min(1, 'errors.validation.selectCategory'),
+  categoryKey: z.string().trim().min(1, 'errors.validation.selectCategory'),
   amount: z
     .string()
     .trim()
@@ -57,7 +57,7 @@ type TransactionFormValues = z.infer<typeof transactionFormSchema>;
 export function AddTransactionScreen() {
   const { withAuth } = useAuth();
   const { theme, mode } = useTheme();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
   const route = useRoute<RouteProp<AddStackParamList, 'AddTransaction'>>();
   const navigation = useNavigation();
@@ -68,17 +68,12 @@ export function AddTransactionScreen() {
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
 
-  const categoriesQuery = useQuery({
-    queryKey: financeQueryKeys.categories.list(),
-    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
-  });
-
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       type: 'expense',
       accountId: '',
-      categoryId: '',
+      categoryKey: '',
       amount: '',
       description: '',
       occurredAt: new Date().toISOString(),
@@ -87,7 +82,7 @@ export function AddTransactionScreen() {
 
   const selectedType = form.watch('type');
   const selectedAccountId = form.watch('accountId');
-  const selectedCategoryValue = form.watch('categoryId');
+  const selectedCategoryValue = form.watch('categoryKey');
 
   const selectedAccount = useMemo(
     () => accountsQuery.data?.accounts.find((account) => account.id === selectedAccountId) ?? null,
@@ -95,12 +90,12 @@ export function AddTransactionScreen() {
   );
 
   const categoryOptions = useMemo(
-    () => buildSystemCategoryOptions(categoriesQuery.data?.categories ?? [], selectedType, t),
-    [categoriesQuery.data?.categories, selectedType, t],
+    () => listCategories(selectedType, locale),
+    [locale, selectedType],
   );
 
   const selectedCategory = useMemo(
-    () => categoryOptions.find((option) => option.value === selectedCategoryValue) ?? null,
+    () => categoryOptions.find((option) => option.key === selectedCategoryValue) ?? null,
     [categoryOptions, selectedCategoryValue],
   );
 
@@ -109,9 +104,9 @@ export function AddTransactionScreen() {
       return;
     }
 
-    const exists = categoryOptions.some((category) => category.value === selectedCategoryValue);
+    const exists = categoryOptions.some((category) => category.key === selectedCategoryValue);
     if (!exists) {
-      form.setValue('categoryId', '');
+      form.setValue('categoryKey', '');
     }
   }, [categoryOptions, form, selectedCategoryValue]);
 
@@ -146,16 +141,16 @@ export function AddTransactionScreen() {
     mutationFn: (values: TransactionFormValues) => {
       const amount = Number(values.amount);
       const occurredAt = new Date(values.occurredAt).toISOString();
-      const categoryId = selectedCategory?.backendId;
+      const categoryKey = selectedCategory?.key ?? values.categoryKey;
 
-      if (!categoryId) {
+      if (!categoryKey) {
         throw new Error(t('errors.validation.selectCategory'));
       }
 
       const payload = transactionCreateInputSchema.parse({
         type: values.type,
         accountId: values.accountId,
-        categoryId,
+        categoryKey,
         amount,
         currency: selectedAccount?.currency ?? 'TRY',
         description: values.description?.trim() || undefined,
@@ -165,7 +160,7 @@ export function AddTransactionScreen() {
       if (__DEV__) {
         console.info('[transactions][create][dev-payload]', {
           keys: Object.keys(payload).sort(),
-          hasCategoryId: Boolean(payload.categoryId),
+          hasCategoryKey: Boolean(payload.categoryKey),
           hasDescription: Boolean(payload.description),
           selectedCategoryOptionPresent: Boolean(selectedCategory),
         });
@@ -188,7 +183,7 @@ export function AddTransactionScreen() {
       form.reset({
         type: 'expense',
         accountId: '',
-        categoryId: '',
+        categoryKey: '',
         amount: '',
         description: '',
         occurredAt: new Date().toISOString(),
@@ -201,7 +196,7 @@ export function AddTransactionScreen() {
     },
   });
 
-  if (accountsQuery.isLoading || categoriesQuery.isLoading) {
+  if (accountsQuery.isLoading) {
     return (
       <ScreenContainer dark={mode === 'dark'}>
         <Card dark={mode === 'dark'} style={styles.stateCard}>
@@ -214,8 +209,8 @@ export function AddTransactionScreen() {
     );
   }
 
-  if (accountsQuery.isError || categoriesQuery.isError) {
-    const error = accountsQuery.error ?? categoriesQuery.error;
+  if (accountsQuery.isError) {
+    const error = accountsQuery.error;
 
     return (
       <ScreenContainer dark={mode === 'dark'}>
@@ -228,7 +223,6 @@ export function AddTransactionScreen() {
             label={t('common.retry')}
             onPress={() => {
               void accountsQuery.refetch();
-              void categoriesQuery.refetch();
             }}
           />
         </Card>
@@ -375,17 +369,17 @@ export function AddTransactionScreen() {
           </Text>
           <Controller
             control={form.control}
-            name="categoryId"
+            name="categoryKey"
             render={({ field: { value, onChange } }) => (
               <View style={styles.choiceWrap}>
                 {categoryOptions.map((category) => {
-                  const selected = value === category.value;
+                  const selected = value === category.key;
 
                   return (
                     <Pressable
-                      key={category.value}
+                      key={category.key}
                       accessibilityRole="button"
-                      onPress={() => onChange(category.value)}
+                      onPress={() => onChange(category.key)}
                       style={[
                         styles.choiceChip,
                         {
@@ -401,7 +395,7 @@ export function AddTransactionScreen() {
                           ]}
                       >
                         <AppIcon
-                          name={category.iconName}
+                          name={category.icon}
                           size="sm"
                           color={selected ? theme.colors.primary : theme.colors.textMuted}
                         />
@@ -419,9 +413,9 @@ export function AddTransactionScreen() {
               </View>
             )}
           />
-          {form.formState.errors.categoryId ? (
+          {form.formState.errors.categoryKey ? (
             <Text style={[styles.inlineError, { color: theme.colors.expense }]}>
-              {t(form.formState.errors.categoryId.message ?? '')}
+              {t(form.formState.errors.categoryKey.message ?? '')}
             </Text>
           ) : null}
 

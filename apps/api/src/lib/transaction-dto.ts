@@ -13,6 +13,7 @@ export function toTransactionDto(transaction: TransactionDocument): Transaction 
     id: transaction.id,
     accountId: transaction.accountId.toString(),
     categoryId: transaction.categoryId ? transaction.categoryId.toString() : null,
+    categoryKey: transaction.categoryKey ?? null,
     type: transaction.type,
     kind: transaction.kind,
     transferGroupId: transaction.transferGroupId ? transaction.transferGroupId.toString() : null,

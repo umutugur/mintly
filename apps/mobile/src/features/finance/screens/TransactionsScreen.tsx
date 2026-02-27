@@ -12,13 +12,14 @@ import {
 } from 'react-native';
 
 import type { Transaction } from '@mintly/shared';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
+import { getCategoryIcon, getCategoryLabel } from '@features/finance/categories/categoryCatalog';
 import { AppIcon, Card, PrimaryButton, ScreenContainer, TransactionRow } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { RootTabParamList } from '@core/navigation/types';
@@ -152,28 +153,31 @@ function buildListItems(transactions: Transaction[], t: (key: string) => string,
 
 function getTransactionCategoryLabel(
   transaction: Transaction,
-  categoryNameById: Record<string, string>,
+  locale: string,
   t: (key: string) => string,
 ): string {
   if (transaction.kind === 'transfer') {
     return t('transactions.row.transferTitle');
   }
 
-  if (!transaction.categoryId) {
-    return t('transactions.row.uncategorized');
+  if (!transaction.categoryKey) {
+    return '';
   }
 
-  const categoryName = categoryNameById[transaction.categoryId];
-  if (!categoryName || categoryName.trim().length === 0) {
-    return t('transactions.row.uncategorized');
-  }
+  return getCategoryLabel(transaction.categoryKey, locale);
+}
 
-  return categoryName.trim();
+function getTransactionCategoryLabelOrFallback(
+  transaction: Transaction,
+  locale: string,
+  t: (key: string) => string,
+): string {
+  return getTransactionCategoryLabel(transaction, locale, t) || t('transactions.row.uncategorized');
 }
 
 function getTransactionTitle(
   transaction: Transaction,
-  categoryNameById: Record<string, string>,
+  locale: string,
   t: (key: string) => string,
 ): string {
   if (transaction.description?.trim()) {
@@ -184,8 +188,12 @@ function getTransactionTitle(
     return t('transactions.row.transferTitle');
   }
 
-  const categoryLabel = getTransactionCategoryLabel(transaction, categoryNameById, t);
-  return categoryLabel || (transaction.type === 'income' ? t('transactions.row.incomeTitle') : t('transactions.row.expenseTitle'));
+  const categoryLabel = getTransactionCategoryLabel(transaction, locale, t);
+  if (categoryLabel) {
+    return categoryLabel;
+  }
+
+  return transaction.type === 'income' ? t('transactions.row.incomeTitle') : t('transactions.row.expenseTitle');
 }
 
 function getCategoryHint(
@@ -206,34 +214,16 @@ function getCategoryHint(
 
 function getCategoryIconName(
   transaction: Transaction,
-  categoryLabel: string,
 ): Parameters<typeof AppIcon>[0]['name'] {
   if (transaction.kind === 'transfer') {
     return 'swap-horizontal-outline';
   }
 
-  if (transaction.type === 'income') {
-    return 'arrow-down-circle-outline';
+  if (transaction.categoryKey) {
+    return getCategoryIcon(transaction.categoryKey);
   }
 
-  const categoryText = categoryLabel.toLowerCase();
-  const description = transaction.description?.toLowerCase() ?? '';
-  const fullText = `${categoryText} ${description}`;
-
-  if (fullText.includes('market') || fullText.includes('migros') || fullText.includes('carrefour')) {
-    return 'cart-outline';
-  }
-  if (fullText.includes('coffee') || fullText.includes('food') || fullText.includes('yemek')) {
-    return 'restaurant-outline';
-  }
-  if (fullText.includes('fuel') || fullText.includes('akaryak')) {
-    return 'car-outline';
-  }
-  if (fullText.includes('rent') || fullText.includes('kira')) {
-    return 'home-outline';
-  }
-
-  return 'receipt-outline';
+  return transaction.type === 'income' ? 'arrow-down-circle-outline' : 'receipt-outline';
 }
 
 function LoadingSkeleton() {
@@ -294,17 +284,6 @@ export function TransactionsScreen() {
       }).navigate('AddTab', { screen: 'AddTransaction' });
     }
   }, [navigation]);
-  const categoriesQuery = useQuery({
-    queryKey: financeQueryKeys.categories.list(),
-    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
-  });
-  const categoryNameById = useMemo(() => {
-    const map: Record<string, string> = {};
-    for (const category of categoriesQuery.data?.categories ?? []) {
-      map[category.id] = category.name;
-    }
-    return map;
-  }, [categoriesQuery.data?.categories]);
 
   const deleteTransactionMutation = useMutation({
     mutationFn: (transactionId: string) =>
@@ -342,7 +321,7 @@ export function TransactionsScreen() {
 
       Alert.alert(
         t('tx.delete.confirmTitle'),
-        t('tx.delete.confirmBody', { title: getTransactionTitle(transaction, categoryNameById, t) }),
+        t('tx.delete.confirmBody', { title: getTransactionTitle(transaction, locale, t) }),
         [
           {
             text: t('common.cancel'),
@@ -358,7 +337,7 @@ export function TransactionsScreen() {
         ],
       );
     },
-    [categoryNameById, deleteTransactionMutation, t],
+    [deleteTransactionMutation, locale, t],
   );
 
   const confirmDeleteTransfer = useCallback(
@@ -442,7 +421,7 @@ export function TransactionsScreen() {
     console.info('[transactions][dev-category-roundtrip]', {
       count: transactions.length,
       firstTransactionId: first?.id ?? null,
-      firstCategoryIdPresent: Boolean(first?.categoryId),
+      firstCategoryKeyPresent: Boolean(first?.categoryKey),
     });
   }, [transactions]);
 
@@ -482,12 +461,12 @@ export function TransactionsScreen() {
       }
 
       const transaction = item.transaction;
-      const categoryLabel = getTransactionCategoryLabel(transaction, categoryNameById, t);
+      const categoryLabel = getTransactionCategoryLabelOrFallback(transaction, locale, t);
 
       return (
         <TransactionRow
           amount={formatSignedAmount(transaction.amount, transaction.currency, transaction.type, locale)}
-          categoryIconName={getCategoryIconName(transaction, categoryLabel)}
+          categoryIconName={getCategoryIconName(transaction)}
           date={getCategoryHint(transaction, categoryLabel, t, locale)}
           dark={mode === 'dark'}
           kind={transaction.kind}
@@ -498,12 +477,12 @@ export function TransactionsScreen() {
               ? navigation.navigate('TransactionDetail', { transactionId: transaction.id })
               : navigation.navigate('EditTransaction', { transactionId: transaction.id })
           }
-          title={getTransactionTitle(transaction, categoryNameById, t)}
+          title={getTransactionTitle(transaction, locale, t)}
           type={transaction.type}
         />
       );
     },
-    [categoryNameById, locale, mode, navigation, onTransactionRowLongPress, t, theme.colors.textMuted],
+    [locale, mode, navigation, onTransactionRowLongPress, t, theme.colors.textMuted],
   );
 
   if (transactionsQuery.isLoading) {

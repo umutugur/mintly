@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
+import { getCategoryLabel } from '@features/finance/categories/categoryCatalog';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { useAuth } from '@app/providers/AuthProvider';
 import { Card, ScreenContainer } from '@shared/ui';
@@ -76,11 +77,6 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
 
-  const categoriesQuery = useQuery({
-    queryKey: financeQueryKeys.categories.list(),
-    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
-  });
-
   const deleteTransactionMutation = useMutation({
     mutationFn: () => withAuth((token) => apiClient.deleteTransaction(transactionId, token)),
     onSuccess: async () => {
@@ -113,17 +109,6 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
     }
     return map;
   }, [accountsQuery.data?.accounts]);
-
-  const categoryById = useMemo(() => {
-    const map: Record<string, { name: string; type: string }> = {};
-    for (const category of categoriesQuery.data?.categories ?? []) {
-      map[category.id] = {
-        name: category.name,
-        type: category.type,
-      };
-    }
-    return map;
-  }, [categoriesQuery.data?.categories]);
 
   if (transactionQuery.isLoading) {
     return (
@@ -164,7 +149,11 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
   const title =
     transaction.description?.trim() ||
     (transaction.type === 'income' ? t('transactions.row.incomeTitle') : t('transactions.row.expenseTitle'));
-  const category = transaction.categoryId ? categoryById[transaction.categoryId] : undefined;
+  const categoryLabel = transaction.kind === 'transfer'
+    ? t('transactionDetail.fields.noCategory')
+    : transaction.categoryKey
+      ? getCategoryLabel(transaction.categoryKey, locale) || t('transactions.row.uncategorized')
+      : t('transactions.row.uncategorized');
   const accountName = accountNameById[transaction.accountId] ?? t('transactions.accountFallback');
   const isTransfer = transaction.kind === 'transfer';
 
@@ -295,7 +284,7 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
                 </Text>
               </View>
               <Text style={[styles.metaValue, { color: theme.colors.text }]}>
-                {category?.name ?? t('transactionDetail.fields.noCategory')}
+                {categoryLabel}
               </Text>
             </View>
 

@@ -38,6 +38,7 @@ function toRecurringDto(rule: RecurringRuleDocument): RecurringRule {
     kind: rule.kind,
     accountId: rule.accountId ? rule.accountId.toString() : null,
     categoryId: rule.categoryId ? rule.categoryId.toString() : null,
+    categoryKey: rule.categoryKey ?? null,
     type: rule.type ?? null,
     fromAccountId: rule.fromAccountId ? rule.fromAccountId.toString() : null,
     toAccountId: rule.toAccountId ? rule.toAccountId.toString() : null,
@@ -179,25 +180,25 @@ async function executeRecurringRun(
   scheduledFor: Date,
 ): Promise<Types.ObjectId[]> {
   if (rule.kind === 'normal') {
-    if (!rule.accountId || !rule.categoryId || !rule.type) {
+    if (!rule.accountId || !rule.type) {
       throw new ApiError({
         code: 'RECURRING_RULE_INVALID',
-        message: 'Recurring normal rule is missing account/category/type',
+        message: 'Recurring normal rule is missing account/type',
         statusCode: 400,
       });
     }
 
-    const [account, category] = await Promise.all([
-      resolveActiveAccount(rule.userId, rule.accountId),
-      resolveActiveCategory(rule.userId, rule.categoryId),
-    ]);
-
-    validateTransactionType(category.type, rule.type);
+    const account = await resolveActiveAccount(rule.userId, rule.accountId);
+    const category = rule.categoryId ? await resolveActiveCategory(rule.userId, rule.categoryId) : null;
+    if (category) {
+      validateTransactionType(category.type, rule.type);
+    }
 
     const transaction = await createNormalTransaction({
       userId: rule.userId,
       accountId: account._id,
-      categoryId: category._id,
+      categoryId: category?._id ?? null,
+      categoryKey: rule.categoryKey ?? null,
       type: rule.type,
       amount: rule.amount,
       currency: account.currency,
@@ -295,8 +296,21 @@ export function registerRecurringRoutes(app: FastifyInstance): void {
 
     if (input.kind === 'normal') {
       const account = await resolveActiveAccount(userId, parseObjectId(input.accountId, 'accountId'));
-      const category = await resolveActiveCategory(userId, parseObjectId(input.categoryId, 'categoryId'));
-      validateTransactionType(category.type, input.type);
+      const categoryId = input.categoryId ? parseObjectId(input.categoryId, 'categoryId') : null;
+
+      if (!categoryId && !input.categoryKey) {
+        throw new ApiError({
+          code: 'VALIDATION_ERROR',
+          message: '`categoryId` or `categoryKey` is required for normal recurring rules',
+          statusCode: 400,
+        });
+      }
+
+      if (categoryId) {
+        const category = await resolveActiveCategory(userId, categoryId);
+        validateTransactionType(category.type, input.type);
+      }
+
       if (account.deletedAt !== null) {
         throw new ApiError({
           code: 'ACCOUNT_NOT_FOUND',
@@ -339,7 +353,11 @@ export function registerRecurringRoutes(app: FastifyInstance): void {
       userId,
       kind: input.kind,
       accountId: input.kind === 'normal' ? parseObjectId(input.accountId, 'accountId') : null,
-      categoryId: input.kind === 'normal' ? parseObjectId(input.categoryId, 'categoryId') : null,
+      categoryId:
+        input.kind === 'normal' && input.categoryId
+          ? parseObjectId(input.categoryId, 'categoryId')
+          : null,
+      categoryKey: input.kind === 'normal' ? input.categoryKey ?? null : null,
       type: input.kind === 'normal' ? input.type : null,
       fromAccountId:
         input.kind === 'transfer' ? parseObjectId(input.fromAccountId, 'fromAccountId') : null,
@@ -386,6 +404,21 @@ export function registerRecurringRoutes(app: FastifyInstance): void {
     }
     if (input.description !== undefined) {
       rule.description = input.description && input.description.length > 0 ? input.description : null;
+    }
+    if (input.categoryId !== undefined && rule.kind === 'normal') {
+      if (input.categoryId) {
+        const categoryId = parseObjectId(input.categoryId, 'categoryId');
+        const category = await resolveActiveCategory(userId, categoryId);
+        if (rule.type) {
+          validateTransactionType(category.type, rule.type);
+        }
+        rule.categoryId = category._id;
+      } else {
+        rule.categoryId = null;
+      }
+    }
+    if (input.categoryKey !== undefined && rule.kind === 'normal') {
+      rule.categoryKey = input.categoryKey && input.categoryKey.length > 0 ? input.categoryKey : null;
     }
     if (input.endAt !== undefined) {
       rule.endAt = input.endAt ? new Date(input.endAt) : null;

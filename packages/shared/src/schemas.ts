@@ -202,6 +202,7 @@ export const transactionSchema = z.object({
   id: z.string().min(1),
   accountId: z.string().min(1),
   categoryId: z.string().min(1).nullable(),
+  categoryKey: z.string().min(1).nullable().optional(),
   type: transactionTypeSchema,
   kind: transactionKindSchema,
   transferGroupId: z.string().min(1).nullable(),
@@ -216,20 +217,27 @@ export const transactionSchema = z.object({
   deletedAt: dateTimeStringSchema.nullable().optional(),
 });
 
-export const transactionCreateInputSchema = z.object({
-  accountId: z.string().trim().min(1),
-  categoryId: z.string().trim().min(1),
-  type: transactionTypeSchema,
-  amount: z.number().positive(),
-  currency: currencySchema,
-  description: z.string().trim().max(500).optional(),
-  occurredAt: dateTimeStringSchema,
-});
+export const transactionCreateInputSchema = z
+  .object({
+    accountId: z.string().trim().min(1),
+    categoryId: z.string().trim().min(1).optional(),
+    categoryKey: z.string().trim().min(1).optional(),
+    type: transactionTypeSchema,
+    amount: z.number().positive(),
+    currency: currencySchema,
+    description: z.string().trim().max(500).optional(),
+    occurredAt: dateTimeStringSchema,
+  })
+  .refine((value) => Boolean(value.categoryId || value.categoryKey), {
+    message: '`categoryId` or `categoryKey` is required',
+    path: ['categoryKey'],
+  });
 
 export const transactionUpdateInputSchema = z
   .object({
     accountId: z.string().trim().min(1).optional(),
     categoryId: z.string().trim().min(1).optional(),
+    categoryKey: z.string().trim().min(1).nullable().optional(),
     type: transactionTypeSchema.optional(),
     amount: z.number().positive().optional(),
     currency: currencySchema.optional(),
@@ -895,6 +903,7 @@ export const recurringRuleSchema = z.object({
   kind: recurringKindSchema,
   accountId: z.string().min(1).nullable(),
   categoryId: z.string().min(1).nullable(),
+  categoryKey: z.string().min(1).nullable().optional(),
   type: transactionTypeSchema.nullable(),
   fromAccountId: z.string().min(1).nullable(),
   toAccountId: z.string().min(1).nullable(),
@@ -955,7 +964,8 @@ export const recurringCreateInputSchema = z
     recurringBaseCreateSchema.extend({
       kind: z.literal('normal'),
       accountId: z.string().trim().min(1),
-      categoryId: z.string().trim().min(1),
+      categoryId: z.string().trim().min(1).optional(),
+      categoryKey: z.string().trim().min(1).optional(),
       type: transactionTypeSchema,
     }),
     recurringBaseCreateSchema.extend({
@@ -964,12 +974,23 @@ export const recurringCreateInputSchema = z
       toAccountId: z.string().trim().min(1),
     }),
   ])
-  .and(recurringScheduleFieldsSchema);
+  .and(recurringScheduleFieldsSchema)
+  .superRefine((value, ctx) => {
+    if (value.kind === 'normal' && !value.categoryId && !value.categoryKey) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '`categoryId` or `categoryKey` is required for normal recurring rules',
+        path: ['categoryKey'],
+      });
+    }
+  });
 
 export const recurringUpdateInputSchema = z
   .object({
     amount: z.number().positive().optional(),
     description: z.string().trim().max(500).nullable().optional(),
+    categoryId: z.string().trim().min(1).nullable().optional(),
+    categoryKey: z.string().trim().min(1).nullable().optional(),
     isPaused: z.boolean().optional(),
     cadence: recurringCadenceSchema.optional(),
     dayOfWeek: z.number().int().min(0).max(6).optional(),

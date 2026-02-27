@@ -24,10 +24,10 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import {
-  buildSystemCategoryOptions,
-  normalizeCategoryName,
-  type CategoryOption,
-} from '@features/finance/utils/categoryCatalog';
+  listCategories,
+  type ExpenseCategoryKey,
+  type ListedCategory,
+} from '@features/finance/categories/categoryCatalog';
 import {
   rescheduleUpcomingPaymentNotifications,
 } from '@features/finance/utils/notificationsForUpcomingPayment';
@@ -57,6 +57,8 @@ const RECURRING_CADENCE_OPTIONS: Array<{ value: 'weekly' | 'monthly'; labelKey: 
   { value: 'weekly', labelKey: 'recurring.cadence.weekly' },
   { value: 'monthly', labelKey: 'recurring.cadence.monthly' },
 ];
+
+type ExpenseCategoryOption = ListedCategory<ExpenseCategoryKey>;
 
 function parseAmountInput(value: string): number | null {
   const normalized = value.replace(/\s+/g, '').replace(',', '.');
@@ -102,26 +104,17 @@ function includesAny(value: string, needles: string[]): boolean {
   return needles.some((needle) => value.includes(needle));
 }
 
-function findCategoryValueByKeywords(
-  options: CategoryOption[],
-  keywordGroups: string[][],
-): string | null {
-  for (const keywords of keywordGroups) {
-    const match = options.find((option) => {
-      const normalized = normalizeCategoryName(option.label);
-      return includesAny(normalized, keywords);
-    });
-
-    if (match) {
-      return match.value;
-    }
-  }
-
-  return null;
+function normalizeCategoryText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9а-яё]+/giu, ' ')
+    .trim();
 }
 
 function resolveCategoryDefaultValue(params: {
-  options: CategoryOption[];
+  options: ExpenseCategoryOption[];
   hint: ScanCategoryHint;
   paymentType: UpcomingPaymentType;
   rawText: string;
@@ -132,56 +125,48 @@ function resolveCategoryDefaultValue(params: {
     return '';
   }
 
-  const normalizedRawText = normalizeCategoryName(rawText);
+  const normalizedRawText = normalizeCategoryText(rawText);
+  const available = new Set<ExpenseCategoryKey>(options.map((option) => option.key));
 
-  const fuelNeedles = ['fuel', 'akaryakit', 'akaryakit', 'benzin', 'diesel', 'transport', 'ulasim'];
-  const groceryNeedles = ['market', 'grocery', 'food', 'gida', 'yemek'];
-
-  if (hint === 'fuel' || includesAny(normalizedRawText, fuelNeedles)) {
-    const fuelMatch = findCategoryValueByKeywords(options, [
-      ['fuel', 'akaryakit', 'benzin', 'diesel'],
-      ['transport', 'ulasim'],
-    ]);
-    if (fuelMatch) {
-      return fuelMatch;
+  const firstAvailable = (keys: ExpenseCategoryKey[]): ExpenseCategoryKey | null => {
+    for (const key of keys) {
+      if (available.has(key)) {
+        return key;
+      }
     }
-  }
-
-  if (hint === 'grocery' || includesAny(normalizedRawText, groceryNeedles)) {
-    const groceryMatch = findCategoryValueByKeywords(options, [
-      ['market', 'grocery'],
-      ['food', 'gida', 'yemek'],
-    ]);
-    if (groceryMatch) {
-      return groceryMatch;
-    }
-  }
+    return null;
+  };
 
   if (paymentType === 'rent') {
-    const rentMatch = findCategoryValueByKeywords(options, [['rent', 'kira']]);
-    if (rentMatch) {
-      return rentMatch;
-    }
+    return firstAvailable(['rent', 'other_expense']) ?? '';
   }
-
   if (paymentType === 'subscription') {
-    const subscriptionMatch = findCategoryValueByKeywords(options, [
-      ['subscription', 'abonelik'],
-      ['entertainment', 'eglence'],
-    ]);
-    if (subscriptionMatch) {
-      return subscriptionMatch;
-    }
+    return firstAvailable(['subscriptions', 'other_expense']) ?? '';
   }
-
   if (paymentType === 'debt') {
-    const debtMatch = findCategoryValueByKeywords(options, [['debt', 'borc', 'borç']]);
-    if (debtMatch) {
-      return debtMatch;
-    }
+    return firstAvailable(['debt', 'other_expense']) ?? '';
+  }
+  if (hint === 'fuel') {
+    return firstAvailable(['transport', 'other_expense']) ?? '';
+  }
+  if (hint === 'grocery') {
+    return firstAvailable(['groceries', 'other_expense']) ?? '';
   }
 
-  return options[0]?.value ?? '';
+  if (includesAny(normalizedRawText, ['rent', 'kira', 'аренд'])) {
+    return firstAvailable(['rent', 'other_expense']) ?? '';
+  }
+  if (includesAny(normalizedRawText, ['fuel', 'akaryakit', 'benzin', 'diesel', 'transport', 'ulasim'])) {
+    return firstAvailable(['transport', 'other_expense']) ?? '';
+  }
+  if (includesAny(normalizedRawText, ['market', 'grocery', 'food', 'gida', 'yemek', 'продукт'])) {
+    return firstAvailable(['groceries', 'dining', 'other_expense']) ?? '';
+  }
+  if (includesAny(normalizedRawText, ['subscription', 'abonelik', 'netflix', 'spotify'])) {
+    return firstAvailable(['subscriptions', 'other_expense']) ?? '';
+  }
+
+  return firstAvailable(['other_expense']) ?? options[0]?.key ?? '';
 }
 
 export function ScanConfirmScreen() {
@@ -216,18 +201,13 @@ export function ScanConfirmScreen() {
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
 
-  const categoriesQuery = useQuery({
-    queryKey: financeQueryKeys.categories.list(),
-    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
-  });
-
   const categoryOptions = useMemo(
-    () => buildSystemCategoryOptions(categoriesQuery.data?.categories ?? [], 'expense', t),
-    [categoriesQuery.data?.categories, t],
+    () => listCategories('expense', locale),
+    [locale],
   );
 
   const selectedCategoryOption = useMemo(
-    () => categoryOptions.find((item) => item.value === categoryValue) ?? null,
+    () => categoryOptions.find((item) => item.key === categoryValue) ?? null,
     [categoryOptions, categoryValue],
   );
 
@@ -353,7 +333,7 @@ export function ScanConfirmScreen() {
           kind: 'normal',
           type: 'expense',
           accountId,
-          categoryId: selectedCategoryOption.backendId,
+          categoryKey: selectedCategoryOption.key,
           amount: parsedAmount,
           cadence: recurringCadence,
           dayOfWeek: recurringCadence === 'weekly' ? startAtDate.getUTCDay() : undefined,
@@ -382,7 +362,7 @@ export function ScanConfirmScreen() {
         apiClient.createTransaction(
           transactionCreateInputSchema.parse({
             accountId,
-            categoryId: selectedCategoryOption.backendId,
+            categoryKey: selectedCategoryOption.key,
             type: 'expense',
             amount: parsedAmount,
             currency: baseCurrency,
@@ -418,7 +398,7 @@ export function ScanConfirmScreen() {
     },
   });
 
-  if (accountsQuery.isLoading || categoriesQuery.isLoading) {
+  if (accountsQuery.isLoading) {
     return (
       <ScreenContainer dark={dark}>
         <Card dark={dark} style={styles.stateCard}>
@@ -431,8 +411,8 @@ export function ScanConfirmScreen() {
     );
   }
 
-  if (accountsQuery.isError || categoriesQuery.isError) {
-    const error = accountsQuery.error ?? categoriesQuery.error;
+  if (accountsQuery.isError) {
+    const error = accountsQuery.error;
 
     return (
       <ScreenContainer dark={dark}>
@@ -443,7 +423,6 @@ export function ScanConfirmScreen() {
             label={t('common.retry')}
             onPress={() => {
               void accountsQuery.refetch();
-              void categoriesQuery.refetch();
             }}
           />
         </Card>
@@ -758,15 +737,15 @@ export function ScanConfirmScreen() {
             </Text>
             <View style={styles.accountRow}>
               {categoryOptions.map((category) => {
-                const selected = categoryValue === category.value;
+                const selected = categoryValue === category.key;
 
                 return (
                   <Pressable
-                    key={category.value}
+                    key={category.key}
                     accessibilityRole="button"
                     onPress={() => {
                       setCategoryTouched(true);
-                      setCategoryValue(category.value);
+                      setCategoryValue(category.key);
                     }}
                     style={[
                       styles.categoryChip,
@@ -782,7 +761,7 @@ export function ScanConfirmScreen() {
                       },
                     ]}
                   >
-                    <AppIcon name={category.iconName} size="sm" tone={selected ? 'primary' : 'muted'} />
+                    <AppIcon name={category.icon} size="sm" tone={selected ? 'primary' : 'muted'} />
                     <Text style={[styles.categoryChipLabel, { color: selected ? theme.colors.primary : theme.colors.text }]}> 
                       {category.label}
                     </Text>

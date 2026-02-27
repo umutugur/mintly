@@ -27,6 +27,12 @@ const recurringRuleSchema = new Schema(
       required: false,
       default: null,
     },
+    categoryKey: {
+      type: String,
+      required: false,
+      trim: true,
+      default: null,
+    },
     type: {
       type: String,
       enum: ['income', 'expense'],
@@ -122,6 +128,7 @@ export interface RecurringRule extends InferSchemaType<typeof recurringRuleSchem
   userId: Types.ObjectId;
   accountId: Types.ObjectId | null;
   categoryId: Types.ObjectId | null;
+  categoryKey: string | null;
   fromAccountId: Types.ObjectId | null;
   toAccountId: Types.ObjectId | null;
 }

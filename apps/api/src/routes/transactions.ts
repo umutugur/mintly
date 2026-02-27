@@ -96,20 +96,21 @@ export function registerTransactionRoutes(app: FastifyInstance): void {
     const input = parseBody<TransactionCreateInput>(transactionCreateInputSchema, request.body);
 
     const accountId = parseObjectId(input.accountId, 'accountId');
-    const categoryId = parseObjectId(input.categoryId, 'categoryId');
+    const categoryId = input.categoryId ? parseObjectId(input.categoryId, 'categoryId') : null;
 
-    const [account, category] = await Promise.all([
-      resolveActiveAccount(userId, accountId),
-      resolveActiveCategory(userId, categoryId),
-    ]);
+    const account = await resolveActiveAccount(userId, accountId);
+    const category = categoryId ? await resolveActiveCategory(userId, categoryId) : null;
 
     validateCurrency(account.currency, input.currency);
-    validateTransactionType(category.type, input.type);
+    if (category) {
+      validateTransactionType(category.type, input.type);
+    }
 
     const transaction = await createNormalTransaction({
       userId,
       accountId: account._id,
-      categoryId: category._id,
+      categoryId: category?._id ?? null,
+      categoryKey: input.categoryKey ?? null,
       type: input.type,
       amount: input.amount,
       currency: input.currency,
@@ -173,33 +174,31 @@ export function registerTransactionRoutes(app: FastifyInstance): void {
 
     const accountId =
       input.accountId !== undefined ? parseObjectId(input.accountId, 'accountId') : transaction.accountId;
-    const categoryId =
+    const account = await resolveActiveAccount(userId, accountId);
+
+    const nextCategoryId =
       input.categoryId !== undefined
         ? parseObjectId(input.categoryId, 'categoryId')
         : transaction.categoryId;
-
-    if (!categoryId) {
-      throw new ApiError({
-        code: 'CATEGORY_NOT_FOUND',
-        message: 'Category not found',
-        statusCode: 404,
-      });
-    }
-
-    const [account, category] = await Promise.all([
-      resolveActiveAccount(userId, accountId),
-      resolveActiveCategory(userId, categoryId),
-    ]);
 
     const nextType = input.type ?? transaction.type;
     const nextCurrency = input.currency ?? transaction.currency;
 
     validateCurrency(account.currency, nextCurrency);
-    validateTransactionType(category.type, nextType);
+
+    if (nextCategoryId) {
+      const category = await resolveActiveCategory(userId, nextCategoryId);
+      validateTransactionType(category.type, nextType);
+      transaction.categoryId = category._id;
+    } else {
+      transaction.categoryId = null;
+    }
 
     transaction.accountId = account._id;
-    transaction.categoryId = category._id;
     transaction.type = nextType;
+    if (input.categoryKey !== undefined) {
+      transaction.categoryKey = input.categoryKey && input.categoryKey.length > 0 ? input.categoryKey : null;
+    }
 
     if (input.amount !== undefined) {
       transaction.amount = input.amount;

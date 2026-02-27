@@ -40,13 +40,8 @@ interface LoginErrors {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const FALLBACK_GOOGLE_CLIENT_ID = 'mintly-google-missing-client-id';
 
 WebBrowser.maybeCompleteAuthSession();
-
-function ensureSafeRedirectUri(uri: string): string {
-  return uri.includes('?') ? uri : `${uri}?`;
-}
 
 function validateLogin(email: string, password: string, t: (key: string) => string): LoginErrors {
   const next: LoginErrors = {};
@@ -129,13 +124,11 @@ export function LoginScreen({ navigation }: Props) {
   const [activeOauthProvider, setActiveOauthProvider] = useState<OauthProvider | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const googleRedirectUri = useMemo(
-    () => {
-      const rawUri = makeRedirectUri({
+    () =>
+      makeRedirectUri({
         scheme: 'mintly',
         path: 'oauthredirect',
-      });
-      return ensureSafeRedirectUri(rawUri);
-    },
+      }),
     [],
   );
   const googlePrimaryClientId = useMemo(
@@ -148,7 +141,7 @@ export function LoginScreen({ navigation }: Props) {
       mobileEnv.googleOauthIosClientId ??
       mobileEnv.googleOauthAndroidClientId ??
       mobileEnv.googleOauthWebClientId ??
-      FALLBACK_GOOGLE_CLIENT_ID,
+      '',
     [],
   );
 
@@ -177,7 +170,7 @@ export function LoginScreen({ navigation }: Props) {
       hasWebClientId: Boolean(mobileEnv.googleOauthWebClientId),
       hasIosClientId: Boolean(mobileEnv.googleOauthIosClientId),
       hasAndroidClientId: Boolean(mobileEnv.googleOauthAndroidClientId),
-      primaryClientIdSet: googlePrimaryClientId !== FALLBACK_GOOGLE_CLIENT_ID,
+      primaryClientIdSet: googlePrimaryClientId.length > 0,
       requestReady: Boolean(googleRequest),
       redirectUri: googleRedirectUri,
       authorizeUrl: googleRequest?.url ?? null,

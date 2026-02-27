@@ -482,6 +482,7 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
       userId,
       accountId: account._id,
       categoryId: category._id,
+      categoryKey: recurringRule?.categoryKey ?? null,
       type: 'expense',
       amount: upcomingPayment.amount,
       currency: upcomingPayment.currency,

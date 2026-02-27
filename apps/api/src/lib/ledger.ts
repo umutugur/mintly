@@ -9,7 +9,8 @@ import { TransactionModel, type TransactionDocument } from '../models/Transactio
 interface CreateNormalTransactionInput {
   userId: Types.ObjectId;
   accountId: Types.ObjectId;
-  categoryId: Types.ObjectId;
+  categoryId?: Types.ObjectId | null;
+  categoryKey?: string | null;
   type: TransactionType;
   amount: number;
   currency: string;
@@ -97,7 +98,8 @@ export async function createNormalTransaction(
   return TransactionModel.create({
     userId: input.userId,
     accountId: input.accountId,
-    categoryId: input.categoryId,
+    categoryId: input.categoryId ?? null,
+    categoryKey: input.categoryKey ?? null,
     type: input.type,
     kind: 'normal',
     transferGroupId: null,
@@ -144,6 +146,7 @@ export async function createTransferPair(input: CreateTransferInput): Promise<{
       userId: input.userId,
       accountId: fromAccount._id,
       categoryId: null,
+      categoryKey: null,
       type: 'expense',
       kind: 'transfer',
       transferGroupId: groupId,
@@ -159,6 +162,7 @@ export async function createTransferPair(input: CreateTransferInput): Promise<{
       userId: input.userId,
       accountId: toAccount._id,
       categoryId: null,
+      categoryKey: null,
       type: 'income',
       kind: 'transfer',
       transferGroupId: groupId,

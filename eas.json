@@ -11,11 +11,19 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://mintly-2lbv.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://mintly-2lbv.onrender.com",
+        "EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID}",
+        "EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID}",
+        "EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID}"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID}",
+        "EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID}",
+        "EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID}"
+      }
     }
   },
   "submit": {

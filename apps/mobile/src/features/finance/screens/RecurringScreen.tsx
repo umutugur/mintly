@@ -14,9 +14,9 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import {
-  buildSystemCategoryOptions,
-  resolveCategoryPresentationByName,
-} from '@features/finance/utils/categoryCatalog';
+  getCategoryLabel,
+  listCategories,
+} from '@features/finance/categories/categoryCatalog';
 import { Card, Chip, PrimaryButton, ScreenContainer, Section } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { colors, radius, spacing, typography } from '@shared/theme';
@@ -27,7 +27,7 @@ const recurringFormSchema = z
     kind: z.enum(['normal', 'transfer']),
     type: z.enum(['expense', 'income']),
     accountId: z.string().trim().optional(),
-    categoryId: z.string().trim().optional(),
+    categoryKey: z.string().trim().optional(),
     fromAccountId: z.string().trim().optional(),
     toAccountId: z.string().trim().optional(),
     amount: z
@@ -57,10 +57,10 @@ const recurringFormSchema = z
           message: 'errors.validation.selectAccount',
         });
       }
-      if (!value.categoryId) {
+      if (!value.categoryKey) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ['categoryId'],
+          path: ['categoryKey'],
           message: 'errors.validation.selectCategory',
         });
       }
@@ -124,7 +124,7 @@ function formatDateTime(value: string): string {
 
 export function RecurringScreen() {
   const { withAuth } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
 
   const recurringQuery = useQuery({
@@ -137,18 +137,13 @@ export function RecurringScreen() {
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
 
-  const categoriesQuery = useQuery({
-    queryKey: financeQueryKeys.categories.list(),
-    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
-  });
-
   const form = useForm<RecurringFormValues>({
     resolver: zodResolver(recurringFormSchema),
     defaultValues: {
       kind: 'normal',
       type: 'expense',
       accountId: '',
-      categoryId: '',
+      categoryKey: '',
       fromAccountId: '',
       toAccountId: '',
       amount: '',
@@ -163,15 +158,15 @@ export function RecurringScreen() {
   const kind = form.watch('kind');
   const type = form.watch('type');
   const cadence = form.watch('cadence');
-  const selectedCategoryValue = form.watch('categoryId');
+  const selectedCategoryValue = form.watch('categoryKey');
 
   const categoryOptions = useMemo(
-    () => buildSystemCategoryOptions(categoriesQuery.data?.categories ?? [], type, t),
-    [categoriesQuery.data?.categories, type, t],
+    () => listCategories(type, locale),
+    [locale, type],
   );
 
   const selectedCategoryOption = useMemo(
-    () => categoryOptions.find((option) => option.value === selectedCategoryValue) ?? null,
+    () => categoryOptions.find((option) => option.key === selectedCategoryValue) ?? null,
     [categoryOptions, selectedCategoryValue],
   );
 
@@ -181,20 +176,14 @@ export function RecurringScreen() {
     () => new Map(accounts.map((account) => [account.id, account.name])),
     [accounts],
   );
-  const categoryNameById = useMemo(
-    () =>
-      new Map((categoriesQuery.data?.categories ?? []).map((category) => [category.id, category.name])),
-    [categoriesQuery.data?.categories],
-  );
-
   useEffect(() => {
     if (!selectedCategoryValue) {
       return;
     }
 
-    const exists = categoryOptions.some((option) => option.value === selectedCategoryValue);
+    const exists = categoryOptions.some((option) => option.key === selectedCategoryValue);
     if (!exists) {
-      form.setValue('categoryId', '');
+      form.setValue('categoryKey', '');
     }
   }, [categoryOptions, form, selectedCategoryValue]);
 
@@ -222,7 +211,7 @@ export function RecurringScreen() {
 
         if (values.kind === 'normal') {
           const selectedOption =
-            categoryOptions.find((option) => option.value === values.categoryId) ??
+            categoryOptions.find((option) => option.key === values.categoryKey) ??
             selectedCategoryOption;
 
           if (!selectedOption) {
@@ -234,7 +223,7 @@ export function RecurringScreen() {
               ...basePayload,
               kind: 'normal',
               accountId: values.accountId ?? '',
-              categoryId: selectedOption.backendId,
+              categoryKey: selectedOption.key,
               type: values.type,
             }),
             token,
@@ -257,7 +246,7 @@ export function RecurringScreen() {
         kind: 'normal',
         type: 'expense',
         accountId: '',
-        categoryId: '',
+        categoryKey: '',
         fromAccountId: '',
         toAccountId: '',
         amount: '',
@@ -299,7 +288,7 @@ export function RecurringScreen() {
     },
   });
 
-  if (recurringQuery.isLoading || accountsQuery.isLoading || categoriesQuery.isLoading) {
+  if (recurringQuery.isLoading || accountsQuery.isLoading) {
     return (
       <ScreenContainer>
         <Card>
@@ -309,8 +298,8 @@ export function RecurringScreen() {
     );
   }
 
-  if (recurringQuery.isError || accountsQuery.isError || categoriesQuery.isError) {
-    const error = recurringQuery.error ?? accountsQuery.error ?? categoriesQuery.error;
+  if (recurringQuery.isError || accountsQuery.isError) {
+    const error = recurringQuery.error ?? accountsQuery.error;
     return (
       <ScreenContainer>
         <Card style={styles.errorCard}>
@@ -320,7 +309,6 @@ export function RecurringScreen() {
             onPress={() => {
               void recurringQuery.refetch();
               void accountsQuery.refetch();
-              void categoriesQuery.refetch();
             }}
           />
         </Card>
@@ -389,23 +377,23 @@ export function RecurringScreen() {
               <Text style={styles.fieldLabel}>{t('recurring.fields.categoryWithType', { type: t(`recurring.type.${type}`) })}</Text>
               <Controller
                 control={form.control}
-                name="categoryId"
+                name="categoryKey"
                 render={({ field: { value, onChange } }) => (
                   <View style={styles.chipWrap}>
                     {categoryOptions.map((category) => (
-                      <Pressable key={category.value} onPress={() => onChange(category.value)}>
+                      <Pressable key={category.key} onPress={() => onChange(category.key)}>
                         <Chip
-                          iconName={category.iconName}
+                          iconName={category.icon}
                           label={category.label}
-                          tone={value === category.value ? 'primary' : 'default'}
+                          tone={value === category.key ? 'primary' : 'default'}
                         />
                       </Pressable>
                     ))}
                   </View>
                 )}
               />
-              {form.formState.errors.categoryId ? (
-                <Text style={styles.errorText}>{t(form.formState.errors.categoryId.message ?? '')}</Text>
+              {form.formState.errors.categoryKey ? (
+                <Text style={styles.errorText}>{t(form.formState.errors.categoryKey.message ?? '')}</Text>
               ) : null}
             </>
           ) : (
@@ -613,14 +601,9 @@ export function RecurringScreen() {
                 </Text>
                 <Text style={styles.ruleText}>
                   {t('recurring.rule.category', {
-                    category:
-                      rule.categoryId
-                        ? resolveCategoryPresentationByName(
-                            categoryNameById.get(rule.categoryId) ?? rule.categoryId,
-                            rule.type ?? 'expense',
-                            t,
-                          ).label
-                        : t('common.notAvailable'),
+                    category: rule.categoryKey
+                      ? getCategoryLabel(rule.categoryKey, locale) || t('transactions.row.uncategorized')
+                      : t('transactions.row.uncategorized'),
                   })}
                 </Text>
               </>

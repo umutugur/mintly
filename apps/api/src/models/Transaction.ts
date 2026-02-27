@@ -23,6 +23,13 @@ const transactionSchema = new Schema(
       default: null,
       index: true,
     },
+    categoryKey: {
+      type: String,
+      required: false,
+      trim: true,
+      default: null,
+      index: true,
+    },
     type: {
       type: String,
       enum: ['income', 'expense'],
@@ -98,6 +105,7 @@ transactionSchema.index({ userId: 1, accountId: 1, deletedAt: 1 });
 transactionSchema.index({ userId: 1, deletedAt: 1, accountId: 1, occurredAt: -1 });
 // Speeds category-scoped analytics and budget aggregations.
 transactionSchema.index({ userId: 1, deletedAt: 1, categoryId: 1, occurredAt: -1 });
+transactionSchema.index({ userId: 1, deletedAt: 1, categoryKey: 1, occurredAt: -1 });
 transactionSchema.index({ userId: 1, deletedAt: 1, kind: 1, occurredAt: -1 });
 // Makes transfer pair lookups efficient when reconciling by group.
 transactionSchema.index({ transferGroupId: 1 });
@@ -106,6 +114,7 @@ export interface Transaction extends InferSchemaType<typeof transactionSchema> {
   userId: Types.ObjectId;
   accountId: Types.ObjectId;
   categoryId: Types.ObjectId | null;
+  categoryKey: string | null;
   transferGroupId: Types.ObjectId | null;
   relatedAccountId: Types.ObjectId | null;
 }
