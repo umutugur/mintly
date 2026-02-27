@@ -693,6 +693,7 @@
     "transaction": {
       "expenseTitle": "Gider",
       "incomeTitle": "Gelir",
+      "uncategorized": "Kategorisiz",
       "transferContext": "Aktarım",
       "transferTitle": "Hesap Aktarımı"
     },
@@ -1574,12 +1575,14 @@
       "splitTitle": "Bölüş"
     },
     "row": {
+      "categoryHint": "{{category}} • {{time}}",
       "expenseTitle": "Gider",
       "incomeTitle": "Gelir",
       "transferBadge": "AKTARIM",
       "transferHint": "Aktarım • {{time}}",
       "transferTitle": "Hesap Transferi",
-      "typeHint": "{{type}} • {{time}}"
+      "typeHint": "{{type}} • {{time}}",
+      "uncategorized": "Kategorisiz"
     },
     "searchPlaceholder": "İşlem veya mağaza ara...",
     "state": {

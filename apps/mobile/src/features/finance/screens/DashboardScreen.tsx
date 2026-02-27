@@ -402,6 +402,10 @@ export function DashboardScreen() {
     queryKey: financeQueryKeys.dashboard.recent(),
     queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
   });
+  const categoriesQuery = useQuery({
+    queryKey: financeQueryKeys.categories.list(),
+    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
+  });
 
   const currency = useMemo(() => {
     if (dashboardQuery.data?.balances[0]?.currency) {
@@ -418,6 +422,13 @@ export function DashboardScreen() {
     }
     return map;
   }, [dashboardQuery.data?.balances]);
+  const categoryNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const category of categoriesQuery.data?.categories ?? []) {
+      map[category.id] = category.name;
+    }
+    return map;
+  }, [categoriesQuery.data?.categories]);
 
   const profileName = useMemo(() => resolveUserDisplayName(user), [user]);
 
@@ -530,15 +541,21 @@ export function DashboardScreen() {
         }
       }
 
+      const categoryLabel = item.kind === 'transfer'
+        ? t('dashboard.transaction.transferContext')
+        : item.categoryId
+          ? (categoryNameById[item.categoryId]?.trim() || t('dashboard.transaction.uncategorized'))
+          : t('dashboard.transaction.uncategorized');
+
       const title =
         item.description?.trim() ||
         (item.kind === 'transfer'
           ? t('dashboard.transaction.transferTitle')
-          : item.type === 'income'
-            ? t('dashboard.transaction.incomeTitle')
-            : t('dashboard.transaction.expenseTitle'));
+          : categoryLabel);
 
-      const subtitle = `${formatOccurredAt(item.occurredAt, locale, t)} • ${context}`;
+      const subtitle = item.kind === 'transfer'
+        ? `${formatOccurredAt(item.occurredAt, locale, t)} • ${context}`
+        : `${formatOccurredAt(item.occurredAt, locale, t)} • ${categoryLabel}`;
 
       return (
         <RecentTransactionRow
@@ -551,7 +568,7 @@ export function DashboardScreen() {
         />
       );
     },
-    [accountNameById, locale, mode, t],
+    [accountNameById, categoryNameById, locale, mode, t],
   );
 
   if (dashboardQuery.isLoading) {

@@ -20,8 +20,6 @@ interface SystemCategoryDefinition {
   aliases: readonly string[];
 }
 
-export const VIRTUAL_CATEGORY_PREFIX = 'virtual:';
-
 const SYSTEM_CATEGORY_DEFINITIONS: readonly SystemCategoryDefinition[] = [
   {
     key: 'food',
@@ -221,17 +219,6 @@ function matchSystemDefinition(name: string, type: CategoryType): SystemCategory
   return null;
 }
 
-function findFallbackCategory(categories: Category[], type: CategoryType): Category | null {
-  const typed = categories.filter((category) => category.type === type);
-
-  if (typed.length === 0) {
-    return null;
-  }
-
-  const general = typed.find((category) => isGeneralCategoryName(category.name, type));
-  return general ?? typed[0] ?? null;
-}
-
 function inferBackendIcon(category: Category, type: CategoryType): AppIconName {
   if (category.icon) {
     return category.icon as AppIconName;
@@ -291,7 +278,6 @@ export function buildSystemCategoryOptions(
   t: Translate,
 ): CategoryOption[] {
   const typedCategories = categories.filter((category) => category.type === type);
-  const fallbackCategory = findFallbackCategory(typedCategories, type);
   const mappedIds = new Set<string>();
   const options: CategoryOption[] = [];
 
@@ -307,18 +293,15 @@ export function buildSystemCategoryOptions(
       return matchSystemDefinition(category.name, type)?.key === definition.key;
     });
 
-    const backendId = matched?.id ?? fallbackCategory?.id;
-    if (!backendId) {
+    if (!matched) {
       continue;
     }
 
-    if (matched) {
-      mappedIds.add(matched.id);
-    }
+    mappedIds.add(matched.id);
 
     options.push({
-      value: matched ? matched.id : `${VIRTUAL_CATEGORY_PREFIX}${definition.key}`,
-      backendId,
+      value: matched.id,
+      backendId: matched.id,
       label: localizedSystemLabel(definition, t),
       iconName: definition.iconName,
     });
@@ -326,10 +309,6 @@ export function buildSystemCategoryOptions(
 
   for (const category of typedCategories) {
     if (mappedIds.has(category.id)) {
-      continue;
-    }
-
-    if (fallbackCategory && category.id === fallbackCategory.id && isGeneralCategoryName(category.name, type)) {
       continue;
     }
 

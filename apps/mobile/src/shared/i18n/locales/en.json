@@ -693,6 +693,7 @@
     "transaction": {
       "expenseTitle": "Expense",
       "incomeTitle": "Income",
+      "uncategorized": "Uncategorized",
       "transferContext": "Transfer",
       "transferTitle": "Transfer"
     },
@@ -1574,12 +1575,14 @@
       "splitTitle": "Split"
     },
     "row": {
+      "categoryHint": "{{category}} • {{time}}",
       "expenseTitle": "Expense",
       "incomeTitle": "Income",
       "transferBadge": "TRANSFER",
       "transferHint": "Transfer • {{time}}",
       "transferTitle": "Account Transfer",
-      "typeHint": "{{type}} • {{time}}"
+      "typeHint": "{{type}} • {{time}}",
+      "uncategorized": "Uncategorized"
     },
     "searchPlaceholder": "Search transaction or store...",
     "state": {

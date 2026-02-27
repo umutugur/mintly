@@ -44,6 +44,10 @@ const FALLBACK_GOOGLE_CLIENT_ID = 'mintly-google-missing-client-id';
 
 WebBrowser.maybeCompleteAuthSession();
 
+function ensureSafeRedirectUri(uri: string): string {
+  return uri.includes('?') ? uri : `${uri}?`;
+}
+
 function validateLogin(email: string, password: string, t: (key: string) => string): LoginErrors {
   const next: LoginErrors = {};
 
@@ -124,13 +128,14 @@ export function LoginScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeOauthProvider, setActiveOauthProvider] = useState<OauthProvider | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
-  const [googleResultType, setGoogleResultType] = useState('idle');
   const googleRedirectUri = useMemo(
-    () =>
-      makeRedirectUri({
+    () => {
+      const rawUri = makeRedirectUri({
         scheme: 'mintly',
         path: 'oauthredirect',
-      }),
+      });
+      return ensureSafeRedirectUri(rawUri);
+    },
     [],
   );
   const googlePrimaryClientId = useMemo(
@@ -168,12 +173,23 @@ export function LoginScreen({ navigation }: Props) {
     }
 
     console.info('[auth][google][dev-config]', {
+      platform: Platform.OS,
       hasWebClientId: Boolean(mobileEnv.googleOauthWebClientId),
       hasIosClientId: Boolean(mobileEnv.googleOauthIosClientId),
       hasAndroidClientId: Boolean(mobileEnv.googleOauthAndroidClientId),
+      primaryClientIdSet: googlePrimaryClientId !== FALLBACK_GOOGLE_CLIENT_ID,
       requestReady: Boolean(googleRequest),
-      redirectUriSet: Boolean(googleRedirectUri),
+      redirectUri: googleRedirectUri,
+      authorizeUrl: googleRequest?.url ?? null,
     });
+
+    if (Platform.OS === 'ios' && !mobileEnv.googleOauthIosClientId) {
+      console.info('[auth][google][dev-hint] Missing EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID for iOS build.');
+    }
+
+    if (Platform.OS === 'android' && !mobileEnv.googleOauthAndroidClientId) {
+      console.info('[auth][google][dev-hint] Missing EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID for Android build.');
+    }
   }, [googlePrimaryClientId, googleRedirectUri, googleRequest]);
 
   const submit = async () => {
@@ -217,7 +233,6 @@ export function LoginScreen({ navigation }: Props) {
 
     if (!googleRequestReady || !googleRequest) {
       setRequestError(t('auth.login.oauth.googleUnavailable'));
-      setGoogleResultType('unavailable');
       if (__DEV__) {
         Alert.alert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.googleUnavailable'));
       }
@@ -227,12 +242,25 @@ export function LoginScreen({ navigation }: Props) {
     setActiveOauthProvider('google');
 
     try {
+      if (__DEV__) {
+        console.info('[auth][google][prompt]', {
+          redirectUri: googleRedirectUri,
+          authorizeUrl: googleRequest.url ?? null,
+        });
+      }
+
       const promptOptions = {
         useProxy: false,
         showInRecents: true,
       } as unknown as Parameters<typeof promptGoogleAsync>[0];
       const result = await promptGoogleAsync(promptOptions);
-      setGoogleResultType(typeof result?.type === 'string' ? result.type : 'unknown');
+
+      if (__DEV__) {
+        console.info('[auth][google][result]', {
+          type: typeof result?.type === 'string' ? result.type : 'unknown',
+        });
+      }
+
       const idToken = extractGoogleIdToken(result);
 
       if (!idToken) {
@@ -510,23 +538,6 @@ export function LoginScreen({ navigation }: Props) {
         ) : null}
       </View>
 
-      {__DEV__ && !googleConfigured ? (
-        <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
-          {t('auth.login.oauth.googleEnvMissingInBuild')}
-        </Text>
-      ) : null}
-
-      {__DEV__ && googleConfigured && !googleRequestReady ? (
-        <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
-          {t('common.loadingShort')}
-        </Text>
-      ) : null}
-
-      {__DEV__ ? (
-        <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>
-          {`redirectUri=${googleRedirectUri} requestReady=${String(googleRequestReady)} result=${googleResultType}`}
-        </Text>
-      ) : null}
     </AuthLayout>
   );
 }

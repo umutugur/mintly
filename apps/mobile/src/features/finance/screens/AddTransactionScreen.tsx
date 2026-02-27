@@ -152,19 +152,27 @@ export function AddTransactionScreen() {
         throw new Error(t('errors.validation.selectCategory'));
       }
 
+      const payload = transactionCreateInputSchema.parse({
+        type: values.type,
+        accountId: values.accountId,
+        categoryId,
+        amount,
+        currency: selectedAccount?.currency ?? 'TRY',
+        description: values.description?.trim() || undefined,
+        occurredAt,
+      });
+
+      if (__DEV__) {
+        console.info('[transactions][create][dev-payload]', {
+          keys: Object.keys(payload).sort(),
+          hasCategoryId: Boolean(payload.categoryId),
+          hasDescription: Boolean(payload.description),
+          selectedCategoryOptionPresent: Boolean(selectedCategory),
+        });
+      }
+
       return withAuth((token) =>
-        apiClient.createTransaction(
-          transactionCreateInputSchema.parse({
-            type: values.type,
-            accountId: values.accountId,
-            categoryId,
-            amount,
-            currency: selectedAccount?.currency ?? 'TRY',
-            description: values.description?.trim() || undefined,
-            occurredAt,
-          }),
-          token,
-        ),
+        apiClient.createTransaction(payload, token),
       );
     },
     onSuccess: async (_, values) => {

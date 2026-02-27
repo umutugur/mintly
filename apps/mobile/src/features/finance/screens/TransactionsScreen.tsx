@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 import type { Transaction } from '@mintly/shared';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
@@ -150,7 +150,32 @@ function buildListItems(transactions: Transaction[], t: (key: string) => string,
   return items;
 }
 
-function getTransactionTitle(transaction: Transaction, t: (key: string) => string): string {
+function getTransactionCategoryLabel(
+  transaction: Transaction,
+  categoryNameById: Record<string, string>,
+  t: (key: string) => string,
+): string {
+  if (transaction.kind === 'transfer') {
+    return t('transactions.row.transferTitle');
+  }
+
+  if (!transaction.categoryId) {
+    return t('transactions.row.uncategorized');
+  }
+
+  const categoryName = categoryNameById[transaction.categoryId];
+  if (!categoryName || categoryName.trim().length === 0) {
+    return t('transactions.row.uncategorized');
+  }
+
+  return categoryName.trim();
+}
+
+function getTransactionTitle(
+  transaction: Transaction,
+  categoryNameById: Record<string, string>,
+  t: (key: string) => string,
+): string {
   if (transaction.description?.trim()) {
     return transaction.description.trim();
   }
@@ -159,11 +184,13 @@ function getTransactionTitle(transaction: Transaction, t: (key: string) => strin
     return t('transactions.row.transferTitle');
   }
 
-  return transaction.type === 'income' ? t('transactions.row.incomeTitle') : t('transactions.row.expenseTitle');
+  const categoryLabel = getTransactionCategoryLabel(transaction, categoryNameById, t);
+  return categoryLabel || (transaction.type === 'income' ? t('transactions.row.incomeTitle') : t('transactions.row.expenseTitle'));
 }
 
 function getCategoryHint(
   transaction: Transaction,
+  categoryLabel: string,
   t: (key: string, params?: Record<string, string | number>) => string,
   locale: string,
 ): string {
@@ -171,13 +198,16 @@ function getCategoryHint(
     return t('transactions.row.transferHint', { time: formatTime(transaction.occurredAt, locale) });
   }
 
-  return t('transactions.row.typeHint', {
-    type: transaction.type === 'income' ? t('analytics.income') : t('analytics.expense'),
+  return t('transactions.row.categoryHint', {
+    category: categoryLabel,
     time: formatTime(transaction.occurredAt, locale),
   });
 }
 
-function getCategoryIconName(transaction: Transaction): Parameters<typeof AppIcon>[0]['name'] {
+function getCategoryIconName(
+  transaction: Transaction,
+  categoryLabel: string,
+): Parameters<typeof AppIcon>[0]['name'] {
   if (transaction.kind === 'transfer') {
     return 'swap-horizontal-outline';
   }
@@ -186,17 +216,20 @@ function getCategoryIconName(transaction: Transaction): Parameters<typeof AppIco
     return 'arrow-down-circle-outline';
   }
 
+  const categoryText = categoryLabel.toLowerCase();
   const description = transaction.description?.toLowerCase() ?? '';
-  if (description.includes('market') || description.includes('migros') || description.includes('carrefour')) {
+  const fullText = `${categoryText} ${description}`;
+
+  if (fullText.includes('market') || fullText.includes('migros') || fullText.includes('carrefour')) {
     return 'cart-outline';
   }
-  if (description.includes('coffee') || description.includes('food') || description.includes('yemek')) {
+  if (fullText.includes('coffee') || fullText.includes('food') || fullText.includes('yemek')) {
     return 'restaurant-outline';
   }
-  if (description.includes('fuel') || description.includes('akaryak')) {
+  if (fullText.includes('fuel') || fullText.includes('akaryak')) {
     return 'car-outline';
   }
-  if (description.includes('rent') || description.includes('kira')) {
+  if (fullText.includes('rent') || fullText.includes('kira')) {
     return 'home-outline';
   }
 
@@ -261,6 +294,17 @@ export function TransactionsScreen() {
       }).navigate('AddTab', { screen: 'AddTransaction' });
     }
   }, [navigation]);
+  const categoriesQuery = useQuery({
+    queryKey: financeQueryKeys.categories.list(),
+    queryFn: () => withAuth((token) => apiClient.getCategories(token)),
+  });
+  const categoryNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const category of categoriesQuery.data?.categories ?? []) {
+      map[category.id] = category.name;
+    }
+    return map;
+  }, [categoriesQuery.data?.categories]);
 
   const deleteTransactionMutation = useMutation({
     mutationFn: (transactionId: string) =>
@@ -298,7 +342,7 @@ export function TransactionsScreen() {
 
       Alert.alert(
         t('tx.delete.confirmTitle'),
-        t('tx.delete.confirmBody', { title: getTransactionTitle(transaction, t) }),
+        t('tx.delete.confirmBody', { title: getTransactionTitle(transaction, categoryNameById, t) }),
         [
           {
             text: t('common.cancel'),
@@ -314,7 +358,7 @@ export function TransactionsScreen() {
         ],
       );
     },
-    [deleteTransactionMutation, t],
+    [categoryNameById, deleteTransactionMutation, t],
   );
 
   const confirmDeleteTransfer = useCallback(
@@ -389,6 +433,19 @@ export function TransactionsScreen() {
     [transactionsQuery.data?.pages],
   );
 
+  useEffect(() => {
+    if (!__DEV__ || transactions.length === 0) {
+      return;
+    }
+
+    const first = transactions[0];
+    console.info('[transactions][dev-category-roundtrip]', {
+      count: transactions.length,
+      firstTransactionId: first?.id ?? null,
+      firstCategoryIdPresent: Boolean(first?.categoryId),
+    });
+  }, [transactions]);
+
   const totals = useMemo(() => {
     let income = 0;
     let expense = 0;
@@ -425,11 +482,13 @@ export function TransactionsScreen() {
       }
 
       const transaction = item.transaction;
+      const categoryLabel = getTransactionCategoryLabel(transaction, categoryNameById, t);
+
       return (
         <TransactionRow
           amount={formatSignedAmount(transaction.amount, transaction.currency, transaction.type, locale)}
-          categoryIconName={getCategoryIconName(transaction)}
-          date={getCategoryHint(transaction, t, locale)}
+          categoryIconName={getCategoryIconName(transaction, categoryLabel)}
+          date={getCategoryHint(transaction, categoryLabel, t, locale)}
           dark={mode === 'dark'}
           kind={transaction.kind}
           isDeleted={!!transaction.deletedAt}
@@ -439,12 +498,12 @@ export function TransactionsScreen() {
               ? navigation.navigate('TransactionDetail', { transactionId: transaction.id })
               : navigation.navigate('EditTransaction', { transactionId: transaction.id })
           }
-          title={getTransactionTitle(transaction, t)}
+          title={getTransactionTitle(transaction, categoryNameById, t)}
           type={transaction.type}
         />
       );
     },
-    [locale, mode, navigation, onTransactionRowLongPress, t, theme.colors.textMuted],
+    [categoryNameById, locale, mode, navigation, onTransactionRowLongPress, t, theme.colors.textMuted],
   );
 
   if (transactionsQuery.isLoading) {

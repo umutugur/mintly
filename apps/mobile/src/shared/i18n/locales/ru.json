@@ -693,6 +693,7 @@
     "transaction": {
       "expenseTitle": "Расход",
       "incomeTitle": "Доход",
+      "uncategorized": "Без категории",
       "transferContext": "Перевод",
       "transferTitle": "Перевод"
     },
@@ -1574,12 +1575,14 @@
       "splitTitle": "Разделить"
     },
     "row": {
+      "categoryHint": "{{category}} • {{time}}",
       "expenseTitle": "Расход",
       "incomeTitle": "Доход",
       "transferBadge": "ПЕРЕВОД",
       "transferHint": "Перевод • {{time}}",
       "transferTitle": "Перевод между счетами",
-      "typeHint": "{{type}} • {{time}}"
+      "typeHint": "{{type}} • {{time}}",
+      "uncategorized": "Без категории"
     },
     "searchPlaceholder": "Поиск по транзакции или магазину...",
     "state": {
