@@ -7,6 +7,11 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { showRewardedInsightAd } from '@core/ads/RewardedManager';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useI18n } from '@shared/i18n';
+import {
+  createAdvisorRequestId,
+  logAdvisorReq,
+  reserveAdvisorRequestId,
+} from '@features/advisor/utils/advisorDiagnostics';
 
 import { consumeDailyFreeAdvisorUsage } from './advisorFreeUsage';
 import { startAdvisorInsightGeneration, useAdvisorInsightInflight } from './advisorInsightInflight';
@@ -38,7 +43,21 @@ export function useAdvisorInsightRegenerateWithRewarded(
     queryClient.setQueryData(financeQueryKeys.ai.advisorInsights(month, locale), insight);
   }, [locale, month, queryClient]);
 
-  const startGenerationAndApply = useCallback((): Promise<AdvisorInsight> => {
+  const startGenerationAndApply = useCallback((requestId?: string): Promise<AdvisorInsight> => {
+    const resolvedRequestId = requestId ?? createAdvisorRequestId();
+    reserveAdvisorRequestId({
+      requestId: resolvedRequestId,
+      month,
+      language: locale,
+      regenerate: true,
+    });
+    logAdvisorReq('regenerate_request_fired', {
+      requestId: resolvedRequestId,
+      month,
+      language: locale,
+      regenerate: true,
+    });
+
     const promise = startAdvisorInsightGeneration({
       month,
       language: locale,
@@ -78,22 +97,22 @@ export function useAdvisorInsightRegenerateWithRewarded(
 
       let generationPromise: Promise<AdvisorInsight> | null = null;
       let generationStarted = false;
+      const adRegenerateRequestId = createAdvisorRequestId();
       const startGenerationInBackground = () => {
         if (generationStarted) {
           return;
         }
 
         generationStarted = true;
-        generationPromise = startAdvisorInsightGeneration({
-          month,
-          language: locale,
-          withAuth,
-        });
+        generationPromise = startGenerationAndApply(adRegenerateRequestId);
       };
 
       setIsRewardGatePending(true);
       const rewarded = await showRewardedInsightAd({
-        onAdStarted: startGenerationInBackground,
+        onAdStarted: () => {
+          logAdvisorReq('rewarded_open', { month, language: locale });
+          startGenerationInBackground();
+        },
       }).catch(() => false);
       setIsRewardGatePending(false);
 
@@ -101,6 +120,7 @@ export function useAdvisorInsightRegenerateWithRewarded(
         return;
       }
 
+      logAdvisorReq('rewarded_earned', { month, language: locale });
       startGenerationInBackground();
       if (!generationPromise) {
         return;
