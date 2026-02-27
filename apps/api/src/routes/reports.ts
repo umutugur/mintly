@@ -16,6 +16,7 @@ import { UserModel } from '../models/User.js';
 import { parseObjectId, parseQuery, requireUser } from './utils.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+type WeeklyReportLanguage = 'tr' | 'en' | 'ru';
 
 function toDateOnlyUtc(value: Date): string {
   const year = value.getUTCFullYear();
@@ -63,6 +64,33 @@ function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+function toLocale(language: WeeklyReportLanguage): string {
+  if (language === 'tr') return 'tr-TR';
+  if (language === 'ru') return 'ru-RU';
+  return 'en-US';
+}
+
+function formatAmount(value: number, currency: string | null | undefined, language: WeeklyReportLanguage): string {
+  const rounded = Math.round(value * 100) / 100;
+  const locale = toLocale(language);
+
+  if (currency) {
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 2,
+      }).format(rounded);
+    } catch {
+      // Fallback to plain numeric formatting below.
+    }
+  }
+
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 2,
+  }).format(rounded);
+}
+
 export function registerReportRoutes(app: FastifyInstance): void {
   app.get('/reports/weekly', { preHandler: authenticate }, async (request) => {
     const user = requireUser(request);
@@ -70,6 +98,7 @@ export function registerReportRoutes(app: FastifyInstance): void {
     const query = parseQuery<WeeklyReportQuery>(weeklyReportQuerySchema, request.query);
 
     const weekStart = query.weekStart ? parseDateOnlyUtc(query.weekStart) : getCurrentWeekStartUtc();
+    const language = (query.language ?? 'en') as WeeklyReportLanguage;
     const weekEndExclusive = new Date(weekStart.getTime() + 7 * DAY_MS);
     const weekEndInclusive = new Date(weekEndExclusive.getTime() - DAY_MS);
     const month = toMonthString(weekStart);
@@ -214,48 +243,116 @@ export function registerReportRoutes(app: FastifyInstance): void {
 
     const healthScore = clampScore(score);
 
-    let summaryText = 'Stable week. Keep monitoring spending patterns.';
+    const incomeText = formatAmount(totalIncome, userDoc.baseCurrency, language);
+    const expenseText = formatAmount(totalExpense, userDoc.baseCurrency, language);
+    const netText = formatAmount(net, userDoc.baseCurrency, language);
+    const topExpenseText = formatAmount(topExpenseAmount, userDoc.baseCurrency, language);
+
+    let summaryText = language === 'tr'
+      ? 'Hafta genel olarak dengeli geçti. Harcama düzenini izlemeye devam et.'
+      : language === 'ru'
+        ? 'Неделя прошла в целом стабильно. Продолжайте контролировать структуру расходов.'
+        : 'Stable week. Keep monitoring spending patterns.';
     if (healthScore >= 80) {
-      summaryText = 'Strong financial health this week with disciplined spending.';
+      summaryText = language === 'tr'
+        ? 'Bu hafta finansal sağlık güçlü görünüyor; disiplinli harcama davranışı korunmuş.'
+        : language === 'ru'
+          ? 'На этой неделе финансовое состояние сильное: дисциплина расходов сохраняется.'
+          : 'Strong financial health this week with disciplined spending.';
     } else if (healthScore < 60) {
-      summaryText = 'Financial pressure detected this week. Review budgets and reduce variable costs.';
+      summaryText = language === 'tr'
+        ? 'Bu hafta finansal baskı sinyali var. Bütçeyi gözden geçirip değişken giderleri azaltmak faydalı olur.'
+        : language === 'ru'
+          ? 'На этой неделе есть сигнал финансового давления. Стоит пересмотреть бюджет и сократить переменные расходы.'
+          : 'Financial pressure detected this week. Review budgets and reduce variable costs.';
     }
 
-    const highlights: string[] = [
-      `Income this week: ${Math.round(totalIncome * 100) / 100}`,
-      `Expenses this week: ${Math.round(totalExpense * 100) / 100}`,
-      `Net this week: ${Math.round(net * 100) / 100}`,
-    ];
+    const highlights: string[] = language === 'tr'
+      ? [
+          `Bu hafta gelir: ${incomeText}`,
+          `Bu hafta gider: ${expenseText}`,
+          `Bu hafta net: ${netText}`,
+        ]
+      : language === 'ru'
+        ? [
+            `Доход за неделю: ${incomeText}`,
+            `Расход за неделю: ${expenseText}`,
+            `Чистый итог недели: ${netText}`,
+          ]
+        : [
+            `Income this week: ${incomeText}`,
+            `Expenses this week: ${expenseText}`,
+            `Net this week: ${netText}`,
+          ];
 
     if (topExpenseCategoryId) {
-      highlights.push(
-        `Top expense category: ${categoryNameById.get(topExpenseCategoryId) ?? 'Unknown'} (${Math.round(topExpenseAmount * 100) / 100})`,
-      );
+      const topCategoryName = categoryNameById.get(topExpenseCategoryId)
+        ?? (language === 'tr' ? 'Bilinmeyen' : language === 'ru' ? 'Неизвестно' : 'Unknown');
+      if (language === 'tr') {
+        highlights.push(`En yüksek gider kategorisi: ${topCategoryName} (${topExpenseText})`);
+      } else if (language === 'ru') {
+        highlights.push(`Категория с максимальным расходом: ${topCategoryName} (${topExpenseText})`);
+      } else {
+        highlights.push(`Top expense category: ${topCategoryName} (${topExpenseText})`);
+      }
     }
 
     const riskFlags: string[] = [];
     if (expenseIncomeRatio > 0.9) {
-      riskFlags.push('Expense to income ratio is above 90%.');
+      riskFlags.push(
+        language === 'tr'
+          ? 'Gider/gelir oranı %90 üzerinde.'
+          : language === 'ru'
+            ? 'Соотношение расходов к доходам выше 90%.'
+            : 'Expense to income ratio is above 90%.',
+      );
     }
     if (net < 0) {
-      riskFlags.push('Weekly net is negative.');
+      riskFlags.push(
+        language === 'tr'
+          ? 'Haftalık net sonuç negatif.'
+          : language === 'ru'
+            ? 'Недельный чистый результат отрицательный.'
+            : 'Weekly net is negative.',
+      );
     }
     for (const overrun of budgetOverruns.slice(0, 3)) {
-      riskFlags.push(`Budget overrun in ${overrun.categoryName}.`);
+      riskFlags.push(
+        language === 'tr'
+          ? `${overrun.categoryName} kategorisinde bütçe aşımı var.`
+          : language === 'ru'
+            ? `В категории ${overrun.categoryName} есть превышение бюджета.`
+            : `Budget overrun in ${overrun.categoryName}.`,
+      );
     }
 
     if (riskFlags.length === 0) {
-      riskFlags.push('No major risk signals detected for this week.');
+      riskFlags.push(
+        language === 'tr'
+          ? 'Bu hafta için belirgin risk sinyali tespit edilmedi.'
+          : language === 'ru'
+            ? 'На этой неделе существенных риск-сигналов не обнаружено.'
+            : 'No major risk signals detected for this week.',
+      );
     }
 
-    let nextWeekForecastText =
-      'Maintain current routine and review your dashboard mid-week for adjustments.';
+    let nextWeekForecastText = language === 'tr'
+      ? 'Mevcut rutini koruyup hafta ortasında gösterge panelini kontrol ederek küçük ayarlar yap.'
+      : language === 'ru'
+        ? 'Сохраняйте текущий ритм и сделайте короткую проверку панели в середине недели для корректировок.'
+        : 'Maintain current routine and review your dashboard mid-week for adjustments.';
     if (healthScore >= 80) {
-      nextWeekForecastText =
-        'If this trend continues, next week should stay within budget with room to save more.';
+      nextWeekForecastText = language === 'tr'
+        ? 'Bu trend sürerse gelecek hafta bütçe içinde kalırken birikim alanı da artabilir.'
+        : language === 'ru'
+          ? 'Если тренд сохранится, на следующей неделе бюджет останется под контролем и появится пространство для накоплений.'
+          : 'If this trend continues, next week should stay within budget with room to save more.';
     } else if (healthScore < 60) {
-      nextWeekForecastText =
-        'Without spending adjustments, next week may increase budget pressure. Prioritize fixed essentials first.';
+      nextWeekForecastText = language === 'tr'
+        ? 'Harcama ayarı yapılmazsa gelecek hafta bütçe baskısı artabilir. Önce sabit ve zorunlu kalemleri önceliklendir.'
+        : language === 'ru'
+          ? 'Без корректировки расходов давление на бюджет на следующей неделе может усилиться. Сначала приоритизируйте обязательные фиксированные платежи.'
+          : 'Without spending adjustments, next week may increase budget pressure. Prioritize fixed essentials first.';
     }
 
     return weeklyReportResponseSchema.parse({
@@ -270,4 +367,3 @@ export function registerReportRoutes(app: FastifyInstance): void {
     });
   });
 }
-

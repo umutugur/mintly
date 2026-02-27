@@ -517,6 +517,7 @@ export const aiAdviceResponseSchema = z.object({
 
 export const weeklyReportQuerySchema = z.object({
   weekStart: dateOnlyStringSchema.optional(),
+  language: z.enum(['tr', 'en', 'ru']).default('en'),
 });
 
 export const weeklyReportResponseSchema = z.object({

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useQuery } from '@tanstack/react-query';
+import { useNavigation, type NavigationProp } from '@react-navigation/native';
 
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
+import { safePopToTop } from '@core/navigation/safePopToTop';
 import { useAuth } from '@app/providers/AuthProvider';
 import { Card, ScreenContainer } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
@@ -77,13 +79,37 @@ export function WeeklyReportScreen() {
   const { withAuth } = useAuth();
   const { theme, mode } = useTheme();
   const { locale, t } = useI18n();
+  const navigation = useNavigation<NavigationProp<Record<string, object | undefined>>>();
   const [weekStart, setWeekStart] = useState(getCurrentWeekStartString());
 
   const dark = mode === 'dark';
+  const reportLanguage = locale.startsWith('tr')
+    ? 'tr'
+    : locale.startsWith('ru')
+      ? 'ru'
+      : 'en';
+
+  useEffect(() => {
+    const parent = navigation.getParent?.();
+    if (!parent) {
+      return undefined;
+    }
+
+    return parent.addListener('tabPress' as never, (event: any) => {
+      const state = parent.getState();
+      const focusedRoute = state.routes[state.index];
+      if (!focusedRoute || event.target !== focusedRoute.key) {
+        return;
+      }
+
+      event.preventDefault();
+      safePopToTop(navigation, 'Analytics');
+    });
+  }, [navigation]);
 
   const reportQuery = useQuery({
-    queryKey: financeQueryKeys.reports.weekly(weekStart),
-    queryFn: () => withAuth((token) => apiClient.getWeeklyReport({ weekStart }, token)),
+    queryKey: [...financeQueryKeys.reports.weekly(weekStart), reportLanguage],
+    queryFn: () => withAuth((token) => apiClient.getWeeklyReport({ weekStart, language: reportLanguage }, token)),
   });
 
   if (reportQuery.isLoading && !reportQuery.data) {
@@ -131,6 +157,7 @@ export function WeeklyReportScreen() {
         <View style={styles.weekRow}>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t('common.goBack')}
             onPress={() => setWeekStart(shiftWeek(weekStart, -1))}
             style={({ pressed }) => [styles.arrowButton, pressed && styles.pressed]}
           >
@@ -141,6 +168,7 @@ export function WeeklyReportScreen() {
 
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t('common.next')}
             onPress={() => setWeekStart(shiftWeek(weekStart, 1))}
             style={({ pressed }) => [styles.arrowButton, pressed && styles.pressed]}
           >
