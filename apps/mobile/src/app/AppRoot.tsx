@@ -33,7 +33,7 @@ export function AppRoot() {
                       <AdvisorInsightPrefetchBootstrap />
                       <AppNavigator />
                       <OfflineBanner />
-                      <DevDiagnosticsOverlay />
+                      {__DEV__ ? <DevDiagnosticsOverlay /> : null}
                     </AdProvider>
                   </AuthProvider>
                 </QueryProvider>
