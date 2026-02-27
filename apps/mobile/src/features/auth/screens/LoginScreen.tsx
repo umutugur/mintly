@@ -40,8 +40,29 @@ interface LoginErrors {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME =
+  'com.googleusercontent.apps.1085364770994-t92be8lrnis7ma7o8kqpa3qsiulqbra2';
 
 WebBrowser.maybeCompleteAuthSession();
+
+function resolveGoogleIosRedirectScheme(iosClientId: string): string {
+  const trimmed = iosClientId.trim();
+  if (!trimmed) {
+    return DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME;
+  }
+
+  const suffix = '.apps.googleusercontent.com';
+  if (!trimmed.endsWith(suffix)) {
+    return DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME;
+  }
+
+  const base = trimmed.slice(0, -suffix.length);
+  if (!base) {
+    return DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME;
+  }
+
+  return `com.googleusercontent.apps.${base}`;
+}
 
 function validateLogin(email: string, password: string, t: (key: string) => string): LoginErrors {
   const next: LoginErrors = {};
@@ -87,6 +108,19 @@ function extractGoogleIdToken(result: unknown): string | null {
   return null;
 }
 
+function getAuthorizeClientId(authorizeUrl: string | null | undefined): string | null {
+  if (!authorizeUrl) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(authorizeUrl);
+    return parsed.searchParams.get('client_id');
+  } catch {
+    return null;
+  }
+}
+
 function isCancelledError(error: unknown): boolean {
   if (!error || typeof error !== 'object') {
     return false;
@@ -123,30 +157,28 @@ export function LoginScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeOauthProvider, setActiveOauthProvider] = useState<OauthProvider | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
-  const googleRedirectUri = useMemo(
-    () =>
-      makeRedirectUri({
-        scheme: 'mintly',
-        path: 'oauthredirect',
-      }),
+  const googleIosRedirectScheme = useMemo(
+    () => resolveGoogleIosRedirectScheme(mobileEnv.googleOauthIosClientId),
     [],
   );
-  const googlePrimaryClientId = useMemo(
-    () =>
-      Platform.select({
-        ios: mobileEnv.googleOauthIosClientId,
-        android: mobileEnv.googleOauthAndroidClientId,
-        default: mobileEnv.googleOauthWebClientId,
-      }) ??
-      mobileEnv.googleOauthIosClientId ??
-      mobileEnv.googleOauthAndroidClientId ??
-      mobileEnv.googleOauthWebClientId ??
-      '',
-    [],
+  const googleRedirectUri = useMemo(
+    () => {
+      if (Platform.OS === 'ios') {
+        return makeRedirectUri({
+          scheme: googleIosRedirectScheme,
+          path: 'oauthredirect',
+        });
+      }
+
+      return makeRedirectUri({
+        scheme: 'mintly',
+        path: 'oauthredirect',
+      });
+    },
+    [googleIosRedirectScheme],
   );
 
   const [googleRequest, , promptGoogleAsync] = Google.useIdTokenAuthRequest({
-    clientId: googlePrimaryClientId,
     webClientId: mobileEnv.googleOauthWebClientId,
     iosClientId: mobileEnv.googleOauthIosClientId,
     androidClientId: mobileEnv.googleOauthAndroidClientId,
@@ -170,10 +202,11 @@ export function LoginScreen({ navigation }: Props) {
       hasWebClientId: Boolean(mobileEnv.googleOauthWebClientId),
       hasIosClientId: Boolean(mobileEnv.googleOauthIosClientId),
       hasAndroidClientId: Boolean(mobileEnv.googleOauthAndroidClientId),
-      primaryClientIdSet: googlePrimaryClientId.length > 0,
+      iosRedirectScheme: googleIosRedirectScheme,
       requestReady: Boolean(googleRequest),
       redirectUri: googleRedirectUri,
       authorizeUrl: googleRequest?.url ?? null,
+      authorizeClientId: getAuthorizeClientId(googleRequest?.url),
     });
 
     if (Platform.OS === 'ios' && !mobileEnv.googleOauthIosClientId) {
@@ -183,7 +216,7 @@ export function LoginScreen({ navigation }: Props) {
     if (Platform.OS === 'android' && !mobileEnv.googleOauthAndroidClientId) {
       console.info('[auth][google][dev-hint] Missing EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID for Android build.');
     }
-  }, [googlePrimaryClientId, googleRedirectUri, googleRequest]);
+  }, [googleIosRedirectScheme, googleRedirectUri, googleRequest]);
 
   const submit = async () => {
     if (isSubmitting || activeOauthProvider) {

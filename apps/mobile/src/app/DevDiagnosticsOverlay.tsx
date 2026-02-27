@@ -28,6 +28,21 @@ function resolveScheme(): string {
   return 'unknown';
 }
 
+function resolveGoogleIosRedirectScheme(iosClientId: string): string {
+  const trimmed = iosClientId.trim();
+  const suffix = '.apps.googleusercontent.com';
+  if (!trimmed || !trimmed.endsWith(suffix)) {
+    return 'com.googleusercontent.apps.1085364770994-t92be8lrnis7ma7o8kqpa3qsiulqbra2';
+  }
+
+  const base = trimmed.slice(0, -suffix.length);
+  if (!base) {
+    return 'com.googleusercontent.apps.1085364770994-t92be8lrnis7ma7o8kqpa3qsiulqbra2';
+  }
+
+  return `com.googleusercontent.apps.${base}`;
+}
+
 export function DevDiagnosticsOverlay() {
   const { status, withAuth } = useAuth();
   const { isPremium } = useAds();
@@ -35,11 +50,17 @@ export function DevDiagnosticsOverlay() {
   const [aiHealthDetail, setAiHealthDetail] = useState('not_checked');
 
   const redirectUri = useMemo(
-    () =>
-      makeRedirectUri({
-        scheme: 'mintly',
+    () => {
+      const scheme =
+        Platform.OS === 'ios'
+          ? resolveGoogleIosRedirectScheme(mobileEnv.googleOauthIosClientId)
+          : 'mintly';
+
+      return makeRedirectUri({
+        scheme,
         path: 'oauthredirect',
-      }),
+      });
+    },
     [],
   );
   const configuredScheme = useMemo(resolveScheme, []);

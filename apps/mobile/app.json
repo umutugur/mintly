@@ -2,10 +2,7 @@
   "expo": {
     "name": "Mintly",
     "slug": "mintly",
-    "scheme": [
-      "mintly",
-      "com.mintly.app"
-    ],
+    "scheme": "mintly",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/brand/mintly-icon.png",
@@ -24,7 +21,15 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is needed to scan receipts.",
         "NSPhotoLibraryUsageDescription": "Photo library access is needed to select receipt images.",
-        "NSUserNotificationUsageDescription": "Notifications remind you before upcoming payments are due."
+        "NSUserNotificationUsageDescription": "Notifications remind you before upcoming payments are due.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "mintly",
+              "com.googleusercontent.apps.1085364770994-t92be8lrnis7ma7o8kqpa3qsiulqbra2"
+            ]
+          }
+        ]
       }
     },
     "android": {
@@ -41,7 +46,22 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "mintly",
+              "host": "oauthredirect"
+            }
+          ]
+        }
+      ]
     },
     "plugins": [
       "expo-apple-authentication",

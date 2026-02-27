@@ -49,10 +49,17 @@ APPLE_OAUTH_CLIENT_IDS=com.finsight.app
 
 ### Mobile OAuth env variables (Expo)
 
-Set these in `apps/mobile/.env` (or EAS env):
+Set these in repo-root `.env`/`.env.local` (or EAS env):
 - `EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID`
 - `EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID`
 - `EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID`
+
+Use `.env.example` as the template for local development.
+
+### Google OAuth setup note
+
+For this project (`expo-auth-session` + `useIdTokenAuthRequest`), `google-services.json` is **not required**.
+It is only needed for Firebase/native Google SDK integrations (for example FCM, Analytics, or Firebase Auth native flows).
 
 ### Render API behavior notes
 - API binds to `0.0.0.0` and uses `PORT`.

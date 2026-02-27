@@ -1,5 +1,8 @@
 {
   "expo": {
+    "name": "Mintly",
+    "slug": "mintly",
+    "scheme": "mintly",
     "packagerOpts": {
       "entryPoint": "./apps/mobile/index.ts"
     },
@@ -9,10 +12,10 @@
       }
     },
     "android": {
-      "package": "com.umutugur.mintly"
+      "package": "com.mintly.app"
     },
     "ios": {
-      "bundleIdentifier": "com.umutugur.mintly"
+      "bundleIdentifier": "com.mintly.app"
     }
   }
 }
