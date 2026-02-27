@@ -56,10 +56,10 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
 
   app.log.info(
     {
-      provider: config.advisorProvider,
-      model: config.cloudflareAiModel,
+      advisorMode: 'manual',
+      advisorProvider: 'manual',
     },
-    `advisor provider=${config.advisorProvider} model=${config.cloudflareAiModel}`,
+    'advisor insights manual engine enabled',
   );
 
   const allowedOrigins = new Set(config.corsOrigins);

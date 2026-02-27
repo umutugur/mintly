@@ -259,6 +259,17 @@ export function registerAdvisorRoutes(app: FastifyInstance): void {
     const query = parseQuery<AdvisorInsightsQuery>(advisorInsightsQuerySchema, request.query);
     const userId = parseObjectId(user.id, 'userId');
     enforceAdvisorRegenerateCooldown(user.id, query.regenerate);
+    const advisorRequestIdHeader = request.headers['x-advisor-request-id'];
+    const variantNonceFromHeader = typeof advisorRequestIdHeader === 'string'
+      ? advisorRequestIdHeader
+      : Array.isArray(advisorRequestIdHeader)
+        ? advisorRequestIdHeader[0] ?? null
+        : null;
+    const variantNonce = query.regenerate
+      ? (variantNonceFromHeader && variantNonceFromHeader.trim().length > 0
+          ? variantNonceFromHeader
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`)
+      : variantNonceFromHeader;
 
     try {
       const result = await generateAdvisorInsight({
@@ -266,6 +277,7 @@ export function registerAdvisorRoutes(app: FastifyInstance): void {
         month: query.month,
         language: query.language,
         regenerate: query.regenerate,
+        variantNonce,
         onDiagnostic: (diagnostic) => {
           request.log.info(
             {

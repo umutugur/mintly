@@ -7,18 +7,7 @@ import {
 import type { Types } from 'mongoose';
 import { z } from 'zod';
 
-import { getConfig } from '../config.js';
-import { ApiError } from '../errors.js';
-import {
-  CloudflareProviderError,
-  generateCloudflareText,
-} from './ai/cloudflare.js';
-import {
-  listOnysoftModels,
-  generateOnysoftText,
-  isOnysoftModelUnavailable,
-  markOnysoftModelUnavailable,
-} from './ai/onysoft.js';
+import { generateManualAdvisorAdvice } from './advisor-manual-engine.js';
 import { getMonthBoundaries } from './month.js';
 import { AccountModel } from '../models/Account.js';
 import { BudgetModel } from '../models/Budget.js';
@@ -29,22 +18,6 @@ import { UserModel } from '../models/User.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
-const ONYSOFT_MODEL_FALLBACK_CHAIN = [
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'deepseek/deepseek-r1-0528:free',
-  'mistralai/mistral-small-3.1-24b-instruct:free',
-] as const;
-const ONYSOFT_PROVIDER_DEADLINE_MS = 8_000;
-const ONYSOFT_MODEL_ATTEMPT_TIMEOUT_MS = 3_600;
-const ONYSOFT_MIN_REMAINING_MS = 500;
-const ONYSOFT_MAX_MODEL_ATTEMPTS = 2;
-const ONYSOFT_RATE_LIMIT_BACKOFFS_MS = [800, 1600] as const;
-
-const languageNameMap: Record<AiInsightsLanguage, string> = {
-  tr: 'Turkish',
-  en: 'English',
-  ru: 'Russian',
-};
 
 const providerOutputSchema = z.object({
   summary: z.string().min(1).max(1500),
@@ -84,8 +57,7 @@ const providerOutputSchema = z.object({
   tips: z.array(z.string().min(1).max(320)).min(1).max(10),
 });
 
-// Looser schema to salvage partial provider JSON (Cloudflare sometimes omits fields).
-// We will merge with fallbackAdvice to fill missing pieces.
+// Looser schema to salvage partial manual output and merge with deterministic fallback fields.
 const providerOutputLooseSchema = z
   .object({
     summary: z.string().min(1).max(1500).optional(),
@@ -216,88 +188,8 @@ interface GenerateAdvisorInsightInput {
   month: string;
   language: AiInsightsLanguage;
   regenerate?: boolean;
+  variantNonce?: string | null;
   onDiagnostic?: (event: AdvisorInsightDiagnosticEvent) => void;
-}
-
-interface PromptPayload {
-  month: string;
-  language: AiInsightsLanguage;
-  currency: string | null;
-  preferences: {
-    savingsTargetRate: number;
-    riskProfile: RiskProfile;
-  };
-  balancesSnapshot: {
-    accountCount: number;
-    totalBalance: number;
-  };
-  spendOverview: {
-    last30DaysIncome: number;
-    last30DaysExpense: number;
-    last30DaysNet: number;
-    currentMonthIncome: number;
-    currentMonthExpense: number;
-    currentMonthNet: number;
-    savingsRate: number;
-  };
-  categoryBreakdown: Array<{
-    name: string;
-    total: number;
-    sharePercent: number;
-  }>;
-  cashflowTrend: Array<{
-    month: string;
-    incomeTotal: number;
-    expenseTotal: number;
-    netTotal: number;
-  }>;
-  budgetAdherence: {
-    trackedCount: number;
-    onTrackCount: number;
-    nearLimitCount: number;
-    overLimitCount: number;
-    items: Array<{
-      categoryName: string;
-      limitAmount: number;
-      spentAmount: number;
-      remainingAmount: number;
-      percentUsed: number;
-      status: 'on_track' | 'near_limit' | 'over_limit';
-    }>;
-  };
-  recurringOutflows: {
-    rules: Array<{
-      label: string;
-      cadence: 'weekly' | 'monthly';
-      amount: number;
-    }>;
-    merchants: Array<{
-      label: string;
-      total: number;
-      count: number;
-    }>;
-  };
-  flags: {
-    overspendingCategoryNames: string[];
-    negativeCashflow: boolean;
-    lowSavingsRate: boolean;
-    irregularIncome: boolean;
-  };
-  derivedMetrics: {
-    incomeMoMPercent: number | null;
-    expenseMoMPercent: number | null;
-    topExpenseDrivers: Array<{
-      name: string;
-      changeAmount: number;
-      changePercent: number;
-    }>;
-    recurringBurdenRatio: number;
-    anomalyTransactions: Array<{
-      label: string;
-      amount: number;
-      occurredAt: string;
-    }>;
-  };
 }
 
 interface FallbackCopy {
@@ -318,20 +210,13 @@ interface FallbackCopy {
   highRiskOptions: string[];
 }
 
-type FallbackReason =
-  | 'missing_api_key'
-  | 'provider_timeout'
-  | 'provider_http_error'
-  | 'provider_parse_error'
-  | 'provider_validation_error'
-  | 'provider_unknown_error';
-
 type ProviderDiagnosticStage =
   | 'provider_config'
   | 'provider_attempt'
   | 'provider_request'
   | 'provider_response'
   | 'provider_response_body'
+  | 'manual_engine'
   | 'provider_request_invalid'
   | 'provider_error'
   | 'provider_health'
@@ -341,7 +226,7 @@ interface AdvisorInsightDiagnosticEvent {
   stage: ProviderDiagnosticStage;
   attempt?: number;
   durationMs?: number;
-  provider?: 'cloudflare' | 'onysoft';
+  provider?: 'cloudflare' | 'onysoft' | 'manual';
   keyConfigured?: boolean;
   endpointBase?: string;
   model?: string;
@@ -354,6 +239,15 @@ interface AdvisorInsightDiagnosticEvent {
   responseShape?: string;
   reason?: string;
   detail?: string;
+  triggeredCategories?: string[];
+  variantSeedSource?: 'stable' | 'nonce';
+  variantNoncePresent?: boolean;
+  variantKey?: string;
+  selectedTemplateIndexes?: {
+    summary: number;
+    findings: number[];
+    actions: number[];
+  };
 }
 
 interface CacheEntry {
@@ -541,12 +435,6 @@ function previewAiOutput(value: string, maxLen = 420): string {
   return `${redacted.slice(0, maxLen)}...`;
 }
 
-async function sleep(ms: number): Promise<void> {
-  await new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 function formatZodIssues(error: z.ZodError): string {
   const first = error.issues[0];
   if (!first) {
@@ -675,206 +563,6 @@ function resolveAnchorDate(monthEndExclusive: Date): Date {
   return todayUtc;
 }
 
-function tryParseJsonCandidate(value: string): unknown | undefined {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return undefined;
-  }
-}
-
-function extractFirstJsonObject(value: string): string | null {
-  const start = value.indexOf('{');
-  if (start === -1) {
-    return null;
-  }
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let index = start; index < value.length; index += 1) {
-    const char = value[index];
-
-    if (inString) {
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-
-      if (char === '\\') {
-        escaped = true;
-        continue;
-      }
-
-      if (char === '"') {
-        inString = false;
-      }
-
-      continue;
-    }
-
-    if (char === '"') {
-      inString = true;
-      continue;
-    }
-
-    if (char === '{') {
-      depth += 1;
-      continue;
-    }
-
-    if (char === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        return value.slice(start, index + 1);
-      }
-    }
-  }
-
-  return null;
-}
-
-function parseJsonFromUnknown(value: unknown, depth = 0): unknown | undefined {
-  if (depth > 4) {
-    return undefined;
-  }
-
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (trimmed.length === 0) {
-      return undefined;
-    }
-
-    const directParsed = tryParseJsonCandidate(trimmed);
-    if (directParsed !== undefined) {
-      const recursive = parseJsonFromUnknown(directParsed, depth + 1);
-      return recursive ?? directParsed;
-    }
-
-    const objectCandidate = extractFirstJsonObject(trimmed);
-    if (!objectCandidate) {
-      return undefined;
-    }
-
-    const objectParsed = tryParseJsonCandidate(objectCandidate);
-    if (objectParsed !== undefined) {
-      const recursive = parseJsonFromUnknown(objectParsed, depth + 1);
-      return recursive ?? objectParsed;
-    }
-
-    return undefined;
-  }
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const parsed = parseJsonFromUnknown(item, depth + 1);
-      if (parsed !== undefined) {
-        return parsed;
-      }
-    }
-    return undefined;
-  }
-
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const nestedKeys = [
-      'result',
-      'response',
-      'output_text',
-      'generated_text',
-      'content',
-      'message',
-      'text',
-      'completion',
-    ] as const;
-
-    for (const key of nestedKeys) {
-      const parsed = parseJsonFromUnknown(record[key], depth + 1);
-      if (parsed !== undefined) {
-        return parsed;
-      }
-    }
-  }
-
-  return undefined;
-}
-
-function parseStrictJsonPayload(text: string): unknown {
-  const trimmed = text.trim();
-  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  const candidate = fencedMatch ? fencedMatch[1] : trimmed;
-
-  const parsed = parseJsonFromUnknown(candidate);
-  if (parsed !== undefined) {
-    return parsed;
-  }
-
-  throw new Error('No JSON object found');
-}
-
-function mapCloudflareErrorToFallbackReason(error: CloudflareProviderError): FallbackReason {
-  if (error.reason === 'timeout') {
-    return 'provider_timeout';
-  }
-
-  if (error.reason === 'response_parse_error' || error.reason === 'response_shape_error') {
-    return 'provider_parse_error';
-  }
-
-  if (error.reason === 'rate_limited' || error.reason === 'http_error') {
-    return 'provider_http_error';
-  }
-
-  return 'provider_unknown_error';
-}
-
-function mapOnysoftFailureReason(reason: string | undefined): FallbackReason {
-  if (reason === 'timeout') {
-    return 'provider_timeout';
-  }
-
-  if (reason === 'response_parse_error' || reason === 'response_shape_error') {
-    return 'provider_parse_error';
-  }
-
-  if (
-    reason === 'http_error'
-    || reason === 'rate_limited'
-    || reason === 'model_unavailable'
-  ) {
-    return 'provider_http_error';
-  }
-
-  return 'provider_unknown_error';
-}
-
-function buildOnysoftModelChain(params: {
-  primaryModel: string;
-  discoveredModels: string[];
-  baseUrl: string;
-}): string[] {
-  const candidates = [params.primaryModel, ...ONYSOFT_MODEL_FALLBACK_CHAIN];
-  const uniqueModels: string[] = [];
-
-  for (const candidate of candidates) {
-    const model = candidate.trim();
-    if (model.length === 0 || uniqueModels.includes(model)) {
-      continue;
-    }
-    uniqueModels.push(model);
-  }
-
-  const discoveredSet = params.discoveredModels.length > 0
-    ? new Set(params.discoveredModels.map((model) => model.trim()))
-    : null;
-  const discoveryFiltered = discoveredSet
-    ? uniqueModels.filter((model) => discoveredSet.has(model))
-    : uniqueModels;
-
-  return discoveryFiltered.filter((model) => !isOnysoftModelUnavailable(params.baseUrl, model));
-}
-
 function cleanupExpiredCache(now = Date.now()): void {
   for (const [key, entry] of advisorInsightsCache.entries()) {
     if (entry.expiresAt <= now) {
@@ -913,68 +601,6 @@ function resolveCurrentAmountFromLabel(
   }
 
   return 0;
-}
-
-function buildPrompt(language: AiInsightsLanguage, payload: PromptPayload): string {
-  const languageName = languageNameMap[language];
-
-  return [
-    'You are Mintly AI, a conservative personal finance advisor.',
-    `Write all narrative text in ${languageName}.`,
-    'Use only the provided aggregate and anonymized data.',
-    'Do not include private identifiers, account numbers, emails, transaction IDs, or user IDs.',
-    'Return strict JSON only with this exact shape:',
-    JSON.stringify({
-      summary: 'string',
-      topFindings: ['string'],
-      suggestedActions: ['string'],
-      warnings: ['string'],
-      savings: {
-        targetRate: 0.2,
-        monthlyTargetAmount: 0,
-        next7DaysActions: ['string'],
-        autoTransferSuggestion: 'string',
-      },
-      investment: {
-        profiles: [
-          {
-            level: 'low',
-            title: 'string',
-            rationale: 'string',
-            options: ['string'],
-          },
-        ],
-        guidance: ['string'],
-      },
-      expenseOptimization: {
-        cutCandidates: [
-          {
-            label: 'string',
-            suggestedReductionPercent: 15,
-            alternativeAction: 'string',
-          },
-        ],
-        quickWins: ['string'],
-      },
-      tips: ['string'],
-    }),
-    'Rules:',
-    '- Output MUST be strict JSON only (no prose outside JSON).',
-    '- Do NOT repeat the same idea across different fields. Each bullet must be distinct.',
-    '- Avoid generic filler (e.g., "izleyin", "dikkatle takip edin", "monitor"). Write specific actions.',
-    '- summary: exactly 2 sentences. Sentence 1 must mention currentMonthNet and savingsRate as numbers/percent. Sentence 2 must mention one biggest category from categoryBreakdown by name.',
-    '- topFindings: exactly 4 bullets. Each bullet MUST contain at least one number (% or currency) pulled from Input JSON.',
-    '- suggestedActions: exactly 3 bullets. Each bullet MUST be doable within 7 days and start with an imperative verb.',
-    '- warnings: 0-3 bullets, ONLY if there is an actual risk flag (negativeCashflow, lowSavingsRate, overspendingCategoryNames, irregularIncome).',
-    '- savings.next7DaysActions: exactly 3 bullets (can reuse the actions style but MUST be different from suggestedActions).',
-    '- investment.profiles: include exactly 3 profiles (low, medium, high). Keep them short and non-repetitive.',
-    '- expenseOptimization.cutCandidates: exactly 3 items using labels from categoryBreakdown or recurringOutflows (no invented labels).',
-    '- expenseOptimization.quickWins: exactly 3 bullets, all different.',
-    '- tips: exactly 4 bullets, all different.',
-    '- IMPORTANT: every list field must be a JSON array (never a single string).',
-    '- Do not wrap the JSON in markdown fences.',
-    `Input JSON: ${JSON.stringify(payload)}`,
-  ].join('\n');
 }
 
 function buildFallbackAdvice(params: {
@@ -1243,30 +869,15 @@ function buildFallbackAdvice(params: {
 
 export async function generateAdvisorInsight(
   input: GenerateAdvisorInsightInput,
-  fetchImpl: FetchLike = (requestUrl, init) => fetch(requestUrl, init),
+  _fetchImpl: FetchLike = (requestUrl, init) => fetch(requestUrl, init),
 ): Promise<AdvisorInsight> {
-  const config = getConfig();
-  const cloudflareConfigured = config.advisorProvider === 'cloudflare'
-    && Boolean(config.cloudflareAuthToken && config.cloudflareAccountId);
-  const onysoftConfigured = config.advisorProvider === 'onysoft' && Boolean(config.onysoftApiKey);
-
-  if (config.advisorProvider === 'onysoft') {
-    input.onDiagnostic?.({
-      stage: 'provider_config',
-      provider: 'onysoft',
-      keyConfigured: onysoftConfigured,
-      endpointBase: `${config.onysoftBaseUrl}/v1/chat/completions`,
-      model: config.onysoftModel,
-    });
-  } else {
-    input.onDiagnostic?.({
-      stage: 'provider_config',
-      provider: 'cloudflare',
-      keyConfigured: cloudflareConfigured,
-      endpointBase: 'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/run/{MODEL}',
-      model: config.cloudflareAiModel,
-    });
-  }
+  input.onDiagnostic?.({
+    stage: 'provider_config',
+    provider: 'manual',
+    keyConfigured: true,
+    endpointBase: 'manual://advisor-manual-engine',
+    model: 'manual-insights-v1',
+  });
 
   const userDoc = await UserModel.findById(input.userId)
     .select('baseCurrency savingsTargetRate riskProfile');
@@ -1675,65 +1286,6 @@ export async function generateAdvisorInsight(
     savingsRate,
   };
 
-  const promptPayload: PromptPayload = {
-    month: input.month,
-    language: input.language,
-    currency,
-    preferences: {
-      savingsTargetRate: preferredSavingsTargetRate,
-      riskProfile: preferredRiskProfile,
-    },
-    balancesSnapshot: {
-      accountCount: accounts.length,
-      totalBalance,
-    },
-    spendOverview: overview,
-    categoryBreakdown: categoryBreakdown.map((item) => ({
-      name: item.name,
-      total: item.total,
-      sharePercent: item.sharePercent,
-    })),
-    cashflowTrend,
-    budgetAdherence: {
-      trackedCount: budgetAdherence.trackedCount,
-      onTrackCount: budgetAdherence.onTrackCount,
-      nearLimitCount: budgetAdherence.nearLimitCount,
-      overLimitCount: budgetAdherence.overLimitCount,
-      items: budgetItems.map((item) => ({
-        categoryName: item.categoryName,
-        limitAmount: item.limitAmount,
-        spentAmount: item.spentAmount,
-        remainingAmount: item.remainingAmount,
-        percentUsed: item.percentUsed,
-        status: item.status,
-      })),
-    },
-    recurringOutflows: {
-      rules: recurringRuleItems.map((item) => ({
-        label: item.label,
-        cadence: item.cadence,
-        amount: item.amount,
-      })),
-      merchants: merchantItems,
-    },
-    flags,
-    derivedMetrics: {
-      incomeMoMPercent,
-      expenseMoMPercent,
-      topExpenseDrivers,
-      recurringBurdenRatio,
-      anomalyTransactions,
-    },
-  };
-
-  let providerAdvice: ProviderOutput | null = null;
-  let fallbackReason: FallbackReason | null = null;
-  let providerStatus: number | null = null;
-  let provider: 'cloudflare' | 'onysoft' | null = null;
-  const prompt = buildPrompt(input.language, promptPayload);
-  const onysoftSystemPrompt =
-    'You are Mintly AI. Output ONE valid JSON object only (RFC 8259). No extra text. No markdown fences. Use double quotes for all keys and strings. Do not use trailing commas.';
-
   const fallbackAdvice = buildFallbackAdvice({
     language: input.language,
     currentMonthIncome,
@@ -1755,540 +1307,66 @@ export async function generateAdvisorInsight(
     preferredRiskProfile,
   });
 
-  if (config.advisorProvider === 'onysoft') {
-    if (onysoftConfigured && config.onysoftApiKey) {
-      const providerDeadlineAtMs = Date.now() + ONYSOFT_PROVIDER_DEADLINE_MS;
-      const discoveryStartedAt = Date.now();
-      input.onDiagnostic?.({
-        stage: 'provider_request',
-        provider: 'onysoft',
-        attempt: 0,
-        model: 'v1/models',
-      });
+  const manualEngineResult = generateManualAdvisorAdvice({
+    userId: input.userId.toString(),
+    month: input.month,
+    language: input.language,
+    currency: currency ?? 'TRY',
+    regenerate: Boolean(input.regenerate),
+    variantNonce: input.variantNonce,
+    currentMonthIncome,
+    currentMonthExpense,
+    currentMonthNet,
+    savingsRate,
+    savingsTargetRate: preferredSavingsTargetRate,
+    incomeMoMPercent,
+    expenseMoMPercent,
+    recurringBurdenRatio,
+    topExpenseDriverName: topExpenseDrivers[0]?.name ?? null,
+    categoryTopName: categoryBreakdown[0]?.name ?? null,
+    budgetNearLimitCount: budgetAdherence.nearLimitCount,
+    budgetOverLimitCount: budgetAdherence.overLimitCount,
+    anomalyCount: anomalyTransactions.length,
+  });
 
-      const discoveryRemainingMs = providerDeadlineAtMs - Date.now();
-      const discoveryTimeoutMs = Math.max(
-        500,
-        Math.min(
-          ONYSOFT_MODEL_ATTEMPT_TIMEOUT_MS,
-          Math.max(500, discoveryRemainingMs - ONYSOFT_MIN_REMAINING_MS),
-        ),
-      );
+  input.onDiagnostic?.({
+    stage: 'manual_engine',
+    provider: 'manual',
+    reason: 'manual_engine',
+    detail: `findings=${manualEngineResult.findings.length}`,
+    triggeredCategories: [...manualEngineResult.triggeredCategories],
+    variantSeedSource: manualEngineResult.variantSeedSource,
+    variantNoncePresent: manualEngineResult.variantNoncePresent,
+    variantKey: manualEngineResult.variantKey,
+    selectedTemplateIndexes: manualEngineResult.selectedTemplateIndexes,
+  });
 
-      const modelDiscovery = await listOnysoftModels(
-        {
-          apiKey: config.onysoftApiKey,
-          baseUrl: config.onysoftBaseUrl,
-          timeoutMs: discoveryTimeoutMs,
-          deadlineAtMs: providerDeadlineAtMs,
-        },
-        fetchImpl,
-      );
+  const mergedAdvice = mergeProviderWithFallback({
+    summary: manualEngineResult.advice.summary,
+    topFindings: manualEngineResult.advice.topFindings,
+    suggestedActions: manualEngineResult.advice.suggestedActions,
+    warnings: manualEngineResult.advice.warnings,
+    savings: {
+      targetRate: fallbackAdvice.savings.targetRate,
+      monthlyTargetAmount: fallbackAdvice.savings.monthlyTargetAmount,
+      next7DaysActions: manualEngineResult.advice.next7DaysActions,
+      autoTransferSuggestion: manualEngineResult.advice.autoTransferSuggestion,
+    },
+    investment: {
+      profiles: fallbackAdvice.investment.profiles,
+      guidance: manualEngineResult.advice.investmentGuidance,
+    },
+    expenseOptimization: {
+      cutCandidates: fallbackAdvice.expenseOptimization.cutCandidates,
+      quickWins: manualEngineResult.advice.quickWins,
+    },
+    tips: manualEngineResult.advice.tips,
+  }, fallbackAdvice);
 
-      const discoveryDurationMs = Date.now() - discoveryStartedAt;
-      input.onDiagnostic?.({
-        stage: 'provider_response',
-        provider: 'onysoft',
-        attempt: 0,
-        durationMs: discoveryDurationMs,
-        model: 'v1/models',
-        status: modelDiscovery.status ?? undefined,
-        ok: modelDiscovery.ok,
-      });
-      input.onDiagnostic?.({
-        stage: 'provider_response_body',
-        provider: 'onysoft',
-        attempt: 0,
-        durationMs: discoveryDurationMs,
-        model: 'v1/models',
-        status: modelDiscovery.status ?? undefined,
-        ok: modelDiscovery.ok,
-        detail: modelDiscovery.ok
-          ? `models=${modelDiscovery.models.length}; fromCache=${modelDiscovery.fromCache}`
-          : modelDiscovery.detail ?? 'model discovery failed',
-      });
-
-      const modelChain = buildOnysoftModelChain({
-        primaryModel: config.onysoftModel,
-        discoveredModels: modelDiscovery.ok ? modelDiscovery.models : [],
-        baseUrl: config.onysoftBaseUrl,
-      }).slice(0, ONYSOFT_MAX_MODEL_ATTEMPTS);
-
-      if (modelChain.length === 0) {
-        provider = 'onysoft';
-        providerStatus = modelDiscovery.status;
-        fallbackReason = 'provider_http_error';
-        input.onDiagnostic?.({
-          stage: 'fallback',
-          provider: 'onysoft',
-          reason: fallbackReason,
-          status: providerStatus ?? undefined,
-          detail: 'no available Onysoft models found for advisor chain',
-        });
-      }
-
-      let rateLimitedAttemptCount = 0;
-      for (let index = 0; index < modelChain.length; index += 1) {
-        const model = modelChain[index] as string;
-        const attempt = index + 1;
-        const remainingBeforeAttemptMs = providerDeadlineAtMs - Date.now();
-
-        if (remainingBeforeAttemptMs < ONYSOFT_MIN_REMAINING_MS) {
-          fallbackReason = 'provider_timeout';
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'onysoft',
-            attempt,
-            model,
-            reason: fallbackReason,
-            status: providerStatus ?? undefined,
-            detail: `provider budget exhausted before attempt (remaining=${remainingBeforeAttemptMs}ms)`,
-          });
-          break;
-        }
-
-        const attemptTimeoutMs = Math.max(
-          500,
-          Math.min(
-            ONYSOFT_MODEL_ATTEMPT_TIMEOUT_MS,
-            Math.max(500, remainingBeforeAttemptMs - 150),
-          ),
-        );
-
-        input.onDiagnostic?.({
-          stage: 'provider_attempt',
-          provider: 'onysoft',
-          attempt,
-          model,
-        });
-        input.onDiagnostic?.({
-          stage: 'provider_request',
-          provider: 'onysoft',
-          attempt,
-          model,
-          detail: `timeoutMs=${attemptTimeoutMs}; remainingMs=${remainingBeforeAttemptMs}`,
-        });
-
-        const startedAt = Date.now();
-        const providerResult = await generateOnysoftText(
-          {
-            apiKey: config.onysoftApiKey,
-            baseUrl: config.onysoftBaseUrl,
-            model,
-            timeoutMs: attemptTimeoutMs,
-            deadlineAtMs: providerDeadlineAtMs,
-            temperature: 0.2,
-            topP: 0.9,
-            maxTokens: 900,
-            maxRateLimitRetries: 0,
-            allowRetryWithoutResponseFormat: true,
-            includeResponseFormat: true,
-            validateJsonText: (value) => {
-              try {
-                parseStrictJsonPayload(value);
-                return true;
-              } catch {
-                return false;
-              }
-            },
-            systemPrompt: onysoftSystemPrompt,
-            userPrompt: prompt,
-          },
-          fetchImpl,
-        );
-
-        const durationMs = Date.now() - startedAt;
-        provider = providerResult.provider;
-        providerStatus = providerResult.status > 0 ? providerResult.status : null;
-
-        input.onDiagnostic?.({
-          stage: 'provider_response',
-          provider: 'onysoft',
-          attempt,
-          durationMs,
-          model,
-          status: providerStatus ?? undefined,
-          ok: providerResult.ok,
-          retryAfterSec: providerResult.retryAfterSec,
-        });
-        input.onDiagnostic?.({
-          stage: 'provider_response_body',
-          provider: 'onysoft',
-          attempt,
-          durationMs,
-          model,
-          status: providerStatus ?? undefined,
-          ok: providerResult.ok,
-          detail: providerResult.ok
-            ? previewAiOutput(providerResult.text)
-            : providerResult.bodyPreview ?? providerResult.detail ?? 'empty provider body',
-        });
-
-        if (!providerResult.ok) {
-          fallbackReason = mapOnysoftFailureReason(providerResult.errorReason);
-          if (providerResult.errorReason === 'model_unavailable') {
-            markOnysoftModelUnavailable(config.onysoftBaseUrl, model);
-          }
-          if (providerResult.errorReason === 'rate_limited') {
-            rateLimitedAttemptCount += 1;
-          }
-
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'onysoft',
-            attempt,
-            model,
-            reason: fallbackReason,
-            status: providerStatus ?? undefined,
-            retryAfterSec: providerResult.retryAfterSec,
-            detail: providerResult.detail ?? 'Onysoft request failed',
-          });
-
-          if (providerResult.errorReason === 'rate_limited') {
-            const backoffMs = ONYSOFT_RATE_LIMIT_BACKOFFS_MS[
-              Math.min(rateLimitedAttemptCount - 1, ONYSOFT_RATE_LIMIT_BACKOFFS_MS.length - 1)
-            ] ?? ONYSOFT_RATE_LIMIT_BACKOFFS_MS[ONYSOFT_RATE_LIMIT_BACKOFFS_MS.length - 1];
-            const remainingAfterFailureMs = providerDeadlineAtMs - Date.now();
-            if (remainingAfterFailureMs > backoffMs + ONYSOFT_MIN_REMAINING_MS) {
-              await sleep(backoffMs);
-            }
-          }
-          continue;
-        }
-
-        let parsedProviderJson: unknown | undefined;
-        try {
-          parsedProviderJson = parseStrictJsonPayload(providerResult.text);
-        } catch (parseError) {
-          fallbackReason = 'provider_parse_error';
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'onysoft',
-            attempt,
-            model,
-            reason: fallbackReason,
-            status: providerStatus ?? undefined,
-            detail: `provider JSON parse failed: ${
-              parseError instanceof Error ? parseError.message : 'unknown'
-            }; preview=${previewAiOutput(providerResult.text)}`,
-          });
-          continue;
-        }
-
-        const coerced = coerceProviderOutputShape(parsedProviderJson);
-        const parsedProvider = providerOutputSchema.safeParse(coerced);
-        if (parsedProvider.success) {
-          providerAdvice = mergeProviderWithFallback(parsedProvider.data, fallbackAdvice);
-          fallbackReason = null;
-          break;
-        }
-
-        const loose = providerOutputLooseSchema.safeParse(coerced);
-        if (loose.success) {
-          try {
-            providerAdvice = mergeProviderWithFallback(loose.data as Partial<ProviderOutput>, fallbackAdvice);
-            fallbackReason = null;
-            break;
-          } catch (mergeError) {
-            fallbackReason = 'provider_validation_error';
-            const firstIssue = parsedProvider.error.issues[0];
-            input.onDiagnostic?.({
-              stage: 'fallback',
-              provider: 'onysoft',
-              attempt,
-              model,
-              reason: fallbackReason,
-              status: providerStatus ?? undefined,
-              detail: `provider output schema validation failed: ${
-                firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
-              }; preview=${previewAiOutput(providerResult.text)}`,
-            });
-            input.onDiagnostic?.({
-              stage: 'fallback',
-              provider: 'onysoft',
-              attempt,
-              model,
-              reason: fallbackReason,
-              status: providerStatus ?? undefined,
-              detail: `provider salvage merge failed: ${
-                mergeError instanceof Error ? mergeError.message : 'unknown'
-              }`,
-            });
-            continue;
-          }
-        }
-
-        fallbackReason = 'provider_validation_error';
-        const firstIssue = parsedProvider.error.issues[0];
-        input.onDiagnostic?.({
-          stage: 'fallback',
-          provider: 'onysoft',
-          attempt,
-          model,
-          reason: fallbackReason,
-          status: providerStatus ?? undefined,
-          detail: `provider output schema validation failed: ${
-            firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
-          }; preview=${previewAiOutput(providerResult.text)}`,
-        });
-        input.onDiagnostic?.({
-          stage: 'fallback',
-          provider: 'onysoft',
-          attempt,
-          model,
-          reason: fallbackReason,
-          status: providerStatus ?? undefined,
-          detail: `provider loose schema validation failed: ${
-            loose.error ? formatZodIssues(loose.error) : 'unknown'
-          }`,
-        });
-      }
-
-      if (!providerAdvice && !fallbackReason) {
-        fallbackReason = 'provider_timeout';
-        input.onDiagnostic?.({
-          stage: 'fallback',
-          provider: 'onysoft',
-          reason: fallbackReason,
-          status: providerStatus ?? undefined,
-          detail: 'Onysoft advisor chain completed without a valid response',
-        });
-      }
-    } else {
-      fallbackReason = 'missing_api_key';
-      input.onDiagnostic?.({
-        stage: 'fallback',
-        provider: 'onysoft',
-        reason: fallbackReason,
-      });
-      provider = null;
-      providerStatus = null;
-    }
-  } else if (cloudflareConfigured && config.cloudflareAuthToken && config.cloudflareAccountId) {
-    try {
-      const providerResult = await generateCloudflareText(
-        {
-          apiToken: config.cloudflareAuthToken,
-          accountId: config.cloudflareAccountId,
-          model: config.cloudflareAiModel,
-          timeoutMs: config.cloudflareHttpTimeoutMs,
-          maxAttempts: config.cloudflareMaxAttempts,
-          maxTokens: 900,
-          systemPrompt:
-            'You are Mintly AI. Return a single valid JSON object only (RFC 8259). Use double quotes for all keys/strings. No trailing commas. No markdown fences. No extra text.',
-          userPrompt: prompt,
-          onDiagnostic: input.onDiagnostic
-            ? (event) => {
-                input.onDiagnostic?.({
-                  stage: event.stage,
-                  provider: 'cloudflare',
-                  attempt: event.attempt,
-                  durationMs: event.durationMs,
-                  model: event.model,
-                  status: event.status,
-                  ok: event.ok,
-                  cfRay: event.cfRay,
-                  responseShape: event.responseShape,
-                  reason: event.reason,
-                  errorCode: event.errorCode,
-                  payloadKeys: event.payloadKeys,
-                  detail: event.detail,
-                  retryAfterSec: event.retryAfterSec,
-                });
-              }
-            : undefined,
-        },
-        fetchImpl,
-      );
-
-      provider = providerResult.provider;
-      providerStatus = providerResult.status;
-
-      const providerText = providerResult.text;
-      let parsedProviderJson: unknown | undefined;
-      try {
-        parsedProviderJson = parseStrictJsonPayload(providerText);
-      } catch (parseError) {
-        fallbackReason = 'provider_parse_error';
-        input.onDiagnostic?.({
-          stage: 'fallback',
-          provider: 'cloudflare',
-          reason: fallbackReason,
-          status: providerStatus,
-          detail: `provider JSON parse failed: ${
-            parseError instanceof Error ? parseError.message : 'unknown'
-          }`,
-        });
-      }
-
-      if (parsedProviderJson !== undefined) {
-        const coerced = coerceProviderOutputShape(parsedProviderJson);
-        const parsedProvider = providerOutputSchema.safeParse(coerced);
-
-        if (parsedProvider.success) {
-          // Clean + dedupe even on valid output
-          providerAdvice = mergeProviderWithFallback(parsedProvider.data, fallbackAdvice);
-          fallbackReason = null;
-        } else {
-          // Try to salvage partial JSON and merge with fallback.
-          const loose = providerOutputLooseSchema.safeParse(coerced);
-          if (loose.success) {
-            try {
-              providerAdvice = mergeProviderWithFallback(loose.data as Partial<ProviderOutput>, fallbackAdvice);
-              fallbackReason = null;
-            } catch (mergeError) {
-              fallbackReason = 'provider_validation_error';
-              const firstIssue = parsedProvider.error.issues[0];
-              input.onDiagnostic?.({
-                stage: 'fallback',
-                provider: 'cloudflare',
-                reason: fallbackReason,
-                status: providerStatus,
-                detail: `provider output schema validation failed: ${
-                  firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
-                }`,
-              });
-              input.onDiagnostic?.({
-                stage: 'fallback',
-                provider: 'cloudflare',
-                reason: fallbackReason,
-                status: providerStatus,
-                detail: `provider salvage merge failed: ${
-                  mergeError instanceof Error ? mergeError.message : 'unknown'
-                }`,
-              });
-            }
-          } else {
-            fallbackReason = 'provider_validation_error';
-            const firstIssue = parsedProvider.error.issues[0];
-            input.onDiagnostic?.({
-              stage: 'fallback',
-              provider: 'cloudflare',
-              reason: fallbackReason,
-              status: providerStatus,
-              detail: `provider output schema validation failed: ${
-                firstIssue ? describeZodIssue(firstIssue) : formatZodIssues(parsedProvider.error)
-              }`,
-            });
-            input.onDiagnostic?.({
-              stage: 'fallback',
-              provider: 'cloudflare',
-              reason: fallbackReason,
-              status: providerStatus,
-              detail: `provider loose schema validation failed: ${
-                loose.error ? formatZodIssues(loose.error) : 'unknown'
-              }`,
-            });
-          }
-        }
-      }
-    } catch (error) {
-      if (error instanceof CloudflareProviderError) {
-        provider = 'cloudflare';
-        providerStatus = error.status;
-
-        if (error.reason === 'rate_limited') {
-          throw new ApiError({
-            code: 'ADVISOR_PROVIDER_RATE_LIMIT',
-            message: 'Advisor provider rate limited this request',
-            statusCode: 429,
-            details: {
-              provider: 'cloudflare',
-              providerStatus: error.status ?? 429,
-              retryAfterSec: error.retryAfterSec ?? 60,
-              cfRay: error.cfRay,
-              providerErrorCode: error.providerCode,
-            },
-          });
-        }
-
-        if (error.reason === 'request_invalid') {
-          throw new ApiError({
-            code: 'ADVISOR_PROVIDER_INVALID_REQUEST',
-            message: 'Advisor provider request is invalid',
-            statusCode: 500,
-            details: {
-              provider: 'cloudflare',
-              providerStatus: error.status ?? 400,
-              cfRay: error.cfRay,
-              providerErrorCode: error.providerCode,
-            },
-          });
-        }
-
-        if (error.reason === 'timeout') {
-          throw new ApiError({
-            code: 'ADVISOR_PROVIDER_TIMEOUT',
-            message: 'Advisor provider timed out',
-            statusCode: 504,
-            details: {
-              provider: 'cloudflare',
-              providerStatus: error.status,
-              cfRay: error.cfRay,
-            },
-          });
-        }
-
-        if (error.reason === 'http_error') {
-          fallbackReason = 'provider_http_error';
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'cloudflare',
-            reason: fallbackReason,
-            status: providerStatus ?? undefined,
-            cfRay: error.cfRay,
-            retryAfterSec: error.retryAfterSec,
-            errorCode: error.providerCode ?? undefined,
-            detail: error.message,
-          });
-        } else {
-          fallbackReason = mapCloudflareErrorToFallbackReason(error);
-          input.onDiagnostic?.({
-            stage: 'fallback',
-            provider: 'cloudflare',
-            reason: fallbackReason,
-            status: providerStatus ?? undefined,
-            cfRay: error.cfRay,
-            errorCode: error.providerCode ?? undefined,
-            detail: error.message,
-          });
-        }
-      } else {
-        if (input.regenerate) {
-          throw new ApiError({
-            code: 'AI_PROVIDER_UNREACHABLE',
-            message: 'AI provider request failed unexpectedly',
-            statusCode: 502,
-            details: {
-              provider: 'cloudflare',
-              providerStatus,
-            },
-          });
-        }
-
-        fallbackReason = 'provider_unknown_error';
-        input.onDiagnostic?.({
-          stage: 'fallback',
-          provider: 'cloudflare',
-          reason: fallbackReason,
-          status: providerStatus ?? undefined,
-          detail: error instanceof Error ? error.message : 'unknown',
-        });
-      }
-    }
-  } else {
-    fallbackReason = 'missing_api_key';
-    input.onDiagnostic?.({
-      stage: 'fallback',
-      provider: 'cloudflare',
-      reason: fallbackReason,
-    });
-    provider = null;
-    providerStatus = null;
-  }
-
-  const mergedAdvice = providerAdvice ?? fallbackAdvice;
-  const mode = providerAdvice ? 'ai' : 'fallback';
+  const mode = 'manual' as const;
+  const modeReason = 'manual_engine';
+  const provider = 'manual' as const;
+  const providerStatus: number | null = null;
 
   const emergencyFundTarget = roundCurrency(Math.max(0, currentMonthExpense * 3));
   const emergencyFundCurrent = roundCurrency(Math.max(0, totalBalance));
@@ -2321,7 +1399,7 @@ export async function generateAdvisorInsight(
     generatedAt: new Date().toISOString(),
     language: input.language,
     mode,
-    modeReason: mode === 'fallback' ? fallbackReason ?? 'provider_unknown_error' : null,
+    modeReason,
     provider,
     providerStatus,
     currency,

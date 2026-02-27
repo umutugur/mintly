@@ -6,11 +6,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdvisorBudgetStatus } from '@mintly/shared';
 
 import { useAuth } from '@app/providers/AuthProvider';
+import { getAdvisorUsageDayKey, hasUsedDailyAdvisorFreeUsage } from '@core/ads/RewardedManager';
 import { apiClient } from '@core/api/client';
 import { mobileEnv } from '@core/config/env';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAdvisorInsights } from '@features/advisor/hooks/useAdvisorInsights';
 import { useAdvisorInsightRegenerateWithRewarded } from '@features/advisor/hooks/useAdvisorInsightRegenerateWithRewarded';
+import { logAdvisorReq, useAdvisorDebugEvents } from '@features/advisor/utils/advisorDiagnostics';
 import { useI18n } from '@shared/i18n';
 import { AppIcon, Card, Chip, PrimaryButton, ScreenContainer, Section, StatCard, TextField } from '@shared/ui';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
@@ -106,6 +108,36 @@ function formatDateTimeLabel(value: string, locale: string): string {
   }).format(date);
 }
 
+function formatDebugEventPayload(payload: Record<string, unknown>): string {
+  const orderedKeys = [
+    'requestId',
+    'status',
+    'durationMs',
+    'mode',
+    'modeReason',
+    'provider',
+    'providerStatus',
+    'month',
+    'language',
+  ];
+  const fragments: string[] = [];
+
+  for (const key of orderedKeys) {
+    if (!(key in payload)) {
+      continue;
+    }
+
+    const value = payload[key];
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    fragments.push(`${key}=${String(value)}`);
+  }
+
+  return fragments.join(' · ');
+}
+
 function LoadingSkeleton({ dark }: { dark: boolean }) {
   const blockColor = dark ? '#1A2133' : '#E7EDF8';
 
@@ -158,7 +190,10 @@ export function AiAdvisorScreen() {
   const [transferFromAccountId, setTransferFromAccountId] = useState<string | null>(null);
   const [transferToAccountId, setTransferToAccountId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [debugExpanded, setDebugExpanded] = useState(false);
   const responseDiagnosticsKeyRef = useRef<string | null>(null);
+  const hasLoggedScreenMountRef = useRef(false);
+  const advisorDebugEvents = useAdvisorDebugEvents();
 
   const currentMonth = useMemo(() => getCurrentMonthString(), []);
   const insightsQuery = useAdvisorInsights(month);
@@ -190,6 +225,18 @@ export function AiAdvisorScreen() {
       insights.advice.tips.length > 0
     ),
   );
+
+  useEffect(() => {
+    if (hasLoggedScreenMountRef.current) {
+      return;
+    }
+
+    hasLoggedScreenMountRef.current = true;
+    logAdvisorReq('screen_mount', {
+      month,
+      language: locale,
+    });
+  }, [locale, month]);
 
   useEffect(() => {
     if (!insights) {
@@ -330,8 +377,30 @@ export function AiAdvisorScreen() {
 
   const handleRegenerate = useCallback(() => {
     clearRegenerateError();
-    triggerRegenerate();
-  }, [clearRegenerateError, triggerRegenerate]);
+    void (async () => {
+      let isFreeEligible = true;
+      const userId = user?.id ?? null;
+
+      if (userId) {
+        try {
+          const dayKey = getAdvisorUsageDayKey();
+          const hasUsedFree = await hasUsedDailyAdvisorFreeUsage(userId, dayKey);
+          isFreeEligible = !hasUsedFree;
+        } catch {
+          isFreeEligible = true;
+        }
+      }
+
+      logAdvisorReq('regenerate_tap', {
+        month,
+        language: locale,
+        isFreeEligible,
+        willShowRewardedAd: !isFreeEligible,
+      });
+
+      triggerRegenerate();
+    })();
+  }, [clearRegenerateError, locale, month, triggerRegenerate, user?.id]);
 
   const handlePrevMonth = useCallback(() => {
     setMonth((prev) => shiftMonth(prev, -1));
@@ -619,6 +688,11 @@ export function AiAdvisorScreen() {
 
     return t('aiAdvisor.fallback.reason.provider_unknown_error');
   }, [insights, t]);
+  const modeChipTone = insights?.mode === 'fallback'
+    ? 'expense'
+    : insights?.mode === 'manual'
+      ? 'primary'
+      : 'income';
 
   if (insightsQuery.isLoading && !insights) {
     return (
@@ -743,7 +817,7 @@ export function AiAdvisorScreen() {
           {__DEV__ ? (
             <View style={styles.devModeWrap}>
               <View style={styles.devModeRow}>
-                <Chip dark={dark} tone={insights.mode === 'ai' ? 'income' : 'expense'} label={insights.mode} />
+                <Chip dark={dark} tone={modeChipTone} label={insights.mode} />
               </View>
               <Text style={[styles.devModeText, { color: theme.colors.textMuted }]}>
                 {t('aiAdvisor.debug.apiBaseUrl', { value: apiBaseUrl })}
@@ -758,6 +832,36 @@ export function AiAdvisorScreen() {
                 {t('aiAdvisor.debug.providerStatus', { value: insights.providerStatus ?? notAvailableLabel })}
               </Text>
             </View>
+          ) : null}
+
+          {__DEV__ ? (
+            <Card dark={dark} style={styles.debugCard}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setDebugExpanded((current) => !current)}
+                style={styles.debugToggleRow}
+              >
+                <Text style={[styles.debugTitle, { color: theme.colors.text }]}>Advisor Debug</Text>
+                <AppIcon name={debugExpanded ? 'chevron-up' : 'chevron-down'} size="sm" tone="text" />
+              </Pressable>
+
+              {debugExpanded ? (
+                <View style={styles.debugEventsWrap}>
+                  {advisorDebugEvents.length === 0 ? (
+                    <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>No events yet.</Text>
+                  ) : advisorDebugEvents.slice().reverse().map((eventItem) => (
+                    <View key={`${eventItem.timestamp}-${eventItem.event}`} style={styles.debugEventRow}>
+                      <Text style={[styles.debugLine, styles.debugEventName, { color: theme.colors.text }]}>
+                        {`${eventItem.timestamp} · ${eventItem.event}`}
+                      </Text>
+                      <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
+                        {formatDebugEventPayload(eventItem.payload)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+            </Card>
           ) : null}
 
           <PrimaryButton
@@ -1478,9 +1582,23 @@ const styles = StyleSheet.create({
   debugCard: {
     gap: spacing.xs,
   },
+  debugToggleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   debugTitle: {
     ...typography.subheading,
     fontSize: 14,
+  },
+  debugEventsWrap: {
+    gap: spacing.xxs,
+  },
+  debugEventRow: {
+    gap: 2,
+  },
+  debugEventName: {
+    fontWeight: '700',
   },
   debugLine: {
     ...typography.caption,
