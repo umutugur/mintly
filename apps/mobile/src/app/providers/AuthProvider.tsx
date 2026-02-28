@@ -26,6 +26,7 @@ import i18n from 'i18next';
 
 import { apiClient } from '@core/api/client';
 import { trackAppEvent } from '@core/observability/telemetry';
+import { showAlert } from '@shared/ui';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 
 const ACCESS_TOKEN_KEY = 'finsight.accessToken';
@@ -37,6 +38,7 @@ type SessionUser = MeResponse['user'];
 
 interface AuthContextValue {
   status: AuthStatus;
+  isGuest: boolean;
   user: SessionUser | null;
   accessToken: string | null;
   refreshToken: string | null;
@@ -44,8 +46,12 @@ interface AuthContextValue {
   login: (input: LoginInput) => Promise<boolean>;
   oauthLogin: (input: OauthInput) => Promise<boolean>;
   register: (input: RegisterInput) => Promise<boolean>;
+  continueAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
   withAuth: <T>(runner: (accessToken: string) => Promise<T>) => Promise<T>;
+  ensureSignedIn: () => Promise<boolean>;
+  requireAuthOrPrompt: <T>(runner: (accessToken: string) => Promise<T>) => Promise<T | null>;
+  deleteAccount: () => Promise<boolean>;
   refreshUser: () => Promise<SessionUser | null>;
   setSessionUser: (user: SessionUser) => void;
   clearAuthError: () => void;
@@ -82,6 +88,7 @@ function toSessionUser(user: AuthUser): SessionUser {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>('loading');
+  const [isGuest, setIsGuest] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
@@ -105,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearSession = useCallback(async () => {
     refreshPromiseRef.current = null;
+    setIsGuest(false);
     applySessionUser(null);
     setAccessToken(null);
     setRefreshToken(null);
@@ -119,8 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshToken: string;
       user: SessionUser;
     }) => {
-      console.log('Setting session with accessToken:', params.accessToken);
-      console.log('Setting session with refreshToken:', params.refreshToken);
+      setIsGuest(false);
       setAccessToken(params.accessToken);
       setRefreshToken(params.refreshToken);
       applySessionUser(params.user);
@@ -162,7 +169,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!accessToken) {
         throw new ApiClientError({
           code: 'UNAUTHORIZED',
-          message: i18n.t('errors.auth.sessionNotAvailable'),
+          message: isGuest
+            ? i18n.t('auth.guest.prompt.body')
+            : i18n.t('errors.auth.sessionNotAvailable'),
           status: 401,
         });
       }
@@ -183,7 +192,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return runner(refreshed.accessToken);
       }
     },
-    [accessToken, clearSession, refreshToken, refreshTokens],
+    [accessToken, clearSession, isGuest, refreshToken, refreshTokens],
+  );
+
+  const continueAsGuest = useCallback(async () => {
+    refreshPromiseRef.current = null;
+    setAuthError(null);
+    setIsGuest(true);
+    applySessionUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    await clearStoredTokens();
+    queryClient.clear();
+    setStatus('authenticated');
+    trackAppEvent('auth.guest', {
+      category: 'auth',
+      data: { stage: 'started' },
+    });
+  }, [applySessionUser, queryClient]);
+
+  const ensureSignedIn = useCallback(async (): Promise<boolean> => {
+    if (!isGuest && accessToken) {
+      return true;
+    }
+
+    void showAlert(
+      i18n.t('auth.guest.prompt.title'),
+      i18n.t('auth.guest.prompt.body'),
+      [
+        {
+          text: i18n.t('common.buttons.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: i18n.t('auth.links.signIn'),
+          onPress: () => {
+            void clearSession();
+          },
+        },
+      ],
+      {
+        iconName: 'lock-closed-outline',
+        tone: 'primary',
+      },
+    );
+
+    return false;
+  }, [accessToken, clearSession, isGuest]);
+
+  const requireAuthOrPrompt = useCallback(
+    async <T,>(runner: (token: string) => Promise<T>): Promise<T | null> => {
+      if (!(await ensureSignedIn())) {
+        return null;
+      }
+
+      return withAuth(runner);
+    },
+    [ensureSignedIn, withAuth],
   );
 
   const refreshUser = useCallback(async (): Promise<SessionUser | null> => {
@@ -407,6 +472,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [clearSession, refreshToken]);
 
+  const deleteAccount = useCallback(async (): Promise<boolean> => {
+    if (!accessToken) {
+      await clearSession();
+      return true;
+    }
+
+    try {
+      await withAuth((token) => apiClient.deleteMe(token));
+      setAuthError(null);
+      await clearSession();
+      return true;
+    } catch (error) {
+      setAuthError(apiErrorText(error));
+      return false;
+    }
+  }, [accessToken, clearSession, withAuth]);
+
   const clearAuthError = useCallback(() => {
     setAuthError(null);
   }, []);
@@ -414,6 +496,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
+      isGuest,
       user,
       accessToken,
       refreshToken,
@@ -421,14 +504,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       oauthLogin,
       register,
+      continueAsGuest,
       logout,
       withAuth,
+      ensureSignedIn,
+      requireAuthOrPrompt,
+      deleteAccount,
       refreshUser,
       setSessionUser,
       clearAuthError,
     }),
     [
       status,
+      isGuest,
       user,
       accessToken,
       refreshToken,
@@ -436,8 +524,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       oauthLogin,
       register,
+      continueAsGuest,
       logout,
       withAuth,
+      ensureSignedIn,
+      requireAuthOrPrompt,
+      deleteAccount,
       refreshUser,
       setSessionUser,
       clearAuthError,

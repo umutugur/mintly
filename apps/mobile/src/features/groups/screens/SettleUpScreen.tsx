@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
-import { AppIcon, Card, PrimaryButton, ScreenContainer } from '@shared/ui';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { spacing, typography, useTheme } from '@shared/theme';
@@ -44,14 +44,14 @@ export function SettleUpScreen() {
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.groups.list() }),
       ]);
 
-      Alert.alert(
+      showAlert(
         t('groups.settle.successTitle'),
         t('groups.settle.successMessage', { count: response.settledCount }),
       );
       navigation.goBack();
     },
     onError: (error) => {
-      Alert.alert(t('groups.settle.errorTitle'), apiErrorText(error));
+      showAlert(t('groups.settle.errorTitle'), apiErrorText(error));
     },
   });
 

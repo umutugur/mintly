@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
-import { AppIcon, Card, ScreenContainer } from '@shared/ui';
+import { AppIcon, Card, ScreenContainer, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { RootTabParamList } from '@core/navigation/types';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
@@ -24,18 +24,20 @@ function formatSync(value: Date): string {
 
 export function ProfileScreen() {
   const navigation = useNavigation<any>();
-  const { withAuth, user, logout } = useAuth();
+  const { withAuth, user, logout, isGuest, ensureSignedIn, deleteAccount } = useAuth();
   const { theme, mode } = useTheme();
   const { t } = useI18n();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const accountsQuery = useQuery({
     queryKey: financeQueryKeys.accounts.list(),
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
+    enabled: !isGuest,
   });
 
-  const displayName = resolveUserDisplayName(user);
-  const displayEmail = user?.email ?? t('common.notAvailable');
+  const displayName = isGuest ? t('auth.guest.label') : resolveUserDisplayName(user);
+  const displayEmail = isGuest ? t('auth.guest.subtitle') : user?.email ?? t('common.notAvailable');
   const accountCount = accountsQuery.data?.accounts.length ?? 0;
   const lastSyncLabel = useMemo(() => formatSync(new Date()), []);
 
@@ -51,7 +53,22 @@ export function ProfileScreen() {
     setIsLoggingOut(false);
   };
 
+  const openProtectedProfileScreen = async (
+    screen: 'EditProfile' | 'FinancialGoals' | 'Accounts' | 'Settings' | 'Security',
+  ) => {
+    if (!(await ensureSignedIn())) {
+      return;
+    }
+
+    navigation.navigate(screen);
+  };
+
   const goToAnalyticsScreen = (screen: 'AiAdvisor' | 'WeeklyReport') => {
+    if (isGuest) {
+      void ensureSignedIn();
+      return;
+    }
+
     const parent = navigation.getParent?.();
     const root = parent?.getParent?.();
     const target = (root ?? parent ?? navigation) as {
@@ -62,6 +79,73 @@ export function ProfileScreen() {
     };
 
     target.navigate('AnalyticsTab', { screen });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isGuest || isDeletingAccount) {
+      return;
+    }
+
+    const firstStep = await showAlert(
+      t('profile.delete.title'),
+      t('profile.delete.stepOne'),
+      [
+        {
+          text: t('common.buttons.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('profile.delete.continue'),
+        },
+      ],
+      {
+        iconName: 'trash-outline',
+        tone: 'danger',
+      },
+    );
+
+    if (firstStep !== 1) {
+      return;
+    }
+
+    const secondStep = await showAlert(
+      t('profile.delete.finalTitle'),
+      t('profile.delete.finalBody'),
+      [
+        {
+          text: t('common.buttons.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('profile.delete.confirm'),
+          style: 'destructive',
+        },
+      ],
+      {
+        iconName: 'warning-outline',
+        tone: 'danger',
+      },
+    );
+
+    if (secondStep !== 1) {
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    const ok = await deleteAccount();
+    setIsDeletingAccount(false);
+
+    if (!ok) {
+      void showAlert(
+        t('common.error'),
+        t('profile.delete.error'),
+        undefined,
+        {
+          iconName: 'alert-circle-outline',
+          tone: 'danger',
+        },
+      );
+    }
   };
 
   return (
@@ -139,15 +223,56 @@ export function ProfileScreen() {
             },
           ]}
         >
-          <SettingsRow iconName="person-circle-outline" label={t('profile.rows.personalInfo')} subtitle={t('profile.rows.personalInfoSubtitle')} onPress={() => navigation.navigate('EditProfile')} />
+          <SettingsRow iconName="person-circle-outline" label={t('profile.rows.personalInfo')} subtitle={t('profile.rows.personalInfoSubtitle')} onPress={() => {
+            void openProtectedProfileScreen('EditProfile');
+          }} />
           <Divider />
-          <SettingsRow iconName="flag-outline" label={t('profile.rows.financialGoals')} subtitle={t('profile.rows.financialGoalsSubtitle')} onPress={() => navigation.navigate('FinancialGoals')} />
+          <SettingsRow iconName="flag-outline" label={t('profile.rows.financialGoals')} subtitle={t('profile.rows.financialGoalsSubtitle')} onPress={() => {
+            void openProtectedProfileScreen('FinancialGoals');
+          }} />
           <Divider />
-          <SettingsRow iconName="wallet-outline" label={t('profile.rows.myAccounts')} subtitle={t('profile.rows.myAccountsSubtitle')} onPress={() => navigation.navigate('Accounts')} />
+          <SettingsRow iconName="wallet-outline" label={t('profile.rows.myAccounts')} subtitle={t('profile.rows.myAccountsSubtitle')} onPress={() => {
+            void openProtectedProfileScreen('Accounts');
+          }} />
           <Divider />
-          <SettingsRow iconName="settings-outline" label={t('profile.rows.appSettings')} subtitle={t('profile.rows.appSettingsSubtitle')} onPress={() => navigation.navigate('Settings')} />
+          <SettingsRow iconName="settings-outline" label={t('profile.rows.appSettings')} subtitle={t('profile.rows.appSettingsSubtitle')} onPress={() => {
+            void openProtectedProfileScreen('Settings');
+          }} />
           <Divider />
-          <SettingsRow iconName="shield-checkmark-outline" label={t('profile.rows.security')} subtitle={t('profile.rows.securitySubtitle')} onPress={() => navigation.navigate('Security')} />
+          <SettingsRow iconName="shield-checkmark-outline" label={t('profile.rows.security')} subtitle={t('profile.rows.securitySubtitle')} onPress={() => {
+            void openProtectedProfileScreen('Security');
+          }} />
+          {!isGuest ? (
+            <>
+              <Divider />
+              <Pressable
+                accessibilityRole="button"
+                disabled={isDeletingAccount}
+                onPress={() => {
+                  void handleDeleteAccount();
+                }}
+                style={({ pressed }) => [
+                  styles.logoutRow,
+                  {
+                    backgroundColor: dark ? 'rgba(240,68,56,0.12)' : '#FFF1F1',
+                    opacity: pressed || isDeletingAccount ? 0.85 : 1,
+                  },
+                ]}
+              >
+                <View style={[styles.logoutIconWrap, { backgroundColor: dark ? 'rgba(240,68,56,0.2)' : '#FFE3E3' }]}>
+                  {isDeletingAccount ? (
+                    <ActivityIndicator color={theme.colors.expense} size="small" />
+                  ) : (
+                    <AppIcon name="trash-outline" size="sm" tone="expense" />
+                  )}
+                </View>
+                <View style={styles.rowTextWrap}>
+                  <Text style={styles.logoutLabel}>{t('profile.delete.cta')}</Text>
+                  <Text style={styles.logoutSubtext}>{t('profile.delete.subtitle')}</Text>
+                </View>
+              </Pressable>
+            </>
+          ) : null}
         </Card>
 
         <View style={styles.sectionHeader}>
@@ -165,6 +290,14 @@ export function ProfileScreen() {
           ]}
         >
           <SettingsRow iconName="information-circle-outline" label={t('profile.rows.about')} subtitle={t('profile.rows.aboutSubtitle')} onPress={() => navigation.navigate('About')} />
+          <Divider />
+          <SettingsRow iconName="document-text-outline" label={t('profile.rows.terms')} subtitle={t('profile.rows.termsSubtitle')} onPress={() => navigation.navigate('Terms')} />
+          <Divider />
+          <SettingsRow iconName="shield-outline" label={t('profile.rows.privacy')} subtitle={t('profile.rows.privacySubtitle')} onPress={() => navigation.navigate('Privacy')} />
+          <Divider />
+          <SettingsRow iconName="help-buoy-outline" label={t('profile.rows.helpSupport')} subtitle={t('profile.rows.helpSupportSubtitle')} onPress={() => navigation.navigate('HelpSupport')} />
+          <Divider />
+          <SettingsRow iconName="mail-outline" label={t('profile.rows.contact')} subtitle={t('profile.rows.contactSubtitle')} onPress={() => navigation.navigate('Contact')} />
           <Divider />
           <SettingsRow iconName="sparkles-outline" label={t('profile.rows.aiAdvisor')} subtitle={t('profile.rows.aiAdvisorSubtitle')} onPress={() => goToAnalyticsScreen('AiAdvisor')} />
           <Divider />
@@ -185,11 +318,19 @@ export function ProfileScreen() {
             ]}
           >
             <View style={[styles.logoutIconWrap, { backgroundColor: dark ? 'rgba(240,68,56,0.2)' : '#FFE3E3' }]}>
-              <AppIcon name="log-out-outline" size="sm" tone="expense" />
+              <AppIcon name={isGuest ? 'log-in-outline' : 'log-out-outline'} size="sm" tone="expense" />
             </View>
             <View style={styles.rowTextWrap}>
-              <Text style={styles.logoutLabel}>{isLoggingOut ? t('profile.loggingOut') : t('profile.logOut')}</Text>
-              <Text style={styles.logoutSubtext}>{t('profile.useDifferentAccount')}</Text>
+              <Text style={styles.logoutLabel}>
+                {isLoggingOut
+                  ? t('profile.loggingOut')
+                  : isGuest
+                    ? t('auth.links.signIn')
+                    : t('profile.logOut')}
+              </Text>
+              <Text style={styles.logoutSubtext}>
+                {isGuest ? t('auth.guest.signInHint') : t('profile.useDifferentAccount')}
+              </Text>
             </View>
           </Pressable>
         </Card>

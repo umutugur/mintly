@@ -12,4 +12,5 @@ export { MemberChip } from './MemberChip';
 export { ExpenseRow } from './ExpenseRow';
 export { SplitToggle } from './SplitToggle';
 export { AppIcon } from './AppIcon';
+export { AppDialogProvider, showAlert } from './AppDialogProvider';
 export { OfflineBanner } from './OfflineBanner';

@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+  ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { transactionCreateInputSchema, type TransactionType } from '@mintly/shared';
@@ -21,7 +15,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { AddStackParamList } from '@core/navigation/stacks/AddStack';
 import { listCategories } from '@features/finance/categories/categoryCatalog';
-import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -189,10 +183,10 @@ export function AddTransactionScreen() {
         occurredAt: new Date().toISOString(),
       });
 
-      Alert.alert(t('transactions.create.successTitle'), t('transactions.create.successMessage'));
+      showAlert(t('transactions.create.successTitle'), t('transactions.create.successMessage'));
     },
     onError: (error) => {
-      Alert.alert(t('errors.transaction.createFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.transaction.createFailedTitle'), apiErrorText(error));
     },
   });
 

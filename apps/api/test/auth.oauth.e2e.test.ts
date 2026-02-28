@@ -5,8 +5,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { ApiError } from '../src/errors.js';
 
 const verifyOauthIdTokenMock = vi.hoisted(() => vi.fn());
+const exchangeGoogleOauthCodeForIdTokenMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../src/auth/oauth.js', () => ({
+  exchangeGoogleOauthCodeForIdToken: exchangeGoogleOauthCodeForIdTokenMock,
   verifyOauthIdToken: verifyOauthIdTokenMock,
 }));
 
@@ -40,6 +42,7 @@ describe('POST /auth/oauth', () => {
 
   beforeEach(async () => {
     verifyOauthIdTokenMock.mockReset();
+    exchangeGoogleOauthCodeForIdTokenMock.mockReset();
     await Promise.all([RefreshTokenModel.deleteMany({}), UserModel.deleteMany({})]);
   });
 
@@ -123,6 +126,39 @@ describe('POST /auth/oauth', () => {
     expect(providers).toEqual([{ provider: 'google', uid: 'google-uid-2' }]);
     expect(created?.passwordHash).toBeTypeOf('string');
     expect(created?.passwordHash.length).toBeGreaterThan(0);
+  });
+
+  it('exchanges google authorization code before verifying identity', async () => {
+    exchangeGoogleOauthCodeForIdTokenMock.mockResolvedValueOnce('google-id-token-from-code');
+    verifyOauthIdTokenMock.mockResolvedValueOnce({
+      provider: 'google',
+      uid: 'google-uid-3',
+      email: 'code-oauth@example.com',
+      name: 'Code OAuth User',
+      emailVerified: true,
+    });
+
+    const response = await request(app.server).post('/auth/oauth').send({
+      provider: 'google',
+      authorizationCode: 'google-auth-code',
+      codeVerifier: 'pkce-code-verifier',
+      redirectUri: 'com.googleusercontent.apps.example:/oauthredirect',
+      clientId: 'ios-client-id.apps.googleusercontent.com',
+    });
+
+    expect(response.status).toBe(200);
+    expect(exchangeGoogleOauthCodeForIdTokenMock).toHaveBeenCalledWith({
+      code: 'google-auth-code',
+      codeVerifier: 'pkce-code-verifier',
+      redirectUri: 'com.googleusercontent.apps.example:/oauthredirect',
+      clientId: 'ios-client-id.apps.googleusercontent.com',
+    });
+    expect(verifyOauthIdTokenMock).toHaveBeenCalledWith({
+      provider: 'google',
+      idToken: 'google-id-token-from-code',
+      nonce: undefined,
+    });
+    expect(response.body.user.email).toBe('code-oauth@example.com');
   });
 
   it('returns OAUTH_EMAIL_REQUIRED when first oauth login has no email', async () => {

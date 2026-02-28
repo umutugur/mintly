@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,7 +14,7 @@ import type { ProfileStackParamList } from '@core/navigation/stacks/ProfileStack
 import type { RootTabParamList } from '@core/navigation/types';
 import { useI18n, type SupportedLocale } from '@shared/i18n';
 import { radius, spacing, typography, useTheme, type ThemePreference } from '@shared/theme';
-import { AppIcon, Card, ScreenContainer } from '@shared/ui';
+import { AppIcon, Card, ScreenContainer, showAlert } from '@shared/ui';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
 
@@ -161,7 +161,7 @@ export function SettingsScreen() {
       setNotificationsPreferenceEnabled(response.preferences.notificationsEnabled);
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -219,7 +219,7 @@ export function SettingsScreen() {
       } catch {
         // Error is handled in mutation onError.
       }
-      Alert.alert(t('common.error'), t('settings.notifications.permissionRequired'));
+      showAlert(t('common.error'), t('settings.notifications.permissionRequired'));
       return;
     }
 
@@ -243,7 +243,7 @@ export function SettingsScreen() {
     }
 
     if (!biometricSupported) {
-      Alert.alert(t('common.error'), t('settings.biometric.notSupported'));
+      showAlert(t('common.error'), t('settings.biometric.notSupported'));
       setBiometricEnabled(false);
       await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, 'false');
       return;
@@ -251,7 +251,7 @@ export function SettingsScreen() {
 
     const localAuth = getLocalAuthenticationModule();
     if (!localAuth) {
-      Alert.alert(t('common.error'), t('settings.biometric.notSupported'));
+      showAlert(t('common.error'), t('settings.biometric.notSupported'));
       return;
     }
 
@@ -262,7 +262,7 @@ export function SettingsScreen() {
       });
 
       if (!result.success) {
-        Alert.alert(t('common.error'), t('settings.biometric.enableFailed'));
+        showAlert(t('common.error'), t('settings.biometric.enableFailed'));
         setBiometricEnabled(false);
         await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, 'false');
         return;
@@ -271,7 +271,7 @@ export function SettingsScreen() {
       setBiometricEnabled(true);
       await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, 'true');
     } catch {
-      Alert.alert(t('common.error'), t('settings.biometric.enableFailed'));
+      showAlert(t('common.error'), t('settings.biometric.enableFailed'));
       setBiometricEnabled(false);
       await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, 'false');
     } finally {
@@ -289,13 +289,13 @@ export function SettingsScreen() {
     try {
       const canOpen = await Linking.canOpenURL(url);
       if (!canOpen) {
-        Alert.alert(t('common.error'), t('settings.helpCenter.openFailed'));
+        showAlert(t('common.error'), t('settings.helpCenter.openFailed'));
         return;
       }
 
       await Linking.openURL(url);
     } catch {
-      Alert.alert(t('common.error'), t('settings.helpCenter.openFailed'));
+      showAlert(t('common.error'), t('settings.helpCenter.openFailed'));
     }
   };
 

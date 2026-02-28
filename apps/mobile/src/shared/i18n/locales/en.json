@@ -359,6 +359,12 @@
     "state": {
       "preparing": "Preparing Mintly...",
       "restoring": "Restoring session..."
+    },
+    "notificationsPrompt": {
+      "title": "Enable Notifications",
+      "body": "You can allow notifications for payment reminders and important updates.",
+      "allow": "Allow",
+      "later": "Later"
     }
   },
   "auth": {
@@ -423,6 +429,16 @@
       "passwordMin": "Password must be at least 8 characters.",
       "passwordRequired": "Password is required.",
       "registerInvalidInput": "Please check your registration details."
+    },
+    "guest": {
+      "continueCta": "Continue as guest",
+      "label": "Guest User",
+      "subtitle": "You are in read-only mode",
+      "signInHint": "Sign in to perform actions",
+      "prompt": {
+        "title": "Sign In Required",
+        "body": "You need to sign in to complete this action."
+      }
     }
   },
   "budgets": {
@@ -490,7 +506,8 @@
       "save": "Save",
       "cancel": "Cancel",
       "retry": "Retry",
-      "delete": "Delete"
+      "delete": "Delete",
+      "ok": "OK"
     },
     "navigation": {
       "tabs": {
@@ -934,7 +951,17 @@
       "subtitle": "Product and build information",
       "title": "About Mintly",
       "versionLabel": "Version",
-      "versionValue": "1.0.0"
+      "versionValue": "1.0.0",
+      "sections": {
+        "productTitle": "App Info",
+        "productBody": "Mintly brings finance tracking, insights, and planning into one place.",
+        "versionBullet": "Version: {{version}}",
+        "platformBullet": "Platform: iOS and Android development builds are supported.",
+        "notesTitle": "Release Notes",
+        "notesBody": "This release tightens authentication, notifications, and profile flows.",
+        "notesBulletOne": "Native Google sign-in and improved auth flows were added.",
+        "notesBulletTwo": "Profile content and support pages are now available in-app."
+      }
     },
     "accountSettings": "ACCOUNT & SETTINGS",
     "accounts": "Accounts",
@@ -978,7 +1005,15 @@
       "weeklyReport": "Weekly Report",
       "weeklyReportSubtitle": "View score and weekly outlook",
       "financialGoals": "Financial Goals",
-      "financialGoalsSubtitle": "Savings target and risk profile"
+      "financialGoalsSubtitle": "Savings target and risk profile",
+      "terms": "Terms of Use",
+      "termsSubtitle": "Service rules and usage limits",
+      "privacy": "Privacy Policy",
+      "privacySubtitle": "How we use your data",
+      "helpSupport": "Help & Support",
+      "helpSupportSubtitle": "FAQs and support channels",
+      "contact": "Contact",
+      "contactSubtitle": "Reach us and send feedback"
     },
     "security": {
       "password": {
@@ -1113,6 +1148,84 @@
       "validation": {
         "targetRequired": "Enter a savings target rate.",
         "targetRange": "Savings target rate must be between 0 and 80."
+      }
+    },
+    "delete": {
+      "title": "You are about to delete your account",
+      "stepOne": "This will permanently remove data connected to your account. Are you sure you want to continue?",
+      "continue": "Continue",
+      "finalTitle": "Final Confirmation",
+      "finalBody": "Deleting your account signs you out and blocks any action until you sign in again.",
+      "confirm": "Delete Account",
+      "error": "Something went wrong while deleting your account. Please try again.",
+      "cta": "Delete My Account",
+      "subtitle": "Permanently remove your account and related data"
+    },
+    "terms": {
+      "title": "Terms of Use",
+      "subtitle": "Core rules and responsibilities for using Mintly.",
+      "sections": {
+        "scopeTitle": "Service and Account",
+        "scopeBulletOne": "Mintly provides informational, tracking, and account-related features.",
+        "scopeBulletTwo": "Users are responsible for keeping their account details accurate and up to date.",
+        "rulesTitle": "Restricted Use",
+        "rulesBulletOne": "Spam, abuse, and unauthorized access attempts are prohibited.",
+        "rulesBulletTwo": "Reverse engineering or bypassing security controls is not allowed.",
+        "rulesBulletThree": "Users remain responsible for uploaded content; violating content may be removed.",
+        "liabilityTitle": "Liability and Updates",
+        "liabilityBulletOne": "The service is provided as-is without uninterrupted availability guarantees.",
+        "liabilityBulletTwo": "These terms may be updated when needed and become effective with new releases.",
+        "liabilityBulletThree": "You can use the support or contact channels for any questions."
+      }
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "subtitle": "A summary of how we collect, use, and retain data.",
+      "sections": {
+        "collectionTitle": "Collected Data",
+        "collectionBulletOne": "Email address and basic profile information may be collected.",
+        "collectionBulletTwo": "Limited device details and diagnostic data may be processed.",
+        "collectionBulletThree": "Push notification tokens may be stored to deliver reminders.",
+        "usageTitle": "Usage Purpose",
+        "usageBulletOne": "Used for sign-in, account management, and session security.",
+        "usageBulletTwo": "Used for notifications, security checks, and error analysis.",
+        "usageBulletThree": "Data is not sold; sharing is limited to required service providers or legal obligations.",
+        "retentionTitle": "Retention and Rights",
+        "retentionBulletOne": "Data is retained only for the period required by its purpose.",
+        "retentionBulletTwo": "You may request access, correction, or deletion through support.",
+        "retentionBulletThree": "Use the contact channels for detailed requests."
+      }
+    },
+    "helpSupport": {
+      "title": "Help & Support",
+      "subtitle": "Frequently asked topics and ways to reach support.",
+      "cta": "Contact Us",
+      "sections": {
+        "faqTitle": "Frequently Asked Questions",
+        "faqBulletOne": "For sign-in issues, first check connectivity and the latest app version.",
+        "faqBulletTwo": "If notifications do not work, review device permissions and app settings.",
+        "faqBulletThree": "For sync delays, refresh the app and try again.",
+        "contactTitle": "Support Channels",
+        "contactBody": "Our support team reviews requests during business days.",
+        "contactBulletOne": "Support email: support@mintly.app",
+        "contactBulletTwo": "Working hours: Weekdays 09:00 - 18:00"
+      }
+    },
+    "contact": {
+      "title": "Contact",
+      "subtitle": "Reach us for questions, requests, or product feedback.",
+      "cta": "Send Feedback",
+      "fallbackTitle": "Email App Unavailable",
+      "fallbackBody": "The email app could not be opened right now. You can reach us at {{email}}.",
+      "sections": {
+        "channelsTitle": "Contact Channels",
+        "emailBullet": "Email: {{email}}",
+        "webBullet": "Web: {{web}}",
+        "socialBullet": "Social: {{social}}",
+        "feedbackTitle": "Feedback",
+        "feedbackBody": "You can share suggestions, bug reports, and collaboration requests with us.",
+        "feedbackBulletOne": "A clear subject line helps us respond faster.",
+        "feedbackBulletTwo": "If possible, include your device and app version."
       }
     }
   },

@@ -359,6 +359,12 @@
     "state": {
       "preparing": "Mintly hazırlanıyor...",
       "restoring": "Oturum geri yükleniyor..."
+    },
+    "notificationsPrompt": {
+      "title": "Bildirimleri Aç",
+      "body": "Ödeme hatırlatmaları ve önemli güncellemeler için bildirim izni verebilirsin.",
+      "allow": "İzin Ver",
+      "later": "Daha Sonra"
     }
   },
   "auth": {
@@ -423,6 +429,16 @@
       "passwordMin": "Şifre en az 8 karakter olmalıdır.",
       "passwordRequired": "Şifre gerekli.",
       "registerInvalidInput": "Lütfen kayıt bilgilerinizi kontrol edin."
+    },
+    "guest": {
+      "continueCta": "Üye olmadan devam et",
+      "label": "Misafir Kullanıcı",
+      "subtitle": "Salt okunur moddasın",
+      "signInHint": "İşlem yapmak için giriş yap",
+      "prompt": {
+        "title": "Giriş Gerekli",
+        "body": "Bu işlemi yapmak için giriş yapmalısın."
+      }
     }
   },
   "budgets": {
@@ -490,7 +506,8 @@
       "save": "Kaydet",
       "cancel": "İptal",
       "retry": "Tekrar Dene",
-      "delete": "Sil"
+      "delete": "Sil",
+      "ok": "Tamam"
     },
     "navigation": {
       "tabs": {
@@ -934,7 +951,17 @@
       "subtitle": "Ürün ve sürüm bilgileri",
       "title": "Mintly Hakkında",
       "versionLabel": "Sürüm",
-      "versionValue": "1.0.0"
+      "versionValue": "1.0.0",
+      "sections": {
+        "productTitle": "Uygulama Bilgisi",
+        "productBody": "Mintly; finans takibi, içgörü ve planlama deneyimini tek yerde toplar.",
+        "versionBullet": "Sürüm: {{version}}",
+        "platformBullet": "Platform: iOS ve Android geliştirme yapıları desteklenir.",
+        "notesTitle": "Sürüm Notları",
+        "notesBody": "Bu sürümde giriş, bildirim ve profil akışları daha güvenli hale getirildi.",
+        "notesBulletOne": "Native Google girişi ve geliştirilmiş auth akışları eklendi.",
+        "notesBulletTwo": "Profil içeriği ve destek sayfaları uygulama içine taşındı."
+      }
     },
     "accountSettings": "HESAP VE AYARLAR",
     "accounts": "Hesap",
@@ -978,7 +1005,15 @@
       "weeklyReport": "Haftalık Rapor",
       "weeklyReportSubtitle": "Skor ve haftalık görünüm",
       "financialGoals": "Finansal Hedefler",
-      "financialGoalsSubtitle": "Birikim hedefi ve risk profili"
+      "financialGoalsSubtitle": "Birikim hedefi ve risk profili",
+      "terms": "Kullanım Koşulları",
+      "termsSubtitle": "Hizmet kuralları ve kullanım sınırları",
+      "privacy": "Gizlilik Politikası",
+      "privacySubtitle": "Verilerini nasıl kullandığımız",
+      "helpSupport": "Yardım & Destek",
+      "helpSupportSubtitle": "SSS ve destek kanalları",
+      "contact": "İletişim",
+      "contactSubtitle": "Bize ulaş ve geri bildirim gönder"
     },
     "security": {
       "password": {
@@ -1113,6 +1148,84 @@
       "validation": {
         "targetRequired": "Birikim hedef oranı girin.",
         "targetRange": "Birikim hedef oranı 0 ile 80 arasında olmalıdır."
+      }
+    },
+    "delete": {
+      "title": "Hesabını silmek üzeresin",
+      "stepOne": "Bu işlem hesabına bağlı verileri geri alınamaz şekilde kaldırır. Devam etmek istediğinden emin misin?",
+      "continue": "Devam Et",
+      "finalTitle": "Son Onay",
+      "finalBody": "Hesabını silersen oturumun kapatılacak ve yeniden giriş yapmadan hiçbir işlem yapamayacaksın.",
+      "confirm": "Hesabı Sil",
+      "error": "Hesap silinirken bir sorun oluştu. Lütfen tekrar dene.",
+      "cta": "Hesabımı Sil",
+      "subtitle": "Hesap ve ilişkili verilerini kalıcı olarak kaldır"
+    },
+    "terms": {
+      "title": "Kullanım Koşulları",
+      "subtitle": "Mintly kullanımına ilişkin temel kurallar ve sorumluluklar.",
+      "sections": {
+        "scopeTitle": "Hizmet ve Hesap",
+        "scopeBulletOne": "Mintly; bilgilendirme, takip ve hesap yönetimi özellikleri sunar.",
+        "scopeBulletTwo": "Kullanıcı, hesabında doğru ve güncel bilgi vermekten sorumludur.",
+        "rulesTitle": "Yasaklı Kullanım",
+        "rulesBulletOne": "Spam, kötüye kullanım ve yetkisiz erişim girişimleri yasaktır.",
+        "rulesBulletTwo": "Uygulamanın tersine mühendisliği veya güvenlik önlemlerinin aşılması kabul edilmez.",
+        "rulesBulletThree": "Yüklenen içeriklerden kullanıcı sorumludur; ihlal içeriği kaldırabiliriz.",
+        "liabilityTitle": "Sorumluluk ve Güncellemeler",
+        "liabilityBulletOne": "Hizmet mevcut haliyle sunulur; kesintisiz çalışma garantisi verilmez.",
+        "liabilityBulletTwo": "Koşullar gerektiğinde güncellenebilir ve yeni sürümlerle yürürlüğe girer.",
+        "liabilityBulletThree": "Soruların için destek veya iletişim kanallarını kullanabilirsin."
+      }
+    },
+    "privacy": {
+      "title": "Gizlilik Politikası",
+      "subtitle": "Veri toplama, kullanım ve saklama yaklaşımımızın özeti.",
+      "sections": {
+        "collectionTitle": "Toplanan Veriler",
+        "collectionBulletOne": "E-posta adresi ve temel profil bilgileri toplanır.",
+        "collectionBulletTwo": "Sınırlı cihaz bilgileri ve uygulama tanılama verileri işlenebilir.",
+        "collectionBulletThree": "Bildirim gönderebilmek için push token bilgisi saklanabilir.",
+        "usageTitle": "Kullanım Amacı",
+        "usageBulletOne": "Giriş, hesap yönetimi ve oturum güvenliği için kullanılır.",
+        "usageBulletTwo": "Bildirim gönderimi, güvenlik kontrolleri ve hata analizi için kullanılır.",
+        "usageBulletThree": "Yasal zorunluluklar dışında veriler satılmaz; yalnızca gerekli hizmet sağlayıcılarla sınırlı paylaşılır.",
+        "retentionTitle": "Saklama ve Haklar",
+        "retentionBulletOne": "Veriler, amaç için gerekli olan süre boyunca tutulur.",
+        "retentionBulletTwo": "Erişim, düzeltme veya silme taleplerini destek kanalından iletebilirsin.",
+        "retentionBulletThree": "Detaylı başvurular için iletişim sayfasındaki kanalları kullanabilirsin."
+      }
+    },
+    "helpSupport": {
+      "title": "Yardım & Destek",
+      "subtitle": "Sık sorulan konular ve destek ekibine ulaşma yolları.",
+      "cta": "Bize Yazın",
+      "sections": {
+        "faqTitle": "Sık Sorulan Sorular",
+        "faqBulletOne": "Giriş sorunlarında önce bağlantı ve güncel uygulama sürümünü kontrol et.",
+        "faqBulletTwo": "Bildirimler çalışmıyorsa cihaz izinlerini ve uygulama ayarlarını yeniden gözden geçir.",
+        "faqBulletThree": "Veri eşitleme gecikmelerinde uygulamayı yenileyip tekrar dene.",
+        "contactTitle": "Destek Kanalları",
+        "contactBody": "Destek ekibimiz iş günlerinde talepleri sırayla değerlendirir.",
+        "contactBulletOne": "Destek e-postası: support@mintly.app",
+        "contactBulletTwo": "Çalışma saatleri: Hafta içi 09:00 - 18:00"
+      }
+    },
+    "contact": {
+      "title": "İletişim",
+      "subtitle": "Soruların, taleplerin ve geri bildirimlerin için bize ulaş.",
+      "cta": "Geri Bildirim Gönder",
+      "fallbackTitle": "E-posta Hazır Değil",
+      "fallbackBody": "Şu anda e-posta uygulaması açılamadı. Bize {{email}} adresinden ulaşabilirsin.",
+      "sections": {
+        "channelsTitle": "İletişim Kanalları",
+        "emailBullet": "E-posta: {{email}}",
+        "webBullet": "Web: {{web}}",
+        "socialBullet": "Sosyal: {{social}}",
+        "feedbackTitle": "Geri Bildirim",
+        "feedbackBody": "Öneri, hata bildirimi veya iş birliği taleplerini bizimle paylaşabilirsin.",
+        "feedbackBulletOne": "Net bir konu başlığı iletmen süreci hızlandırır.",
+        "feedbackBulletTwo": "Mümkünse cihaz ve sürüm bilgini mesajına ekle."
       }
     }
   },

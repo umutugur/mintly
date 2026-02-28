@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
-import { makeRedirectUri } from 'expo-auth-session';
 import Constants from 'expo-constants';
 
 import { useAuth } from '@app/providers/AuthProvider';
@@ -44,36 +43,26 @@ function resolveGoogleIosRedirectScheme(iosClientId: string): string {
 }
 
 export function DevDiagnosticsOverlay() {
-  const { status, withAuth } = useAuth();
+  const { status, withAuth, isGuest } = useAuth();
   const { isPremium } = useAds();
   const [aiHealthState, setAiHealthState] = useState<AiHealthState>('idle');
   const [aiHealthDetail, setAiHealthDetail] = useState('not_checked');
-
-  const redirectUri = useMemo(
-    () => {
-      const scheme =
-        Platform.OS === 'ios'
-          ? resolveGoogleIosRedirectScheme(mobileEnv.googleOauthIosClientId)
-          : 'mintly';
-
-      return makeRedirectUri({
-        scheme,
-        path: 'oauthredirect',
-      });
-    },
-    [],
-  );
   const configuredScheme = useMemo(resolveScheme, []);
   const adsModulePresent = useMemo(() => Boolean(getGoogleMobileAdsModule()), []);
+  const googleIosScheme = useMemo(
+    () => resolveGoogleIosRedirectScheme(mobileEnv.googleOauthIosClientId),
+    [],
+  );
+  const googleConfigured = mobileEnv.googleOauthWebClientId.trim().length > 0;
 
   useEffect(() => {
     if (!__DEV__) {
       return;
     }
 
-    if (status !== 'authenticated') {
+    if (status !== 'authenticated' || isGuest) {
       setAiHealthState('idle');
-      setAiHealthDetail(`auth_${status}`);
+      setAiHealthDetail(isGuest ? 'auth_guest' : `auth_${status}`);
       return;
     }
 
@@ -113,7 +102,7 @@ export function DevDiagnosticsOverlay() {
     return () => {
       active = false;
     };
-  }, [status, withAuth]);
+  }, [isGuest, status, withAuth]);
 
   if (!__DEV__) {
     return null;
@@ -123,7 +112,8 @@ export function DevDiagnosticsOverlay() {
     `build=${__DEV__ ? 'dev' : 'prod'}`,
     `platform=${Platform.OS}`,
     `scheme=${configuredScheme}`,
-    `redirect=${redirectUri}`,
+    `googleNative=${googleConfigured ? 'configured' : 'missing_web_client'}`,
+    `googleIosScheme=${googleIosScheme}`,
     `adsModule=${adsModulePresent ? 'yes' : 'no'}`,
     `isPremium=${String(isPremium)}`,
     `aiHealth=${aiHealthState}:${aiHealthDetail}`,

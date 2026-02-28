@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { type MeUpdateInput } from '@mintly/shared';
 import { useMutation } from '@tanstack/react-query';
@@ -8,7 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { invalidateFinanceQueries } from '@core/api/invalidateFinanceQueries';
-import { Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
+import { Card, PrimaryButton, ScreenContainer, TextField, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -52,10 +52,10 @@ export function EditProfileScreen() {
         await invalidateFinanceQueries(queryClient);
       }
 
-      Alert.alert(t('profile.edit.saveSuccess'));
+      showAlert(t('profile.edit.saveSuccess'));
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -94,7 +94,7 @@ export function EditProfileScreen() {
     }
 
     if (Object.keys(payload).length === 0) {
-      Alert.alert(t('profile.edit.noChanges'));
+      showAlert(t('profile.edit.noChanges'));
       return;
     }
 

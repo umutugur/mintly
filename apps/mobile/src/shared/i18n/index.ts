@@ -97,6 +97,18 @@ const resources = {
 
 let initPromise: Promise<void> | null = null;
 
+function syncResourceBundles(): void {
+  (Object.entries(resources) as Array<[SupportedLocale, { translation: Record<string, unknown> }]>).forEach(
+    ([locale, resource]) => {
+      i18n.addResourceBundle(locale, 'translation', resource.translation, true, true);
+    },
+  );
+}
+
+if (i18n.isInitialized) {
+  syncResourceBundles();
+}
+
 function normalizeLocale(locale: string | null | undefined): SupportedLocale {
   if (!locale) {
     return DEFAULT_LOCALE;
@@ -121,6 +133,7 @@ function detectDeviceLocale(): SupportedLocale {
 
 async function initI18n(): Promise<void> {
   if (i18n.isInitialized) {
+    syncResourceBundles();
     return;
   }
 
@@ -139,6 +152,8 @@ async function initI18n(): Promise<void> {
         returnEmptyString: false,
         parseMissingKeyHandler: () => '',
       });
+
+      syncResourceBundles();
     })();
   }
 

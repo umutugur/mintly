@@ -395,13 +395,14 @@ function DashboardSkeleton({ mode }: { mode: ThemeMode }) {
 
 export function DashboardScreen() {
   const navigation = useNavigation<any>();
-  const { withAuth, user } = useAuth();
+  const { withAuth, user, isGuest, ensureSignedIn } = useAuth();
   const { theme, mode } = useTheme();
   const { locale, t } = useI18n();
 
   const dashboardQuery = useQuery({
     queryKey: financeQueryKeys.dashboard.recent(),
     queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
+    enabled: !isGuest,
   });
 
   const currency = useMemo(() => {
@@ -478,17 +479,23 @@ export function DashboardScreen() {
   }, [navigation]);
 
   const goToAccountsScreen = useCallback(() => {
-    const parent = navigation.getParent?.();
-    const root = parent?.getParent?.();
-    const target = (root ?? parent ?? navigation) as {
-      navigate: (
-        routeName: keyof RootTabParamList,
-        params?: RootTabParamList['ProfileTab']
-      ) => void;
-    };
+    void (async () => {
+      if (!(await ensureSignedIn())) {
+        return;
+      }
 
-    target.navigate('ProfileTab', { screen: 'Accounts' });
-  }, [navigation]);
+      const parent = navigation.getParent?.();
+      const root = parent?.getParent?.();
+      const target = (root ?? parent ?? navigation) as {
+        navigate: (
+          routeName: keyof RootTabParamList,
+          params?: RootTabParamList['ProfileTab']
+        ) => void;
+      };
+
+      target.navigate('ProfileTab', { screen: 'Accounts' });
+    })();
+  }, [ensureSignedIn, navigation]);
 
   const goToTransactionsScreen = useCallback(
     (
@@ -823,7 +830,15 @@ export function DashboardScreen() {
               <View style={styles.quickActionsRow}>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => goToTransactionsScreen('ScanReceipt')}
+                  onPress={() => {
+                    void (async () => {
+                      if (!(await ensureSignedIn())) {
+                        return;
+                      }
+
+                      goToTransactionsScreen('ScanReceipt');
+                    })();
+                  }}
                   style={({ pressed }) => [
                     styles.quickTile,
                     {
@@ -843,7 +858,15 @@ export function DashboardScreen() {
 
                 <Pressable
                   accessibilityRole="button"
-                  onPress={goToAddTab}
+                  onPress={() => {
+                    void (async () => {
+                      if (!(await ensureSignedIn())) {
+                        return;
+                      }
+
+                      goToAddTab();
+                    })();
+                  }}
                   style={({ pressed }) => [
                     styles.quickTile,
                     {
@@ -863,7 +886,15 @@ export function DashboardScreen() {
 
                 <Pressable
                   accessibilityRole="button"
-                  onPress={goToAddTab}
+                  onPress={() => {
+                    void (async () => {
+                      if (!(await ensureSignedIn())) {
+                        return;
+                      }
+
+                      goToAddTab();
+                    })();
+                  }}
                   style={({ pressed }) => [
                     styles.quickTile,
                     {

@@ -1,11 +1,13 @@
 import {
   logoutResponseSchema,
   meChangePasswordInputSchema,
+  meExpoPushTokenInputSchema,
   mePreferencesResponseSchema,
   mePreferencesUpdateInputSchema,
   meResponseSchema,
   meUpdateInputSchema,
   type MeChangePasswordInput,
+  type MeExpoPushTokenInput,
   type MePreferencesUpdateInput,
   type MeUpdateInput,
 } from '@mintly/shared';
@@ -15,6 +17,12 @@ import { hashPassword, verifyPassword } from '../auth/passwords.js';
 import { authenticate } from '../auth/middleware.js';
 import { ApiError } from '../errors.js';
 import { AccountModel } from '../models/Account.js';
+import { BudgetModel } from '../models/Budget.js';
+import { CategoryModel } from '../models/Category.js';
+import { GroupModel } from '../models/Group.js';
+import { InternalCronNotificationLogModel } from '../models/InternalCronNotificationLog.js';
+import { RecurringRuleModel } from '../models/RecurringRule.js';
+import { RecurringRunLogModel } from '../models/RecurringRunLog.js';
 import { RefreshTokenModel } from '../models/RefreshToken.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { UpcomingPaymentModel } from '../models/UpcomingPayment.js';
@@ -232,5 +240,72 @@ export function registerMeRoute(app: FastifyInstance): void {
     }
 
     return toMePreferencesResponse(user);
+  });
+
+  app.post('/me/expo-push-token', { preHandler: authenticate }, async (request) => {
+    const userId = requireUserId(request);
+    const input = parseBody<MeExpoPushTokenInput>(meExpoPushTokenInputSchema, request.body);
+
+    const user = await UserModel.findById(userId).select('_id expoPushTokens');
+    if (!user) {
+      throw new ApiError({
+        code: 'UNAUTHORIZED',
+        message: 'User not found',
+        statusCode: 401,
+      });
+    }
+
+    const nextToken = input.expoPushToken.trim();
+    if (!Array.isArray(user.expoPushTokens)) {
+      user.expoPushTokens = [];
+    }
+
+    const existing = user.expoPushTokens.find(
+      (item: {
+        token: string;
+        device?: string | null;
+        platform?: 'ios' | 'android' | null;
+        updatedAt?: Date;
+      }) => item.token === nextToken,
+    );
+    if (existing) {
+      existing.device = input.device ?? null;
+      existing.platform = input.platform ?? null;
+      existing.updatedAt = new Date();
+    } else {
+      user.expoPushTokens.push({
+        token: nextToken,
+        device: input.device ?? null,
+        platform: input.platform ?? null,
+        updatedAt: new Date(),
+      });
+    }
+
+    await user.save();
+    return logoutResponseSchema.parse({ ok: true });
+  });
+
+  app.delete('/me', { preHandler: authenticate }, async (request) => {
+    const userId = requireUserId(request);
+
+    await Promise.all([
+      UserModel.findByIdAndDelete(userId),
+      RefreshTokenModel.deleteMany({ userId }),
+      AccountModel.deleteMany({ userId }),
+      TransactionModel.deleteMany({ userId }),
+      UpcomingPaymentModel.deleteMany({ userId }),
+      BudgetModel.deleteMany({ userId }),
+      CategoryModel.deleteMany({ userId }),
+      RecurringRuleModel.deleteMany({ userId }),
+      RecurringRunLogModel.deleteMany({ userId }),
+      InternalCronNotificationLogModel.deleteMany({ userId }),
+      GroupModel.deleteMany({ userId }),
+      GroupModel.updateMany(
+        { 'members.userId': userId },
+        { $pull: { members: { userId } } },
+      ),
+    ]);
+
+    return logoutResponseSchema.parse({ ok: true });
   });
 }

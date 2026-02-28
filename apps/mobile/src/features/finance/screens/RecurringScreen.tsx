@@ -1,11 +1,9 @@
 import { useEffect, useMemo } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  recurringCreateInputSchema,
-  type RecurringRule,
-} from '@mintly/shared';
+  recurringCreateInputSchema, type RecurringRule, } from '@mintly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -14,10 +12,8 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import {
-  getCategoryLabel,
-  listCategories,
-} from '@features/finance/categories/categoryCatalog';
-import { Card, Chip, PrimaryButton, ScreenContainer, Section } from '@shared/ui';
+  getCategoryLabel, listCategories, } from '@features/finance/categories/categoryCatalog';
+import { Card, Chip, PrimaryButton, ScreenContainer, Section, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { colors, radius, spacing, typography } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -256,10 +252,10 @@ export function RecurringScreen() {
         startAt: new Date().toISOString(),
         description: '',
       });
-      Alert.alert(t('recurring.successTitle'), t('recurring.successMessage'));
+      showAlert(t('recurring.successTitle'), t('recurring.successMessage'));
     },
     onError: (error) => {
-      Alert.alert(t('errors.recurring.createFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.recurring.createFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -276,7 +272,7 @@ export function RecurringScreen() {
       ),
     onSuccess: refreshRecurringList,
     onError: (error) => {
-      Alert.alert(t('errors.recurring.updateFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.recurring.updateFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -284,7 +280,7 @@ export function RecurringScreen() {
     mutationFn: (ruleId: string) => withAuth((token) => apiClient.deleteRecurring(ruleId, token)),
     onSuccess: refreshRecurringList,
     onError: (error) => {
-      Alert.alert(t('errors.recurring.deleteFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.recurring.deleteFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -636,7 +632,7 @@ export function RecurringScreen() {
               </Pressable>
               <Pressable
                 onPress={() => {
-                  Alert.alert(t('recurring.delete.title'), t('recurring.delete.message'), [
+                  showAlert(t('recurring.delete.title'), t('recurring.delete.message'), [
                     { text: t('common.cancel'), style: 'cancel' },
                     {
                       text: t('common.delete'),

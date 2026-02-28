@@ -1,18 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+  ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  transactionUpdateInputSchema,
-  type TransactionType,
-} from '@mintly/shared';
+  transactionUpdateInputSchema, type TransactionType, } from '@mintly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
@@ -23,7 +15,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { listCategories } from '@features/finance/categories/categoryCatalog';
-import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -171,11 +163,11 @@ export function EditTransactionScreen({ route, navigation }: Props) {
         queryClient.invalidateQueries({ queryKey: ['transactions', 'detail', transactionId] }),
       ]);
 
-      Alert.alert(t('tx.edit.success'));
+      showAlert(t('tx.edit.success'));
       navigation.goBack();
     },
     onError: (error) => {
-      Alert.alert(t('tx.edit.errorTitle'), apiErrorText(error));
+      showAlert(t('tx.edit.errorTitle'), apiErrorText(error));
     },
   });
 

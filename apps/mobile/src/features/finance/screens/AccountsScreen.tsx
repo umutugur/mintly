@@ -1,14 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  accountTypeSchema,
-  accountCreateInputSchema,
-  type AccountType,
-  type AccountUpdateInput,
-  type DashboardRecentResponse,
-} from '@mintly/shared';
+  accountTypeSchema, accountCreateInputSchema, type AccountType, type AccountUpdateInput, type DashboardRecentResponse, } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,7 +16,7 @@ import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransferScreenParams } from '@core/navigation/stacks/AddStack';
 import type { ProfileStackParamList } from '@core/navigation/stacks/ProfileStack';
 import type { RootTabParamList } from '@core/navigation/types';
-import { Card, Chip, PrimaryButton, ScreenContainer, Section } from '@shared/ui';
+import { Card, Chip, PrimaryButton, ScreenContainer, Section, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { colors, radius, spacing, typography } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -179,7 +174,7 @@ export function AccountsScreen() {
       });
     },
     onError: (error) => {
-      Alert.alert(t('errors.account.createFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.account.createFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -202,7 +197,7 @@ export function AccountsScreen() {
     },
     onError: (error) => {
       const message = apiErrorText(error) || t('accounts.update.error');
-      Alert.alert(t('errors.account.updateFailedTitle'), message);
+      showAlert(t('errors.account.updateFailedTitle'), message);
       setFeedback({ tone: 'error', message: t('accounts.update.error') });
     },
   });
@@ -219,7 +214,7 @@ export function AccountsScreen() {
     },
     onError: (error) => {
       const message = apiErrorText(error) || t('accounts.delete.error');
-      Alert.alert(t('errors.account.deleteFailedTitle'), message);
+      showAlert(t('errors.account.deleteFailedTitle'), message);
       setFeedback({ tone: 'error', message: t('accounts.delete.error') });
     },
   });
@@ -233,7 +228,7 @@ export function AccountsScreen() {
     try {
       await logout();
     } catch (error) {
-      Alert.alert(t('errors.auth.logoutFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.auth.logoutFailedTitle'), apiErrorText(error));
     }
   }, [logout, t]);
 
@@ -261,7 +256,7 @@ export function AccountsScreen() {
       const accountBalance = dashboardData?.balances.find((b) => b.accountId === accountId)?.balance ?? 0;
 
       if (accountBalance > 0) {
-        Alert.alert(
+        showAlert(
           t('accounts.delete.hasBalanceTitle', { defaultValue: 'Hesapta Bakiye Var' }),
           t('accounts.delete.hasBalanceBody', { defaultValue: 'Bu hesabı silmeden önce içindeki bakiyeyi başka bir hesaba aktarmanız gerekmektedir.' }),
           [
@@ -280,7 +275,7 @@ export function AccountsScreen() {
         return;
       }
 
-      Alert.alert(
+      showAlert(
         t('accounts.delete.confirmTitle'),
         t('accounts.delete.confirmBody', { name: accountName }),
         [

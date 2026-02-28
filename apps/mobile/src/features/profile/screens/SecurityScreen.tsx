@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useMutation } from '@tanstack/react-query';
 
@@ -7,7 +7,7 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { useI18n } from '@shared/i18n';
 import { spacing, typography, useTheme } from '@shared/theme';
-import { Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
+import { Card, PrimaryButton, ScreenContainer, TextField, showAlert } from '@shared/ui';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 
 export function SecurityScreen() {
@@ -38,21 +38,21 @@ export function SecurityScreen() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      Alert.alert(t('profile.security.password.success'));
+      showAlert(t('profile.security.password.success'));
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
   const logoutAllMutation = useMutation({
     mutationFn: () => withAuth((token) => apiClient.logoutAll(token)),
     onSuccess: async () => {
-      Alert.alert(t('profile.security.sessions.logoutAllSuccess'));
+      showAlert(t('profile.security.sessions.logoutAllSuccess'));
       await logout();
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -62,17 +62,17 @@ export function SecurityScreen() {
     }
 
     if (!currentPassword.trim()) {
-      Alert.alert(t('common.error'), t('profile.security.password.currentRequired'));
+      showAlert(t('common.error'), t('profile.security.password.currentRequired'));
       return;
     }
 
     if (newPassword.length < 8) {
-      Alert.alert(t('common.error'), t('profile.security.password.minLength'));
+      showAlert(t('common.error'), t('profile.security.password.minLength'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert(t('common.error'), t('profile.security.password.mismatch'));
+      showAlert(t('common.error'), t('profile.security.password.mismatch'));
       return;
     }
 

@@ -1,21 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+  ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  GoogleSignin, isCancelledResponse, isErrorWithCode, isSuccessResponse, statusCodes, } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { makeRedirectUri } from 'expo-auth-session';
-import * as Google from 'expo-auth-session/providers/google';
 import * as Crypto from 'expo-crypto';
-import * as WebBrowser from 'expo-web-browser';
 
 import { useAuth } from '@app/providers/AuthProvider';
 import { MintlyLogo } from '../../../components/brand/MintlyLogo';
@@ -24,7 +15,7 @@ import type { AuthStackParamList } from '@core/navigation/types';
 import { AuthFooterLinks } from '@features/auth/components/AuthFooterLinks';
 import { AuthLayout } from '@features/auth/components/AuthLayout';
 import { useI18n } from '@shared/i18n';
-import { AppIcon, TextField } from '@shared/ui';
+import { AppIcon, TextField, showAlert } from '@shared/ui';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 
@@ -40,29 +31,6 @@ interface LoginErrors {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME =
-  'com.googleusercontent.apps.1085364770994-t92be8lrnis7ma7o8kqpa3qsiulqbra2';
-
-WebBrowser.maybeCompleteAuthSession();
-
-function resolveGoogleIosRedirectScheme(iosClientId: string): string {
-  const trimmed = iosClientId.trim();
-  if (!trimmed) {
-    return DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME;
-  }
-
-  const suffix = '.apps.googleusercontent.com';
-  if (!trimmed.endsWith(suffix)) {
-    return DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME;
-  }
-
-  const base = trimmed.slice(0, -suffix.length);
-  if (!base) {
-    return DEFAULT_GOOGLE_IOS_REDIRECT_SCHEME;
-  }
-
-  return `com.googleusercontent.apps.${base}`;
-}
 
 function validateLogin(email: string, password: string, t: (key: string) => string): LoginErrors {
   const next: LoginErrors = {};
@@ -80,45 +48,36 @@ function validateLogin(email: string, password: string, t: (key: string) => stri
   return next;
 }
 
-function extractGoogleIdToken(result: unknown): string | null {
-  if (!result || typeof result !== 'object') {
-    return null;
-  }
-
-  const payload = result as {
-    type?: string;
-    params?: Record<string, unknown>;
-    authentication?: { idToken?: string | null };
-  };
-
-  if (payload.type !== 'success') {
-    return null;
-  }
-
-  const fromParams = payload.params?.id_token;
-  if (typeof fromParams === 'string' && fromParams.length > 0) {
-    return fromParams;
-  }
-
-  const fromAuthentication = payload.authentication?.idToken;
-  if (typeof fromAuthentication === 'string' && fromAuthentication.length > 0) {
-    return fromAuthentication;
-  }
-
-  return null;
-}
-
-function getAuthorizeClientId(authorizeUrl: string | null | undefined): string | null {
-  if (!authorizeUrl) {
-    return null;
+async function resolveGoogleNativeIdToken(directToken: string | null | undefined): Promise<string | null> {
+  const normalizedDirectToken = typeof directToken === 'string' ? directToken.trim() : '';
+  if (normalizedDirectToken.length > 0) {
+    return normalizedDirectToken;
   }
 
   try {
-    const parsed = new URL(authorizeUrl);
-    return parsed.searchParams.get('client_id');
+    const tokens = await GoogleSignin.getTokens();
+    const fallbackToken = typeof tokens.idToken === 'string' ? tokens.idToken.trim() : '';
+    return fallbackToken.length > 0 ? fallbackToken : null;
   } catch {
     return null;
   }
+}
+
+function configureNativeGoogleSignIn(webClientId: string, iosClientId: string): void {
+  const options: {
+    webClientId: string;
+    iosClientId?: string;
+    scopes: string[];
+  } = {
+    webClientId,
+    scopes: ['email', 'profile'],
+  };
+
+  if (iosClientId.length > 0) {
+    options.iosClientId = iosClientId;
+  }
+
+  GoogleSignin.configure(options);
 }
 
 function isCancelledError(error: unknown): boolean {
@@ -147,8 +106,9 @@ function buildAppleName(fullName: AppleAuthentication.AppleAuthenticationFullNam
 export function LoginScreen({ navigation }: Props) {
   const { theme } = useTheme();
   const { t } = useI18n();
-  const { login, oauthLogin, authError, clearAuthError } = useAuth();
+  const { login, oauthLogin, authError, clearAuthError, continueAsGuest } = useAuth();
   const passwordRef = useRef<TextInput | null>(null);
+  const googlePromptInFlightRef = useRef(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -157,66 +117,36 @@ export function LoginScreen({ navigation }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeOauthProvider, setActiveOauthProvider] = useState<OauthProvider | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
-  const googleIosRedirectScheme = useMemo(
-    () => resolveGoogleIosRedirectScheme(mobileEnv.googleOauthIosClientId),
-    [],
-  );
-  const googleRedirectUri = useMemo(
-    () => {
-      if (Platform.OS === 'ios') {
-        return makeRedirectUri({
-          scheme: googleIosRedirectScheme,
-          path: 'oauthredirect',
-        });
-      }
-
-      return makeRedirectUri({
-        scheme: 'mintly',
-        path: 'oauthredirect',
-      });
-    },
-    [googleIosRedirectScheme],
-  );
-
-  const [googleRequest, , promptGoogleAsync] = Google.useIdTokenAuthRequest({
-    webClientId: mobileEnv.googleOauthWebClientId,
-    iosClientId: mobileEnv.googleOauthIosClientId,
-    androidClientId: mobileEnv.googleOauthAndroidClientId,
-    selectAccount: true,
-    redirectUri: googleRedirectUri,
-  });
-
-  const googleConfigured =
-    Boolean(mobileEnv.googleOauthWebClientId) ||
-    Boolean(mobileEnv.googleOauthIosClientId) ||
-    Boolean(mobileEnv.googleOauthAndroidClientId);
-  const googleRequestReady = googleConfigured && Boolean(googleRequest);
+  const googleWebClientId = mobileEnv.googleOauthWebClientId.trim();
+  const googleIosClientId = mobileEnv.googleOauthIosClientId.trim();
+  const googleAndroidClientId = mobileEnv.googleOauthAndroidClientId.trim();
+  const googleConfigured = googleWebClientId.length > 0;
 
   useEffect(() => {
     if (!__DEV__) {
+      if (!googleConfigured) {
+        return;
+      }
+
+      configureNativeGoogleSignIn(googleWebClientId, googleIosClientId);
       return;
     }
 
-    console.info('[auth][google][dev-config]', {
+    console.info('[auth][google][native-config]', {
       platform: Platform.OS,
-      hasWebClientId: Boolean(mobileEnv.googleOauthWebClientId),
-      hasIosClientId: Boolean(mobileEnv.googleOauthIosClientId),
-      hasAndroidClientId: Boolean(mobileEnv.googleOauthAndroidClientId),
-      iosRedirectScheme: googleIosRedirectScheme,
-      requestReady: Boolean(googleRequest),
-      redirectUri: googleRedirectUri,
-      authorizeUrl: googleRequest?.url ?? null,
-      authorizeClientId: getAuthorizeClientId(googleRequest?.url),
+      hasWebClientId: googleWebClientId.length > 0,
+      hasIosClientId: googleIosClientId.length > 0,
+      hasAndroidClientId: googleAndroidClientId.length > 0,
+      currentUserCached: Boolean(GoogleSignin.getCurrentUser()),
     });
 
-    if (Platform.OS === 'ios' && !mobileEnv.googleOauthIosClientId) {
-      console.info('[auth][google][dev-hint] Missing EXPO_PUBLIC_GOOGLE_OAUTH_IOS_CLIENT_ID for iOS build.');
+    if (!googleConfigured) {
+      console.info('[auth][google][dev-hint] Missing EXPO_PUBLIC_GOOGLE_OAUTH_WEB_CLIENT_ID for native Google Sign-In.');
+      return;
     }
 
-    if (Platform.OS === 'android' && !mobileEnv.googleOauthAndroidClientId) {
-      console.info('[auth][google][dev-hint] Missing EXPO_PUBLIC_GOOGLE_OAUTH_ANDROID_CLIENT_ID for Android build.');
-    }
-  }, [googleIosRedirectScheme, googleRedirectUri, googleRequest]);
+    configureNativeGoogleSignIn(googleWebClientId, googleIosClientId);
+  }, [googleAndroidClientId, googleConfigured, googleIosClientId, googleWebClientId]);
 
   const submit = async () => {
     if (isSubmitting || activeOauthProvider) {
@@ -250,54 +180,79 @@ export function LoginScreen({ navigation }: Props) {
   };
 
   const submitGoogle = async () => {
-    if (isSubmitting || activeOauthProvider) {
+    if (isSubmitting || activeOauthProvider || googlePromptInFlightRef.current) {
       return;
     }
 
     clearAuthError();
     setRequestError(null);
 
-    if (!googleRequestReady || !googleRequest) {
+    if (!googleConfigured) {
       setRequestError(t('auth.login.oauth.googleUnavailable'));
       if (__DEV__) {
-        Alert.alert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.googleUnavailable'));
+        showAlert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.googleUnavailable'));
       }
       return;
     }
 
+    googlePromptInFlightRef.current = true;
     setActiveOauthProvider('google');
 
     try {
+      if (Platform.OS === 'android') {
+        const hasPlayServices = await GoogleSignin.hasPlayServices({
+          showPlayServicesUpdateDialog: true,
+        });
+
+        if (!hasPlayServices) {
+          setRequestError(t('auth.login.oauth.googleUnavailable'));
+          return;
+        }
+      }
+
       if (__DEV__) {
-        console.info('[auth][google][prompt]', {
-          redirectUri: googleRedirectUri,
-          authorizeUrl: googleRequest.url ?? null,
+        console.info('[auth][google][native-prompt]', {
+          platform: Platform.OS,
+          hasWebClientId: googleWebClientId.length > 0,
+          hasIosClientId: googleIosClientId.length > 0,
+          hasAndroidClientId: googleAndroidClientId.length > 0,
         });
       }
 
-      const promptOptions = {
-        useProxy: false,
-        showInRecents: true,
-      } as unknown as Parameters<typeof promptGoogleAsync>[0];
-      const result = await promptGoogleAsync(promptOptions);
+      const result = await GoogleSignin.signIn();
 
-      if (__DEV__) {
-        console.info('[auth][google][result]', {
-          type: typeof result?.type === 'string' ? result.type : 'unknown',
-        });
+      if (isCancelledResponse(result)) {
+        if (__DEV__) {
+          console.info('[auth][google][native-result]', {
+            type: result.type,
+            hasIdToken: false,
+            hasServerAuthCode: false,
+          });
+        }
+        return;
       }
 
-      const idToken = extractGoogleIdToken(result);
+      if (!isSuccessResponse(result)) {
+        setRequestError(t('auth.login.oauth.genericError'));
+        return;
+      }
+
+      const idToken = await resolveGoogleNativeIdToken(result.data.idToken);
+
+      if (__DEV__) {
+        console.info('[auth][google][native-result]', {
+          type: result.type,
+          hasDirectIdToken: Boolean(result.data.idToken),
+          hasResolvedIdToken: Boolean(idToken),
+          hasServerAuthCode: Boolean(result.data.serverAuthCode),
+          email: result.data.user.email,
+        });
+      }
 
       if (!idToken) {
-        const resultType = (result as { type?: string }).type;
-        if (resultType !== 'dismiss' && resultType !== 'cancel') {
-          setRequestError(t('auth.login.oauth.tokenMissing'));
-          if (__DEV__) {
-            Alert.alert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.tokenMissing'));
-          }
-        } else if (__DEV__) {
-          Alert.alert(t('auth.login.oauth.googleCta'), t('common.cancel'));
+        setRequestError(t('auth.login.oauth.tokenMissing'));
+        if (__DEV__) {
+          showAlert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.tokenMissing'));
         }
         return;
       }
@@ -311,11 +266,39 @@ export function LoginScreen({ navigation }: Props) {
         setRequestError(t('auth.login.fallbackError'));
       }
     } catch (error) {
+      if (__DEV__) {
+        console.info('[auth][google][native-error]', {
+          code:
+            isErrorWithCode(error) && typeof error.code === 'string'
+              ? error.code
+              : null,
+          name: error instanceof Error ? error.name : 'unknown',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+
+      if (isErrorWithCode(error)) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED || error.code === statusCodes.IN_PROGRESS) {
+          return;
+        }
+
+        if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          setRequestError(t('auth.login.oauth.googleUnavailable'));
+          return;
+        }
+
+        if (error.code === statusCodes.NULL_PRESENTER) {
+          setRequestError(t('auth.login.oauth.googleUnavailable'));
+          return;
+        }
+      }
+
       setRequestError(apiErrorText(error));
       if (__DEV__) {
-        Alert.alert(t('auth.login.oauth.googleCta'), apiErrorText(error));
+        showAlert(t('auth.login.oauth.googleCta'), apiErrorText(error));
       }
     } finally {
+      googlePromptInFlightRef.current = false;
       setActiveOauthProvider(null);
     }
   };
@@ -504,6 +487,29 @@ export function LoginScreen({ navigation }: Props) {
         )}
       </Pressable>
 
+      <Pressable
+        accessibilityRole="button"
+        disabled={isBusy}
+        onPress={() => {
+          void continueAsGuest();
+        }}
+        style={({ pressed }) => [
+          styles.guestButton,
+          {
+            backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.04)' : theme.colors.surface,
+            borderColor: theme.colors.border,
+          },
+          (pressed || isBusy) && styles.submitButtonPressed,
+        ]}
+      >
+        <View style={styles.socialContent}>
+          <AppIcon name="compass-outline" size="sm" tone="text" />
+          <Text style={[styles.guestLabel, { color: theme.colors.text }]}>
+            {t('auth.guest.continueCta')}
+          </Text>
+        </View>
+      </Pressable>
+
       <View style={styles.divider}>
         <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
         <Text style={[styles.dividerLabel, { color: theme.colors.textMuted }]}>{t('auth.common.orContinueWith')}</Text>
@@ -513,7 +519,7 @@ export function LoginScreen({ navigation }: Props) {
       <View style={styles.socialRow}>
         <Pressable
           accessibilityRole="button"
-          disabled={isBusy || !googleRequestReady}
+          disabled={isBusy || !googleConfigured}
           onPress={() => {
             void submitGoogle();
           }}
@@ -523,7 +529,7 @@ export function LoginScreen({ navigation }: Props) {
               backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.04)' : theme.colors.surface,
               borderColor: theme.colors.border,
             },
-            (pressed || isBusy || !googleRequestReady) && styles.socialButtonPressed,
+            (pressed || isBusy || !googleConfigured) && styles.socialButtonPressed,
           ]}
         >
           {activeOauthProvider === 'google' ? (
@@ -602,6 +608,17 @@ const styles = StyleSheet.create({
   },
   submitButtonPressed: {
     opacity: 0.85,
+  },
+  guestButton: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    height: 50,
+    justifyContent: 'center',
+  },
+  guestLabel: {
+    ...typography.subheading,
+    fontWeight: '600',
   },
   submitLabel: {
     ...typography.subheading,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,15 +12,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
 import {
-  AppIcon,
-  Card,
-  GradientCard,
-  MemberChip,
-  PrimaryButton,
-  ScreenContainer,
-  SplitToggle,
-  TextField,
-} from '@shared/ui';
+  AppIcon, Card, GradientCard, MemberChip, PrimaryButton, ScreenContainer, SplitToggle, TextField, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
@@ -120,14 +112,14 @@ export function AddGroupExpenseScreen() {
       navigation.goBack();
     },
     onError: (error) => {
-      Alert.alert(t('split.addExpense.errors.createFailedTitle'), apiErrorText(error));
+      showAlert(t('split.addExpense.errors.createFailedTitle'), apiErrorText(error));
     },
   });
 
   const validateAndBuildPayload = (): GroupExpenseCreateInput | null => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      Alert.alert(
+      showAlert(
         t('split.addExpense.errors.requiredTitleTitle'),
         t('split.addExpense.errors.requiredTitleMessage'),
       );
@@ -136,7 +128,7 @@ export function AddGroupExpenseScreen() {
 
     const parsedAmount = parseDecimal(amount);
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert(
+      showAlert(
         t('split.addExpense.errors.invalidAmountTitle'),
         t('split.addExpense.errors.invalidAmountMessage'),
       );
@@ -144,7 +136,7 @@ export function AddGroupExpenseScreen() {
     }
 
     if (!paidByMemberId) {
-      Alert.alert(
+      showAlert(
         t('split.addExpense.errors.paidByRequiredTitle'),
         t('split.addExpense.errors.paidByRequiredMessage'),
       );
@@ -152,7 +144,7 @@ export function AddGroupExpenseScreen() {
     }
 
     if (activeMembers.length === 0) {
-      Alert.alert(
+      showAlert(
         t('split.addExpense.errors.membersRequiredTitle'),
         t('split.addExpense.errors.membersRequiredMessage'),
       );
@@ -184,7 +176,7 @@ export function AddGroupExpenseScreen() {
     if (splitMode === 'custom') {
       const hasInvalid = splits.some((split) => !Number.isFinite(split.amount) || split.amount < 0);
       if (hasInvalid) {
-        Alert.alert(
+        showAlert(
           t('split.addExpense.errors.invalidCustomSplitTitle'),
           t('split.addExpense.errors.invalidCustomSplitMessage'),
         );
@@ -194,7 +186,7 @@ export function AddGroupExpenseScreen() {
       const splitTotal = Number(splits.reduce((sum, split) => sum + split.amount, 0).toFixed(2));
       const amountTotal = Number(parsedAmount.toFixed(2));
       if (Math.abs(splitTotal - amountTotal) > 0.01) {
-        Alert.alert(
+        showAlert(
           t('split.addExpense.errors.splitMismatchTitle'),
           t('split.addExpense.errors.splitMismatchMessage', {
             amount: formatMoney(amountTotal, currency, locale),

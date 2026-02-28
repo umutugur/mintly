@@ -27,7 +27,7 @@ interface TotalsAggregate {
 }
 
 interface TopCategoryAggregate {
-  categoryId: Types.ObjectId;
+  categoryKey: string | null;
   name: string;
   type: 'income' | 'expense';
   total: number;
@@ -105,7 +105,7 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
         {
           $group: {
             _id: {
-              categoryId: '$categoryId',
+              categoryKey: '$categoryKey',
               type: '$type',
             },
             total: { $sum: '$amount' },
@@ -113,26 +113,12 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
         },
         { $sort: { total: -1 } },
         {
-          $lookup: {
-            from: 'categories',
-            localField: '_id.categoryId',
-            foreignField: '_id',
-            as: 'categoryDocs',
-          },
-        },
-        {
-          $unwind: {
-            path: '$categoryDocs',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
           $project: {
             _id: 0,
-            categoryId: '$_id.categoryId',
+            categoryKey: '$_id.categoryKey',
             type: '$_id.type',
             total: 1,
-            name: { $ifNull: ['$categoryDocs.name', 'Unknown'] },
+            name: { $ifNull: ['$_id.categoryKey', 'uncategorized'] },
           },
         },
       ]),
@@ -149,7 +135,8 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
       const percent = denominator > 0 ? (entry.total / denominator) * 100 : 0;
 
       return {
-        categoryId: entry.categoryId.toString(),
+        categoryId: entry.categoryKey,
+        categoryKey: entry.categoryKey,
         name: entry.name,
         type: entry.type,
         total: entry.total,
@@ -177,7 +164,7 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
     const [currency, rows] = await Promise.all([
       getUserBaseCurrency(userId),
       TransactionModel.aggregate<{
-        categoryId: Types.ObjectId;
+        categoryKey: string | null;
         name: string;
         total: number;
         count: number;
@@ -196,31 +183,17 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
         },
         {
           $group: {
-            _id: '$categoryId',
+            _id: '$categoryKey',
             total: { $sum: '$amount' },
             count: { $sum: 1 },
           },
         },
         { $sort: { total: -1 } },
         {
-          $lookup: {
-            from: 'categories',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'categoryDocs',
-          },
-        },
-        {
-          $unwind: {
-            path: '$categoryDocs',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
           $project: {
             _id: 0,
-            categoryId: '$_id',
-            name: { $ifNull: ['$categoryDocs.name', 'Unknown'] },
+            categoryKey: '$_id',
+            name: { $ifNull: ['$_id', 'uncategorized'] },
             total: 1,
             count: 1,
           },
@@ -233,7 +206,8 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
       type: query.type,
       currency,
       categories: rows.map((row) => ({
-        categoryId: row.categoryId.toString(),
+        categoryId: row.categoryKey,
+        categoryKey: row.categoryKey,
         name: row.name,
         total: row.total,
         count: row.count,

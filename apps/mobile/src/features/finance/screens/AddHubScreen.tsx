@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { useAuth } from '@app/providers/AuthProvider';
 import type { AddStackParamList } from '@core/navigation/stacks/AddStack';
 import { useI18n } from '@shared/i18n';
 import { AppIcon, Card, PrimaryButton, ScreenContainer } from '@shared/ui';
@@ -10,10 +11,19 @@ import { radius, spacing, typography, useTheme } from '@shared/theme';
 
 export function AddHubScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AddStackParamList>>();
+  const { ensureSignedIn } = useAuth();
   const { t } = useI18n();
   const { theme, mode } = useTheme();
 
   const dark = mode === 'dark';
+
+  const openProtectedScreen = async (screen: keyof AddStackParamList) => {
+    if (!(await ensureSignedIn())) {
+      return;
+    }
+
+    navigation.navigate(screen);
+  };
 
   return (
     <ScreenContainer dark={dark}>
@@ -44,7 +54,9 @@ export function AddHubScreen() {
           <PrimaryButton
             iconName="arrow-forward-outline"
             label={t('add.hub.addTransactionAction')}
-            onPress={() => navigation.navigate('AddTransaction')}
+            onPress={() => {
+              void openProtectedScreen('AddTransaction');
+            }}
           />
         </Card>
 
@@ -70,7 +82,9 @@ export function AddHubScreen() {
 
           <Pressable
             accessibilityRole="button"
-            onPress={() => navigation.navigate('Transfer')}
+            onPress={() => {
+              void openProtectedScreen('Transfer');
+            }}
             style={[styles.secondaryButton, { borderColor: theme.colors.primary }]}
           >
             <AppIcon name="arrow-forward-outline" size="sm" tone="primary" />
@@ -102,7 +116,9 @@ export function AddHubScreen() {
 
           <Pressable
             accessibilityRole="button"
-            onPress={() => navigation.navigate('Recurring')}
+            onPress={() => {
+              void openProtectedScreen('Recurring');
+            }}
             style={[styles.secondaryButton, { borderColor: theme.colors.primary }]}
           >
             <AppIcon name="arrow-forward-outline" size="sm" tone="primary" />

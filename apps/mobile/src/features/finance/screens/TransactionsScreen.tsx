@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+  ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { Transaction } from '@mintly/shared';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -20,7 +11,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
 import { getCategoryIcon, getCategoryLabel } from '@features/finance/categories/categoryCatalog';
-import { AppIcon, Card, PrimaryButton, ScreenContainer, TransactionRow } from '@shared/ui';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, TransactionRow, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { RootTabParamList } from '@core/navigation/types';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
@@ -248,7 +239,7 @@ function LoadingSkeleton() {
 }
 
 export function TransactionsScreen() {
-  const { withAuth, user } = useAuth();
+  const { withAuth, user, isGuest, ensureSignedIn } = useAuth();
   const { theme, mode } = useTheme();
   const { t, locale } = useI18n();
   const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackParamList>>();
@@ -277,23 +268,29 @@ export function TransactionsScreen() {
   }, [queryClient]);
 
   const openAddTransaction = useCallback(() => {
-    const parent = navigation.getParent?.();
-    if (parent && 'navigate' in parent) {
-      (parent as {
-        navigate: (name: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
-      }).navigate('AddTab', { screen: 'AddTransaction' });
-    }
-  }, [navigation]);
+    void (async () => {
+      if (!(await ensureSignedIn())) {
+        return;
+      }
+
+      const parent = navigation.getParent?.();
+      if (parent && 'navigate' in parent) {
+        (parent as {
+          navigate: (name: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
+        }).navigate('AddTab', { screen: 'AddTransaction' });
+      }
+    })();
+  }, [ensureSignedIn, navigation]);
 
   const deleteTransactionMutation = useMutation({
     mutationFn: (transactionId: string) =>
       withAuth((token) => apiClient.deleteTransaction(transactionId, token)),
     onSuccess: async () => {
       await invalidateTransactionRelatedQueries();
-      Alert.alert(t('tx.delete.success'));
+      showAlert(t('tx.delete.success'));
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -302,10 +299,10 @@ export function TransactionsScreen() {
       withAuth((token) => apiClient.deleteTransfer(transferGroupId, token)),
     onSuccess: async () => {
       await invalidateTransactionRelatedQueries();
-      Alert.alert(t('transfer.delete.success'));
+      showAlert(t('transfer.delete.success'));
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -315,11 +312,11 @@ export function TransactionsScreen() {
         return;
       }
       if (transaction.kind === 'transfer') {
-        Alert.alert(t('common.notAvailable'));
+        showAlert(t('common.notAvailable'));
         return;
       }
 
-      Alert.alert(
+      showAlert(
         t('tx.delete.confirmTitle'),
         t('tx.delete.confirmBody', { title: getTransactionTitle(transaction, locale, t) }),
         [
@@ -347,11 +344,11 @@ export function TransactionsScreen() {
       }
 
       if (!transaction.transferGroupId) {
-        Alert.alert(t('common.notAvailable'));
+        showAlert(t('common.notAvailable'));
         return;
       }
 
-      Alert.alert(
+      showAlert(
         t('transfer.delete.confirmTitle'),
         t('transfer.delete.confirmBody'),
         [
@@ -405,6 +402,7 @@ export function TransactionsScreen() {
 
       return lastPage.pagination.page + 1;
     },
+    enabled: !isGuest,
   });
 
   const transactions = useMemo(
@@ -590,7 +588,15 @@ export function TransactionsScreen() {
               <Pressable
                 accessibilityLabel={t('common.navigation.stacks.transfer.header.title')}
                 accessibilityRole="button"
-                onPress={() => navigation.navigate('Transfer')}
+                onPress={() => {
+                  void (async () => {
+                    if (!(await ensureSignedIn())) {
+                      return;
+                    }
+
+                    navigation.navigate('Transfer');
+                  })();
+                }}
                 style={[styles.iconButton, { backgroundColor: mode === 'dark' ? '#121A2E' : '#EDF2FB' }]}
               >
                 <AppIcon name="swap-horizontal-outline" size="md" tone="text" />
@@ -716,7 +722,15 @@ export function TransactionsScreen() {
             <View style={styles.quickActionsRow}>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => navigation.navigate('ScanReceipt')}
+                onPress={() => {
+                  void (async () => {
+                    if (!(await ensureSignedIn())) {
+                      return;
+                    }
+
+                    navigation.navigate('ScanReceipt');
+                  })();
+                }}
                 style={[
                   styles.quickActionButton,
                   {

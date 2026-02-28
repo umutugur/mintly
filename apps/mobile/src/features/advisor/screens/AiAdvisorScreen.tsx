@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -14,7 +14,7 @@ import { useAdvisorInsights } from '@features/advisor/hooks/useAdvisorInsights';
 import { useAdvisorInsightRegenerateWithRewarded } from '@features/advisor/hooks/useAdvisorInsightRegenerateWithRewarded';
 import { logAdvisorReq, useAdvisorDebugEvents } from '@features/advisor/utils/advisorDiagnostics';
 import { useI18n } from '@shared/i18n';
-import { AppIcon, Card, Chip, PrimaryButton, ScreenContainer, Section, StatCard, TextField } from '@shared/ui';
+import { AppIcon, Card, Chip, PrimaryButton, ScreenContainer, Section, StatCard, TextField, showAlert } from '@shared/ui';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 import { normalizeApiErrorForUi } from '@shared/utils/normalizeApiError';
@@ -332,7 +332,7 @@ export function AiAdvisorScreen() {
       withAuth((token) => apiClient.createAdvisorBudgets(payload, token)),
     onSuccess: async () => {
       await invalidateAfterAdvisorAction();
-      Alert.alert(t('advisor.actions.budgets.success'));
+      showAlert(t('advisor.actions.budgets.success'));
       setActionModal(null);
     },
   });
@@ -351,7 +351,7 @@ export function AiAdvisorScreen() {
     }) => withAuth((token) => apiClient.createAdvisorRecurring(payload, token)),
     onSuccess: async () => {
       await invalidateAfterAdvisorAction();
-      Alert.alert(t('advisor.actions.recurring.success'));
+      showAlert(t('advisor.actions.recurring.success'));
       setActionModal(null);
     },
   });
@@ -366,7 +366,7 @@ export function AiAdvisorScreen() {
     }) => withAuth((token) => apiClient.createAdvisorTransfer(payload, token)),
     onSuccess: async () => {
       await invalidateAfterAdvisorAction();
-      Alert.alert(t('advisor.actions.transfer.success'));
+      showAlert(t('advisor.actions.transfer.success'));
       setActionModal(null);
     },
   });

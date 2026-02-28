@@ -55,6 +55,7 @@ import {
   healthResponseSchema,
   logoutResponseSchema,
   meChangePasswordInputSchema,
+  meExpoPushTokenInputSchema,
   meUpdateInputSchema,
   mePreferencesResponseSchema,
   mePreferencesUpdateInputSchema,
@@ -130,6 +131,7 @@ import {
   type OauthInput,
   type LogoutInput,
   type MeChangePasswordInput,
+  type MeExpoPushTokenInput,
   type MeResponse,
   type MeUpdateInput,
   type MePreferencesResponse,
@@ -389,6 +391,21 @@ export class ApiClient {
       method: 'PATCH',
       accessToken,
       body: mePreferencesUpdateInputSchema.parse(input),
+    });
+  }
+
+  async saveMeExpoPushToken(input: MeExpoPushTokenInput, accessToken: string): Promise<void> {
+    await this.request('/me/expo-push-token', logoutResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: meExpoPushTokenInputSchema.parse(input),
+    });
+  }
+
+  async deleteMe(accessToken: string): Promise<void> {
+    await this.request('/me', logoutResponseSchema, {
+      method: 'DELETE',
+      accessToken,
     });
   }
 

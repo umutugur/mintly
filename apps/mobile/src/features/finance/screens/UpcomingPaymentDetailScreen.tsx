@@ -1,12 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+  ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { UpcomingPayment } from '@mintly/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,7 +11,7 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
-import { Card, PrimaryButton, ScreenContainer } from '@shared/ui';
+import { Card, PrimaryButton, ScreenContainer, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -181,16 +175,16 @@ export function UpcomingPaymentDetailScreen() {
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.recurring.all() }),
       ]);
 
-      Alert.alert(t('upcoming.detail.markPaid.successTitle'), t('upcoming.detail.markPaid.successMessage'));
+      showAlert(t('upcoming.detail.markPaid.successTitle'), t('upcoming.detail.markPaid.successMessage'));
       navigation.goBack();
     },
     onError: (error) => {
       if (error instanceof Error && error.message.startsWith('errors.')) {
-        Alert.alert(t('common.error'), t(error.message));
+        showAlert(t('common.error'), t(error.message));
         return;
       }
 
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -207,11 +201,11 @@ export function UpcomingPaymentDetailScreen() {
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.dashboard.recent() }),
       ]);
 
-      Alert.alert(t('upcoming.detail.markSkipped.successTitle'), t('upcoming.detail.markSkipped.successMessage'));
+      showAlert(t('upcoming.detail.markSkipped.successTitle'), t('upcoming.detail.markSkipped.successMessage'));
       navigation.goBack();
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 

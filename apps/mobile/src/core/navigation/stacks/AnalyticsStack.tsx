@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useAuth } from '@app/providers/AuthProvider';
 import { I18N_KEYS } from '@shared/i18n/keys';
 import { useI18n } from '@shared/i18n';
 import { useT } from '@shared/i18n/t';
@@ -21,6 +22,7 @@ export type AnalyticsStackParamList = {
 const Stack = createNativeStackNavigator<AnalyticsStackParamList>();
 
 export function AnalyticsStack() {
+  const { ensureSignedIn, isGuest } = useAuth();
   const { theme } = useTheme();
   const { locale } = useI18n();
   const t = useT();
@@ -32,13 +34,21 @@ export function AnalyticsStack() {
         component={AnalyticsScreen}
         options={({ navigation }) => ({
           title: t(I18N_KEYS.common.navigation.stacks.analytics.headerTitle),
-          headerRight: () => (
+          headerRight: () => (!isGuest ? (
             <HeaderActionButton
               icon="sparkles-outline"
               accessibilityLabel={t(I18N_KEYS.common.navigation.stacks.aiAdvisor.headerTitle)}
-              onPress={() => navigation.navigate('AiAdvisor')}
+              onPress={() => {
+                void (async () => {
+                  if (!(await ensureSignedIn())) {
+                    return;
+                  }
+
+                  navigation.navigate('AiAdvisor');
+                })();
+              }}
             />
-          ),
+          ) : null),
         })}
       />
       <Stack.Screen

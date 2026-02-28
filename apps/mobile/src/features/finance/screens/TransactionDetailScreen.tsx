@@ -1,13 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+  ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,7 +10,7 @@ import { financeQueryKeys } from '@core/api/queryKeys';
 import { getCategoryLabel } from '@features/finance/categories/categoryCatalog';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { useAuth } from '@app/providers/AuthProvider';
-import { Card, ScreenContainer } from '@shared/ui';
+import { Card, ScreenContainer, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -81,11 +74,11 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
     mutationFn: () => withAuth((token) => apiClient.deleteTransaction(transactionId, token)),
     onSuccess: async () => {
       await invalidateTransactionRelatedQueries();
-      Alert.alert(t('tx.delete.success'));
+      showAlert(t('tx.delete.success'));
       navigation.goBack();
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -94,11 +87,11 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
       withAuth((token) => apiClient.deleteTransfer(transferGroupId, token)),
     onSuccess: async () => {
       await invalidateTransactionRelatedQueries();
-      Alert.alert(t('transfer.delete.success'));
+      showAlert(t('transfer.delete.success'));
       navigation.goBack();
     },
     onError: (error) => {
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
@@ -163,11 +156,11 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
     }
     if (isTransfer) {
       if (!transaction.transferGroupId) {
-        Alert.alert(t('common.notAvailable'));
+        showAlert(t('common.notAvailable'));
         return;
       }
 
-      Alert.alert(
+      showAlert(
         t('transfer.delete.confirmTitle'),
         t('transfer.delete.confirmBody'),
         [
@@ -187,7 +180,7 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
       return;
     }
 
-    Alert.alert(
+    showAlert(
       t('tx.delete.confirmTitle'),
       t('tx.delete.confirmBody', { title }),
       [
@@ -219,7 +212,7 @@ export function TransactionDetailScreen({ navigation, route }: Props) {
           <Pressable
             onPress={() => {
               if (isTransfer) {
-                Alert.alert(t('transfer.edit.title'), t('transfer.edit.recreateWarning'));
+                showAlert(t('transfer.edit.title'), t('transfer.edit.recreateWarning'));
                 return;
               }
               navigation.navigate('EditTransaction', { transactionId });

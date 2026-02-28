@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
-import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField } from '@shared/ui';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, TextField, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import { spacing, typography, useTheme } from '@shared/theme';
@@ -81,7 +81,7 @@ export function CreateGroupScreen() {
       navigation.replace('GroupDetail', { groupId: createdGroup.id });
     },
     onError: (error) => {
-      Alert.alert(t('groups.create.errors.createFailedTitle'), apiErrorText(error));
+      showAlert(t('groups.create.errors.createFailedTitle'), apiErrorText(error));
     },
   });
 

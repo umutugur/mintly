@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { transferCreateInputSchema } from '@mintly/shared';
@@ -14,7 +14,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransferScreenParams } from '@core/navigation/stacks/AddStack';
 import type { RootTabParamList } from '@core/navigation/types';
-import { Card, Chip, PrimaryButton, ScreenContainer, Section } from '@shared/ui';
+import { Card, Chip, PrimaryButton, ScreenContainer, Section, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { colors, radius, spacing, typography } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -162,7 +162,7 @@ export function TransferScreen() {
             queryClient.invalidateQueries({ queryKey: financeQueryKeys.analytics.all() }),
           ]);
 
-          Alert.alert(t('accounts.delete.success'));
+          showAlert(t('accounts.delete.success'));
           const parent = navigation.getParent?.();
           if (parent && 'navigate' in parent) {
             (parent as {
@@ -172,7 +172,7 @@ export function TransferScreen() {
             navigation.goBack();
           }
         } catch (error) {
-          Alert.alert(t('errors.account.deleteFailedTitle'), apiErrorText(error));
+          showAlert(t('errors.account.deleteFailedTitle'), apiErrorText(error));
         }
         return;
       }
@@ -184,10 +184,10 @@ export function TransferScreen() {
         occurredAt: new Date().toISOString(),
         description: '',
       });
-      Alert.alert(t('transfers.successTitle'), t('success.transferCreated'));
+      showAlert(t('transfers.successTitle'), t('success.transferCreated'));
     },
     onError: (error) => {
-      Alert.alert(t('errors.transfer.createFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.transfer.createFailedTitle'), apiErrorText(error));
     },
   });
 

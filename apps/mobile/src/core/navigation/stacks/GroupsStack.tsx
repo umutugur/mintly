@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useAuth } from '@app/providers/AuthProvider';
 import { I18N_KEYS } from '@shared/i18n/keys';
 import { useI18n } from '@shared/i18n';
 import { useT } from '@shared/i18n/t';
@@ -24,6 +25,7 @@ export type GroupsStackParamList = {
 const Stack = createNativeStackNavigator<GroupsStackParamList>();
 
 export function GroupsStack() {
+  const { ensureSignedIn } = useAuth();
   const { theme } = useTheme();
   const { locale } = useI18n();
   const t = useT();
@@ -39,7 +41,15 @@ export function GroupsStack() {
             <HeaderActionButton
               icon="add-circle-outline"
               accessibilityLabel={t(I18N_KEYS.common.navigation.stacks.createGroup.headerTitle)}
-              onPress={() => navigation.navigate('CreateGroup')}
+              onPress={() => {
+                void (async () => {
+                  if (!(await ensureSignedIn())) {
+                    return;
+                  }
+
+                  navigation.navigate('CreateGroup');
+                })();
+              }}
             />
           ),
         })}

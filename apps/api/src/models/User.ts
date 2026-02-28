@@ -23,6 +23,39 @@ const authProviderSchema = new Schema(
   },
 );
 
+const expoPushTokenSchema = new Schema(
+  {
+    token: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 255,
+    },
+    device: {
+      type: String,
+      required: false,
+      trim: true,
+      maxlength: 120,
+      default: null,
+    },
+    platform: {
+      type: String,
+      required: false,
+      enum: ['ios', 'android'],
+      default: null,
+    },
+    updatedAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(),
+    },
+  },
+  {
+    _id: false,
+    id: false,
+  },
+);
+
 const userSchema = new Schema(
   {
     email: {
@@ -76,6 +109,11 @@ const userSchema = new Schema(
       type: Boolean,
       required: true,
       default: true,
+    },
+    expoPushTokens: {
+      type: [expoPushTokenSchema],
+      required: true,
+      default: [],
     },
     passwordHash: {
       type: String,

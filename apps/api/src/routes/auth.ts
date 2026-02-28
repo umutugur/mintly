@@ -19,7 +19,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 
 import { authenticate } from '../auth/middleware.js';
-import { verifyOauthIdToken } from '../auth/oauth.js';
+import { exchangeGoogleOauthCodeForIdToken, verifyOauthIdToken } from '../auth/oauth.js';
 import { ApiError } from '../errors.js';
 import { RefreshTokenModel } from '../models/RefreshToken.js';
 import type { UserDocument } from '../models/User.js';
@@ -128,6 +128,43 @@ async function createSessionForUser(user: {
   });
 }
 
+async function resolveOauthIdToken(input: OauthInput): Promise<string> {
+  if (input.provider === 'google' && process.env.NODE_ENV !== 'production') {
+    console.info('[auth][google][oauth-input]', {
+      mode:
+        typeof input.idToken === 'string' && input.idToken.length > 0
+          ? 'id_token'
+          : 'authorization_code',
+      hasIdToken: typeof input.idToken === 'string' && input.idToken.length > 0,
+      hasAuthorizationCode:
+        typeof input.authorizationCode === 'string' && input.authorizationCode.length > 0,
+      hasCodeVerifier: typeof input.codeVerifier === 'string' && input.codeVerifier.length > 0,
+      hasRedirectUri: typeof input.redirectUri === 'string' && input.redirectUri.length > 0,
+      clientId: typeof input.clientId === 'string' ? input.clientId : null,
+      redirectUri: typeof input.redirectUri === 'string' ? input.redirectUri : null,
+    });
+  }
+
+  if (typeof input.idToken === 'string' && input.idToken.length > 0) {
+    return input.idToken;
+  }
+
+  if (input.provider !== 'google') {
+    throw new ApiError({
+      code: 'OAUTH_TOKEN_INVALID',
+      message: 'OAuth token is invalid or expired',
+      statusCode: 401,
+    });
+  }
+
+  return exchangeGoogleOauthCodeForIdToken({
+    code: input.authorizationCode as string,
+    codeVerifier: input.codeVerifier as string,
+    redirectUri: input.redirectUri as string,
+    clientId: input.clientId as string,
+  });
+}
+
 export function registerAuthRoutes(app: FastifyInstance): void {
   app.post(
     '/auth/register',
@@ -216,9 +253,10 @@ export function registerAuthRoutes(app: FastifyInstance): void {
     },
     async (request, reply) => {
       const input = parseBody<OauthInput>(oauthInputSchema, request.body);
+      const idToken = await resolveOauthIdToken(input);
       const identity = await verifyOauthIdToken({
         provider: input.provider,
-        idToken: input.idToken,
+        idToken,
         nonce: input.nonce,
       });
 

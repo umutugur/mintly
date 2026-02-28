@@ -1,14 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+  ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { budgetCreateInputSchema } from '@mintly/shared';
@@ -20,10 +12,8 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import {
-  buildSystemCategoryOptions,
-  resolveCategoryPresentationByName,
-} from '@features/finance/utils/categoryCatalog';
-import { AppIcon, Card, PrimaryButton, ScreenContainer } from '@shared/ui';
+  buildSystemCategoryOptions, resolveCategoryPresentationByName, } from '@features/finance/utils/categoryCatalog';
+import { AppIcon, Card, PrimaryButton, ScreenContainer, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -215,7 +205,7 @@ export function BudgetsScreen() {
       await invalidateMonthScopedData(month);
     },
     onError: (error) => {
-      Alert.alert(t('errors.budget.createFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.budget.createFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -236,7 +226,7 @@ export function BudgetsScreen() {
       await invalidateMonthScopedData(month);
     },
     onError: (error) => {
-      Alert.alert(t('errors.budget.updateFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.budget.updateFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -246,7 +236,7 @@ export function BudgetsScreen() {
       await invalidateMonthScopedData(month);
     },
     onError: (error) => {
-      Alert.alert(t('errors.budget.deleteFailedTitle'), apiErrorText(error));
+      showAlert(t('errors.budget.deleteFailedTitle'), apiErrorText(error));
     },
   });
 
@@ -659,7 +649,7 @@ export function BudgetsScreen() {
                       <Pressable
                         accessibilityRole="button"
                         onPress={() => {
-                          Alert.alert(
+                          showAlert(
                             t('budgets.delete.title'),
                             t('budgets.delete.message', { category: presentation.label, month }),
                             [

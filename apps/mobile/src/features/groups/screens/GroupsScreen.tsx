@@ -29,7 +29,7 @@ function GroupsLoadingSkeleton({ dark }: { dark: boolean }) {
 }
 
 export function GroupsScreen() {
-  const { withAuth } = useAuth();
+  const { withAuth, isGuest, ensureSignedIn } = useAuth();
   const { theme, mode } = useTheme();
   const { t } = useI18n();
   const navigation = useNavigation<NativeStackNavigationProp<TransactionsStackParamList>>();
@@ -37,6 +37,7 @@ export function GroupsScreen() {
   const groupsQuery = useQuery({
     queryKey: financeQueryKeys.groups.list(),
     queryFn: () => withAuth((token) => apiClient.getGroups(token)),
+    enabled: !isGuest,
   });
 
   const groups = groupsQuery.data?.groups ?? [];
@@ -83,7 +84,15 @@ export function GroupsScreen() {
             <PrimaryButton
               iconName="add-circle-outline"
               label={t('groups.list.createButton')}
-              onPress={() => navigation.navigate('CreateGroup')}
+              onPress={() => {
+                void (async () => {
+                  if (!(await ensureSignedIn())) {
+                    return;
+                  }
+
+                  navigation.navigate('CreateGroup');
+                })();
+              }}
             />
           </View>
         }
@@ -94,7 +103,15 @@ export function GroupsScreen() {
             <PrimaryButton
               iconName="add-circle-outline"
               label={t('groups.list.createButton')}
-              onPress={() => navigation.navigate('CreateGroup')}
+              onPress={() => {
+                void (async () => {
+                  if (!(await ensureSignedIn())) {
+                    return;
+                  }
+
+                  navigation.navigate('CreateGroup');
+                })();
+              }}
             />
           </Card>
         }

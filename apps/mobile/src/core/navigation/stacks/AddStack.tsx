@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useAuth } from '@app/providers/AuthProvider';
 import { AddHubScreen } from '@features/finance/screens/AddHubScreen';
 import { AddTransactionScreen } from '@features/finance/screens/AddTransactionScreen';
 import { RecurringScreen } from '@features/finance/screens/RecurringScreen';
@@ -35,6 +36,7 @@ export type AddStackParamList = {
 const Stack = createNativeStackNavigator<AddStackParamList>();
 
 export function AddStack() {
+  const { ensureSignedIn } = useAuth();
   const { theme } = useTheme();
   const { locale } = useI18n();
   const t = useT();
@@ -50,7 +52,15 @@ export function AddStack() {
             <HeaderActionButton
               icon="swap-horizontal-outline"
               accessibilityLabel={t(I18N_KEYS.common.navigation.stacks.transfer.headerTitle)}
-              onPress={() => navigation.navigate('Transfer')}
+              onPress={() => {
+                void (async () => {
+                  if (!(await ensureSignedIn())) {
+                    return;
+                  }
+
+                  navigation.navigate('Transfer');
+                })();
+              }}
             />
           ),
         })}

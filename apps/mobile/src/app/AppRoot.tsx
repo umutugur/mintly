@@ -11,8 +11,9 @@ import { AdProvider } from '@core/ads/AdProvider';
 import { useAdvisorInsightPrefetch } from '@features/advisor/hooks/useAdvisorInsightPrefetch';
 import { I18nProvider } from '@shared/i18n';
 import { AppNavigator } from '@core/navigation/AppNavigator';
-import { OfflineBanner } from '@shared/ui';
+import { AppDialogProvider, OfflineBanner } from '@shared/ui';
 import { DevDiagnosticsOverlay } from './DevDiagnosticsOverlay';
+import { PushNotificationsBootstrap } from './PushNotificationsBootstrap';
 
 function AdvisorInsightPrefetchBootstrap() {
   useAdvisorInsightPrefetch();
@@ -28,14 +29,17 @@ export function AppRoot() {
             <NavigationContainer>
               <NetworkProvider>
                 <QueryProvider>
-                  <AuthProvider>
-                    <AdProvider>
-                      <AdvisorInsightPrefetchBootstrap />
-                      <AppNavigator />
-                      <OfflineBanner />
-                      {__DEV__ ? <DevDiagnosticsOverlay /> : null}
-                    </AdProvider>
-                  </AuthProvider>
+                  <AppDialogProvider>
+                    <AuthProvider>
+                      <AdProvider>
+                        <AdvisorInsightPrefetchBootstrap />
+                        <PushNotificationsBootstrap />
+                        <AppNavigator />
+                        <OfflineBanner />
+                        {__DEV__ ? <DevDiagnosticsOverlay /> : null}
+                      </AdProvider>
+                    </AuthProvider>
+                  </AppDialogProvider>
                 </QueryProvider>
               </NetworkProvider>
             </NavigationContainer>

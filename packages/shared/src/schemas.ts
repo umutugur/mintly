@@ -60,9 +60,56 @@ export const oauthProviderSchema = z.enum(['google', 'apple']);
 
 export const oauthInputSchema = z.object({
   provider: oauthProviderSchema,
-  idToken: z.string().min(1),
+  idToken: z.string().min(1).optional(),
+  authorizationCode: z.string().trim().min(1).optional(),
+  redirectUri: z.string().trim().min(1).optional(),
+  codeVerifier: z.string().trim().min(1).optional(),
+  clientId: z.string().trim().min(1).optional(),
   nonce: z.string().trim().min(8).max(256).optional(),
   name: z.string().trim().min(1).max(120).optional(),
+}).superRefine((value, ctx) => {
+  const hasIdToken = typeof value.idToken === 'string' && value.idToken.length > 0;
+  const hasAuthorizationCode =
+    typeof value.authorizationCode === 'string' && value.authorizationCode.length > 0;
+
+  if (hasIdToken && hasAuthorizationCode) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['authorizationCode'],
+      message: 'Provide either idToken or authorizationCode, not both',
+    });
+    return;
+  }
+
+  if (hasIdToken) {
+    return;
+  }
+
+  if (value.provider !== 'google') {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['idToken'],
+      message: 'idToken is required',
+    });
+    return;
+  }
+
+  const requiredCodeFields = [
+    ['authorizationCode', value.authorizationCode],
+    ['redirectUri', value.redirectUri],
+    ['codeVerifier', value.codeVerifier],
+    ['clientId', value.clientId],
+  ] as const;
+
+  for (const [key, fieldValue] of requiredCodeFields) {
+    if (typeof fieldValue !== 'string' || fieldValue.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [key],
+        message: `${key} is required when idToken is missing`,
+      });
+    }
+  }
 });
 
 export const refreshInputSchema = z.object({
@@ -124,6 +171,12 @@ export const mePreferencesUpdateInputSchema = z
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
   });
+
+export const meExpoPushTokenInputSchema = z.object({
+  expoPushToken: z.string().trim().min(1).max(255),
+  device: z.string().trim().min(1).max(120).optional(),
+  platform: z.enum(['ios', 'android']).optional(),
+});
 
 export const meChangePasswordInputSchema = z
   .object({
@@ -426,7 +479,8 @@ export const analyticsSummaryQuerySchema = z.object({
 });
 
 export const analyticsTopCategorySchema = z.object({
-  categoryId: z.string().min(1),
+  categoryId: z.string().min(1).nullable().optional(),
+  categoryKey: z.string().min(1).nullable().optional(),
   name: z.string().min(1).max(120),
   type: categoryTypeSchema,
   total: z.number().min(0),
@@ -449,7 +503,8 @@ export const analyticsByCategoryQuerySchema = z.object({
 });
 
 export const analyticsByCategoryItemSchema = z.object({
-  categoryId: z.string().min(1),
+  categoryId: z.string().min(1).nullable().optional(),
+  categoryKey: z.string().min(1).nullable().optional(),
   name: z.string().min(1).max(120),
   total: z.number().min(0),
   count: z.number().int().min(0),
@@ -1079,6 +1134,7 @@ export type MeUpdateInput = z.infer<typeof meUpdateInputSchema>;
 export type MePreferences = z.infer<typeof mePreferencesSchema>;
 export type MePreferencesResponse = z.infer<typeof mePreferencesResponseSchema>;
 export type MePreferencesUpdateInput = z.infer<typeof mePreferencesUpdateInputSchema>;
+export type MeExpoPushTokenInput = z.infer<typeof meExpoPushTokenInputSchema>;
 export type MeChangePasswordInput = z.infer<typeof meChangePasswordInputSchema>;
 export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
 export type AccountType = z.infer<typeof accountTypeSchema>;

@@ -16,6 +16,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { AdBanner } from '@core/ads/AdBanner';
 import type { RootTabParamList } from '@core/navigation/types';
+import { getCategoryLabel } from '@features/finance/categories/categoryCatalog';
 import {
   AppIcon,
   Card,
@@ -224,6 +225,26 @@ function clampPercent(value: number): number {
   return Math.max(0, Math.min(100, value));
 }
 
+function resolveAnalyticsCategoryLabel(
+  params: {
+    categoryKey?: string | null;
+    fallbackName?: string | null;
+  },
+  locale: string,
+  uncategorizedLabel: string,
+): string {
+  if (params.categoryKey) {
+    return getCategoryLabel(params.categoryKey, locale) || uncategorizedLabel;
+  }
+
+  const fallbackName = params.fallbackName?.trim();
+  if (!fallbackName || fallbackName === 'uncategorized') {
+    return uncategorizedLabel;
+  }
+
+  return fallbackName;
+}
+
 function LoadingSkeleton({ dark }: { dark: boolean }) {
   const block = dark ? '#181C2A' : '#E8EEF9';
 
@@ -240,7 +261,7 @@ function LoadingSkeleton({ dark }: { dark: boolean }) {
 
 export function AnalyticsScreen() {
   const navigation = useNavigation<any>();
-  const { withAuth, user } = useAuth();
+  const { withAuth, user, isGuest, ensureSignedIn } = useAuth();
   const { theme, mode } = useTheme();
   const { locale, t } = useI18n();
 
@@ -258,11 +279,13 @@ export function AnalyticsScreen() {
   const summaryQuery = useQuery({
     queryKey: financeQueryKeys.analytics.summary(month),
     queryFn: () => withAuth((token) => apiClient.getAnalyticsSummary({ month }, token)),
+    enabled: !isGuest,
   });
 
   const byCategoryQuery = useQuery({
     queryKey: financeQueryKeys.analytics.byCategory(month, categoryType),
     queryFn: () => withAuth((token) => apiClient.getAnalyticsByCategory({ month, type: categoryType }, token)),
+    enabled: !isGuest,
   });
 
   const trendTransactionsQuery = useQuery({
@@ -292,16 +315,23 @@ export function AnalyticsScreen() {
 
         return all;
       }),
+    enabled: !isGuest,
   });
 
   const openAddTransaction = useCallback(() => {
-    const parent = navigation.getParent?.();
-    if (parent && 'navigate' in parent) {
-      (parent as {
-        navigate: (name: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
-      }).navigate('AddTab', { screen: 'AddTransaction' });
-    }
-  }, [navigation]);
+    void (async () => {
+      if (!(await ensureSignedIn())) {
+        return;
+      }
+
+      const parent = navigation.getParent?.();
+      if (parent && 'navigate' in parent) {
+        (parent as {
+          navigate: (name: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
+        }).navigate('AddTab', { screen: 'AddTransaction' });
+      }
+    })();
+  }, [ensureSignedIn, navigation]);
 
   const openAiAdvisor = useCallback(() => {
     navigation.navigate('AiAdvisor');
@@ -346,7 +376,18 @@ export function AnalyticsScreen() {
         <Card dark={dark} style={styles.stateCard}>
           <AppIcon name="analytics-outline" size="lg" tone="muted" />
           <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('analytics.state.noData')}</Text>
-          <PrimaryButton label={t('common.retry')} iconName="refresh" onPress={() => void summaryQuery.refetch()} />
+          <PrimaryButton
+            label={isGuest ? t('auth.links.signIn') : t('common.retry')}
+            iconName={isGuest ? 'log-in-outline' : 'refresh'}
+            onPress={() => {
+              if (isGuest) {
+                void ensureSignedIn();
+                return;
+              }
+
+              void summaryQuery.refetch();
+            }}
+          />
         </Card>
       </ScreenContainer>
     );
@@ -367,6 +408,7 @@ export function AnalyticsScreen() {
 
   const currency = summary.currency ?? user?.baseCurrency ?? 'TRY';
   const topCategoryOverall = summary.topCategories[0];
+  const uncategorizedLabel = t('transactions.row.uncategorized');
 
   const categoryItems = byCategoryQuery.data?.categories ?? [];
   const categoryTotal = Math.max(
@@ -464,7 +506,18 @@ export function AnalyticsScreen() {
               iconTone="primary"
               label={t('analytics.summary.topCategory')}
               tone="primary"
-              value={topCategoryOverall?.name ?? t('analytics.noCategory')}
+              value={
+                topCategoryOverall
+                  ? resolveAnalyticsCategoryLabel(
+                      {
+                        categoryKey: topCategoryOverall.categoryKey ?? topCategoryOverall.categoryId ?? null,
+                        fallbackName: topCategoryOverall.name,
+                      },
+                      locale,
+                      uncategorizedLabel,
+                    )
+                  : t('analytics.noCategory')
+              }
             />
           </View>
         </Section>
@@ -661,7 +714,16 @@ export function AnalyticsScreen() {
                   {t('analytics.summary.topCategory')}
                 </Text>
                 <Text numberOfLines={2} style={[styles.donutCenterValue, { color: theme.colors.text }]}>
-                  {categoryItems[0]?.name ?? t('analytics.noCategory')}
+                  {categoryItems[0]
+                    ? resolveAnalyticsCategoryLabel(
+                        {
+                          categoryKey: categoryItems[0].categoryKey ?? categoryItems[0].categoryId ?? null,
+                          fallbackName: categoryItems[0].name,
+                        },
+                        locale,
+                        uncategorizedLabel,
+                      )
+                    : t('analytics.noCategory')}
                 </Text>
               </View>
             </View>
@@ -691,7 +753,7 @@ export function AnalyticsScreen() {
 
               return (
                 <View
-                  key={item.categoryId}
+                  key={item.categoryKey ?? item.categoryId ?? `category-${index}`}
                   style={[
                     styles.categoryRow,
                     {
@@ -721,7 +783,14 @@ export function AnalyticsScreen() {
 
                     <View style={styles.categoryTextWrap}>
                       <Text numberOfLines={1} style={[styles.categoryName, { color: theme.colors.text }]}>
-                        {item.name}
+                        {resolveAnalyticsCategoryLabel(
+                          {
+                            categoryKey: item.categoryKey ?? item.categoryId ?? null,
+                            fallbackName: item.name,
+                          },
+                          locale,
+                          uncategorizedLabel,
+                        )}
                       </Text>
                       <Text numberOfLines={1} style={[styles.categoryMeta, { color: theme.colors.textMuted }]}> 
                         {t('analytics.transactionsCount', { count: item.count })}

@@ -1,20 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+  ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
-  recurringCreateInputSchema,
-  transactionCreateInputSchema,
-  upcomingPaymentCreateInputSchema,
-  type UpcomingPaymentType,
-} from '@mintly/shared';
+  recurringCreateInputSchema, transactionCreateInputSchema, upcomingPaymentCreateInputSchema, type UpcomingPaymentType, } from '@mintly/shared';
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -24,23 +13,13 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import {
-  listCategories,
-  type ExpenseCategoryKey,
-  type ListedCategory,
-} from '@features/finance/categories/categoryCatalog';
+  listCategories, type ExpenseCategoryKey, type ListedCategory, } from '@features/finance/categories/categoryCatalog';
 import {
-  rescheduleUpcomingPaymentNotifications,
-} from '@features/finance/utils/notificationsForUpcomingPayment';
+  rescheduleUpcomingPaymentNotifications, } from '@features/finance/utils/notificationsForUpcomingPayment';
 import {
-  setUpcomingPaymentPreferredAccount,
-} from '@features/finance/utils/upcomingPaymentAccountPreference';
+  setUpcomingPaymentPreferredAccount, } from '@features/finance/utils/upcomingPaymentAccountPreference';
 import {
-  AppIcon,
-  Card,
-  PrimaryButton,
-  ScreenContainer,
-  TextField,
-} from '@shared/ui';
+  AppIcon, Card, PrimaryButton, ScreenContainer, TextField, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
@@ -385,16 +364,16 @@ export function ScanConfirmScreen() {
       };
     },
     onSuccess: (result) => {
-      Alert.alert(t('scan.confirm.success.title'), t(`scan.confirm.success.${result.mode}`));
+      showAlert(t('scan.confirm.success.title'), t(`scan.confirm.success.${result.mode}`));
     },
     onError: (error) => {
       const normalized = error instanceof Error ? error.message : '';
       if (normalized.startsWith('errors.')) {
-        Alert.alert(t('common.error'), t(normalized));
+        showAlert(t('common.error'), t(normalized));
         return;
       }
 
-      Alert.alert(t('common.error'), apiErrorText(error));
+      showAlert(t('common.error'), apiErrorText(error));
     },
   });
 
