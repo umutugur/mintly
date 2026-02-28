@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Mintly",
+    "appName": "Montly",
     "appInitials": "M",
     "retry": "Повторить",
     "loadingShort": "Загрузка...",
@@ -8,7 +8,7 @@
   },
   "app": {
     "state": {
-      "preparing": "Подготовка Mintly...",
+      "preparing": "Подготовка Montly...",
       "restoring": "Восстановление сессии..."
     }
   },
@@ -145,7 +145,7 @@
     }
   },
   "profile": {
-    "defaultUserName": "Пользователь Mintly",
+    "defaultUserName": "Пользователь Montly",
     "premiumMember": "ПРЕМИУМ",
     "baseCurrency": "Базовая валюта",
     "accounts": "Счета",
@@ -164,7 +164,7 @@
       "appSettingsSubtitle": "Тема и параметры приложения",
       "security": "Безопасность",
       "securitySubtitle": "Пароль и защита сессии",
-      "about": "О Mintly",
+      "about": "О Montly",
       "aboutSubtitle": "Версия и правовая информация",
       "aiAdvisor": "AI Советник",
       "aiAdvisorSubtitle": "Открыть персональные советы",

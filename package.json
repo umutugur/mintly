@@ -1,5 +1,5 @@
 {
-  "name": "mintly",
+  "name": "montly",
   "private": true,
   "workspaces": [
     "apps/*",

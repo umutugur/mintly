@@ -11,43 +11,43 @@ import Svg, {
 import { useI18n } from '@shared/i18n';
 import { useTheme } from '@shared/theme';
 
-export type MintlyLogoVariant = 'mark' | 'wordmark' | 'banner';
+export type MontlyLogoVariant = 'mark' | 'wordmark' | 'banner';
 
-interface MintlyLogoProps {
-  variant?: MintlyLogoVariant;
+interface MontlyLogoProps {
+  variant?: MontlyLogoVariant;
   width?: number;
   height?: number;
   style?: StyleProp<ViewStyle>;
 }
 
-const DEFAULT_SIZE: Record<MintlyLogoVariant, { width: number; height: number }> = {
+const DEFAULT_SIZE: Record<MontlyLogoVariant, { width: number; height: number }> = {
   mark: { width: 86, height: 52 },
   wordmark: { width: 224, height: 70 },
   banner: { width: 336, height: 76 },
 };
 
-function MintlyMarkShape({ strokeWidth = 68 }: { strokeWidth?: number }) {
+function MontlyMarkShape({ strokeWidth = 68 }: { strokeWidth?: number }) {
   return (
     <>
       <Path
         d="M60 270V170A90 90 0 0 1 240 170V270V170A90 90 0 0 1 420 170V70"
-        stroke="url(#mintlyGrad)"
+        stroke="url(#montlyGrad)"
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       />
-      <Path d="M510 12Q510 52 550 52Q510 52 510 92Q510 52 470 52Q510 52 510 12Z" fill="url(#mintlyGrad)" />
+      <Path d="M510 12Q510 52 550 52Q510 52 510 92Q510 52 470 52Q510 52 510 12Z" fill="url(#montlyGrad)" />
     </>
   );
 }
 
-export function MintlyLogo({
+export function MontlyLogo({
   variant = 'wordmark',
   width,
   height,
   style,
-}: MintlyLogoProps) {
+}: MontlyLogoProps) {
   const { theme } = useTheme();
   const { t } = useI18n();
 
@@ -61,12 +61,12 @@ export function MintlyLogo({
       <View style={[styles.wrap, style]}>
         <Svg width={resolvedWidth} height={resolvedHeight} viewBox="0 0 560 320">
           <Defs>
-            <LinearGradient id="mintlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <LinearGradient id="montlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
               <Stop offset="0%" stopColor="#3B6EF5" />
               <Stop offset="100%" stopColor="#2ED47A" />
             </LinearGradient>
           </Defs>
-          <MintlyMarkShape />
+          <MontlyMarkShape />
         </Svg>
       </View>
     );
@@ -77,13 +77,13 @@ export function MintlyLogo({
       <View style={[styles.wrap, style]}>
         <Svg width={resolvedWidth} height={resolvedHeight} viewBox="0 0 1400 320">
           <Defs>
-            <LinearGradient id="mintlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <LinearGradient id="montlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
               <Stop offset="0%" stopColor="#3B6EF5" />
               <Stop offset="100%" stopColor="#2ED47A" />
             </LinearGradient>
           </Defs>
           <G transform="translate(28 16) scale(0.9)">
-            <MintlyMarkShape />
+            <MontlyMarkShape />
           </G>
           <SvgText
             x="580"
@@ -105,13 +105,13 @@ export function MintlyLogo({
     <View style={[styles.wrap, style]}>
       <Svg width={resolvedWidth} height={resolvedHeight} viewBox="0 0 1040 320">
         <Defs>
-          <LinearGradient id="mintlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+          <LinearGradient id="montlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">
             <Stop offset="0%" stopColor="#3B6EF5" />
             <Stop offset="100%" stopColor="#2ED47A" />
           </LinearGradient>
         </Defs>
         <G transform="translate(8 40) scale(0.75)">
-          <MintlyMarkShape />
+          <MontlyMarkShape />
         </G>
         <SvgText
           x="420"

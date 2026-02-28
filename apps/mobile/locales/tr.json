@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Mintly",
+    "appName": "Montly",
     "appInitials": "M",
     "retry": "Tekrar Dene",
     "loadingShort": "Yükleniyor...",
@@ -8,7 +8,7 @@
   },
   "app": {
     "state": {
-      "preparing": "Mintly hazırlanıyor...",
+      "preparing": "Montly hazırlanıyor...",
       "restoring": "Oturum geri yükleniyor..."
     }
   },
@@ -145,7 +145,7 @@
     }
   },
   "profile": {
-    "defaultUserName": "Mintly Kullanıcısı",
+    "defaultUserName": "Montly Kullanıcısı",
     "premiumMember": "PREMIUM ÜYE",
     "baseCurrency": "Baz Para Birimi",
     "accounts": "Hesap",
@@ -164,7 +164,7 @@
       "appSettingsSubtitle": "Tema ve uygulama tercihleri",
       "security": "Güvenlik",
       "securitySubtitle": "Şifre ve oturum koruması",
-      "about": "Mintly Hakkında",
+      "about": "Montly Hakkında",
       "aboutSubtitle": "Sürüm ve yasal bilgiler",
       "aiAdvisor": "AI Danışman",
       "aiAdvisorSubtitle": "Kişisel finans önerilerini aç",

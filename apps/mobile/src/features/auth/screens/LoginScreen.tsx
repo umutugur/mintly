@@ -9,7 +9,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 
 import { useAuth } from '@app/providers/AuthProvider';
-import { MintlyLogo } from '../../../components/brand/MintlyLogo';
+import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 import { mobileEnv } from '@core/config/env';
 import type { AuthStackParamList } from '@core/navigation/types';
 import { AuthFooterLinks } from '@features/auth/components/AuthFooterLinks';
@@ -431,7 +431,7 @@ export function LoginScreen({ navigation }: Props) {
       cardBodyStyle={styles.formBody}
       topContent={
         <View style={styles.topContent}>
-          <MintlyLogo variant="wordmark" width={250} />
+          <MontlyLogo variant="wordmark" width={250} />
           <AuthFooterLinks
             actionLabel={t('auth.links.joinNow')}
             onActionPress={() => navigation.navigate('Register')}

@@ -5,15 +5,15 @@ import { showAlert } from '@shared/ui';
 
 import { ProfileContentScreen } from '../components/ProfileContentScreen';
 
-const SUPPORT_EMAIL = 'support@mintly.app';
-const SUPPORT_WEB = 'https://mintly.app';
-const SUPPORT_SOCIAL = '@mintlyapp';
+const SUPPORT_EMAIL = 'support@montly.app';
+const SUPPORT_WEB = 'https://montly.app';
+const SUPPORT_SOCIAL = '@montlyapp';
 
 export function ContactScreen() {
   const { t } = useI18n();
 
   const handleFeedback = async () => {
-    const mailtoUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Mintly Geri Bildirim')}`;
+    const mailtoUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Montly Geri Bildirim')}`;
 
     try {
       const canOpen = await Linking.canOpenURL(mailtoUrl);

@@ -1,7 +1,7 @@
 {
   "name": "@mintly/shared",
   "version": "1.0.0",
-  "description": "Shared types, schemas, and API client for Mintly",
+  "description": "Shared types, schemas, and API client for Montly",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "mintly",
+    "montly",
     "shared"
   ],
   "author": "",

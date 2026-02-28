@@ -10,7 +10,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AuthLayout } from '@features/auth/components/AuthLayout';
-import { MintlyLogo } from '../../../components/brand/MintlyLogo';
+import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 import { TextField } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { AuthStackParamList } from '@core/navigation/types';
@@ -77,7 +77,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
       useCard={false}
     >
       <View style={styles.headerBlock}>
-        <MintlyLogo style={styles.logo} variant="wordmark" width={220} />
+        <MontlyLogo style={styles.logo} variant="wordmark" width={220} />
         <Text style={[styles.title, { color: theme.colors.text }]}>{t('auth.forgot.title')}</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>
           {t('auth.forgot.subtitle')}

@@ -79,15 +79,15 @@ const inactiveUserCopy: Record<
   }
 > = {
   tr: {
-    title: 'Mintly seni bekliyor',
+    title: 'Montly seni bekliyor',
     body: '7 gündür hareket yok. Finans akışını güncellemek için uygulamaya geri dön.',
   },
   en: {
-    title: 'Mintly is waiting for you',
+    title: 'Montly is waiting for you',
     body: 'No activity for 7 days. Come back and update your financial flow.',
   },
   ru: {
-    title: 'Mintly ждет вас',
+    title: 'Montly ждет вас',
     body: 'Нет активности 7 дней. Вернитесь в приложение и обновите финансы.',
   },
 };

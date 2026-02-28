@@ -255,7 +255,7 @@
       "quickWins": "Quick Wins",
       "generalTips": "General Tips"
     },
-    "disclaimer": "Mintly AI insights are informational and not financial advice.",
+    "disclaimer": "Montly AI insights are informational and not financial advice.",
     "fallback": {
       "title": "AI response unavailable",
       "tryAgain": "Try again",
@@ -357,7 +357,7 @@
   },
   "app": {
     "state": {
-      "preparing": "Preparing Mintly...",
+      "preparing": "Preparing Montly...",
       "restoring": "Restoring session..."
     },
     "notificationsPrompt": {
@@ -484,7 +484,7 @@
   },
   "common": {
     "appInitials": "M",
-    "appName": "Mintly",
+    "appName": "Montly",
     "cancel": "Cancel",
     "close": "Close",
     "continue": "Continue",
@@ -945,16 +945,16 @@
       "appNameLabel": "App Name",
       "buildLabel": "Build",
       "buildValue": "Development",
-      "noteOne": "Mintly helps track accounts, transactions, analytics, and budgets using a single base currency.",
+      "noteOne": "Montly helps track accounts, transactions, analytics, and budgets using a single base currency.",
       "noteTwo": "Authentication includes access and refresh tokens with guarded navigation.",
       "notesTitle": "Notes",
       "subtitle": "Product and build information",
-      "title": "About Mintly",
+      "title": "About Montly",
       "versionLabel": "Version",
       "versionValue": "1.0.0",
       "sections": {
         "productTitle": "App Info",
-        "productBody": "Mintly brings finance tracking, insights, and planning into one place.",
+        "productBody": "Montly brings finance tracking, insights, and planning into one place.",
         "versionBullet": "Version: {{version}}",
         "platformBullet": "Platform: iOS and Android development builds are supported.",
         "notesTitle": "Release Notes",
@@ -966,7 +966,7 @@
     "accountSettings": "ACCOUNT & SETTINGS",
     "accounts": "Accounts",
     "baseCurrency": "Base Currency",
-    "defaultUserName": "Mintly User",
+    "defaultUserName": "Montly User",
     "edit": {
       "baseCurrencyLabel": "Base Currency",
       "baseCurrencyPlaceholder": "USD",
@@ -990,7 +990,7 @@
     "loggingOut": "Signing out...",
     "premiumMember": "PREMIUM MEMBER",
     "rows": {
-      "about": "About Mintly",
+      "about": "About Montly",
       "aboutSubtitle": "Version and legal information",
       "aiAdvisor": "AI Advisor",
       "aiAdvisorSubtitle": "Open personalized financial advice",
@@ -1056,7 +1056,7 @@
           "title": "Download Personal Data"
         },
         "privacyPolicy": {
-          "subtitle": "How Mintly protects data",
+          "subtitle": "How Montly protects data",
           "title": "Privacy Policy"
         },
         "thirdParty": {
@@ -1107,7 +1107,7 @@
           "title": "Theme"
         },
         "version": {
-          "subtitle": "Mintly 1.0.0",
+          "subtitle": "Montly 1.0.0",
           "title": "Version"
         }
       },
@@ -1117,7 +1117,7 @@
         "privacy": "Privacy",
         "support": "Support"
       },
-      "userTitle": "Mintly User",
+      "userTitle": "Montly User",
       "locale": {
         "tr": "Turkish",
         "en": "English",
@@ -1163,10 +1163,10 @@
     },
     "terms": {
       "title": "Terms of Use",
-      "subtitle": "Core rules and responsibilities for using Mintly.",
+      "subtitle": "Core rules and responsibilities for using Montly.",
       "sections": {
         "scopeTitle": "Service and Account",
-        "scopeBulletOne": "Mintly provides informational, tracking, and account-related features.",
+        "scopeBulletOne": "Montly provides informational, tracking, and account-related features.",
         "scopeBulletTwo": "Users are responsible for keeping their account details accurate and up to date.",
         "rulesTitle": "Restricted Use",
         "rulesBulletOne": "Spam, abuse, and unauthorized access attempts are prohibited.",
@@ -1207,7 +1207,7 @@
         "faqBulletThree": "For sync delays, refresh the app and try again.",
         "contactTitle": "Support Channels",
         "contactBody": "Our support team reviews requests during business days.",
-        "contactBulletOne": "Support email: support@mintly.app",
+        "contactBulletOne": "Support email: support@montly.app",
         "contactBulletTwo": "Working hours: Weekdays 09:00 - 18:00"
       }
     },
@@ -1316,7 +1316,7 @@
       "defaults": {
         "title": "Receipt"
       },
-      "currencyWarning": "Detected currency {{detected}} differs from your base currency {{base}}. Mintly will keep {{base}}.",
+      "currencyWarning": "Detected currency {{detected}} differs from your base currency {{base}}. Montly will keep {{base}}.",
       "ocrMode": {
         "vision": "OCR mode: Vision Camera",
         "fallback": "OCR mode: Fallback parser"
@@ -1553,10 +1553,10 @@
         "faq": "FAQ",
         "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
         "helpCenterDetailPages": "Help center + detail pages",
-        "helpCenterTitle": "Mintly Help Center"
+        "helpCenterTitle": "Montly Help Center"
       },
       "profile": {
-        "sampleEmail": "user@mintly.app",
+        "sampleEmail": "user@montly.app",
         "summary": "Profile Summary"
       },
       "scan": {
@@ -1784,7 +1784,7 @@
       "support": "Support"
     },
     "user": {
-      "title": "Mintly User",
+      "title": "Montly User",
       "plan": "Premium Plan"
     },
     "biometric": {
@@ -1809,7 +1809,7 @@
     },
     "version": {
       "title": "Version",
-      "subtitle": "Mintly 1.0.0"
+      "subtitle": "Montly 1.0.0"
     },
     "financialGoals": {
       "title": "Financial Goals",

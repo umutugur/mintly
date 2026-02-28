@@ -255,7 +255,7 @@
       "quickWins": "Быстрые шаги",
       "generalTips": "Общие советы"
     },
-    "disclaimer": "AI-инсайты Mintly носят информационный характер и не являются финансовой консультацией.",
+    "disclaimer": "AI-инсайты Montly носят информационный характер и не являются финансовой консультацией.",
     "fallback": {
       "title": "Ответ AI недоступен",
       "tryAgain": "Повторить",
@@ -357,7 +357,7 @@
   },
   "app": {
     "state": {
-      "preparing": "Подготовка Mintly...",
+      "preparing": "Подготовка Montly...",
       "restoring": "Восстановление сессии..."
     },
     "notificationsPrompt": {
@@ -484,7 +484,7 @@
   },
   "common": {
     "appInitials": "M",
-    "appName": "Mintly",
+    "appName": "Montly",
     "cancel": "Отмена",
     "close": "Закрыть",
     "continue": "Продолжить",
@@ -945,16 +945,16 @@
       "appNameLabel": "Название приложения",
       "buildLabel": "Сборка",
       "buildValue": "Разработка",
-      "noteOne": "Mintly помогает вести счета, транзакции, аналитику и бюджеты в единой валюте.",
+      "noteOne": "Montly помогает вести счета, транзакции, аналитику и бюджеты в единой валюте.",
       "noteTwo": "Аутентификация включает access/refresh токены и защищенную навигацию.",
       "notesTitle": "Заметки",
       "subtitle": "Информация о продукте и сборке",
-      "title": "О Mintly",
+      "title": "О Montly",
       "versionLabel": "Версия",
       "versionValue": "1.0.0",
       "sections": {
         "productTitle": "О приложении",
-        "productBody": "Mintly объединяет учет финансов, инсайты и планирование в одном месте.",
+        "productBody": "Montly объединяет учет финансов, инсайты и планирование в одном месте.",
         "versionBullet": "Версия: {{version}}",
         "platformBullet": "Платформа: поддерживаются dev-сборки для iOS и Android.",
         "notesTitle": "Что нового",
@@ -966,7 +966,7 @@
     "accountSettings": "АККАУНТ И НАСТРОЙКИ",
     "accounts": "Счета",
     "baseCurrency": "Базовая валюта",
-    "defaultUserName": "Пользователь Mintly",
+    "defaultUserName": "Пользователь Montly",
     "edit": {
       "baseCurrencyLabel": "Базовая валюта",
       "baseCurrencyPlaceholder": "USD",
@@ -990,7 +990,7 @@
     "loggingOut": "Выход...",
     "premiumMember": "ПРЕМИУМ",
     "rows": {
-      "about": "О Mintly",
+      "about": "О Montly",
       "aboutSubtitle": "Версия и правовая информация",
       "aiAdvisor": "AI Советник",
       "aiAdvisorSubtitle": "Открыть персональные советы",
@@ -1056,7 +1056,7 @@
           "title": "Скачать персональные данные"
         },
         "privacyPolicy": {
-          "subtitle": "Как Mintly защищает данные",
+          "subtitle": "Как Montly защищает данные",
           "title": "Политика конфиденциальности"
         },
         "thirdParty": {
@@ -1107,7 +1107,7 @@
           "title": "Тема"
         },
         "version": {
-          "subtitle": "Mintly 1.0.0",
+          "subtitle": "Montly 1.0.0",
           "title": "Версия"
         }
       },
@@ -1117,7 +1117,7 @@
         "privacy": "Конфиденциальность",
         "support": "Поддержка"
       },
-      "userTitle": "Пользователь Mintly",
+      "userTitle": "Пользователь Montly",
       "locale": {
         "tr": "Турецкий",
         "en": "Английский",
@@ -1163,10 +1163,10 @@
     },
     "terms": {
       "title": "Условия использования",
-      "subtitle": "Основные правила и ответственность при использовании Mintly.",
+      "subtitle": "Основные правила и ответственность при использовании Montly.",
       "sections": {
         "scopeTitle": "Сервис и аккаунт",
-        "scopeBulletOne": "Mintly предоставляет информационные, учетные и финансовые функции.",
+        "scopeBulletOne": "Montly предоставляет информационные, учетные и финансовые функции.",
         "scopeBulletTwo": "Пользователь отвечает за точность и актуальность данных аккаунта.",
         "rulesTitle": "Запрещенное использование",
         "rulesBulletOne": "Запрещены спам, злоупотребление и попытки несанкционированного доступа.",
@@ -1207,7 +1207,7 @@
         "faqBulletThree": "При задержках синхронизации обновите экран и попробуйте снова.",
         "contactTitle": "Каналы поддержки",
         "contactBody": "Наша команда поддержки обрабатывает запросы в рабочие дни.",
-        "contactBulletOne": "Email поддержки: support@mintly.app",
+        "contactBulletOne": "Email поддержки: support@montly.app",
         "contactBulletTwo": "Часы работы: будни 09:00 - 18:00"
       }
     },
@@ -1316,7 +1316,7 @@
       "defaults": {
         "title": "Чек"
       },
-      "currencyWarning": "Определена валюта {{detected}}, она отличается от вашей базовой {{base}}. Mintly сохранит {{base}}.",
+      "currencyWarning": "Определена валюта {{detected}}, она отличается от вашей базовой {{base}}. Montly сохранит {{base}}.",
       "ocrMode": {
         "vision": "Режим OCR: Vision Camera",
         "fallback": "Режим OCR: резервный парсер"
@@ -1553,10 +1553,10 @@
         "faq": "FAQ",
         "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
         "helpCenterDetailPages": "Help center + detail pages",
-        "helpCenterTitle": "Mintly Help Center"
+        "helpCenterTitle": "Montly Help Center"
       },
       "profile": {
-        "sampleEmail": "user@mintly.app",
+        "sampleEmail": "user@montly.app",
         "summary": "Profile Summary"
       },
       "scan": {
@@ -1784,7 +1784,7 @@
       "support": "Поддержка"
     },
     "user": {
-      "title": "Пользователь Mintly",
+      "title": "Пользователь Montly",
       "plan": "Премиум план"
     },
     "biometric": {
@@ -1809,7 +1809,7 @@
     },
     "version": {
       "title": "Версия",
-      "subtitle": "Mintly 1.0.0"
+      "subtitle": "Montly 1.0.0"
     },
     "financialGoals": {
       "title": "Финансовые цели",

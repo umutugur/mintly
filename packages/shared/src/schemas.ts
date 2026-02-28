@@ -42,7 +42,7 @@ const queryBooleanSchema = z.preprocess((value) => {
 
 export const healthResponseSchema = z.object({
   ok: z.literal(true),
-  name: z.literal('Mintly API'),
+  name: z.literal('Montly API'),
 });
 
 export const registerInputSchema = z.object({

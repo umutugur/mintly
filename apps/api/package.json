@@ -1,7 +1,7 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "Mintly API",
+  "description": "Montly API",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "mintly",
+    "montly",
     "api"
   ],
   "author": "",

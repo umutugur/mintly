@@ -26,7 +26,7 @@ import { radius, spacing, typography, useTheme } from '@shared/theme';
 import type { ThemeMode } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
-import { MintlyLogo } from '../../../components/brand/MintlyLogo';
+import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/ana_ekran_(dashboard)_1/screen.png
 // no touch/keyboard behavior changed by this PR.
@@ -667,7 +667,7 @@ export function DashboardScreen() {
                     {t('dashboard.aiActive')}
                   </Text>
                 </View>
-                <MintlyLogo
+                <MontlyLogo
                   height={24}
                   style={styles.brandMark}
                   variant="mark"

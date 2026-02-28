@@ -5,7 +5,7 @@ import { getGoogleMobileAdsModule } from './mobileAdsModule';
 
 const IOS_REWARDED_UNIT_ID = 'ca-app-pub-6114268066977057/7381135567';
 const ANDROID_REWARDED_UNIT_ID = 'ca-app-pub-6114268066977057/1278761649';
-const ADVISOR_USAGE_STORAGE_KEY = 'mintly:advisor-insight-free-usage:v1';
+const ADVISOR_USAGE_STORAGE_KEY = 'montly:advisor-insight-free-usage:v1';
 
 type AdvisorUsageMap = Record<string, string>;
 interface RewardedInsightAdOptions {

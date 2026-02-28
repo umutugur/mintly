@@ -11,7 +11,7 @@ import { getCurrentMonthString } from '@shared/utils/month';
 import { consumeDailyFreeAdvisorUsage } from './advisorFreeUsage';
 import { startAdvisorInsightGeneration } from './advisorInsightInflight';
 
-const PREFETCH_STORAGE_PREFIX = 'mintly:advisor-prefetch:v1';
+const PREFETCH_STORAGE_PREFIX = 'montly:advisor-prefetch:v1';
 
 function prefetchStorageKey(userId: string, suffix: string): string {
   return `${PREFETCH_STORAGE_PREFIX}:${userId}:${suffix}`;

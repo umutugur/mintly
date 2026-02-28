@@ -10,7 +10,7 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { apiClient } from '@core/api/client';
 import { showAlert } from '@shared/ui';
 
-const PUSH_PERMISSION_PROMPT_KEY = 'mintly.push-permission-prompted';
+const PUSH_PERMISSION_PROMPT_KEY = 'montly.push-permission-prompted';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -157,7 +157,7 @@ export function PushNotificationsBootstrap() {
           apiClient.saveMeExpoPushToken(
             {
               expoPushToken,
-              device: Platform.OS === 'ios' ? 'Mintly iOS' : 'Mintly Android',
+              device: Platform.OS === 'ios' ? 'Montly iOS' : 'Montly Android',
               platform: Platform.OS === 'ios' ? 'ios' : 'android',
             },
             accessToken,

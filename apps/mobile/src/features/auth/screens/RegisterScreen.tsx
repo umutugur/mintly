@@ -10,7 +10,7 @@ import * as Crypto from 'expo-crypto';
 
 import { AuthFooterLinks } from '@features/auth/components/AuthFooterLinks';
 import { AuthLayout } from '@features/auth/components/AuthLayout';
-import { MintlyLogo } from '../../../components/brand/MintlyLogo';
+import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 import { mobileEnv } from '@core/config/env';
 import { AppIcon, TextField, showAlert } from '@shared/ui';
 import { useAuth } from '@app/providers/AuthProvider';
@@ -421,7 +421,7 @@ export function RegisterScreen({ navigation }: Props) {
       useCard={false}
     >
       <View style={styles.headerBlock}>
-        <MintlyLogo variant="wordmark" width={220} />
+        <MontlyLogo variant="wordmark" width={220} />
         <View
           style={[
             styles.headerIconWrap,

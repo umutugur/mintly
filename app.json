@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Mintly",
-    "slug": "mintly",
+    "name": "Montly",
+    "slug": "montly",
     "scheme": "mintly",
     "packagerOpts": {
       "entryPoint": "./apps/mobile/index.ts"

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = 'mintly:upcoming-payment-default-account-map';
+const STORAGE_KEY = 'montly:upcoming-payment-default-account-map';
 
 type AccountPreferenceMap = Record<string, string>;
 

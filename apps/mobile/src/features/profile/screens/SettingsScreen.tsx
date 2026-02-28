@@ -20,7 +20,7 @@ import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
 
 const themeOptions: ThemePreference[] = ['system', 'light', 'dark'];
 const localeOptions: SupportedLocale[] = ['tr', 'en', 'ru'];
-const BIOMETRIC_ENABLED_KEY = 'mintly:biometric-enabled';
+const BIOMETRIC_ENABLED_KEY = 'montly:biometric-enabled';
 
 type LocalAuthenticationModule = {
   hasHardwareAsync: () => Promise<boolean>;

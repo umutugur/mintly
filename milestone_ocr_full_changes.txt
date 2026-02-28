@@ -3676,7 +3676,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import i18next from 'i18next';
 
-const STORAGE_KEY = 'mintly:upcoming-payment-notification-ids';
+const STORAGE_KEY = 'montly:upcoming-payment-notification-ids';
 const REMINDER_DAYS = [3, 1] as const;
 
 type NotificationMap = Record<string, string[]>;
@@ -3819,7 +3819,7 @@ export async function rescheduleUpcomingPaymentNotifications(input: {
 ```
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = 'mintly:upcoming-payment-default-account-map';
+const STORAGE_KEY = 'montly:upcoming-payment-default-account-map';
 
 type AccountPreferenceMap = Record<string, string>;
 
@@ -6490,7 +6490,7 @@ import type { RootTabParamList } from '@core/navigation/types';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import type { ThemeMode } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
-import { MintlyLogo } from '../../../components/brand/MintlyLogo';
+import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/ana_ekran_(dashboard)_1/screen.png
 // no touch/keyboard behavior changed by this PR.
@@ -7111,7 +7111,7 @@ export function DashboardScreen() {
                     {t('dashboard.aiActive')}
                   </Text>
                 </View>
-                <MintlyLogo
+                <MontlyLogo
                   height={24}
                   style={styles.brandMark}
                   variant="mark"
@@ -8177,7 +8177,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "quickWins": "Quick Wins",
       "generalTips": "General Tips"
     },
-    "disclaimer": "Mintly AI insights are informational and not financial advice."
+    "disclaimer": "Montly AI insights are informational and not financial advice."
   },
   "analytics": {
     "aiAdvisor": "AI Advisor",
@@ -8258,7 +8258,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "app": {
     "state": {
-      "preparing": "Preparing Mintly...",
+      "preparing": "Preparing Montly...",
       "restoring": "Restoring session..."
     }
   },
@@ -8369,7 +8369,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "common": {
     "appInitials": "M",
-    "appName": "Mintly",
+    "appName": "Montly",
     "cancel": "Cancel",
     "close": "Close",
     "continue": "Continue",
@@ -8814,18 +8814,18 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "appNameLabel": "App Name",
       "buildLabel": "Build",
       "buildValue": "Development",
-      "noteOne": "Mintly helps track accounts, transactions, analytics, and budgets using a single base currency.",
+      "noteOne": "Montly helps track accounts, transactions, analytics, and budgets using a single base currency.",
       "noteTwo": "Authentication includes access and refresh tokens with guarded navigation.",
       "notesTitle": "Notes",
       "subtitle": "Product and build information",
-      "title": "About Mintly",
+      "title": "About Montly",
       "versionLabel": "Version",
       "versionValue": "1.0.0"
     },
     "accountSettings": "ACCOUNT & SETTINGS",
     "accounts": "Accounts",
     "baseCurrency": "Base Currency",
-    "defaultUserName": "Mintly User",
+    "defaultUserName": "Montly User",
     "edit": {
       "baseCurrencyLabel": "Base Currency",
       "emailLabel": "Email",
@@ -8845,7 +8845,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
     "loggingOut": "Signing out...",
     "premiumMember": "PREMIUM MEMBER",
     "rows": {
-      "about": "About Mintly",
+      "about": "About Montly",
       "aboutSubtitle": "Version and legal information",
       "aiAdvisor": "AI Advisor",
       "aiAdvisorSubtitle": "Open personalized financial advice",
@@ -8883,7 +8883,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
           "title": "Download Personal Data"
         },
         "privacyPolicy": {
-          "subtitle": "How Mintly protects data",
+          "subtitle": "How Montly protects data",
           "title": "Privacy Policy"
         },
         "thirdParty": {
@@ -8934,7 +8934,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
           "title": "Theme"
         },
         "version": {
-          "subtitle": "Mintly 1.0.0",
+          "subtitle": "Montly 1.0.0",
           "title": "Version"
         }
       },
@@ -9065,7 +9065,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "defaults": {
         "title": "Receipt"
       },
-      "currencyWarning": "Detected currency {{detected}} differs from your base currency {{base}}. Mintly will keep {{base}}.",
+      "currencyWarning": "Detected currency {{detected}} differs from your base currency {{base}}. Montly will keep {{base}}.",
       "ocrMode": {
         "mlkit": "OCR mode: On-device ML Kit",
         "fallback": "OCR mode: Fallback parser"
@@ -9288,10 +9288,10 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
         "faq": "FAQ",
         "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
         "helpCenterDetailPages": "Help center + detail pages",
-        "helpCenterTitle": "Mintly Help Center"
+        "helpCenterTitle": "Montly Help Center"
       },
       "profile": {
-        "sampleEmail": "user@mintly.app",
+        "sampleEmail": "user@montly.app",
         "summary": "Profile Summary"
       },
       "scan": {
@@ -9530,7 +9530,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
     },
     "version": {
       "title": "Version",
-      "subtitle": "Mintly 1.0.0"
+      "subtitle": "Montly 1.0.0"
     },
     "financialGoals": {
       "title": "Financial Goals",
@@ -9789,7 +9789,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "quickWins": "Hızlı Kazanımlar",
       "generalTips": "Genel Öneriler"
     },
-    "disclaimer": "Mintly AI içgörüleri bilgilendirme amaçlıdır, yatırım veya finansal tavsiye değildir."
+    "disclaimer": "Montly AI içgörüleri bilgilendirme amaçlıdır, yatırım veya finansal tavsiye değildir."
   },
   "analytics": {
     "aiAdvisor": "AI Danışman",
@@ -9870,7 +9870,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "app": {
     "state": {
-      "preparing": "Mintly hazırlanıyor...",
+      "preparing": "Montly hazırlanıyor...",
       "restoring": "Oturum geri yükleniyor..."
     }
   },
@@ -9981,7 +9981,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "common": {
     "appInitials": "M",
-    "appName": "Mintly",
+    "appName": "Montly",
     "cancel": "İptal",
     "close": "Kapat",
     "continue": "Devam Et",
@@ -10426,18 +10426,18 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "appNameLabel": "Uygulama Adı",
       "buildLabel": "Derleme",
       "buildValue": "Geliştirme",
-      "noteOne": "Mintly hesapları, işlemleri, analizleri ve bütçeleri tek para biriminde yönetir.",
+      "noteOne": "Montly hesapları, işlemleri, analizleri ve bütçeleri tek para biriminde yönetir.",
       "noteTwo": "Kimlik doğrulama erişim/yenileme tokenları ve korumalı navigasyon içerir.",
       "notesTitle": "Notlar",
       "subtitle": "Ürün ve sürüm bilgileri",
-      "title": "Mintly Hakkında",
+      "title": "Montly Hakkında",
       "versionLabel": "Sürüm",
       "versionValue": "1.0.0"
     },
     "accountSettings": "HESAP VE AYARLAR",
     "accounts": "Hesap",
     "baseCurrency": "Baz Para Birimi",
-    "defaultUserName": "Mintly Kullanıcısı",
+    "defaultUserName": "Montly Kullanıcısı",
     "edit": {
       "baseCurrencyLabel": "Ana Para Birimi",
       "emailLabel": "E-posta",
@@ -10457,7 +10457,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
     "loggingOut": "Çıkış yapılıyor...",
     "premiumMember": "PREMIUM ÜYE",
     "rows": {
-      "about": "Mintly Hakkında",
+      "about": "Montly Hakkında",
       "aboutSubtitle": "Sürüm ve yasal bilgiler",
       "aiAdvisor": "AI Danışman",
       "aiAdvisorSubtitle": "Kişisel finans önerilerini aç",
@@ -10495,7 +10495,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
           "title": "Kişisel Verileri İndir"
         },
         "privacyPolicy": {
-          "subtitle": "Mintly veriyi nasıl korur",
+          "subtitle": "Montly veriyi nasıl korur",
           "title": "Gizlilik Politikası"
         },
         "thirdParty": {
@@ -10546,7 +10546,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
           "title": "Tema"
         },
         "version": {
-          "subtitle": "Mintly 1.0.0",
+          "subtitle": "Montly 1.0.0",
           "title": "Sürüm"
         }
       },
@@ -10677,7 +10677,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "defaults": {
         "title": "Fiş"
       },
-      "currencyWarning": "Algılanan para birimi {{detected}}, ana para biriminiz {{base}} ile farklı. Mintly {{base}} kullanmaya devam eder.",
+      "currencyWarning": "Algılanan para birimi {{detected}}, ana para biriminiz {{base}} ile farklı. Montly {{base}} kullanmaya devam eder.",
       "ocrMode": {
         "mlkit": "OCR modu: Cihaz içi ML Kit",
         "fallback": "OCR modu: Yedek ayrıştırıcı"
@@ -10900,10 +10900,10 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
         "faq": "FAQ",
         "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
         "helpCenterDetailPages": "Help center + detail pages",
-        "helpCenterTitle": "Mintly Help Center"
+        "helpCenterTitle": "Montly Help Center"
       },
       "profile": {
-        "sampleEmail": "user@mintly.app",
+        "sampleEmail": "user@montly.app",
         "summary": "Profile Summary"
       },
       "scan": {
@@ -11142,7 +11142,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
     },
     "version": {
       "title": "Sürüm",
-      "subtitle": "Mintly 1.0.0"
+      "subtitle": "Montly 1.0.0"
     },
     "financialGoals": {
       "title": "Finansal Hedefler",
@@ -11401,7 +11401,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "quickWins": "Быстрые шаги",
       "generalTips": "Общие советы"
     },
-    "disclaimer": "AI-инсайты Mintly носят информационный характер и не являются финансовой консультацией."
+    "disclaimer": "AI-инсайты Montly носят информационный характер и не являются финансовой консультацией."
   },
   "analytics": {
     "aiAdvisor": "AI Советник",
@@ -11482,7 +11482,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "app": {
     "state": {
-      "preparing": "Подготовка Mintly...",
+      "preparing": "Подготовка Montly...",
       "restoring": "Восстановление сессии..."
     }
   },
@@ -11593,7 +11593,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
   },
   "common": {
     "appInitials": "M",
-    "appName": "Mintly",
+    "appName": "Montly",
     "cancel": "Отмена",
     "close": "Закрыть",
     "continue": "Продолжить",
@@ -12038,18 +12038,18 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "appNameLabel": "Название приложения",
       "buildLabel": "Сборка",
       "buildValue": "Разработка",
-      "noteOne": "Mintly помогает вести счета, транзакции, аналитику и бюджеты в единой валюте.",
+      "noteOne": "Montly помогает вести счета, транзакции, аналитику и бюджеты в единой валюте.",
       "noteTwo": "Аутентификация включает access/refresh токены и защищенную навигацию.",
       "notesTitle": "Заметки",
       "subtitle": "Информация о продукте и сборке",
-      "title": "О Mintly",
+      "title": "О Montly",
       "versionLabel": "Версия",
       "versionValue": "1.0.0"
     },
     "accountSettings": "АККАУНТ И НАСТРОЙКИ",
     "accounts": "Счета",
     "baseCurrency": "Базовая валюта",
-    "defaultUserName": "Пользователь Mintly",
+    "defaultUserName": "Пользователь Montly",
     "edit": {
       "baseCurrencyLabel": "Базовая валюта",
       "emailLabel": "Эл. почта",
@@ -12069,7 +12069,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
     "loggingOut": "Выход...",
     "premiumMember": "ПРЕМИУМ",
     "rows": {
-      "about": "О Mintly",
+      "about": "О Montly",
       "aboutSubtitle": "Версия и правовая информация",
       "aiAdvisor": "AI Советник",
       "aiAdvisorSubtitle": "Открыть персональные советы",
@@ -12107,7 +12107,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
           "title": "Скачать персональные данные"
         },
         "privacyPolicy": {
-          "subtitle": "Как Mintly защищает данные",
+          "subtitle": "Как Montly защищает данные",
           "title": "Политика конфиденциальности"
         },
         "thirdParty": {
@@ -12158,7 +12158,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
           "title": "Тема"
         },
         "version": {
-          "subtitle": "Mintly 1.0.0",
+          "subtitle": "Montly 1.0.0",
           "title": "Версия"
         }
       },
@@ -12289,7 +12289,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "defaults": {
         "title": "Чек"
       },
-      "currencyWarning": "Определена валюта {{detected}}, она отличается от вашей базовой {{base}}. Mintly сохранит {{base}}.",
+      "currencyWarning": "Определена валюта {{detected}}, она отличается от вашей базовой {{base}}. Montly сохранит {{base}}.",
       "ocrMode": {
         "mlkit": "Режим OCR: ML Kit на устройстве",
         "fallback": "Режим OCR: резервный парсер"
@@ -12512,10 +12512,10 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
         "faq": "FAQ",
         "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
         "helpCenterDetailPages": "Help center + detail pages",
-        "helpCenterTitle": "Mintly Help Center"
+        "helpCenterTitle": "Montly Help Center"
       },
       "profile": {
-        "sampleEmail": "user@mintly.app",
+        "sampleEmail": "user@montly.app",
         "summary": "Profile Summary"
       },
       "scan": {
@@ -12754,7 +12754,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
     },
     "version": {
       "title": "Версия",
-      "subtitle": "Mintly 1.0.0"
+      "subtitle": "Montly 1.0.0"
     },
     "financialGoals": {
       "title": "Финансовые цели",
@@ -12775,15 +12775,15 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
 ```
 {
   "expo": {
-    "name": "Mintly",
+    "name": "Montly",
     "slug": "finsight",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/brand/mintly-icon.png",
+    "icon": "./assets/brand/montly-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/brand/mintly-splash.png",
+      "image": "./assets/brand/montly-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -12803,7 +12803,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "versionCode": 1,
       "permissions": ["CAMERA", "READ_MEDIA_IMAGES", "POST_NOTIFICATIONS"],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brand/mintly-adaptive-foreground.png",
+        "foregroundImage": "./assets/brand/montly-adaptive-foreground.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -12824,7 +12824,7 @@ export function normalizeApiErrorForUi(error: unknown): UiApiError {
       "cameraUsageDescription": "Camera access is needed to scan receipts."
     },
     "web": {
-      "favicon": "./assets/brand/mintly-favicon.png"
+      "favicon": "./assets/brand/montly-favicon.png"
     }
   }
 }

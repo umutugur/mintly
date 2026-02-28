@@ -67,19 +67,19 @@ function envValue(name) {
 
 module.exports = {
   expo: {
-    name: 'Mintly',
-    slug: 'mintly',
+    name: 'Montly',
+    slug: 'montly',
     scheme: 'mintly',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/brand/mintly-icon.png',
+    icon: './assets/brand/montly-icon.png',
     userInterfaceStyle: 'light',
     newArchEnabled: true,
     packagerOpts: {
       entryPoint: './index.ts',
     },
     splash: {
-      image: './assets/brand/mintly-icon.png',
+      image: './assets/brand/montly-icon.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff',
     },
@@ -113,7 +113,7 @@ module.exports = {
         'android.permission.RECORD_AUDIO',
       ],
       adaptiveIcon: {
-        foregroundImage: './assets/brand/mintly-adaptive-foreground.png',
+        foregroundImage: './assets/brand/montly-adaptive-foreground.png',
         backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
@@ -151,7 +151,7 @@ module.exports = {
       EXPO_PUBLIC_API_BASE_URL: envValue('EXPO_PUBLIC_API_BASE_URL'),
     },
     web: {
-      favicon: './assets/brand/mintly-favicon.png',
+      favicon: './assets/brand/montly-favicon.png',
     },
   },
 };

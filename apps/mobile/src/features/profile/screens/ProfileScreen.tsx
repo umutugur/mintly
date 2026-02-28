@@ -13,7 +13,7 @@ import type { RootTabParamList } from '@core/navigation/types';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
-import { MintlyLogo } from '../../../components/brand/MintlyLogo';
+import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/profil_(dark)_2/screen.png
 // no touch/keyboard behavior changed by this PR.
@@ -161,7 +161,7 @@ export function ProfileScreen() {
             },
           ]}
         >
-          <MintlyLogo style={styles.profileBrand} variant="wordmark" width={138} />
+          <MontlyLogo style={styles.profileBrand} variant="wordmark" width={138} />
           <View style={styles.avatarWrap}>
             <View style={[styles.avatar, { backgroundColor: dark ? '#242B42' : '#EAF1FF' }]}>
               <Text style={[styles.avatarInitial, { color: theme.colors.primary }]}>

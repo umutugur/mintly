@@ -28,7 +28,7 @@ export interface RuntimeConfig {
   appleOauthClientIds: string[];
 }
 
-const apiName = 'Mintly API';
+const apiName = 'Montly API';
 const defaultDevCorsOrigins = [
   'http://localhost:19006',
   'http://localhost:8081',

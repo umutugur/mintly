@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import i18next from 'i18next';
 
-const STORAGE_KEY = 'mintly:upcoming-payment-notification-ids';
+const STORAGE_KEY = 'montly:upcoming-payment-notification-ids';
 const REMINDER_DAYS = [3, 1] as const;
 
 type NotificationMap = Record<string, string[]>;

@@ -255,7 +255,7 @@
       "quickWins": "Hızlı Kazanımlar",
       "generalTips": "Genel Öneriler"
     },
-    "disclaimer": "Mintly AI içgörüleri bilgilendirme amaçlıdır, yatırım veya finansal tavsiye değildir.",
+    "disclaimer": "Montly AI içgörüleri bilgilendirme amaçlıdır, yatırım veya finansal tavsiye değildir.",
     "fallback": {
       "title": "AI yanıtı alınamadı",
       "tryAgain": "Tekrar dene",
@@ -357,7 +357,7 @@
   },
   "app": {
     "state": {
-      "preparing": "Mintly hazırlanıyor...",
+      "preparing": "Montly hazırlanıyor...",
       "restoring": "Oturum geri yükleniyor..."
     },
     "notificationsPrompt": {
@@ -484,7 +484,7 @@
   },
   "common": {
     "appInitials": "M",
-    "appName": "Mintly",
+    "appName": "Montly",
     "cancel": "İptal",
     "close": "Kapat",
     "continue": "Devam Et",
@@ -945,16 +945,16 @@
       "appNameLabel": "Uygulama Adı",
       "buildLabel": "Derleme",
       "buildValue": "Geliştirme",
-      "noteOne": "Mintly hesapları, işlemleri, analizleri ve bütçeleri tek para biriminde yönetir.",
+      "noteOne": "Montly hesapları, işlemleri, analizleri ve bütçeleri tek para biriminde yönetir.",
       "noteTwo": "Kimlik doğrulama erişim/yenileme tokenları ve korumalı navigasyon içerir.",
       "notesTitle": "Notlar",
       "subtitle": "Ürün ve sürüm bilgileri",
-      "title": "Mintly Hakkında",
+      "title": "Montly Hakkında",
       "versionLabel": "Sürüm",
       "versionValue": "1.0.0",
       "sections": {
         "productTitle": "Uygulama Bilgisi",
-        "productBody": "Mintly; finans takibi, içgörü ve planlama deneyimini tek yerde toplar.",
+        "productBody": "Montly; finans takibi, içgörü ve planlama deneyimini tek yerde toplar.",
         "versionBullet": "Sürüm: {{version}}",
         "platformBullet": "Platform: iOS ve Android geliştirme yapıları desteklenir.",
         "notesTitle": "Sürüm Notları",
@@ -966,7 +966,7 @@
     "accountSettings": "HESAP VE AYARLAR",
     "accounts": "Hesap",
     "baseCurrency": "Baz Para Birimi",
-    "defaultUserName": "Mintly Kullanıcısı",
+    "defaultUserName": "Montly Kullanıcısı",
     "edit": {
       "baseCurrencyLabel": "Ana Para Birimi",
       "baseCurrencyPlaceholder": "USD",
@@ -990,7 +990,7 @@
     "loggingOut": "Çıkış yapılıyor...",
     "premiumMember": "PREMIUM ÜYE",
     "rows": {
-      "about": "Mintly Hakkında",
+      "about": "Montly Hakkında",
       "aboutSubtitle": "Sürüm ve yasal bilgiler",
       "aiAdvisor": "AI Danışman",
       "aiAdvisorSubtitle": "Kişisel finans önerilerini aç",
@@ -1056,7 +1056,7 @@
           "title": "Kişisel Verileri İndir"
         },
         "privacyPolicy": {
-          "subtitle": "Mintly veriyi nasıl korur",
+          "subtitle": "Montly veriyi nasıl korur",
           "title": "Gizlilik Politikası"
         },
         "thirdParty": {
@@ -1107,7 +1107,7 @@
           "title": "Tema"
         },
         "version": {
-          "subtitle": "Mintly 1.0.0",
+          "subtitle": "Montly 1.0.0",
           "title": "Sürüm"
         }
       },
@@ -1117,7 +1117,7 @@
         "privacy": "Gizlilik",
         "support": "Destek"
       },
-      "userTitle": "Mintly Kullanıcısı",
+      "userTitle": "Montly Kullanıcısı",
       "locale": {
         "tr": "Türkçe",
         "en": "İngilizce",
@@ -1163,10 +1163,10 @@
     },
     "terms": {
       "title": "Kullanım Koşulları",
-      "subtitle": "Mintly kullanımına ilişkin temel kurallar ve sorumluluklar.",
+      "subtitle": "Montly kullanımına ilişkin temel kurallar ve sorumluluklar.",
       "sections": {
         "scopeTitle": "Hizmet ve Hesap",
-        "scopeBulletOne": "Mintly; bilgilendirme, takip ve hesap yönetimi özellikleri sunar.",
+        "scopeBulletOne": "Montly; bilgilendirme, takip ve hesap yönetimi özellikleri sunar.",
         "scopeBulletTwo": "Kullanıcı, hesabında doğru ve güncel bilgi vermekten sorumludur.",
         "rulesTitle": "Yasaklı Kullanım",
         "rulesBulletOne": "Spam, kötüye kullanım ve yetkisiz erişim girişimleri yasaktır.",
@@ -1207,7 +1207,7 @@
         "faqBulletThree": "Veri eşitleme gecikmelerinde uygulamayı yenileyip tekrar dene.",
         "contactTitle": "Destek Kanalları",
         "contactBody": "Destek ekibimiz iş günlerinde talepleri sırayla değerlendirir.",
-        "contactBulletOne": "Destek e-postası: support@mintly.app",
+        "contactBulletOne": "Destek e-postası: support@montly.app",
         "contactBulletTwo": "Çalışma saatleri: Hafta içi 09:00 - 18:00"
       }
     },
@@ -1316,7 +1316,7 @@
       "defaults": {
         "title": "Fiş"
       },
-      "currencyWarning": "Algılanan para birimi {{detected}}, ana para biriminiz {{base}} ile farklı. Mintly {{base}} kullanmaya devam eder.",
+      "currencyWarning": "Algılanan para birimi {{detected}}, ana para biriminiz {{base}} ile farklı. Montly {{base}} kullanmaya devam eder.",
       "ocrMode": {
         "vision": "OCR modu: Vision Camera",
         "fallback": "OCR modu: Yedek ayrıştırıcı"
@@ -1553,10 +1553,10 @@
         "faq": "FAQ",
         "helpCenterDescription": "Category cards, article previews, and quick links are represented here as static placeholders.",
         "helpCenterDetailPages": "Help center + detail pages",
-        "helpCenterTitle": "Mintly Help Center"
+        "helpCenterTitle": "Montly Help Center"
       },
       "profile": {
-        "sampleEmail": "user@mintly.app",
+        "sampleEmail": "user@montly.app",
         "summary": "Profile Summary"
       },
       "scan": {
@@ -1784,7 +1784,7 @@
       "support": "Destek"
     },
     "user": {
-      "title": "Mintly Kullanıcısı",
+      "title": "Montly Kullanıcısı",
       "plan": "Premium Planı"
     },
     "biometric": {
@@ -1809,7 +1809,7 @@
     },
     "version": {
       "title": "Sürüm",
-      "subtitle": "Mintly 1.0.0"
+      "subtitle": "Montly 1.0.0"
     },
     "financialGoals": {
       "title": "Finansal Hedefler",
