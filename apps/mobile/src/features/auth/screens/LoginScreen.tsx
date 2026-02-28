@@ -80,6 +80,44 @@ function configureNativeGoogleSignIn(webClientId: string, iosClientId: string): 
   GoogleSignin.configure(options);
 }
 
+function isLiteralEnvPlaceholder(value: string): boolean {
+  return value.includes('${') && value.includes('}');
+}
+
+function resolveGoogleNativeErrorMessage(
+  error: unknown,
+  platform: 'ios' | 'android',
+  t: (key: string) => string,
+): string | null {
+  if (!isErrorWithCode(error)) {
+    return null;
+  }
+
+  const code = typeof error.code === 'string' ? error.code : '';
+  const message = error instanceof Error ? error.message : '';
+
+  if (code === statusCodes.SIGN_IN_CANCELLED || code === statusCodes.IN_PROGRESS) {
+    return null;
+  }
+
+  if (code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+    return t('auth.login.oauth.googlePlayServicesUnavailable');
+  }
+
+  if (code === statusCodes.NULL_PRESENTER) {
+    return t('auth.login.oauth.googleUnavailable');
+  }
+
+  if (
+    platform === 'android' &&
+    (code === '10' || message.includes('DEVELOPER_ERROR'))
+  ) {
+    return t('auth.login.oauth.googleAndroidConfigError');
+  }
+
+  return null;
+}
+
 function isCancelledError(error: unknown): boolean {
   if (!error || typeof error !== 'object') {
     return false;
@@ -120,7 +158,8 @@ export function LoginScreen({ navigation }: Props) {
   const googleWebClientId = mobileEnv.googleOauthWebClientId.trim();
   const googleIosClientId = mobileEnv.googleOauthIosClientId.trim();
   const googleAndroidClientId = mobileEnv.googleOauthAndroidClientId.trim();
-  const googleConfigured = googleWebClientId.length > 0;
+  const googleConfigured =
+    googleWebClientId.length > 0 && !isLiteralEnvPlaceholder(googleWebClientId);
 
   useEffect(() => {
     if (!__DEV__) {
@@ -135,6 +174,7 @@ export function LoginScreen({ navigation }: Props) {
     console.info('[auth][google][native-config]', {
       platform: Platform.OS,
       hasWebClientId: googleWebClientId.length > 0,
+      webClientIdIsPlaceholder: isLiteralEnvPlaceholder(googleWebClientId),
       hasIosClientId: googleIosClientId.length > 0,
       hasAndroidClientId: googleAndroidClientId.length > 0,
       currentUserCached: Boolean(GoogleSignin.getCurrentUser()),
@@ -188,9 +228,13 @@ export function LoginScreen({ navigation }: Props) {
     setRequestError(null);
 
     if (!googleConfigured) {
-      setRequestError(t('auth.login.oauth.googleUnavailable'));
+      const configErrorMessage =
+        googleWebClientId.length > 0 && isLiteralEnvPlaceholder(googleWebClientId)
+          ? t('auth.login.oauth.googleEnvMissingInBuild')
+          : t('auth.login.oauth.googleUnavailable');
+      setRequestError(configErrorMessage);
       if (__DEV__) {
-        showAlert(t('auth.login.oauth.googleCta'), t('auth.login.oauth.googleUnavailable'));
+        showAlert(t('auth.login.oauth.googleCta'), configErrorMessage);
       }
       return;
     }
@@ -266,16 +310,19 @@ export function LoginScreen({ navigation }: Props) {
         setRequestError(t('auth.login.fallbackError'));
       }
     } catch (error) {
-      if (__DEV__) {
-        console.info('[auth][google][native-error]', {
-          code:
-            isErrorWithCode(error) && typeof error.code === 'string'
-              ? error.code
-              : null,
-          name: error instanceof Error ? error.name : 'unknown',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
+      const nativeErrorCode =
+        isErrorWithCode(error) && typeof error.code === 'string'
+          ? error.code
+          : null;
+      const nativeErrorName = error instanceof Error ? error.name : 'unknown';
+      const nativeErrorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      console.warn('[auth][google][native-error]', {
+        platform: Platform.OS,
+        code: nativeErrorCode,
+        name: nativeErrorName,
+        message: nativeErrorMessage,
+      });
 
       if (isErrorWithCode(error)) {
         if (error.code === statusCodes.SIGN_IN_CANCELLED || error.code === statusCodes.IN_PROGRESS) {
@@ -291,6 +338,16 @@ export function LoginScreen({ navigation }: Props) {
           setRequestError(t('auth.login.oauth.googleUnavailable'));
           return;
         }
+      }
+
+      const mappedMessage = resolveGoogleNativeErrorMessage(
+        error,
+        Platform.OS === 'android' ? 'android' : 'ios',
+        t,
+      );
+      if (mappedMessage) {
+        setRequestError(mappedMessage);
+        return;
       }
 
       setRequestError(apiErrorText(error));
