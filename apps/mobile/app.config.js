@@ -92,6 +92,8 @@ module.exports = {
         NSCameraUsageDescription: 'Camera access is needed to scan receipts.',
         NSPhotoLibraryUsageDescription: 'Photo library access is needed to select receipt images.',
         NSUserNotificationUsageDescription: 'Notifications remind you before upcoming payments are due.',
+        NSLocationWhenInUseUsageDescription: "Montly, reklam performansını optimize etmek ve uygulama deneyimini iyileştirmek amacıyla cihazın yaklaşık konum bilgisini kullanabilir. Konum verisi kullanıcı tarafından açıkça izin verilmeden toplanmaz.",
+
         CFBundleURLTypes: [
           {
             CFBundleURLSchemes: [
