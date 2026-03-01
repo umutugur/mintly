@@ -17,15 +17,16 @@ import { RefreshTokenModel } from '../src/models/RefreshToken.js';
 import { RecurringRunLogModel } from '../src/models/RecurringRunLog.js';
 import { RecurringRuleModel, type RecurringRuleDocument } from '../src/models/RecurringRule.js';
 import { TransactionModel } from '../src/models/Transaction.js';
+import { UpcomingPaymentModel } from '../src/models/UpcomingPayment.js';
 import { UserModel } from '../src/models/User.js';
 
 if ((process.env.NODE_ENV ?? 'development') !== 'production') {
   await import('dotenv/config');
 }
 
-const DEMO_EMAIL = 'demo@finsight.dev';
-const DEMO_PASSWORD = 'Password123';
-const DEMO_NAME = 'Demo User';
+const DEFAULT_DEMO_EMAIL = 'demo@finsight.dev';
+const DEFAULT_DEMO_PASSWORD = 'Password123';
+const DEFAULT_DEMO_NAME = 'Demo User';
 const BASE_CURRENCY = 'TRY';
 
 const envSchema = z.object({
@@ -34,6 +35,10 @@ const envSchema = z.object({
     .trim()
     .min(1, 'MONGODB_URI is required')
     .regex(/^mongodb(\+srv)?:\/\//, 'MONGODB_URI must be a valid MongoDB URI'),
+  SEED_REFERENCE_DATE: z.string().trim().min(1).optional(),
+  SEED_DEMO_EMAIL: z.string().trim().email('SEED_DEMO_EMAIL must be a valid email').optional(),
+  SEED_DEMO_PASSWORD: z.string().min(8, 'SEED_DEMO_PASSWORD must be at least 8 characters').optional(),
+  SEED_DEMO_NAME: z.string().trim().min(1, 'SEED_DEMO_NAME cannot be empty').max(120).optional(),
 });
 
 type CategoryName =
@@ -86,6 +91,13 @@ interface RandomDateOptions {
   preferWeekday?: boolean;
   hourMin?: number;
   hourMax?: number;
+}
+
+interface SeedConfig {
+  demoEmail: string;
+  demoPassword: string;
+  demoName: string;
+  referenceDate: Date;
 }
 
 function createPrng(seed: number): () => number {
@@ -263,6 +275,21 @@ function chooseAccountForIncome(rand: () => number, category: IncomeCategoryName
   ]);
 }
 
+function resolveSeedConfig(env: z.infer<typeof envSchema>): SeedConfig {
+  const referenceDate = env.SEED_REFERENCE_DATE ? new Date(env.SEED_REFERENCE_DATE) : new Date();
+
+  if (Number.isNaN(referenceDate.getTime())) {
+    throw new Error('SEED_REFERENCE_DATE must be a valid ISO date');
+  }
+
+  return {
+    demoEmail: env.SEED_DEMO_EMAIL ?? DEFAULT_DEMO_EMAIL,
+    demoPassword: env.SEED_DEMO_PASSWORD ?? DEFAULT_DEMO_PASSWORD,
+    demoName: env.SEED_DEMO_NAME ?? DEFAULT_DEMO_NAME,
+    referenceDate,
+  };
+}
+
 const expenseDescriptions: Record<ExpenseCategoryName, readonly string[]> = {
   Food: ['Öğle yemeği', 'Akşam yemeği', 'Market alışverişi', 'Kahve molası', 'Manav alışverişi'],
   Transport: ['Otobüs kart dolumu', 'Taksi ücreti', 'Metro geçişi', 'Yakıt alımı'],
@@ -380,6 +407,7 @@ async function resetDemoUserData(email: string): Promise<void> {
     RecurringRuleModel.deleteMany({ userId }),
     BudgetModel.deleteMany({ userId }),
     TransactionModel.deleteMany({ userId }),
+    UpcomingPaymentModel.deleteMany({ userId }),
     AccountModel.deleteMany({ userId }),
     CategoryModel.deleteMany({ userId }),
   ]);
@@ -414,11 +442,11 @@ async function ensureGlobalCategories(): Promise<void> {
   }
 }
 
-async function createDemoUser(): Promise<{ id: Types.ObjectId }> {
-  const passwordHash = await hashPassword(DEMO_PASSWORD);
+async function createDemoUser(config: SeedConfig): Promise<{ id: Types.ObjectId }> {
+  const passwordHash = await hashPassword(config.demoPassword);
   const user = await UserModel.create({
-    email: DEMO_EMAIL,
-    name: DEMO_NAME,
+    email: config.demoEmail,
+    name: config.demoName,
     // Keep firebaseUid omitted for local/demo credentials flow.
     baseCurrency: BASE_CURRENCY,
     passwordHash,
@@ -816,6 +844,130 @@ async function createCurrentMonthBudgets(
   await BudgetModel.insertMany(budgetDocs);
 }
 
+function daysFromReference(now: Date, offsetDays: number, hour = 12): Date {
+  const dueDate = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hour, 0, 0, 0),
+  );
+  dueDate.setUTCDate(dueDate.getUTCDate() + offsetDays);
+  return dueDate;
+}
+
+async function createUpcomingPayments(userId: Types.ObjectId, now: Date): Promise<void> {
+  await UpcomingPaymentModel.insertMany([
+    {
+      userId,
+      title: 'Elektrik faturası',
+      type: 'bill',
+      amount: 1240,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 2, 11),
+      status: 'upcoming',
+      source: 'manual',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: null,
+    },
+    {
+      userId,
+      title: 'Spotify Family',
+      type: 'subscription',
+      amount: 110,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 5, 9),
+      status: 'upcoming',
+      source: 'template',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: {
+        vendor: 'Spotify',
+        invoiceNo: null,
+        rawText: null,
+        detectedCurrency: BASE_CURRENCY,
+      },
+    },
+    {
+      userId,
+      title: 'Turk Telekom internet faturası',
+      type: 'bill',
+      amount: 690,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 10, 14),
+      status: 'upcoming',
+      source: 'ocr',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: {
+        vendor: 'Turk Telekom',
+        invoiceNo: 'TT-202603',
+        rawText: 'Turk Telekom internet faturasi son odeme tarihi 11 Mart 2026.',
+        detectedCurrency: BASE_CURRENCY,
+      },
+    },
+    {
+      userId,
+      title: 'Site aidati',
+      type: 'other',
+      amount: 950,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 17, 10),
+      status: 'upcoming',
+      source: 'manual',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: null,
+    },
+    {
+      userId,
+      title: 'Kredi karti ekstresi',
+      type: 'debt',
+      amount: 8450,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 28, 16),
+      status: 'upcoming',
+      source: 'ocr',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: {
+        vendor: 'Yapi Kredi',
+        invoiceNo: 'CC-202603',
+        rawText: 'Asgari odeme 28 Mart 2026.',
+        detectedCurrency: BASE_CURRENCY,
+      },
+    },
+    {
+      userId,
+      title: 'Su faturasi',
+      type: 'bill',
+      amount: 420,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 35, 11),
+      status: 'upcoming',
+      source: 'manual',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: null,
+    },
+    {
+      userId,
+      title: 'Netflix',
+      type: 'subscription',
+      amount: 230,
+      currency: BASE_CURRENCY,
+      dueDate: daysFromReference(now, 41, 9),
+      status: 'upcoming',
+      source: 'template',
+      linkedTransactionId: null,
+      recurringTemplateId: null,
+      meta: {
+        vendor: 'Netflix',
+        invoiceNo: null,
+        rawText: null,
+        detectedCurrency: BASE_CURRENCY,
+      },
+    },
+  ]);
+}
+
 function buildRecurringRules(
   userId: Types.ObjectId,
   now: Date,
@@ -1008,16 +1160,17 @@ async function runDueRecurringOnce(
 
 async function run(): Promise<void> {
   const env = envSchema.parse(process.env);
+  const config = resolveSeedConfig(env);
   await connectMongo(env.MONGODB_URI);
 
-  const now = new Date();
+  const now = config.referenceDate;
   const months = getLastSixMonths(now);
   const rand = createPrng(20260217);
 
-  await resetDemoUserData(DEMO_EMAIL);
+  await resetDemoUserData(config.demoEmail);
   await ensureGlobalCategories();
 
-  const user = await createDemoUser();
+  const user = await createDemoUser(config);
   const accounts = await createAccounts(user.id);
   const categories = await createUserCategories(user.id);
 
@@ -1031,14 +1184,16 @@ async function run(): Promise<void> {
   const currentMonth = months[months.length - 1]!;
   await ensureCurrentMonthBudgetSpend(user.id, currentMonth, accounts, categories);
   await createCurrentMonthBudgets(user.id, currentMonth, categories);
+  await createUpcomingPayments(user.id, now);
 
-  const [accountsCount, categoriesCount, transactionsCount, budgetsCount, recurringCount] =
+  const [accountsCount, categoriesCount, transactionsCount, budgetsCount, recurringCount, upcomingCount] =
     await Promise.all([
       AccountModel.countDocuments({ userId: user.id, deletedAt: null }),
       CategoryModel.countDocuments({ userId: user.id, deletedAt: null }),
       TransactionModel.countDocuments({ userId: user.id, deletedAt: null }),
       BudgetModel.countDocuments({ userId: user.id, deletedAt: null }),
       RecurringRuleModel.countDocuments({ userId: user.id, deletedAt: null }),
+      UpcomingPaymentModel.countDocuments({ userId: user.id, status: 'upcoming' }),
     ]);
 
   const transferGroupIds = await TransactionModel.distinct('transferGroupId', {
@@ -1049,13 +1204,15 @@ async function run(): Promise<void> {
   });
 
   console.log('Seed complete.');
-  console.log(`Demo login: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+  console.log(`Demo login: ${config.demoEmail} / ${config.demoPassword}`);
+  console.log(`reference date: ${now.toISOString()}`);
   console.log(`accounts: ${accountsCount}`);
   console.log(`categories: ${categoriesCount}`);
   console.log(`transactions: ${transactionsCount}`);
   console.log(`budgets: ${budgetsCount}`);
   console.log(`transfers: ${transferGroupIds.length}`);
   console.log(`recurring rules: ${recurringCount}`);
+  console.log(`upcoming payments: ${upcomingCount}`);
   console.log(
     `recurring run: processedRules=${recurringRun.processedRules}, processedRuns=${recurringRun.processedRuns}, generatedTransactions=${recurringRun.generatedTransactions}`,
   );
