@@ -68,7 +68,7 @@ function envValue(name) {
 module.exports = {
   expo: {
     name: 'Montly',
-    slug: 'montly',
+    slug: 'mintly',
     scheme: 'mintly',
     version: '1.0.0',
     orientation: 'portrait',
@@ -86,7 +86,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.mintly.app',
-      buildNumber: '1',
+      buildNumber: '3',
       usesAppleSignIn: true,
       infoPlist: {
         NSCameraUsageDescription: 'Camera access is needed to scan receipts.',

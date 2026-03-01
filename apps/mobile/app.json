@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Montly",
-    "slug": "montly",
+    "slug": "mintly",
     "scheme": "mintly",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mintly.app",
-      "buildNumber": "1",
+      "buildNumber": "4",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is needed to scan receipts.",

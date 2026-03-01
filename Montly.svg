@@ -1,0 +1,29 @@
+{\rtf1\ansi\ansicpg1254\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">\
+    <defs>\
+        <linearGradient id="mintlyGrad" x1="0%" y1="100%" x2="100%" y2="0%">\
+            <stop offset="0%" stop-color="#3B6EF5" />\
+            <stop offset="100%" stop-color="#2ED47A" />\
+        </linearGradient>\
+\
+        <g id="mark">\
+            <path d="M 260,750 V 550 A 120,120 0 0,1 500,550 V 750 V 550 A 120,120 0 0,1 740,550 V 350" \
+                  stroke="url(#mintlyGrad)" stroke-width="90" stroke-linecap="round" stroke-linejoin="round" fill="none" />\
+            <path d="M 880,150 Q 880,220 950,220 Q 880,220 880,290 Q 880,220 810,220 Q 880,220 880,150 Z" \
+                  fill="url(#mintlyGrad)" />\
+        </g>\
+    </defs>\
+\
+    <rect width="1024" height="500" fill="#0B1120" />\
+\
+    <g transform="translate(180, 130)">\
+        <use href="#mark" transform="translate(0, -20) scale(0.35)" />\
+        <text x="320" y="210" font-family="'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif" font-weight="800" font-size="130" fill="#FFFFFF" letter-spacing="-4">montly</text>\
+    </g>\
+</svg>}
