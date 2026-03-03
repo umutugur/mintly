@@ -126,8 +126,10 @@ export function DashboardPage() {
                   <XAxis dataKey="bucketStart" tickFormatter={formatCompactDate} stroke="#9bb2ca" tickLine={false} />
                   <YAxis stroke="#9bb2ca" tickLine={false} axisLine={false} />
                   <Tooltip
-                    formatter={(value: number) => formatCurrency(value, overview?.topCurrencies[0]?.currency ?? 'TRY')}
-                    labelFormatter={(value: string) => formatCompactDate(value)}
+formatter={(value) =>
+  formatCurrency(Number(value ?? 0), overview?.topCurrencies[0]?.currency ?? 'TRY')
+}
+labelFormatter={(value) => formatCompactDate(String(value ?? ''))}
                     contentStyle={{
                       borderRadius: 16,
                       border: '1px solid rgba(255,255,255,0.08)',
@@ -158,8 +160,9 @@ export function DashboardPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number) => formatCurrency(value, overview?.topCurrencies[0]?.currency ?? 'TRY')}
-                      contentStyle={{
+formatter={(value) =>
+  formatCurrency(Number(value ?? 0), overview?.topCurrencies[0]?.currency ?? 'TRY')
+}                      contentStyle={{
                         borderRadius: 16,
                         border: '1px solid rgba(255,255,255,0.08)',
                         backgroundColor: '#132235',
