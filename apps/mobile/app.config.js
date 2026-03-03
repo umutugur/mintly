@@ -86,7 +86,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.mintly.app',
-      buildNumber: '3',
+      buildNumber: '6',
       usesAppleSignIn: true,
       infoPlist: {
         NSCameraUsageDescription: 'Camera access is needed to scan receipts.',

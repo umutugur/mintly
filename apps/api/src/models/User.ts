@@ -105,6 +105,13 @@ const userSchema = new Schema(
       enum: ['low', 'medium', 'high'],
       default: 'medium',
     },
+    role: {
+      type: String,
+      required: true,
+      enum: ['user', 'admin'],
+      default: 'user',
+      index: true,
+    },
     notificationsEnabled: {
       type: Boolean,
       required: true,
@@ -118,6 +125,12 @@ const userSchema = new Schema(
     passwordHash: {
       type: String,
       required: true,
+    },
+    lastActiveAt: {
+      type: Date,
+      required: false,
+      default: null,
+      index: true,
     },
   },
   {
@@ -141,6 +154,8 @@ userSchema.index(
     partialFilterExpression: { 'providers.uid': { $type: 'string' } },
   },
 );
+
+userSchema.index({ role: 1, lastActiveAt: -1, createdAt: -1 });
 
 export type User = InferSchemaType<typeof userSchema>;
 export type UserDocument = HydratedDocument<User>;

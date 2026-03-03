@@ -9,11 +9,13 @@ import Fastify, {
   type FastifyRequest,
 } from 'fastify';
 
+import { ensureBootstrapAdmin } from './auth/admin.js';
 import { getConfig } from './config.js';
 import { connectMongo, disconnectMongo } from './db/mongo.js';
 import { ApiError, toErrorPayload } from './errors.js';
 import { verifyCloudflareModelExists } from './lib/ai/cloudflare.js';
 import { registerAccountRoutes } from './routes/accounts.js';
+import { registerAdminRoutes } from './routes/admin.js';
 import { registerAnalyticsRoutes } from './routes/analytics.js';
 import { registerAiRoutes } from './routes/ai.js';
 import { registerAdvisorRoutes } from './routes/advisor.js';
@@ -92,6 +94,10 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
 
   app.addHook('onReady', async () => {
     await connectMongo(config.mongoUri);
+
+    if (config.nodeEnv !== 'test') {
+      await ensureBootstrapAdmin();
+    }
 
     if (config.nodeEnv !== 'test' && config.advisorProvider === 'cloudflare') {
       try {
@@ -262,6 +268,7 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
   });
 
   registerAuthRoutes(app);
+  registerAdminRoutes(app);
   registerMeRoute(app);
   registerAccountRoutes(app);
   registerCategoryRoutes(app);

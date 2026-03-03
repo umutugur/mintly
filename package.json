@@ -12,6 +12,7 @@
     "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.29.3 --activate && pnpm -v",
     "dev:mobile": "turbo run dev --filter=mobile",
     "dev:api": "turbo run dev --filter=api",
+    "dev:web": "turbo run dev --filter=web",
     "build": "turbo run build",
     "lint": "pnpm i18n:check && turbo run lint",
     "lint:i18n": "turbo run lint:i18n",
@@ -20,6 +21,7 @@
     "typecheck": "turbo run typecheck",
     "start:api": "pnpm -C apps/api start:prod",
     "start:mobile": "pnpm -C apps/mobile start",
+    "start:web": "pnpm -C apps/web start",
     "smoke:api": "node scripts/smoke-api.mjs",
     "android": "pnpm -C apps/mobile exec expo run:android",
     "ios": "pnpm -C apps/mobile exec expo run:ios"

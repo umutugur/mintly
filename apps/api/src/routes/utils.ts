@@ -32,7 +32,9 @@ export function parseQuery<T>(schema: z.ZodSchema<T>, payload: unknown): T {
   return parsed.data;
 }
 
-export function requireUser(request: FastifyRequest): { id: string; email: string } {
+export function requireUser(
+  request: FastifyRequest,
+): { id: string; email: string; role: 'user' | 'admin' } {
   if (!request.user) {
     throw new ApiError({
       code: 'UNAUTHORIZED',

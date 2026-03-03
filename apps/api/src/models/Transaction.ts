@@ -100,6 +100,9 @@ const transactionSchema = new Schema(
 
 // Primary transaction list/feed index per user with soft-delete filtering.
 transactionSchema.index({ userId: 1, deletedAt: 1, occurredAt: -1 });
+// Supports global admin listing and time-window analytics without a leading userId filter.
+transactionSchema.index({ deletedAt: 1, occurredAt: -1 });
+transactionSchema.index({ deletedAt: 1, kind: 1, type: 1, currency: 1, occurredAt: -1 });
 // Speeds account-scoped filters used by transactions listing and dashboard rollups.
 transactionSchema.index({ userId: 1, accountId: 1, deletedAt: 1 });
 transactionSchema.index({ userId: 1, deletedAt: 1, accountId: 1, occurredAt: -1 });
