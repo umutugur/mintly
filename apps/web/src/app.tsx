@@ -20,7 +20,8 @@ export function App() {
             <Route path="/users" element={<UsersPage />} />
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/notifications" element={<Navigate to="/admin/notifications" replace />} />
+            <Route path="/admin/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Route>

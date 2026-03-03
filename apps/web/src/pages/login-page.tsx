@@ -61,15 +61,15 @@ export function LoginPage() {
 
         <Card className="flex items-center p-8 lg:p-10">
           <div className="w-full">
-            <div className="inline-flex rounded-2xl bg-accent-500/15 p-3 text-accent-300">
+          <div className="inline-flex rounded-2xl bg-accent-500/15 p-3 text-accent-300">
               <ShieldCheck className="h-6 w-6" />
             </div>
-            <h2 className="mt-6 font-display text-3xl font-bold text-white">Admin login</h2>
-            <p className="mt-2 text-sm text-panel-200">Use the dedicated admin account. All panel routes stay protected.</p>
+            <h2 className="mt-6 font-display text-3xl font-bold text-white">Yonetici girisi</h2>
+            <p className="mt-2 text-sm text-panel-200">Ayrılmış admin hesabını kullanın. Tum panel rotalari korumali kalir.</p>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">Email</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">E-posta</span>
                 <input
                   type="email"
                   value={email}
@@ -80,7 +80,7 @@ export function LoginPage() {
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">Password</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">Sifre</span>
                 <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 transition focus-within:border-accent-400">
                   <LockKeyhole className="h-4 w-4 text-panel-200" />
                   <input
@@ -94,7 +94,7 @@ export function LoginPage() {
               </label>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in...' : 'Enter web panel'}
+                {isSubmitting ? 'Giris yapiliyor...' : 'Panele Gir'}
               </Button>
             </form>
           </div>

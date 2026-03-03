@@ -1,6 +1,7 @@
 import { z, type ZodType } from 'zod';
 
 import {
+  adminSendNotificationResponseSchema,
   adminSessionSchema,
   apiErrorSchema,
   categoryAnalyticsSchema,
@@ -13,6 +14,7 @@ import {
   userDetailSchema,
   usersListSchema,
   type AdminSession,
+  type AdminSendNotificationResponse,
   type CategoryAnalyticsResponse,
   type NotificationTokensResponse,
   type OverviewResponse,
@@ -288,6 +290,20 @@ export function getNotificationTokens(input: {
     path: '/admin/notifications/tokens',
     schema: notificationTokensSchema,
     query: input,
+  });
+}
+
+export function adminSendNotification(input: {
+  title: string;
+  body: string;
+  target: 'all' | 'hasToken' | 'users';
+  userIds?: string[];
+}): Promise<AdminSendNotificationResponse> {
+  return request({
+    path: '/admin/notifications/send',
+    schema: adminSendNotificationResponseSchema,
+    method: 'POST',
+    body: input,
   });
 }
 

@@ -1,6 +1,8 @@
 import { format, parseISO, subDays } from 'date-fns';
 import clsx from 'clsx';
 
+import { getPreferredLocale } from './locale';
+
 export interface DateRangeValue {
   from: string;
   to: string;
@@ -46,7 +48,11 @@ export function formatDate(value: string | null | undefined): string {
     return '—';
   }
 
-  return format(parseISO(value), 'dd MMM yyyy');
+  return new Intl.DateTimeFormat(getPreferredLocale(), {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(parseISO(value));
 }
 
 export function formatDateTime(value: string | null | undefined): string {
@@ -54,7 +60,13 @@ export function formatDateTime(value: string | null | undefined): string {
     return '—';
   }
 
-  return format(parseISO(value), 'dd MMM yyyy, HH:mm');
+  return new Intl.DateTimeFormat(getPreferredLocale(), {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(parseISO(value));
 }
 
 export function formatCompactDate(value: string | null | undefined): string {
@@ -62,29 +74,35 @@ export function formatCompactDate(value: string | null | undefined): string {
     return '—';
   }
 
-  return format(parseISO(value), 'MMM d');
+  return new Intl.DateTimeFormat(getPreferredLocale(), {
+    day: 'numeric',
+    month: 'short',
+  }).format(parseISO(value));
 }
 
 export function formatCurrency(value: number, currency: string | null | undefined): string {
   const normalizedCurrency = currency ?? 'USD';
 
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(getPreferredLocale(), {
       style: 'currency',
       currency: normalizedCurrency,
       maximumFractionDigits: 0,
     }).format(value);
   } catch {
-    return `${normalizedCurrency} ${value.toLocaleString()}`;
+    return `${normalizedCurrency} ${value.toLocaleString(getPreferredLocale())}`;
   }
 }
 
 export function formatNumber(value: number): string {
-  return new Intl.NumberFormat().format(value);
+  return new Intl.NumberFormat(getPreferredLocale()).format(value);
 }
 
 export function formatPercent(value: number, digits = 1): string {
-  return `${(value * 100).toFixed(digits)}%`;
+  return `${new Intl.NumberFormat(getPreferredLocale(), {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value * 100)}%`;
 }
 
 export function toSentenceCase(value: string): string {

@@ -5,7 +5,7 @@ import { apiBaseUrl } from '../lib/utils';
 import { PageSection, useShell, useUi } from '../providers';
 
 export function SettingsPage() {
-  const { featureFlags, setFeatureFlag } = useShell();
+  const { featureFlags, setFeatureFlag, locale, setLocale } = useShell();
   const { openModal } = useUi();
   const envBadge = (import.meta.env.VITE_ENV_BADGE as string | undefined) ?? import.meta.env.MODE;
   const commitSha = (import.meta.env.VITE_COMMIT_SHA as string | undefined) ?? 'not-set';
@@ -13,38 +13,52 @@ export function SettingsPage() {
   return (
     <>
       <PageSection
-        title="Settings"
-        subtitle="Admin-only panel settings, environment visibility, and non-destructive control surfaces."
+        title="Ayarlar"
+        subtitle="Yalnızca admin için panel ayarları, ortam görünürlüğü ve yıkıcı olmayan kontrol alanları."
       >
         <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
           <Card>
-            <SectionHeading title="Environment" subtitle="Useful deployment metadata for support and audits." />
+            <SectionHeading title="Ortam" subtitle="Destek ve denetim için yararlı dağıtım metaverileri." />
             <div className="grid gap-4 md:grid-cols-2">
-              <InfoRow label="Environment badge" value={envBadge} />
-              <InfoRow label="API base URL" value={apiBaseUrl()} />
+              <InfoRow label="Ortam rozeti" value={envBadge} />
+              <InfoRow label="API adresi" value={apiBaseUrl()} />
               <InfoRow label="Commit SHA" value={commitSha} />
-              <InfoRow label="Mode" value={import.meta.env.MODE} />
+              <InfoRow label="Mod" value={import.meta.env.MODE} />
             </div>
           </Card>
 
           <Card>
-            <SectionHeading title="Client feature flags" subtitle="Local-only switches for this browser session profile." />
+            <SectionHeading title="İstemci özellik bayrakları" subtitle="Bu tarayıcı profiline özel yerel anahtarlar." />
             <div className="space-y-3">
+              <label className="flex items-center justify-between gap-4 rounded-2xl bg-white/[0.03] px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">Panel dili</p>
+                  <p className="mt-1 text-sm text-panel-200">Varsayılan `tr-TR` olarak açılır ve localStorage'da korunur.</p>
+                </div>
+                <select
+                  value={locale}
+                  onChange={(event) => setLocale(event.target.value)}
+                  className="rounded-2xl border border-white/10 bg-panel-900 px-3 py-2 text-sm text-white outline-none"
+                >
+                  <option value="tr-TR">tr-TR</option>
+                  <option value="en-US">en-US</option>
+                </select>
+              </label>
               <FlagToggle
-                title="Animated charts"
-                description="Toggle chart point animations and emphasis."
+                title="Animasyonlu grafikler"
+                description="Grafik animasyonlarını ve vurgu efektlerini açıp kapatır."
                 checked={featureFlags.animatedCharts}
                 onChange={(checked) => setFeatureFlag('animatedCharts', checked)}
               />
               <FlagToggle
-                title="Dense tables"
-                description="Reduce table breathing room for quicker scanning."
+                title="Sık tablolar"
+                description="Daha hızlı tarama için tablo boşluklarını azaltır."
                 checked={featureFlags.denseTables}
                 onChange={(checked) => setFeatureFlag('denseTables', checked)}
               />
               <FlagToggle
-                title="Highlight signals"
-                description="Show stronger emphasis on analytics signal cards."
+                title="Sinyalleri vurgula"
+                description="Analitik sinyal kartlarını daha belirgin gösterir."
                 checked={featureFlags.highlightSignals}
                 onChange={(checked) => setFeatureFlag('highlightSignals', checked)}
               />
@@ -53,7 +67,7 @@ export function SettingsPage() {
         </div>
       </PageSection>
 
-      <PageSection title="Danger zone" subtitle="UI only. No destructive actions are enabled unless explicitly requested.">
+      <PageSection title="Riskli alan" subtitle="Yalnızca arayüz. Açık talep olmadan yıkıcı işlem etkin değildir.">
         <Card className="border-danger/25">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
@@ -61,9 +75,9 @@ export function SettingsPage() {
                 <ShieldAlert className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="font-display text-xl font-bold text-white">No destructive controls</h3>
+                <h3 className="font-display text-xl font-bold text-white">Yıkıcı kontrol yok</h3>
                 <p className="mt-2 text-sm text-panel-200">
-                  This panel intentionally stops short of deletes, impersonation, or token inspection by default.
+                  Bu panel varsayılan olarak silme, kullanıcı taklidi veya ham token incelemesi içermez.
                 </p>
               </div>
             </div>
@@ -71,14 +85,14 @@ export function SettingsPage() {
               variant="danger"
               onClick={() =>
                 openModal({
-                  title: 'Danger zone locked',
+                  title: 'Riskli alan kilitli',
                   description:
-                    'Destructive controls are intentionally disabled in this build. Add a dedicated workflow only when explicitly requested.',
+                    'Bu yapıda yıkıcı kontroller bilerek kapalı tutuldu. Yalnızca açık talep olursa ayrı bir akış ekleyin.',
                 })
               }
             >
               <Info className="mr-2 h-4 w-4" />
-              Why locked?
+              Neden kilitli?
             </Button>
           </div>
         </Card>

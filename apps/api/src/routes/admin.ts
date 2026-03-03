@@ -6,11 +6,13 @@ import { requireAdmin } from '../auth/middleware.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { UserModel } from '../models/User.js';
 
-import { parseObjectId, parseQuery, requireUser } from './utils.js';
+import { parseBody, parseObjectId, parseQuery, requireUser } from './utils.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ACTIVE_WINDOW_DAYS = 7;
 const INACTIVE_WINDOW_DAYS = 30;
+const EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
+const EXPO_PUSH_CHUNK_SIZE = 100;
 
 const dateOnlyStringSchema = z
   .string()
@@ -98,6 +100,23 @@ const notificationTokensQuerySchema = z.object({
   page: pageSchema,
   limit: limitSchema,
 });
+
+const adminNotificationSendBodySchema = z
+  .object({
+    title: z.string().trim().min(1).max(120),
+    body: z.string().trim().min(1).max(1000),
+    target: z.enum(['all', 'hasToken', 'users']),
+    userIds: z.array(z.string().trim().min(1)).max(500).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.target === 'users' && (!Array.isArray(value.userIds) || value.userIds.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['userIds'],
+        message: 'userIds is required when target=users',
+      });
+    }
+  });
 
 interface SafeExpoPushTokenMeta {
   platform: 'ios' | 'android' | null;
@@ -240,7 +259,7 @@ function toSafeTokenMeta(
 
   return {
     count: values.length,
-    lastUpdatedAt: lastUpdatedAt ? lastUpdatedAt.toISOString() : null,
+    lastUpdatedAt: toIso(lastUpdatedAt),
     platformSplit: {
       ios,
       android,
@@ -248,8 +267,21 @@ function toSafeTokenMeta(
   };
 }
 
+function toIso(value: unknown): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  const parsed = new Date(value as string | number | Date);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
 function toIsoOrNull(value: Date | null | undefined): string | null {
-  return value instanceof Date ? value.toISOString() : null;
+  return toIso(value);
 }
 
 function resolveDerivedLastActiveAt(
@@ -376,6 +408,84 @@ function buildHistogram(values: number[]): Array<{ label: string; min: number; m
         : value >= bucket.min && value < bucket.max,
     ).length,
   }));
+}
+
+function isExpoPushToken(value: string): boolean {
+  return /^(Exponent|Expo)PushToken\[[^\]]+\]$/.test(value.trim());
+}
+
+function chunkArray<T>(values: readonly T[], size: number): T[][] {
+  const chunks: T[][] = [];
+
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size) as T[]);
+  }
+
+  return chunks;
+}
+
+async function sendExpoPushNotifications(
+  tokens: string[],
+  payload: { title: string; body: string },
+): Promise<number> {
+  if (tokens.length === 0) {
+    return 0;
+  }
+
+  let sent = 0;
+
+  for (const tokenChunk of chunkArray(tokens, EXPO_PUSH_CHUNK_SIZE)) {
+    try {
+      const response = await fetch(EXPO_PUSH_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Accept-Encoding': 'gzip, deflate',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(
+          tokenChunk.map((token) => ({
+            to: token,
+            title: payload.title,
+            body: payload.body,
+            sound: 'default',
+          })),
+        ),
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const parsed = (await response.json().catch(() => null)) as
+        | {
+            data?:
+              | Array<{
+                  status?: string;
+                }>
+              | {
+                  status?: string;
+                };
+          }
+        | null;
+
+      if (!parsed || parsed.data === undefined) {
+        sent += tokenChunk.length;
+        continue;
+      }
+
+      if (Array.isArray(parsed.data)) {
+        sent += parsed.data.reduce((count, item) => count + (item?.status === 'error' ? 0 : 1), 0);
+        continue;
+      }
+
+      sent += parsed.data.status === 'error' ? 0 : tokenChunk.length;
+    } catch {
+      continue;
+    }
+  }
+
+  return sent;
 }
 
 function toSafeUserSummary(row: UserListAggregateRow, now: Date) {
@@ -873,7 +983,7 @@ export function registerAdminRoutes(app: FastifyInstance): void {
           savingsRateUsers > 0 ? savingsRateAccumulator / savingsRateUsers : 0,
         expenseToIncomeDistribution: buildHistogram(expenseToIncomeRatios),
         medianNetByMonth: medianNetRows.map((row) => ({
-          month: row.month.toISOString(),
+          month: toIso(row.month),
           medianNet: median(row.netByUser),
         })),
       },
@@ -1408,7 +1518,7 @@ export function registerAdminRoutes(app: FastifyInstance): void {
       timezone: query.tz,
       currency: query.currency ?? null,
       buckets: rows.map((row) => ({
-        bucketStart: row.bucketStart.toISOString(),
+        bucketStart: toIso(row.bucketStart),
         income: row.income,
         expense: row.expense,
         net: row.net,
@@ -1797,6 +1907,69 @@ export function registerAdminRoutes(app: FastifyInstance): void {
           platformSplit: tokenMeta.platformSplit,
         };
       }),
+    };
+  });
+
+  app.post('/admin/notifications/send', { preHandler: requireAdmin }, async (request) => {
+    const input = parseBody(adminNotificationSendBodySchema, request.body);
+    const filter: Record<string, unknown> = {
+      role: { $ne: 'admin' },
+    };
+
+    if (input.target === 'hasToken') {
+      filter['expoPushTokens.0'] = {
+        $exists: true,
+      };
+    }
+
+    if (input.target === 'users') {
+      const uniqueUserIds = Array.from(new Set(input.userIds ?? [])).filter((value) => Types.ObjectId.isValid(value));
+
+      filter._id = {
+        $in: uniqueUserIds.map((value) => new Types.ObjectId(value)),
+      };
+    }
+
+    const users = await UserModel.find(filter)
+      .select('_id expoPushTokens')
+      .lean<
+        Array<{
+          _id: Types.ObjectId;
+          expoPushTokens?: Array<{
+            token?: string | null;
+          }>;
+        }>
+      >();
+
+    let noToken = 0;
+    const validTokens: string[] = [];
+
+    for (const user of users) {
+      const tokens = Array.from(
+        new Set(
+          (user.expoPushTokens ?? [])
+            .map((entry) => (typeof entry.token === 'string' ? entry.token.trim() : ''))
+            .filter((token) => token.length > 0 && isExpoPushToken(token)),
+        ),
+      );
+
+      if (tokens.length === 0) {
+        noToken += 1;
+        continue;
+      }
+
+      validTokens.push(...tokens);
+    }
+
+    const sent = await sendExpoPushNotifications(validTokens, {
+      title: input.title,
+      body: input.body,
+    });
+
+    return {
+      targeted: users.length,
+      sent,
+      noToken,
     };
   });
 }

@@ -89,7 +89,7 @@ export const overviewSchema = z.object({
     ),
     medianNetByMonth: z.array(
       z.object({
-        month: z.string().datetime(),
+        month: z.string().datetime().nullable(),
         medianNet: z.number(),
       }),
     ),
@@ -105,7 +105,7 @@ export const timeseriesSchema = z.object({
   currency: z.string().nullable(),
   buckets: z.array(
     z.object({
-      bucketStart: z.string().datetime(),
+      bucketStart: z.string().datetime().nullable(),
       income: z.number(),
       expense: z.number(),
       net: z.number(),
@@ -289,6 +289,12 @@ export const notificationTokensSchema = z.object({
   ),
 });
 
+export const adminSendNotificationResponseSchema = z.object({
+  targeted: z.number().nonnegative(),
+  sent: z.number().nonnegative(),
+  noToken: z.number().nonnegative(),
+});
+
 export type AdminSession = z.infer<typeof adminSessionSchema>;
 export type OverviewResponse = z.infer<typeof overviewSchema>;
 export type TimeseriesResponse = z.infer<typeof timeseriesSchema>;
@@ -298,3 +304,4 @@ export type UserDetailResponse = z.infer<typeof userDetailSchema>;
 export type TransactionsListResponse = z.infer<typeof transactionsListSchema>;
 export type RetentionResponse = z.infer<typeof retentionSchema>;
 export type NotificationTokensResponse = z.infer<typeof notificationTokensSchema>;
+export type AdminSendNotificationResponse = z.infer<typeof adminSendNotificationResponseSchema>;

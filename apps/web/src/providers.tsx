@@ -29,6 +29,10 @@ import {
   getStoredToken,
   login as loginRequest,
 } from './lib/api';
+import {
+  readPreferredLocale,
+  setPreferredLocale,
+} from './lib/locale';
 import { cn, defaultDateRange, type DateRangeValue } from './lib/utils';
 import { Badge, Button, Modal } from './components/ui';
 
@@ -71,6 +75,8 @@ const UiContext = createContext<{
 const ShellContext = createContext<{
   globalSearch: string;
   setGlobalSearch: (value: string) => void;
+  locale: string;
+  setLocale: (value: string) => void;
   dateRange: DateRangeValue;
   setDateRange: (next: DateRangeValue) => void;
   featureFlags: FeatureFlags;
@@ -160,6 +166,7 @@ export function UiProvider(props: PropsWithChildren) {
 
 export function ShellProvider(props: PropsWithChildren) {
   const [globalSearch, setGlobalSearch] = useState('');
+  const [locale, setLocaleState] = useState<string>(() => readPreferredLocale());
   const [dateRange, setDateRange] = useState<DateRangeValue>(defaultDateRange(30));
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(() => {
     if (typeof window === 'undefined') {
@@ -194,6 +201,10 @@ export function ShellProvider(props: PropsWithChildren) {
     window.localStorage.setItem(FEATURE_FLAG_KEY, JSON.stringify(featureFlags));
   }, [featureFlags]);
 
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   function setFeatureFlag(key: keyof FeatureFlags, value: boolean) {
     setFeatureFlags((current) => ({
       ...current,
@@ -201,11 +212,18 @@ export function ShellProvider(props: PropsWithChildren) {
     }));
   }
 
+  function setLocale(value: string) {
+    setLocaleState(value);
+    setPreferredLocale(value);
+  }
+
   return (
     <ShellContext.Provider
       value={{
         globalSearch,
         setGlobalSearch,
+        locale,
+        setLocale,
         dateRange,
         setDateRange,
         featureFlags,
@@ -362,12 +380,12 @@ export function ProtectedRoute() {
 }
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/users', label: 'Users', icon: Users },
-  { to: '/transactions', label: 'Transactions', icon: Wallet },
-  { to: '/analytics', label: 'Analytics', icon: Gauge },
-  { to: '/notifications', label: 'Notifications Health', icon: Bell },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/', label: 'Panel', icon: LayoutDashboard, end: true },
+  { to: '/users', label: 'Kullanıcılar', icon: Users },
+  { to: '/transactions', label: 'İşlemler', icon: Wallet },
+  { to: '/analytics', label: 'Analitik', icon: Gauge },
+  { to: '/admin/notifications', label: 'Bildirim Gönder', icon: Bell },
+  { to: '/settings', label: 'Ayarlar', icon: Settings },
 ];
 
 export function AdminShell() {
@@ -426,7 +444,7 @@ export function AdminShell() {
                 <input
                   value={globalSearch}
                   onChange={(event) => setGlobalSearch(event.target.value)}
-                  placeholder="Global search for users and transactions"
+                  placeholder="Kullanıcı ve işlem ara"
                   className="w-full bg-transparent text-sm text-white outline-none placeholder:text-panel-200"
                 />
               </div>
@@ -434,7 +452,7 @@ export function AdminShell() {
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div className="grid grid-cols-2 gap-3">
                   <label className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">
-                    From
+                    Başlangıç
                     <input
                       type="date"
                       value={dateRange.from}
@@ -448,7 +466,7 @@ export function AdminShell() {
                     />
                   </label>
                   <label className="rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">
-                    To
+                    Bitiş
                     <input
                       type="date"
                       value={dateRange.to}
@@ -481,7 +499,7 @@ export function AdminShell() {
                       <p className="text-sm font-semibold text-white">{admin?.name ?? 'Montly Admin'}</p>
                       <p className="mt-1 text-sm text-panel-200">{admin?.email}</p>
                       <Button className="mt-3 w-full" variant="secondary" onClick={logout}>
-                        Logout
+                        Çıkış Yap
                       </Button>
                     </div>
                   ) : null}
