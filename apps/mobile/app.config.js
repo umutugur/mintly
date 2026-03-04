@@ -124,6 +124,8 @@ module.exports = {
     android: {
       package: 'com.mintly.app',
       versionCode: 1,
+      blockedPermissions: ['android.permission.RANGING'],
+
       ...(googleServicesJsonPath
         ? {
             googleServicesFile: googleServicesJsonPath,
