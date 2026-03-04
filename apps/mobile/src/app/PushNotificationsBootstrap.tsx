@@ -23,21 +23,37 @@ Notifications.setNotificationHandler({
 });
 
 function resolveProjectId(): string | null {
-  const fromEasConfig = Constants.easConfig?.projectId;
-  if (typeof fromEasConfig === 'string' && fromEasConfig.trim().length > 0) {
-    return fromEasConfig.trim();
-  }
-
   const fromExpoConfig = Constants.expoConfig?.extra?.eas?.projectId;
   if (typeof fromExpoConfig === 'string' && fromExpoConfig.trim().length > 0) {
     return fromExpoConfig.trim();
   }
 
+  const fromEasConfig = Constants.easConfig?.projectId;
+  if (typeof fromEasConfig === 'string' && fromEasConfig.trim().length > 0) {
+    return fromEasConfig.trim();
+  }
+
   return null;
 }
 
+function buildDeviceInfo(): Record<string, unknown> {
+  const constantsWithDeviceName = Constants as typeof Constants & {
+    deviceName?: string | null;
+  };
+
+  return {
+    appOwnership: Constants.appOwnership ?? null,
+    executionEnvironment: String(Constants.executionEnvironment ?? 'unknown'),
+    deviceName: constantsWithDeviceName.deviceName ?? null,
+  };
+}
+
+function logPushDebug(stage: string, details: Record<string, unknown>): void {
+  console.log(`[push][bootstrap] ${stage}`, details);
+}
+
 export function PushNotificationsBootstrap() {
-  const { status, isGuest, withAuth } = useAuth();
+  const { status, isGuest, user, withAuth } = useAuth();
   const savedTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -76,8 +92,33 @@ export function PushNotificationsBootstrap() {
 
     void (async () => {
       try {
+        const pushPlatform = Platform.OS === 'ios' ? 'ios' : 'android';
+
+        if (!user?.id) {
+          logPushDebug('skipped', {
+            reason: 'user_missing',
+          });
+          return;
+        }
+
+        if (pushPlatform === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+          });
+          logPushDebug('android_channel_ready', {
+            channelId: 'default',
+          });
+        }
+
         const currentPermissions = await Notifications.getPermissionsAsync();
         let granted = currentPermissions.granted;
+        logPushDebug('permission_status', {
+          status: currentPermissions.status,
+          granted: currentPermissions.granted,
+          canAskAgain: currentPermissions.canAskAgain,
+          platform: pushPlatform,
+        });
 
         if (!granted) {
           const prompted = await SecureStore.getItemAsync(PUSH_PERMISSION_PROMPT_KEY);
@@ -102,91 +143,117 @@ export function PushNotificationsBootstrap() {
 
             await SecureStore.setItemAsync(PUSH_PERMISSION_PROMPT_KEY, 'true');
             if (choice !== 1) {
-              if (__DEV__) {
-                console.info('[notifications][push]', {
-                  pushTokenSaved: false,
-                  reason: 'permission_prompt_skipped',
-                });
-              }
+              logPushDebug('skipped', {
+                reason: 'permission_prompt_skipped',
+                platform: pushPlatform,
+              });
               return;
             }
           }
 
           const requested = await Notifications.requestPermissionsAsync();
           granted = requested.granted;
+          logPushDebug('permission_request', {
+            status: requested.status,
+            granted: requested.granted,
+            canAskAgain: requested.canAskAgain,
+            platform: pushPlatform,
+          });
         }
 
         if (!granted) {
-          if (__DEV__) {
-            console.info('[notifications][push]', {
-              pushTokenSaved: false,
-              reason: 'permission_denied',
-            });
-          }
+          logPushDebug('denied', {
+            reason: 'permission_denied',
+            platform: pushPlatform,
+          });
           return;
         }
 
         const projectId = resolveProjectId();
+        logPushDebug('project_id', {
+          projectId,
+          expoProjectId: Constants.expoConfig?.extra?.eas?.projectId ?? null,
+          easProjectId: Constants.easConfig?.projectId ?? null,
+          platform: pushPlatform,
+        });
         if (!projectId) {
-          if (__DEV__) {
-            console.info('[notifications][push]', {
-              pushTokenSaved: false,
-              reason: 'project_id_missing',
-            });
-          }
+          logPushDebug('skipped', {
+            reason: 'project_id_missing',
+            platform: pushPlatform,
+          });
           return;
         }
 
         const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
         const expoPushToken = tokenResponse.data?.trim();
+        logPushDebug('token_generated', {
+          token: expoPushToken ?? null,
+          projectId,
+          platform: pushPlatform,
+        });
         if (!expoPushToken) {
-          if (__DEV__) {
-            console.info('[notifications][push]', {
-              pushTokenSaved: false,
-              reason: 'token_empty',
-            });
-          }
+          logPushDebug('skipped', {
+            reason: 'token_empty',
+            platform: pushPlatform,
+          });
           return;
         }
 
-        if (!active || savedTokenRef.current === expoPushToken) {
+        if (!active) {
+          logPushDebug('skipped', {
+            reason: 'effect_inactive',
+            platform: pushPlatform,
+          });
           return;
         }
 
-        await withAuth((accessToken) =>
-          apiClient.saveMeExpoPushToken(
+        if (savedTokenRef.current === expoPushToken) {
+          logPushDebug('skipped', {
+            reason: 'token_already_saved',
+            token: expoPushToken,
+            platform: pushPlatform,
+          });
+          return;
+        }
+
+        const registerResponse = await withAuth((accessToken) =>
+          apiClient.registerPushToken(
             {
+              userId: user.id,
               expoPushToken,
-              device: Platform.OS === 'ios' ? 'Montly iOS' : 'Montly Android',
-              platform: Platform.OS === 'ios' ? 'ios' : 'android',
+              device: pushPlatform === 'ios' ? 'Montly iOS' : 'Montly Android',
+              platform: pushPlatform,
+              deviceInfo: buildDeviceInfo(),
             },
             accessToken,
           ),
         );
 
-        savedTokenRef.current = expoPushToken;
+        logPushDebug('register_response', {
+          token: expoPushToken,
+          platform: pushPlatform,
+          response: registerResponse,
+        });
 
-        if (__DEV__) {
-          console.info('[notifications][push]', {
-            pushTokenSaved: true,
-            platform: Platform.OS,
-          });
-        }
+        savedTokenRef.current = expoPushToken;
+        logPushDebug('saved', {
+          pushTokenSaved: true,
+          token: expoPushToken,
+          platform: pushPlatform,
+        });
       } catch (error) {
-        if (__DEV__) {
-          console.info('[notifications][push]', {
-            pushTokenSaved: false,
-            reason: error instanceof Error ? error.message : 'unknown_error',
-            hint: 'Expo Go or simulator may not return a push token.',
-          });
-        }
+        logPushDebug('error', {
+          pushTokenSaved: false,
+          reason: error instanceof Error ? error.message : 'unknown_error',
+          hint: 'Expo Go or simulator may not return a push token.',
+        });
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [isGuest, status, withAuth]);
+  }, [isGuest, status, user?.id, withAuth]);
 
   return null;
 }

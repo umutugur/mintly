@@ -56,6 +56,8 @@ import {
   logoutResponseSchema,
   meChangePasswordInputSchema,
   meExpoPushTokenInputSchema,
+  notificationRegisterTokenInputSchema,
+  notificationRegisterTokenResponseSchema,
   meUpdateInputSchema,
   mePreferencesResponseSchema,
   mePreferencesUpdateInputSchema,
@@ -132,6 +134,8 @@ import {
   type LogoutInput,
   type MeChangePasswordInput,
   type MeExpoPushTokenInput,
+  type NotificationRegisterTokenInput,
+  type NotificationRegisterTokenResponse,
   type MeResponse,
   type MeUpdateInput,
   type MePreferencesResponse,
@@ -399,6 +403,17 @@ export class ApiClient {
       method: 'POST',
       accessToken,
       body: meExpoPushTokenInputSchema.parse(input),
+    });
+  }
+
+  async registerPushToken(
+    input: NotificationRegisterTokenInput,
+    accessToken: string,
+  ): Promise<NotificationRegisterTokenResponse> {
+    return this.request('/notifications/register-token', notificationRegisterTokenResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: notificationRegisterTokenInputSchema.parse(input),
     });
   }
 

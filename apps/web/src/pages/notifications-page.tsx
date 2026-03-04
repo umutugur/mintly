@@ -28,6 +28,7 @@ export function NotificationsPage() {
   const [target, setTarget] = useState<NotificationTarget>('hasToken');
   const [userSearch, setUserSearch] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; email: string; name: string | null }>>([]);
+  const [lastSendResult, setLastSendResult] = useState<Awaited<ReturnType<typeof adminSendNotification>> | null>(null);
 
   const tokensQuery = useQuery({
     queryKey: ['notification-health', page],
@@ -54,6 +55,7 @@ export function NotificationsPage() {
   const sendMutation = useMutation({
     mutationFn: adminSendNotification,
     onSuccess: (result) => {
+      setLastSendResult(result);
       pushToast({
         title: 'Bildirim gönderildi',
         description: `${formatNumber(result.sent)} gönderim kuyruğa alındı. Tokenı olmayan ${formatNumber(result.noToken)} kullanıcı atlandı.`,
@@ -261,33 +263,103 @@ export function NotificationsPage() {
             </form>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
-            <StatCard
-              title="Token'ı olan kullanıcı"
-              value={formatNumber(summary?.usersWithTokens ?? 0)}
-              hint="En az bir Expo token kaydı var"
-              icon={Smartphone}
-              tone="success"
-            />
-            <StatCard
-              title="Token'ı olmayan kullanıcı"
-              value={formatNumber(summary?.usersMissingTokens ?? 0)}
-              hint="Gönderimde otomatik skip"
-              icon={BellOff}
-              tone="warning"
-            />
-            <StatCard
-              title="iOS token"
-              value={formatNumber(summary?.platformSplit.ios ?? 0)}
-              hint="Toplam kayıt"
-              icon={Smartphone}
-            />
-            <StatCard
-              title="Android token"
-              value={formatNumber(summary?.platformSplit.android ?? 0)}
-              hint="Toplam kayıt"
-              icon={Smartphone}
-            />
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-2">
+              <StatCard
+                title="Toplam kullanıcı"
+                value={formatNumber(summary?.totalUsers ?? 0)}
+                hint="Admin hariç tüm hesaplar"
+                icon={Users}
+              />
+              <StatCard
+                title="Token'ı olan kullanıcı"
+                value={formatNumber(summary?.usersWithTokens ?? 0)}
+                hint="En az bir Expo token kaydı var"
+                icon={Smartphone}
+                tone="success"
+              />
+              <StatCard
+                title="Token'ı olmayan kullanıcı"
+                value={formatNumber(summary?.usersMissingTokens ?? 0)}
+                hint="Gönderimde otomatik skip"
+                icon={BellOff}
+                tone="warning"
+              />
+              <StatCard
+                title="iOS token"
+                value={formatNumber(summary?.platformSplit.ios ?? 0)}
+                hint="Toplam kayıt"
+                icon={Smartphone}
+              />
+              <StatCard
+                title="Android token"
+                value={formatNumber(summary?.platformSplit.android ?? 0)}
+                hint="Toplam kayıt"
+                icon={Smartphone}
+              />
+            </div>
+
+            <Card>
+              <h3 className="font-display text-lg font-bold text-white">Son gönderim sonucu</h3>
+              {lastSendResult ? (
+                <>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <DebugMetric label="Hedeflenen kullanıcı" value={formatNumber(lastSendResult.targeted)} />
+                    <DebugMetric label="Bulunan token" value={formatNumber(lastSendResult.debug.tokensFound)} />
+                    <DebugMetric label="Kuyruğa alınan" value={formatNumber(lastSendResult.sent)} />
+                    <DebugMetric label="Token'sız atlanan" value={formatNumber(lastSendResult.noToken)} />
+                    <DebugMetric
+                      label="Ticket ok / hata"
+                      value={`${formatNumber(lastSendResult.debug.tickets.ok)} / ${formatNumber(lastSendResult.debug.tickets.error)}`}
+                    />
+                    <DebugMetric
+                      label="Receipt ok / bekleyen"
+                      value={`${formatNumber(lastSendResult.debug.receipts.ok)} / ${formatNumber(lastSendResult.debug.receipts.pending)}`}
+                    />
+                  </div>
+
+                  {lastSendResult.debug.ticketErrors.length > 0 || lastSendResult.debug.receiptErrors.length > 0 ? (
+                    <div className="mt-4 space-y-3">
+                      {lastSendResult.debug.ticketErrors.length > 0 ? (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">Ticket hataları</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {lastSendResult.debug.ticketErrors.map((item) => (
+                              <span
+                                key={`ticket-${item.code}`}
+                                className="rounded-full bg-danger/10 px-3 py-1 text-xs font-semibold text-danger"
+                              >
+                                {item.code} x {formatNumber(item.count)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {lastSendResult.debug.receiptErrors.length > 0 ? (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">Receipt hataları</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {lastSendResult.debug.receiptErrors.map((item) => (
+                              <span
+                                key={`receipt-${item.code}`}
+                                className="rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning"
+                              >
+                                {item.code} x {formatNumber(item.count)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="mt-4 text-sm text-panel-200">Bu oturumdaki son gönderimde ticket veya receipt hatası görünmedi.</p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-3 text-sm text-panel-200">Henüz bu oturumda bildirim gönderilmedi.</p>
+              )}
+            </Card>
           </div>
         </div>
       </PageSection>
@@ -371,6 +443,15 @@ function NoteCard(props: { title: string; description: string }) {
         <p className="text-sm font-semibold text-white">{props.title}</p>
       </div>
       <p className="mt-2 text-sm text-panel-200">{props.description}</p>
+    </div>
+  );
+}
+
+function DebugMetric(props: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-white/[0.03] px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-panel-200">{props.label}</p>
+      <p className="mt-2 text-sm font-semibold text-white">{props.value}</p>
     </div>
   );
 }

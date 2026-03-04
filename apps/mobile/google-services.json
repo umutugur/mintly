@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1085364770994",
+    "project_id": "mintly-488521",
+    "storage_bucket": "mintly-488521.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1085364770994:android:52baef8e01be59bc5211ab",
+        "android_client_info": {
+          "package_name": "com.mintly.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1085364770994-9hffpc6d7cto4k4420j0v858ksdco4c9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoR5I7Ts_-0znj44Inmu4z1Eq2aodS5f4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1085364770994-9hffpc6d7cto4k4420j0v858ksdco4c9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1085364770994-t92be8lrnis7ma7o8kqpa3qsiulqbra2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mintly.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

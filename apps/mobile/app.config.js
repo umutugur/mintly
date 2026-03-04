@@ -65,6 +65,22 @@ function envValue(name) {
   return '';
 }
 
+function resolveOptionalFilePath(value) {
+  if (!value) {
+    return undefined;
+  }
+
+  return path.isAbsolute(value) ? value : path.resolve(WORKSPACE_ROOT, value);
+}
+
+const googleServicesJsonPath = resolveOptionalFilePath(envValue('GOOGLE_SERVICES_JSON'));
+
+if (!googleServicesJsonPath) {
+  console.warn(
+    '[push-config] GOOGLE_SERVICES_JSON is not set. Android Expo push token delivery requires a valid google-services.json file.',
+  );
+}
+
 module.exports = {
   expo: {
     name: 'Montly',
@@ -108,6 +124,11 @@ module.exports = {
     android: {
       package: 'com.mintly.app',
       versionCode: 1,
+      ...(googleServicesJsonPath
+        ? {
+            googleServicesFile: googleServicesJsonPath,
+          }
+        : {}),
       permissions: [
         'android.permission.CAMERA',
         'android.permission.READ_MEDIA_IMAGES',

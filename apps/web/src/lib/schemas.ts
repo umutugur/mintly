@@ -293,6 +293,32 @@ export const adminSendNotificationResponseSchema = z.object({
   targeted: z.number().nonnegative(),
   sent: z.number().nonnegative(),
   noToken: z.number().nonnegative(),
+  debug: z.object({
+    tokensFound: z.number().nonnegative(),
+    tickets: z.object({
+      total: z.number().nonnegative(),
+      ok: z.number().nonnegative(),
+      error: z.number().nonnegative(),
+    }),
+    receipts: z.object({
+      total: z.number().nonnegative(),
+      ok: z.number().nonnegative(),
+      error: z.number().nonnegative(),
+      pending: z.number().nonnegative(),
+    }),
+    ticketErrors: z.array(
+      z.object({
+        code: z.string(),
+        count: z.number().nonnegative(),
+      }),
+    ),
+    receiptErrors: z.array(
+      z.object({
+        code: z.string(),
+        count: z.number().nonnegative(),
+      }),
+    ),
+  }),
 });
 
 export type AdminSession = z.infer<typeof adminSessionSchema>;

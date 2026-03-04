@@ -16,6 +16,7 @@ import type { FastifyInstance } from 'fastify';
 import { hashPassword, verifyPassword } from '../auth/passwords.js';
 import { authenticate } from '../auth/middleware.js';
 import { ApiError } from '../errors.js';
+import { registerUserExpoPushToken } from '../lib/push-token-registration.js';
 import { AccountModel } from '../models/Account.js';
 import { BudgetModel } from '../models/Budget.js';
 import { CategoryModel } from '../models/Category.js';
@@ -246,42 +247,14 @@ export function registerMeRoute(app: FastifyInstance): void {
     const userId = requireUserId(request);
     const input = parseBody<MeExpoPushTokenInput>(meExpoPushTokenInputSchema, request.body);
 
-    const user = await UserModel.findById(userId).select('_id expoPushTokens');
-    if (!user) {
-      throw new ApiError({
-        code: 'UNAUTHORIZED',
-        message: 'User not found',
-        statusCode: 401,
-      });
-    }
+    await registerUserExpoPushToken({
+      userId,
+      expoPushToken: input.expoPushToken,
+      platform: input.platform,
+      device: input.device,
+      deviceInfo: null,
+    });
 
-    const nextToken = input.expoPushToken.trim();
-    if (!Array.isArray(user.expoPushTokens)) {
-      user.expoPushTokens = [];
-    }
-
-    const existing = user.expoPushTokens.find(
-      (item: {
-        token: string;
-        device?: string | null;
-        platform?: 'ios' | 'android' | null;
-        updatedAt?: Date;
-      }) => item.token === nextToken,
-    );
-    if (existing) {
-      existing.device = input.device ?? null;
-      existing.platform = input.platform ?? null;
-      existing.updatedAt = new Date();
-    } else {
-      user.expoPushTokens.push({
-        token: nextToken,
-        device: input.device ?? null,
-        platform: input.platform ?? null,
-        updatedAt: new Date(),
-      });
-    }
-
-    await user.save();
     return logoutResponseSchema.parse({ ok: true });
   });
 

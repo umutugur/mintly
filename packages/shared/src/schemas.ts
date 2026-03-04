@@ -178,6 +178,22 @@ export const meExpoPushTokenInputSchema = z.object({
   platform: z.enum(['ios', 'android']).optional(),
 });
 
+export const notificationRegisterTokenInputSchema = z.object({
+  userId: z.string().trim().min(1).max(64),
+  expoPushToken: z.string().trim().min(1).max(255),
+  platform: z.enum(['ios', 'android']),
+  device: z.string().trim().min(1).max(120).optional(),
+  deviceInfo: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const notificationRegisterTokenResponseSchema = z.object({
+  ok: z.literal(true),
+  userId: z.string().trim().min(1),
+  tokensCount: z.number().int().nonnegative(),
+  reusedExisting: z.boolean(),
+  tokenUpdatedAt: dateTimeStringSchema,
+});
+
 export const meChangePasswordInputSchema = z
   .object({
     currentPassword: z.string().min(1).max(128),
@@ -1135,6 +1151,8 @@ export type MePreferences = z.infer<typeof mePreferencesSchema>;
 export type MePreferencesResponse = z.infer<typeof mePreferencesResponseSchema>;
 export type MePreferencesUpdateInput = z.infer<typeof mePreferencesUpdateInputSchema>;
 export type MeExpoPushTokenInput = z.infer<typeof meExpoPushTokenInputSchema>;
+export type NotificationRegisterTokenInput = z.infer<typeof notificationRegisterTokenInputSchema>;
+export type NotificationRegisterTokenResponse = z.infer<typeof notificationRegisterTokenResponseSchema>;
 export type MeChangePasswordInput = z.infer<typeof meChangePasswordInputSchema>;
 export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
 export type AccountType = z.infer<typeof accountTypeSchema>;

@@ -3,6 +3,7 @@ import type { Types } from 'mongoose';
 
 import { getConfig } from '../config.js';
 import { ApiError } from '../errors.js';
+import { pickLatestExpoPushToken } from '../lib/expo-push.js';
 import { InternalCronNotificationLogModel } from '../models/InternalCronNotificationLog.js';
 import { UpcomingPaymentModel } from '../models/UpcomingPayment.js';
 import { UserModel } from '../models/User.js';
@@ -27,7 +28,11 @@ interface CronTaskResult extends CronTaskMetrics {
 interface CronUserSnapshot {
   _id: Types.ObjectId;
   name?: string | null;
-  firebaseUid?: string | null;
+  expoPushTokens?: Array<{
+    token?: string | null;
+    updatedAt?: Date | null;
+    lastUsedAt?: Date | null;
+  }>;
   updatedAt: Date;
   language?: string | null;
 }
@@ -128,10 +133,6 @@ function resolveLanguage(value: unknown): SupportedLanguage {
   return 'tr';
 }
 
-function isExpoPushToken(value: string): boolean {
-  return /^(Exponent|Expo)PushToken\[[^\]]+\]$/.test(value.trim());
-}
-
 function formatMoney(value: number, currency: string, language: SupportedLanguage): string {
   return new Intl.NumberFormat(localeByLanguage[language], {
     style: 'currency',
@@ -173,6 +174,8 @@ async function sendExpoPushNotification(input: {
       title: input.title,
       body: input.body,
       sound: 'default',
+      priority: 'high',
+      channelId: 'default',
       data: input.data,
     }),
   });
@@ -230,9 +233,9 @@ async function runUpcomingPaymentRemindersTask(
   const users = await UserModel.find({
     _id: { $in: uniqueUserIds },
     notificationsEnabled: true,
-    firebaseUid: { $exists: true, $nin: [null, ''] },
+    'expoPushTokens.0': { $exists: true },
   })
-    .select('_id name firebaseUid language')
+    .select('_id name expoPushTokens language')
     .lean<CronUserSnapshot[]>();
 
   const userById = new Map(users.map((user) => [user._id.toString(), user]));
@@ -257,7 +260,8 @@ async function runUpcomingPaymentRemindersTask(
     }
 
     const user = userById.get(payment.userId.toString());
-    if (!user || typeof user.firebaseUid !== 'string' || !isExpoPushToken(user.firebaseUid)) {
+    const pushToken = user ? pickLatestExpoPushToken(user.expoPushTokens) : null;
+    if (!user || !pushToken) {
       metrics.skipped += 1;
       continue;
     }
@@ -267,7 +271,7 @@ async function runUpcomingPaymentRemindersTask(
 
     try {
       const sent = await sendExpoPushNotification({
-        token: user.firebaseUid,
+        token: pushToken,
         title: copy.title,
         body: copy.body({
           paymentTitle: payment.title,
@@ -328,10 +332,10 @@ async function runInactiveUserReminderTask(
 
   const inactiveUsers = await UserModel.find({
     notificationsEnabled: true,
-    firebaseUid: { $exists: true, $nin: [null, ''] },
+    'expoPushTokens.0': { $exists: true },
     updatedAt: { $lte: inactiveThreshold },
   })
-    .select('_id name firebaseUid language updatedAt')
+    .select('_id name expoPushTokens language updatedAt')
     .lean<CronUserSnapshot[]>();
 
   if (inactiveUsers.length === 0) {
@@ -356,7 +360,8 @@ async function runInactiveUserReminderTask(
       continue;
     }
 
-    if (typeof user.firebaseUid !== 'string' || !isExpoPushToken(user.firebaseUid)) {
+    const pushToken = pickLatestExpoPushToken(user.expoPushTokens);
+    if (!pushToken) {
       metrics.skipped += 1;
       continue;
     }
@@ -367,7 +372,7 @@ async function runInactiveUserReminderTask(
 
     try {
       const sent = await sendExpoPushNotification({
-        token: user.firebaseUid,
+        token: pushToken,
         title: copy.title,
         body: copy.body,
         data: {

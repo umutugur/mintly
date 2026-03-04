@@ -44,6 +44,21 @@ const expoPushTokenSchema = new Schema(
       enum: ['ios', 'android'],
       default: null,
     },
+    deviceInfo: {
+      type: Schema.Types.Mixed,
+      required: false,
+      default: null,
+    },
+    createdAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(),
+    },
+    lastUsedAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(),
+    },
     updatedAt: {
       type: Date,
       required: true,
@@ -156,6 +171,7 @@ userSchema.index(
 );
 
 userSchema.index({ role: 1, lastActiveAt: -1, createdAt: -1 });
+userSchema.index({ 'expoPushTokens.token': 1 });
 
 export type User = InferSchemaType<typeof userSchema>;
 export type UserDocument = HydratedDocument<User>;

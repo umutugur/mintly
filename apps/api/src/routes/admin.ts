@@ -3,6 +3,7 @@ import { type PipelineStage, Types } from 'mongoose';
 import { z } from 'zod';
 
 import { requireAdmin } from '../auth/middleware.js';
+import { isExpoPushToken, sendExpoPushNotifications } from '../lib/expo-push.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { UserModel } from '../models/User.js';
 
@@ -11,8 +12,6 @@ import { parseBody, parseObjectId, parseQuery, requireUser } from './utils.js';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ACTIVE_WINDOW_DAYS = 7;
 const INACTIVE_WINDOW_DAYS = 30;
-const EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
-const EXPO_PUSH_CHUNK_SIZE = 100;
 
 const dateOnlyStringSchema = z
   .string()
@@ -237,7 +236,11 @@ function uniqueProviders(
 }
 
 function toSafeTokenMeta(
-  tokens: Array<{ platform?: 'ios' | 'android' | null; updatedAt?: Date | null }> | undefined,
+  tokens: Array<{
+    platform?: 'ios' | 'android' | null;
+    updatedAt?: Date | string | null;
+    lastUsedAt?: Date | string | null;
+  }> | undefined,
 ): { count: number; lastUpdatedAt: string | null; platformSplit: { ios: number; android: number } } {
   let lastUpdatedAt: Date | null = null;
   let ios = 0;
@@ -252,8 +255,20 @@ function toSafeTokenMeta(
       android += 1;
     }
 
-    if (token.updatedAt instanceof Date && (!lastUpdatedAt || token.updatedAt > lastUpdatedAt)) {
-      lastUpdatedAt = token.updatedAt;
+    const rawUpdatedAt = token.lastUsedAt ?? token.updatedAt ?? null;
+    const candidateUpdatedAt =
+      rawUpdatedAt instanceof Date
+        ? rawUpdatedAt
+        : rawUpdatedAt
+          ? new Date(rawUpdatedAt)
+          : null;
+
+    if (
+      candidateUpdatedAt
+      && !Number.isNaN(candidateUpdatedAt.getTime())
+      && (!lastUpdatedAt || candidateUpdatedAt > lastUpdatedAt)
+    ) {
+      lastUpdatedAt = candidateUpdatedAt;
     }
   }
 
@@ -408,84 +423,6 @@ function buildHistogram(values: number[]): Array<{ label: string; min: number; m
         : value >= bucket.min && value < bucket.max,
     ).length,
   }));
-}
-
-function isExpoPushToken(value: string): boolean {
-  return /^(Exponent|Expo)PushToken\[[^\]]+\]$/.test(value.trim());
-}
-
-function chunkArray<T>(values: readonly T[], size: number): T[][] {
-  const chunks: T[][] = [];
-
-  for (let index = 0; index < values.length; index += size) {
-    chunks.push(values.slice(index, index + size) as T[]);
-  }
-
-  return chunks;
-}
-
-async function sendExpoPushNotifications(
-  tokens: string[],
-  payload: { title: string; body: string },
-): Promise<number> {
-  if (tokens.length === 0) {
-    return 0;
-  }
-
-  let sent = 0;
-
-  for (const tokenChunk of chunkArray(tokens, EXPO_PUSH_CHUNK_SIZE)) {
-    try {
-      const response = await fetch(EXPO_PUSH_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip, deflate',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(
-          tokenChunk.map((token) => ({
-            to: token,
-            title: payload.title,
-            body: payload.body,
-            sound: 'default',
-          })),
-        ),
-      });
-
-      if (!response.ok) {
-        continue;
-      }
-
-      const parsed = (await response.json().catch(() => null)) as
-        | {
-            data?:
-              | Array<{
-                  status?: string;
-                }>
-              | {
-                  status?: string;
-                };
-          }
-        | null;
-
-      if (!parsed || parsed.data === undefined) {
-        sent += tokenChunk.length;
-        continue;
-      }
-
-      if (Array.isArray(parsed.data)) {
-        sent += parsed.data.reduce((count, item) => count + (item?.status === 'error' ? 0 : 1), 0);
-        continue;
-      }
-
-      sent += parsed.data.status === 'error' ? 0 : tokenChunk.length;
-    } catch {
-      continue;
-    }
-  }
-
-  return sent;
 }
 
 function toSafeUserSummary(row: UserListAggregateRow, now: Date) {
@@ -1942,7 +1879,7 @@ export function registerAdminRoutes(app: FastifyInstance): void {
       >();
 
     let noToken = 0;
-    const validTokens: string[] = [];
+    const validTokenSet = new Set<string>();
 
     for (const user of users) {
       const tokens = Array.from(
@@ -1958,18 +1895,84 @@ export function registerAdminRoutes(app: FastifyInstance): void {
         continue;
       }
 
-      validTokens.push(...tokens);
+      for (const token of tokens) {
+        validTokenSet.add(token);
+      }
     }
 
-    const sent = await sendExpoPushNotifications(validTokens, {
-      title: input.title,
-      body: input.body,
+    const validTokens = Array.from(validTokenSet);
+
+    console.log('PUSH SEND START', {
+      target: input.target,
+      targetUsers: users.length,
+      tokensFound: validTokens.length,
+    });
+
+    const delivery = await sendExpoPushNotifications(
+      validTokens.map((token) => ({
+        token,
+        title: input.title,
+        body: input.body,
+        data: {
+          source: 'admin_panel',
+          target: input.target,
+        },
+      })),
+    );
+
+    const ticketErrorCounts = new Map<string, number>();
+    const receiptErrorCounts = new Map<string, number>();
+
+    for (const ticket of delivery.tickets) {
+      if (!ticket.error) {
+        continue;
+      }
+
+      ticketErrorCounts.set(ticket.error, (ticketErrorCounts.get(ticket.error) ?? 0) + 1);
+    }
+
+    for (const receipt of delivery.receipts) {
+      if (!receipt.error) {
+        continue;
+      }
+
+      receiptErrorCounts.set(receipt.error, (receiptErrorCounts.get(receipt.error) ?? 0) + 1);
+    }
+
+    console.log('PUSH SEND COMPLETE', {
+      target: input.target,
+      targetUsers: users.length,
+      tokensFound: validTokens.length,
+      acceptedTickets: delivery.acceptedCount,
+      receiptChecks: delivery.receipts.length,
     });
 
     return {
       targeted: users.length,
-      sent,
+      sent: delivery.acceptedCount,
       noToken,
+      debug: {
+        tokensFound: validTokens.length,
+        tickets: {
+          total: delivery.tickets.length,
+          ok: delivery.tickets.reduce((count, ticket) => count + (ticket.status === 'ok' ? 1 : 0), 0),
+          error: delivery.tickets.reduce((count, ticket) => count + (ticket.status === 'error' ? 1 : 0), 0),
+        },
+        receipts: {
+          total: delivery.receipts.length,
+          ok: delivery.receipts.reduce((count, receipt) => count + (receipt.status === 'ok' ? 1 : 0), 0),
+          error: delivery.receipts.reduce((count, receipt) => count + (receipt.status === 'error' ? 1 : 0), 0),
+          pending: delivery.receipts.reduce((count, receipt) => count + (receipt.status === 'pending' ? 1 : 0), 0),
+        },
+        ticketErrors: Array.from(ticketErrorCounts.entries()).map(([code, count]) => ({
+          code,
+          count,
+        })),
+        receiptErrors: Array.from(receiptErrorCounts.entries()).map(([code, count]) => ({
+          code,
+          count,
+        })),
+      },
     };
   });
 }
