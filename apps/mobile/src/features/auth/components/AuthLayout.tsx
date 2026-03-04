@@ -15,6 +15,7 @@ interface AuthLayoutProps {
   topContent?: ReactNode;
   footer?: ReactNode;
   useCard?: boolean;
+  scrollable?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
   cardStyle?: StyleProp<ViewStyle>;
   cardBodyStyle?: StyleProp<ViewStyle>;
@@ -28,6 +29,7 @@ export function AuthLayout({
   topContent,
   footer,
   useCard = true,
+  scrollable = true,
   contentStyle,
   cardStyle,
   cardBodyStyle,
@@ -39,6 +41,7 @@ export function AuthLayout({
 
   return (
     <ScreenContainer
+      scrollable={scrollable}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="always"
       safeAreaEdges={['top', 'bottom']}

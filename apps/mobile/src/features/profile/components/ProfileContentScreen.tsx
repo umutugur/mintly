@@ -43,7 +43,11 @@ export function ProfileContentScreen({
   const panelBorder = dark ? '#2A2D42' : '#E4EAF5';
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer
+      dark={dark}
+      safeAreaEdges={['left', 'right']}
+      contentStyle={styles.screenContent}
+    >
       <View style={styles.container}>
         <Card
           dark={dark}
@@ -117,6 +121,10 @@ export function ProfileContentScreen({
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   container: {
     gap: spacing.sm,
   },

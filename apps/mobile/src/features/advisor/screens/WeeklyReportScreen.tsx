@@ -114,7 +114,7 @@ export function WeeklyReportScreen() {
 
   if (reportQuery.isLoading && !reportQuery.data) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <LoadingState dark={dark} />
       </ScreenContainer>
     );
@@ -122,7 +122,7 @@ export function WeeklyReportScreen() {
 
   if (reportQuery.isError && !reportQuery.data) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card dark={dark} style={styles.errorCard}>
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('weeklyReport.state.errorTitle')}</Text>
           <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(reportQuery.error)}</Text>
@@ -134,7 +134,7 @@ export function WeeklyReportScreen() {
   const report = reportQuery.data;
   if (!report) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card dark={dark}>
           <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('weeklyReport.state.noData')}</Text>
         </Card>
@@ -147,7 +147,7 @@ export function WeeklyReportScreen() {
     tone === 'good' ? theme.colors.income : tone === 'medium' ? theme.colors.primary : theme.colors.expense;
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>{t('weeklyReport.title')}</Text>
@@ -227,6 +227,10 @@ export function WeeklyReportScreen() {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   container: {
     gap: spacing.sm,
   },

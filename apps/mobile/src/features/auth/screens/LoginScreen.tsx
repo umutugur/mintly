@@ -427,6 +427,7 @@ export function LoginScreen({ navigation }: Props) {
     <AuthLayout
       title={t('auth.login.welcomeBack')}
       subtitle={t('auth.login.subtitle')}
+      scrollable={false}
       cardStyle={styles.card}
       cardBodyStyle={styles.formBody}
       topContent={

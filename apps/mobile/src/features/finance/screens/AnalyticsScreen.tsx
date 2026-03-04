@@ -345,7 +345,7 @@ export function AnalyticsScreen() {
 
   if (summaryQuery.isLoading && !summaryQuery.data) {
     return (
-      <ScreenContainer scrollable={false} dark={dark} contentStyle={styles.containerContent}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} scrollable={false} dark={dark} contentStyle={styles.containerContent}>
         <View style={styles.loadingStateWrap}>
           <LoadingSkeleton dark={dark} />
           <Text style={[styles.loadingStateText, { color: theme.colors.textMuted }]}>
@@ -358,7 +358,7 @@ export function AnalyticsScreen() {
 
   if (summaryQuery.isError && !summaryQuery.data) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} dark={dark}>
         <Card dark={dark} style={styles.stateCard}>
           <AppIcon name="alert-circle-outline" size="lg" tone="expense" />
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('analytics.state.errorTitle')}</Text>
@@ -372,7 +372,7 @@ export function AnalyticsScreen() {
   const summary = summaryQuery.data;
   if (!summary) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} dark={dark}>
         <Card dark={dark} style={styles.stateCard}>
           <AppIcon name="analytics-outline" size="lg" tone="muted" />
           <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('analytics.state.noData')}</Text>
@@ -395,7 +395,7 @@ export function AnalyticsScreen() {
 
   if (summary.transactionCount === 0) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} dark={dark}>
         <Card dark={dark} style={styles.emptyStateCard}>
           <AppIcon name="analytics-outline" size="xl" tone="primary" />
           <Text style={[styles.emptyStateTitle, { color: theme.colors.text }]}>{t('analytics.state.emptyTitle')}</Text>
@@ -433,7 +433,7 @@ export function AnalyticsScreen() {
   const panelBorder = dark ? '#232A42' : '#DDE5F3';
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer safeAreaEdges={['left', 'right']} dark={dark}>
       <View style={styles.contentWrap}>
         <View style={styles.monthHeader}>
           <Pressable

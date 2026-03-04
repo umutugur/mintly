@@ -8,18 +8,20 @@ import { radius, spacing, typography, useTheme } from '@shared/theme';
 interface AddTabButtonProps {
   onPress?: (event: GestureResponderEvent) => void;
   focused?: boolean;
+  bottomInset?: number;
 }
 
-export function AddTabButton({ onPress, focused = false }: AddTabButtonProps) {
+export function AddTabButton({ onPress, focused = false, bottomInset = 0 }: AddTabButtonProps) {
   const { theme } = useTheme();
   const t = useT();
+  const floatingOffset = Math.max(22, Math.round(bottomInset * 0.45) + 12);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { marginTop: -floatingOffset }]}>
       <Pressable
         accessibilityLabel={t(I18N_KEYS.common.navigation.tabs.add.label)}
         accessibilityRole="button"
-        hitSlop={10}
+        hitSlop={14}
         onPress={onPress}
         style={({ pressed }) => [
           styles.button,
@@ -49,10 +51,10 @@ export function AddTabButton({ onPress, focused = false }: AddTabButtonProps) {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: -22,
     alignItems: 'center',
     gap: spacing.xxs,
     minWidth: 72,
+    zIndex: 20,
   },
   button: {
     width: 62,
@@ -61,6 +63,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
+    zIndex: 21,
   },
   buttonPressed: {
     opacity: 0.9,

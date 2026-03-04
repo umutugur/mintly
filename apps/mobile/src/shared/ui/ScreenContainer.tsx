@@ -46,8 +46,10 @@ export function ScreenContainer({
       style={[styles.safe, { backgroundColor: activeTheme.colors.background }]}
     >
       <KeyboardAwareScrollView
-        contentInsetAdjustmentBehavior="automatic"
+        contentInsetAdjustmentBehavior="never"
         contentContainerStyle={[styles.content, contentStyle]}
+        automaticallyAdjustContentInsets={false}
+        automaticallyAdjustKeyboardInsets={false}
         keyboardDismissMode={keyboardDismissMode}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         showsVerticalScrollIndicator={showsVerticalScrollIndicator}
@@ -68,7 +70,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.md,
     paddingTop: spacing.sm,
     gap: spacing.md,
   },

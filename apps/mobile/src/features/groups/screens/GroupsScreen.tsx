@@ -44,7 +44,7 @@ export function GroupsScreen() {
 
   if (groupsQuery.isLoading) {
     return (
-      <ScreenContainer dark={mode === 'dark'} scrollable={false} contentStyle={styles.containerContent}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} dark={mode === 'dark'} scrollable={false} contentStyle={styles.containerContent}>
         <GroupsLoadingSkeleton dark={mode === 'dark'} />
         <Text style={[styles.loadingText, { color: theme.colors.textMuted }]}>{t('groups.list.loading')}</Text>
       </ScreenContainer>
@@ -53,7 +53,7 @@ export function GroupsScreen() {
 
   if (groupsQuery.isError) {
     return (
-      <ScreenContainer dark={mode === 'dark'}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} dark={mode === 'dark'}>
         <Card dark={mode === 'dark'} style={styles.feedbackCard}>
           <AppIcon name="alert-circle-outline" size="lg" tone="expense" />
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('groups.list.errorTitle')}</Text>
@@ -65,8 +65,13 @@ export function GroupsScreen() {
   }
 
   return (
-    <ScreenContainer dark={mode === 'dark'} scrollable={false} contentStyle={styles.containerContent}>
+    <ScreenContainer safeAreaEdges={['left', 'right']} dark={mode === 'dark'} scrollable={false} contentStyle={styles.containerContent}>
       <FlatList
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+        bounces={false}
+        overScrollMode="never"
+        alwaysBounceVertical={false}
         contentContainerStyle={styles.content}
         data={groups}
         keyExtractor={(item) => item.id}

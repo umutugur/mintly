@@ -574,7 +574,7 @@ export function DashboardScreen() {
 
   if (dashboardQuery.isLoading) {
     return (
-      <ScreenContainer scrollable={false} contentStyle={styles.containerContent}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} scrollable={false} contentStyle={styles.containerContent}>
         <View style={styles.loadingStateWrap}>
           <DashboardSkeleton mode={mode} />
           <Text style={[styles.loadingStateText, { color: theme.colors.textMuted }]}>
@@ -587,7 +587,7 @@ export function DashboardScreen() {
 
   if (dashboardQuery.isError) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']}>
         <Card style={styles.errorCard}>
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('dashboard.state.errorTitle')}</Text>
           <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(dashboardQuery.error)}</Text>
@@ -601,7 +601,7 @@ export function DashboardScreen() {
 
   if (!data) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']}>
         <Card>
           <Text style={[styles.emptyText, { color: theme.colors.textMuted }]}>{t('dashboard.state.noData')}</Text>
         </Card>
@@ -610,11 +610,16 @@ export function DashboardScreen() {
   }
 
   return (
-    <ScreenContainer scrollable={false} contentStyle={styles.containerContent}>
+    <ScreenContainer safeAreaEdges={['left', 'right']} scrollable={false} contentStyle={styles.containerContent}>
       <FlatList
         initialNumToRender={8}
         maxToRenderPerBatch={8}
         windowSize={7}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+        bounces={false}
+        overScrollMode="never"
+        alwaysBounceVertical={false}
         contentContainerStyle={styles.listContent}
         data={data.recentTransactions}
         ItemSeparatorComponent={() => <View style={styles.transactionSeparator} />}

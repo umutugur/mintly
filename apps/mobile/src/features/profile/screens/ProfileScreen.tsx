@@ -149,7 +149,11 @@ export function ProfileScreen() {
   };
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer
+      dark={dark}
+      safeAreaEdges={['left', 'right']}
+      contentStyle={styles.screenContent}
+    >
       <View style={styles.container}>
         <Card
           dark={dark}
@@ -383,6 +387,10 @@ function Divider() {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   container: {
     gap: spacing.sm,
   },

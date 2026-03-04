@@ -485,7 +485,7 @@ export function TransactionsScreen() {
 
   if (transactionsQuery.isLoading) {
     return (
-      <ScreenContainer scrollable={false} contentStyle={styles.containerContent}>
+      <ScreenContainer safeAreaEdges={['top', 'left', 'right']} scrollable={false} contentStyle={styles.containerContent}>
         <View style={styles.loadingStateWrap}>
           <LoadingSkeleton />
           <Text style={[styles.loadingStateText, { color: theme.colors.textMuted }]}>
@@ -498,7 +498,7 @@ export function TransactionsScreen() {
 
   if (transactionsQuery.isError) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['top', 'left', 'right']}>
         <Card style={styles.errorCard}>
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('transactions.state.loadErrorTitle')}</Text>
           <Text style={[styles.errorText, { color: theme.colors.expense }]}>{apiErrorText(transactionsQuery.error)}</Text>
@@ -509,11 +509,16 @@ export function TransactionsScreen() {
   }
 
   return (
-    <ScreenContainer scrollable={false} contentStyle={styles.containerContent}>
+    <ScreenContainer safeAreaEdges={['top', 'left', 'right']} scrollable={false} contentStyle={styles.containerContent}>
       <FlatList
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={9}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+        bounces={false}
+        overScrollMode="never"
+        alwaysBounceVertical={false}
         contentContainerStyle={styles.listContent}
         data={listItems}
         ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}

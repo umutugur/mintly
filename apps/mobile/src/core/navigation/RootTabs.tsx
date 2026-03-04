@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CommonActions } from '@react-navigation/native';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppIcon } from '@shared/ui';
 import { I18N_KEYS } from '@shared/i18n/keys';
@@ -90,36 +90,43 @@ export function RootTabs() {
   const { locale } = useI18n();
   const t = useT();
   const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, spacing.xs);
+  const tabBarHeight = 60 + bottomInset;
 
   return (
-    <Tab.Navigator
-      key={`tabs-${locale}`}
-      screenOptions={{
-        headerShown: false,
-        tabBarHideOnKeyboard: true,
-        tabBarShowLabel: true,
-        tabBarStyle: {
-          height: 64 + (insets.bottom || 12),
-          paddingBottom: (insets.bottom || 12),
-          paddingTop: 8,
-          borderTopWidth: 1,
-          borderTopColor: theme.colors.border,
-          backgroundColor: theme.colors.surface,
-          borderTopLeftRadius: radius.lg,
-          borderTopRightRadius: radius.lg,
-          shadowColor: theme.shadows.card.shadowColor,
-          shadowOpacity: theme.shadows.card.shadowOpacity,
-          shadowRadius: theme.shadows.card.shadowRadius,
-          shadowOffset: theme.shadows.card.shadowOffset,
-          elevation: theme.shadows.card.elevation,
-        },
-        tabBarItemStyle: styles.tabItem,
-        tabBarLabelStyle: styles.tabLabel,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.textMuted,
-      }}
-    >
-      <Tab.Screen
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Tab.Navigator
+        key={`tabs-${locale}`}
+        screenOptions={{
+          headerShown: false,
+          tabBarHideOnKeyboard: true,
+          tabBarShowLabel: true,
+          sceneStyle: {
+            backgroundColor: theme.colors.background,
+          },
+          tabBarStyle: {
+            height: tabBarHeight,
+            paddingBottom: bottomInset,
+            paddingTop: spacing.xs,
+            borderTopWidth: 1,
+            borderTopColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+            borderTopLeftRadius: radius.lg,
+            borderTopRightRadius: radius.lg,
+            overflow: 'visible',
+            shadowColor: theme.shadows.card.shadowColor,
+            shadowOpacity: theme.shadows.card.shadowOpacity,
+            shadowRadius: theme.shadows.card.shadowRadius,
+            shadowOffset: theme.shadows.card.shadowOffset,
+            elevation: theme.shadows.card.elevation,
+          },
+          tabBarItemStyle: styles.tabItem,
+          tabBarLabelStyle: styles.tabLabel,
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.textMuted,
+        }}
+      >
+        <Tab.Screen
         name="HomeTab"
         component={HomeStack}
         listeners={({ navigation, route }) => ({
@@ -139,9 +146,9 @@ export function RootTabs() {
             />
           ),
         }}
-      />
+        />
 
-      <Tab.Screen
+        <Tab.Screen
         name="TransactionsTab"
         component={TransactionsStack}
         listeners={({ navigation, route }) => ({
@@ -161,9 +168,9 @@ export function RootTabs() {
             />
           ),
         }}
-      />
+        />
 
-      <Tab.Screen
+        <Tab.Screen
         name="AddTab"
         component={AddStack}
         listeners={({ navigation, route }) => ({
@@ -174,15 +181,19 @@ export function RootTabs() {
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.add.label),
           tabBarButton: ({ onPress, accessibilityState }) => (
-            <AddTabButton onPress={onPress} focused={Boolean(accessibilityState?.selected)} />
+            <AddTabButton
+              bottomInset={bottomInset}
+              onPress={onPress}
+              focused={Boolean(accessibilityState?.selected)}
+            />
           ),
           tabBarLabel: () => null,
           tabBarIcon: () => null,
           headerShown: false,
         }}
-      />
+        />
 
-      <Tab.Screen
+        <Tab.Screen
         name="AnalyticsTab"
         component={AnalyticsStack}
         listeners={({ navigation, route }) => ({
@@ -202,9 +213,9 @@ export function RootTabs() {
             />
           ),
         }}
-      />
+        />
 
-      <Tab.Screen
+        <Tab.Screen
         name="GroupsTab"
         component={GroupsStack}
         listeners={({ navigation, route }) => ({
@@ -224,9 +235,9 @@ export function RootTabs() {
             />
           ),
         }}
-      />
+        />
 
-      <Tab.Screen
+        <Tab.Screen
         name="ProfileTab"
         component={ProfileStack}
         listeners={({ navigation, route }) => ({
@@ -246,14 +257,19 @@ export function RootTabs() {
             />
           ),
         }}
-      />
-    </Tab.Navigator>
+        />
+      </Tab.Navigator>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   tabItem: {
     paddingTop: spacing.xxs,
+    overflow: 'visible',
   },
   tabLabel: {
     ...typography.caption,

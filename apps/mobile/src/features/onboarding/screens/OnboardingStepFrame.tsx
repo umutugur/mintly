@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { ScreenContainer } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
@@ -12,6 +12,8 @@ interface OnboardingStepFrameProps {
   actionLabel: string;
   onActionPress: () => void;
   onSkipPress?: () => void;
+  embedded?: boolean;
+  style?: StyleProp<ViewStyle>;
 }
 
 export function OnboardingStepFrame({
@@ -22,109 +24,119 @@ export function OnboardingStepFrame({
   actionLabel,
   onActionPress,
   onSkipPress,
+  embedded = false,
+  style,
 }: OnboardingStepFrameProps) {
   const { theme, mode } = useTheme();
   const { t } = useI18n();
   const dark = mode === 'dark';
 
-  return (
-    <ScreenContainer dark={dark} scrollable={false} contentStyle={styles.containerContent}>
-      <View style={styles.screen}>
-        <View style={styles.topRow}>
-          <View
-            style={[
-              styles.stepPill,
-              {
-                backgroundColor: dark
-                  ? withAlpha(theme.colors.primary, 0.24)
-                  : withAlpha(theme.colors.primary, 0.12),
-                borderColor: dark
-                  ? withAlpha(theme.colors.primary, 0.42)
-                  : withAlpha(theme.colors.primary, 0.24),
-              },
-            ]}
-          >
-            <Text style={[styles.stepPillText, { color: theme.colors.primary }]}>
-              {t('onboarding.stepLabel', { current: step, total: 3 })}
-            </Text>
-          </View>
-
-          {onSkipPress ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={onSkipPress}
-              style={({ pressed }) => [styles.skipButton, pressed && styles.pressed]}
-            >
-              <Text style={[styles.skipText, { color: theme.colors.textMuted }]}>{t('onboarding.skip')}</Text>
-            </Pressable>
-          ) : (
-            <View style={styles.skipPlaceholder} />
-          )}
-        </View>
-
+  const content = (
+    <View style={[styles.screen, style]}>
+      <View style={styles.topRow}>
         <View
           style={[
-            styles.heroCard,
+            styles.stepPill,
             {
-              backgroundColor: dark ? theme.colors.cardBackground : theme.colors.surface,
-              borderColor: theme.colors.cardBorder,
-              shadowColor: theme.shadows.card.shadowColor,
-              shadowOpacity: dark ? 0.34 : theme.shadows.card.shadowOpacity,
-              shadowRadius: dark ? 20 : theme.shadows.card.shadowRadius,
-              shadowOffset: dark ? { width: 0, height: 12 } : theme.shadows.card.shadowOffset,
-              elevation: dark ? 10 : theme.shadows.card.elevation,
+              backgroundColor: dark
+                ? withAlpha(theme.colors.primary, 0.24)
+                : withAlpha(theme.colors.primary, 0.12),
+              borderColor: dark
+                ? withAlpha(theme.colors.primary, 0.42)
+                : withAlpha(theme.colors.primary, 0.24),
             },
           ]}
         >
-          <View pointerEvents="none" style={styles.illustrationWrap}>
-            <View
-              style={[
-                styles.glowA,
-                { backgroundColor: dark ? theme.colors.authGlowTop : withAlpha(theme.colors.primary, 0.18) },
-              ]}
-            />
-            <View
-              style={[
-                styles.glowB,
-                { backgroundColor: dark ? theme.colors.authGlowBottom : withAlpha(theme.colors.primary, 0.12) },
-              ]}
-            />
-          </View>
-
-          <View style={[styles.iconBadge, { backgroundColor: theme.colors.primary }]}>
-            <Text style={styles.iconBadgeText}>{illustrationIcon}</Text>
-          </View>
-
-          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>{subtitle}</Text>
+          <Text style={[styles.stepPillText, { color: theme.colors.primary }]}>
+            {t('onboarding.stepLabel', { current: step, total: 3 })}
+          </Text>
         </View>
 
-        <View style={styles.dotRow}>
-          {[1, 2, 3].map((index) => (
-            <View
-              key={`dot-${index}`}
-              style={[
-                styles.dot,
-                index === step
-                  ? { backgroundColor: theme.colors.primary, width: 22 }
-                  : { backgroundColor: withAlpha(theme.colors.textMuted, dark ? 0.5 : 0.35), width: 8 },
-              ]}
-            />
-          ))}
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={onActionPress}
-          style={({ pressed }) => [
-            styles.primaryButton,
-            { backgroundColor: theme.colors.buttonPrimaryBackground },
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={[styles.primaryButtonText, { color: theme.colors.buttonPrimaryText }]}>{actionLabel}</Text>
-        </Pressable>
+        {onSkipPress ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onSkipPress}
+            style={({ pressed }) => [styles.skipButton, pressed && styles.pressed]}
+          >
+            <Text style={[styles.skipText, { color: theme.colors.textMuted }]}>{t('onboarding.skip')}</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.skipPlaceholder} />
+        )}
       </View>
+
+      <View
+        style={[
+          styles.heroCard,
+          {
+            backgroundColor: dark ? theme.colors.cardBackground : theme.colors.surface,
+            borderColor: theme.colors.cardBorder,
+            shadowColor: theme.shadows.card.shadowColor,
+            shadowOpacity: dark ? 0.34 : theme.shadows.card.shadowOpacity,
+            shadowRadius: dark ? 20 : theme.shadows.card.shadowRadius,
+            shadowOffset: dark ? { width: 0, height: 12 } : theme.shadows.card.shadowOffset,
+            elevation: dark ? 10 : theme.shadows.card.elevation,
+          },
+        ]}
+      >
+        <View pointerEvents="none" style={styles.illustrationWrap}>
+          <View
+            style={[
+              styles.glowA,
+              { backgroundColor: dark ? theme.colors.authGlowTop : withAlpha(theme.colors.primary, 0.18) },
+            ]}
+          />
+          <View
+            style={[
+              styles.glowB,
+              { backgroundColor: dark ? theme.colors.authGlowBottom : withAlpha(theme.colors.primary, 0.12) },
+            ]}
+          />
+        </View>
+
+        <View style={[styles.iconBadge, { backgroundColor: theme.colors.primary }]}>
+          <Text style={styles.iconBadgeText}>{illustrationIcon}</Text>
+        </View>
+
+        <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>{subtitle}</Text>
+      </View>
+
+      <View style={styles.dotRow}>
+        {[1, 2, 3].map((index) => (
+          <View
+            key={`dot-${index}`}
+            style={[
+              styles.dot,
+              index === step
+                ? { backgroundColor: theme.colors.primary, width: 22 }
+                : { backgroundColor: withAlpha(theme.colors.textMuted, dark ? 0.5 : 0.35), width: 8 },
+            ]}
+          />
+        ))}
+      </View>
+
+      <Pressable
+        accessibilityRole="button"
+        onPress={onActionPress}
+        style={({ pressed }) => [
+          styles.primaryButton,
+          { backgroundColor: theme.colors.buttonPrimaryBackground },
+          pressed && styles.pressed,
+        ]}
+      >
+        <Text style={[styles.primaryButtonText, { color: theme.colors.buttonPrimaryText }]}>{actionLabel}</Text>
+      </Pressable>
+    </View>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <ScreenContainer dark={dark} scrollable={false} contentStyle={styles.containerContent}>
+      {content}
     </ScreenContainer>
   );
 }

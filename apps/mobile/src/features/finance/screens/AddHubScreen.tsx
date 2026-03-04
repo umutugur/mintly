@@ -26,7 +26,7 @@ export function AddHubScreen() {
   };
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']}>
       <View style={styles.container}>
         <Text style={[styles.title, { color: theme.colors.text }]}>{t('add.hub.title')}</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textMuted }]}>{t('add.hub.subtitle')}</Text>

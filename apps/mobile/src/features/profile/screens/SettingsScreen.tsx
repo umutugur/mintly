@@ -300,7 +300,11 @@ export function SettingsScreen() {
   };
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer
+      dark={dark}
+      safeAreaEdges={['left', 'right']}
+      contentStyle={styles.screenContent}
+    >
       <View style={styles.container}>
         <Card
           dark={dark}
@@ -579,6 +583,10 @@ function SettingsGroup({
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   container: {
     gap: spacing.md,
   },

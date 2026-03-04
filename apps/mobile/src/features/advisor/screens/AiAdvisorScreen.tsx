@@ -8,11 +8,10 @@ import type { AdvisorBudgetStatus } from '@mintly/shared';
 import { useAuth } from '@app/providers/AuthProvider';
 import { getAdvisorUsageDayKey, hasUsedDailyAdvisorFreeUsage } from '@core/ads/RewardedManager';
 import { apiClient } from '@core/api/client';
-import { mobileEnv } from '@core/config/env';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAdvisorInsights } from '@features/advisor/hooks/useAdvisorInsights';
 import { useAdvisorInsightRegenerateWithRewarded } from '@features/advisor/hooks/useAdvisorInsightRegenerateWithRewarded';
-import { logAdvisorReq, useAdvisorDebugEvents } from '@features/advisor/utils/advisorDiagnostics';
+import { logAdvisorReq } from '@features/advisor/utils/advisorDiagnostics';
 import { useI18n } from '@shared/i18n';
 import { AppIcon, Card, Chip, PrimaryButton, ScreenContainer, Section, StatCard, TextField, showAlert } from '@shared/ui';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
@@ -108,36 +107,6 @@ function formatDateTimeLabel(value: string, locale: string): string {
   }).format(date);
 }
 
-function formatDebugEventPayload(payload: Record<string, unknown>): string {
-  const orderedKeys = [
-    'requestId',
-    'status',
-    'durationMs',
-    'mode',
-    'modeReason',
-    'provider',
-    'providerStatus',
-    'month',
-    'language',
-  ];
-  const fragments: string[] = [];
-
-  for (const key of orderedKeys) {
-    if (!(key in payload)) {
-      continue;
-    }
-
-    const value = payload[key];
-    if (value === null || value === undefined) {
-      continue;
-    }
-
-    fragments.push(`${key}=${String(value)}`);
-  }
-
-  return fragments.join(' · ');
-}
-
 function LoadingSkeleton({ dark }: { dark: boolean }) {
   const blockColor = dark ? '#1A2133' : '#E7EDF8';
 
@@ -190,10 +159,7 @@ export function AiAdvisorScreen() {
   const [transferFromAccountId, setTransferFromAccountId] = useState<string | null>(null);
   const [transferToAccountId, setTransferToAccountId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [debugExpanded, setDebugExpanded] = useState(false);
-  const responseDiagnosticsKeyRef = useRef<string | null>(null);
   const hasLoggedScreenMountRef = useRef(false);
-  const advisorDebugEvents = useAdvisorDebugEvents();
 
   const currentMonth = useMemo(() => getCurrentMonthString(), []);
   const insightsQuery = useAdvisorInsights(month);
@@ -212,9 +178,6 @@ export function AiAdvisorScreen() {
   const dark = mode === 'dark';
   const insights = insightsQuery.data ?? null;
   const currency = insights?.currency ?? user?.baseCurrency ?? 'TRY';
-  const notAvailableLabel = t('common.notAvailable');
-  const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || 'http://localhost:4000';
-  const providerName = insights?.provider ?? notAvailableLabel;
   const hasAdviceSummary = Boolean(insights?.advice.summary?.trim());
   const hasAdviceContent = Boolean(
     insights && (
@@ -270,50 +233,6 @@ export function AiAdvisorScreen() {
     setTransferFromAccountId((current) => current ?? accounts[0]?.id ?? null);
     setTransferToAccountId((current) => current ?? accounts[1]?.id ?? null);
   }, [accountsQuery.data]);
-
-  useEffect(() => {
-    if (!__DEV__ || !insights) {
-      return;
-    }
-
-    console.info('[advisor][mobile-diagnostics]', {
-      apiBaseUrl,
-      requestMonth: month,
-      provider: providerName,
-      mode: insights.mode,
-      modeReason: insights.modeReason,
-      providerStatus: insights.providerStatus,
-      requestTimeoutMs: mobileEnv.apiTimeoutMs,
-    });
-  }, [apiBaseUrl, insights, month, providerName]);
-
-  useEffect(() => {
-    if (!__DEV__ || !insights) {
-      return;
-    }
-
-    const diagnosticsKey = `${insights.month}|${insights.generatedAt}`;
-    if (responseDiagnosticsKeyRef.current === diagnosticsKey) {
-      return;
-    }
-
-    responseDiagnosticsKeyRef.current = diagnosticsKey;
-    console.info('[advisor][mobile-diagnostics][response]', {
-      statusCode: 200,
-      hasAdviceSummary,
-    });
-  }, [hasAdviceSummary, insights]);
-
-  useEffect(() => {
-    if (!__DEV__ || !insightsQuery.error) {
-      return;
-    }
-
-    console.info('[advisor][mobile-diagnostics][error]', {
-      month,
-      error: normalizeApiErrorForUi(insightsQuery.error),
-    });
-  }, [insightsQuery.error, month]);
 
   const invalidateAfterAdvisorAction = useCallback(async () => {
     await Promise.all([
@@ -688,15 +607,10 @@ export function AiAdvisorScreen() {
 
     return t('aiAdvisor.fallback.reason.provider_unknown_error');
   }, [insights, t]);
-  const modeChipTone = insights?.mode === 'fallback'
-    ? 'expense'
-    : insights?.mode === 'manual'
-      ? 'primary'
-      : 'income';
 
   if (insightsQuery.isLoading && !insights) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <LoadingSkeleton dark={dark} />
       </ScreenContainer>
     );
@@ -704,7 +618,7 @@ export function AiAdvisorScreen() {
 
   if (insightsQuery.isError && !insights) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card dark={dark} style={styles.errorCard}>
           <AppIcon name="sparkles-outline" size="lg" tone="expense" />
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>{t('aiAdvisor.state.errorTitle')}</Text>
@@ -726,7 +640,7 @@ export function AiAdvisorScreen() {
 
   if (!insights) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card dark={dark} style={styles.errorCard}>
           <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('aiAdvisor.state.noData')}</Text>
           <PrimaryButton
@@ -741,7 +655,7 @@ export function AiAdvisorScreen() {
 
   if (!hasAdviceContent) {
     return (
-      <ScreenContainer dark={dark}>
+      <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card dark={dark} style={styles.errorCard}>
           <Text style={[styles.errorText, { color: theme.colors.textMuted }]}>{t('aiAdvisor.state.noData')}</Text>
           <PrimaryButton
@@ -755,7 +669,7 @@ export function AiAdvisorScreen() {
   }
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.colors.text }]}>{t('aiAdvisor.title')}</Text>
@@ -812,56 +726,6 @@ export function AiAdvisorScreen() {
                 {fallbackReasonMessage || t('aiAdvisor.fallback.reason.provider_unknown_error')}
               </Text>
             </View>
-          ) : null}
-
-          {__DEV__ ? (
-            <View style={styles.devModeWrap}>
-              <View style={styles.devModeRow}>
-                <Chip dark={dark} tone={modeChipTone} label={insights.mode} />
-              </View>
-              <Text style={[styles.devModeText, { color: theme.colors.textMuted }]}>
-                {t('aiAdvisor.debug.apiBaseUrl', { value: apiBaseUrl })}
-              </Text>
-              <Text style={[styles.devModeText, { color: theme.colors.textMuted }]}>
-                {t('aiAdvisor.debug.provider', { value: providerName })}
-              </Text>
-              <Text style={[styles.devModeText, { color: theme.colors.textMuted }]}>
-                {t('aiAdvisor.debug.modeReason', { value: insights.modeReason ?? notAvailableLabel })}
-              </Text>
-              <Text style={[styles.devModeText, { color: theme.colors.textMuted }]}>
-                {t('aiAdvisor.debug.providerStatus', { value: insights.providerStatus ?? notAvailableLabel })}
-              </Text>
-            </View>
-          ) : null}
-
-          {__DEV__ ? (
-            <Card dark={dark} style={styles.debugCard}>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setDebugExpanded((current) => !current)}
-                style={styles.debugToggleRow}
-              >
-                <Text style={[styles.debugTitle, { color: theme.colors.text }]}>Advisor Debug</Text>
-                <AppIcon name={debugExpanded ? 'chevron-up' : 'chevron-down'} size="sm" tone="text" />
-              </Pressable>
-
-              {debugExpanded ? (
-                <View style={styles.debugEventsWrap}>
-                  {advisorDebugEvents.length === 0 ? (
-                    <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>No events yet.</Text>
-                  ) : advisorDebugEvents.slice().reverse().map((eventItem) => (
-                    <View key={`${eventItem.timestamp}-${eventItem.event}`} style={styles.debugEventRow}>
-                      <Text style={[styles.debugLine, styles.debugEventName, { color: theme.colors.text }]}>
-                        {`${eventItem.timestamp} · ${eventItem.event}`}
-                      </Text>
-                      <Text style={[styles.debugLine, { color: theme.colors.textMuted }]}>
-                        {formatDebugEventPayload(eventItem.payload)}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              ) : null}
-            </Card>
           ) : null}
 
           <PrimaryButton
@@ -1512,6 +1376,10 @@ export function AiAdvisorScreen() {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   container: {
     gap: spacing.md,
   },
@@ -1566,41 +1434,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   generatedText: {
-    ...typography.caption,
-    fontSize: 11,
-  },
-  devModeWrap: {
-    gap: spacing.xxs,
-  },
-  devModeRow: {
-    alignItems: 'flex-start',
-  },
-  devModeText: {
-    ...typography.caption,
-    fontSize: 11,
-  },
-  debugCard: {
-    gap: spacing.xs,
-  },
-  debugToggleRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  debugTitle: {
-    ...typography.subheading,
-    fontSize: 14,
-  },
-  debugEventsWrap: {
-    gap: spacing.xxs,
-  },
-  debugEventRow: {
-    gap: 2,
-  },
-  debugEventName: {
-    fontWeight: '700',
-  },
-  debugLine: {
     ...typography.caption,
     fontSize: 11,
   },

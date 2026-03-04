@@ -13,6 +13,10 @@
       "empty": "No base currency yet. Pick one for your first account.",
       "value": "Base currency: {{currency}}"
     },
+    "create": {
+      "error": "Account could not be created. Please try again.",
+      "success": "Account added."
+    },
     "delete": {
       "confirmBody": "Are you sure you want to delete {{name}}?",
       "confirmTitle": "Delete account",

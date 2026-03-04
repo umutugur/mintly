@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import {
-  ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+  ActivityIndicator, InteractionManager, Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { transactionCreateInputSchema, type TransactionType } from '@mintly/shared';
@@ -25,6 +25,28 @@ import { monthFromIsoString } from '@shared/utils/month';
 // no touch/keyboard behavior changed by this PR.
 
 const typeOptions: TransactionType[] = ['expense', 'income'];
+const CURRENCY_SYMBOL_BY_CODE: Record<string, string> = {
+  TRY: '₺',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  STG: '£',
+};
+
+function resolveCurrencySymbol(currencyCode: string): string {
+  const normalized = currencyCode.trim().toUpperCase();
+  return CURRENCY_SYMBOL_BY_CODE[normalized] ?? normalized;
+}
+
+function dismissKeyboardSafely(): void {
+  Keyboard.dismiss();
+  InteractionManager.runAfterInteractions(() => {
+    Keyboard.dismiss();
+  });
+  setTimeout(() => {
+    Keyboard.dismiss();
+  }, 0);
+}
 
 const transactionFormSchema = z.object({
   type: z.enum(typeOptions),
@@ -92,6 +114,7 @@ export function AddTransactionScreen() {
     () => categoryOptions.find((option) => option.key === selectedCategoryValue) ?? null,
     [categoryOptions, selectedCategoryValue],
   );
+  const selectedCurrency = selectedAccount?.currency?.toUpperCase() ?? null;
 
   useEffect(() => {
     if (!selectedCategoryValue) {
@@ -151,15 +174,6 @@ export function AddTransactionScreen() {
         occurredAt,
       });
 
-      if (__DEV__) {
-        console.info('[transactions][create][dev-payload]', {
-          keys: Object.keys(payload).sort(),
-          hasCategoryKey: Boolean(payload.categoryKey),
-          hasDescription: Boolean(payload.description),
-          selectedCategoryOptionPresent: Boolean(selectedCategory),
-        });
-      }
-
       return withAuth((token) =>
         apiClient.createTransaction(payload, token),
       );
@@ -174,6 +188,8 @@ export function AddTransactionScreen() {
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.dashboard.recent() }),
       ]);
 
+      dismissKeyboardSafely();
+
       form.reset({
         type: 'expense',
         accountId: '',
@@ -183,7 +199,8 @@ export function AddTransactionScreen() {
         occurredAt: new Date().toISOString(),
       });
 
-      showAlert(t('transactions.create.successTitle'), t('transactions.create.successMessage'));
+      await showAlert(t('transactions.create.successTitle'), t('transactions.create.successMessage'));
+      dismissKeyboardSafely();
     },
     onError: (error) => {
       showAlert(t('errors.transaction.createFailedTitle'), apiErrorText(error));
@@ -192,7 +209,11 @@ export function AddTransactionScreen() {
 
   if (accountsQuery.isLoading) {
     return (
-      <ScreenContainer dark={mode === 'dark'}>
+      <ScreenContainer
+        dark={mode === 'dark'}
+        safeAreaEdges={['left', 'right']}
+        contentStyle={styles.screenContent}
+      >
         <Card dark={mode === 'dark'} style={styles.stateCard}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={[styles.stateText, { color: theme.colors.textMuted }]}>
@@ -207,7 +228,11 @@ export function AddTransactionScreen() {
     const error = accountsQuery.error;
 
     return (
-      <ScreenContainer dark={mode === 'dark'}>
+      <ScreenContainer
+        dark={mode === 'dark'}
+        safeAreaEdges={['left', 'right']}
+        contentStyle={styles.screenContent}
+      >
         <Card dark={mode === 'dark'} style={styles.errorCard}>
           <Text style={[styles.errorTitle, { color: theme.colors.text }]}>
             {t('transactions.create.state.loadErrorTitle')}
@@ -230,7 +255,7 @@ export function AddTransactionScreen() {
   const panelBorder = dark ? '#27344F' : theme.colors.border;
 
   return (
-    <ScreenContainer dark={dark}>
+    <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
       <View style={styles.container}>
         <Card
           dark={dark}
@@ -423,7 +448,18 @@ export function AddTransactionScreen() {
                 keyboardType="decimal-pad"
                 label={t('transactions.create.fields.amount')}
                 leftAdornment={
-                  <Text style={[styles.adornmentText, { color: theme.colors.textMuted }]}>₺</Text>
+                  <View style={styles.amountAdornmentWrap}>
+                    <Text style={[styles.adornmentText, { color: theme.colors.textMuted }]}>
+                      {selectedCurrency ? resolveCurrencySymbol(selectedCurrency) : '—'}
+                    </Text>
+                  </View>
+                }
+                rightAdornment={
+                  selectedCurrency ? (
+                    <Text style={[styles.amountCurrencyCode, { color: theme.colors.textMuted }]}>
+                      {selectedCurrency}
+                    </Text>
+                  ) : undefined
                 }
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -496,6 +532,7 @@ export function AddTransactionScreen() {
             disabled={createTransactionMutation.isPending}
             label={createTransactionMutation.isPending ? t('common.saving') : t('transactions.create.submit')}
             onPress={form.handleSubmit((values) => {
+              dismissKeyboardSafely();
               createTransactionMutation.mutate(values);
             })}
           />
@@ -506,6 +543,10 @@ export function AddTransactionScreen() {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   container: {
     gap: spacing.sm,
   },
@@ -572,6 +613,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
+    justifyContent: 'center',
   },
   choiceChip: {
     alignItems: 'center',
@@ -579,9 +621,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.xxs,
-    minHeight: 34,
+    minHeight: 38,
     justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
   choiceChipLabel: {
     ...typography.caption,
@@ -595,6 +637,16 @@ const styles = StyleSheet.create({
     ...typography.subheading,
     fontSize: 16,
     fontWeight: '700',
+  },
+  amountAdornmentWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 20,
+  },
+  amountCurrencyCode: {
+    ...typography.caption,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   nowButton: {
     paddingHorizontal: spacing.xxs,
@@ -610,8 +662,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
   },
   currencyLabel: {
     ...typography.caption,
@@ -620,6 +672,7 @@ const styles = StyleSheet.create({
   currencyValue: {
     ...typography.caption,
     fontWeight: '700',
+    textAlign: 'right',
   },
   stateCard: {
     alignItems: 'center',

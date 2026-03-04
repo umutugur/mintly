@@ -286,7 +286,7 @@ export function RecurringScreen() {
 
   if (recurringQuery.isLoading || accountsQuery.isLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card>
           <Text style={styles.helperText}>{t('recurring.state.loading')}</Text>
         </Card>
@@ -297,7 +297,7 @@ export function RecurringScreen() {
   if (recurringQuery.isError || accountsQuery.isError) {
     const error = recurringQuery.error ?? accountsQuery.error;
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card style={styles.errorCard}>
           <Text style={styles.errorText}>{apiErrorText(error)}</Text>
           <PrimaryButton
@@ -315,7 +315,7 @@ export function RecurringScreen() {
   const rules = recurringQuery.data?.rules ?? [];
 
   return (
-    <ScreenContainer>
+    <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
       <Section title={t('recurring.title')} subtitle={t('recurring.subtitle')}>
         <Card style={styles.formCard}>
           <Text style={styles.fieldLabel}>{t('recurring.fields.kind')}</Text>
@@ -655,6 +655,10 @@ export function RecurringScreen() {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   formCard: {
     gap: spacing.sm,
   },

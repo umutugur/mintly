@@ -213,7 +213,7 @@ export function TransferScreen() {
 
   if (accountsQuery.isLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card style={styles.stateCard}>
           <Text style={styles.helperText}>{t('add.transfer.state.loadingAccounts')}</Text>
         </Card>
@@ -223,7 +223,7 @@ export function TransferScreen() {
 
   if (accountsQuery.isError) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card style={styles.stateCard}>
           <Text style={styles.errorText}>{apiErrorText(accountsQuery.error)}</Text>
           <PrimaryButton label={t('common.retry')} onPress={() => void accountsQuery.refetch()} />
@@ -234,7 +234,7 @@ export function TransferScreen() {
 
   if (accounts.length < 2 || destinationAccounts.length === 0) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Section title={t('add.transfer.title')}>
           <Card style={styles.stateCard}>
             <Text style={styles.helperText}>{t('add.transfer.state.needTwoAccounts')}</Text>
@@ -245,7 +245,7 @@ export function TransferScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
       <Section title={t('add.transfer.title')} subtitle={t('add.transfer.subtitle')}>
         <Card style={styles.formCard}>
           {isDeleteFlow ? (
@@ -382,6 +382,10 @@ export function TransferScreen() {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   formCard: {
     gap: spacing.sm,
   },

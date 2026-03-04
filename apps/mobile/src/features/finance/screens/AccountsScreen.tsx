@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
 import { useAuth } from '@app/providers/AuthProvider';
@@ -90,6 +91,7 @@ function getAccountTypeLabel(
 export function AccountsScreen() {
   const { withAuth, user, refreshUser, logout } = useAuth();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const queryClient = useQueryClient();
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
@@ -172,9 +174,11 @@ export function AccountsScreen() {
         type: 'bank',
         currency: baseCurrency ?? createForm.getValues('currency'),
       });
+      setFeedback({ tone: 'success', message: t('accounts.create.success') });
     },
     onError: (error) => {
       showAlert(t('errors.account.createFailedTitle'), apiErrorText(error));
+      setFeedback({ tone: 'error', message: t('accounts.create.error') });
     },
   });
 
@@ -295,7 +299,7 @@ export function AccountsScreen() {
 
   if (accountsQuery.isLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <View style={styles.centerState}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.stateText}>{t('accounts.state.loading')}</Text>
@@ -306,7 +310,7 @@ export function AccountsScreen() {
 
   if (accountsQuery.isError) {
     return (
-      <ScreenContainer>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
         <Card style={styles.errorCard}>
           <Text style={styles.errorTitle}>{t('accounts.state.loadErrorTitle')}</Text>
           <Text style={styles.errorText}>{apiErrorText(accountsQuery.error)}</Text>
@@ -319,54 +323,44 @@ export function AccountsScreen() {
   const accounts = accountsQuery.data?.accounts ?? [];
 
   return (
-    <ScreenContainer>
-      {feedback ? (
-        <Card
-          style={[
-            styles.feedbackCard,
-            feedback.tone === 'success' ? styles.feedbackSuccess : styles.feedbackError,
-          ]}
-        >
-          <Text style={styles.feedbackText}>{feedback.message}</Text>
-        </Card>
-      ) : null}
+    <View style={styles.screenRoot}>
+      <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
+        <Section title={t('accounts.sections.baseCurrency.title')} subtitle={t('accounts.sections.baseCurrency.subtitle')}>
+          <Card>
+            <Text style={styles.baseCurrencyText}>
+              {baseCurrency
+                ? t('accounts.baseCurrency.value', { currency: baseCurrency })
+                : t('accounts.baseCurrency.empty')}
+            </Text>
+          </Card>
+        </Section>
 
-      <Section title={t('accounts.sections.baseCurrency.title')} subtitle={t('accounts.sections.baseCurrency.subtitle')}>
-        <Card>
-          <Text style={styles.baseCurrencyText}>
-            {baseCurrency
-              ? t('accounts.baseCurrency.value', { currency: baseCurrency })
-              : t('accounts.baseCurrency.empty')}
-          </Text>
-        </Card>
-      </Section>
+        <Section title={t('accounts.sections.session.title')} subtitle={user?.email ?? t('accounts.session.signedIn')}>
+          <Card style={styles.sessionCard}>
+            <PrimaryButton
+              iconName="swap-horizontal-outline"
+              label={t('add.hub.transferAction')}
+              onPress={openTransfer}
+            />
+            <PrimaryButton
+              label={t('profile.logOut')}
+              onPress={() => {
+                void handleLogout();
+              }}
+            />
+            <Pressable
+              style={styles.secondaryAction}
+              onPress={() => {
+                void handleLogout();
+              }}
+            >
+              <Text style={styles.secondaryActionText}>{t('profile.useDifferentAccount')}</Text>
+            </Pressable>
+          </Card>
+        </Section>
 
-      <Section title={t('accounts.sections.session.title')} subtitle={user?.email ?? t('accounts.session.signedIn')}>
-        <Card style={styles.sessionCard}>
-          <PrimaryButton
-            iconName="swap-horizontal-outline"
-            label={t('add.hub.transferAction')}
-            onPress={openTransfer}
-          />
-          <PrimaryButton
-            label={t('profile.logOut')}
-            onPress={() => {
-              void handleLogout();
-            }}
-          />
-          <Pressable
-            style={styles.secondaryAction}
-            onPress={() => {
-              void handleLogout();
-            }}
-          >
-            <Text style={styles.secondaryActionText}>{t('profile.useDifferentAccount')}</Text>
-          </Pressable>
-        </Card>
-      </Section>
-
-      <Section title={t('accounts.sections.create.title')}>
-        <Card style={styles.formCard}>
+        <Section title={t('accounts.sections.create.title')}>
+          <Card style={styles.formCard}>
           <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
           <Controller
             control={createForm.control}
@@ -434,18 +428,18 @@ export function AccountsScreen() {
               createAccountMutation.mutate(values);
             })}
           />
-        </Card>
-      </Section>
-
-      <Section title={t('accounts.sections.list.title')} subtitle={t('accounts.sections.list.total', { count: accounts.length })}>
-        {accounts.length === 0 ? (
-          <Card>
-            <Text style={styles.emptyText}>{t('accounts.state.empty')}</Text>
           </Card>
-        ) : null}
+        </Section>
 
-        {accounts.map((account) => (
-          <Card key={account.id} style={styles.accountCard}>
+        <Section title={t('accounts.sections.list.title')} subtitle={t('accounts.sections.list.total', { count: accounts.length })}>
+          {accounts.length === 0 ? (
+            <Card>
+              <Text style={styles.emptyText}>{t('accounts.state.empty')}</Text>
+            </Card>
+          ) : null}
+
+          {accounts.map((account) => (
+            <Card key={account.id} style={styles.accountCard}>
             <View style={styles.accountHeader}>
               <View style={styles.accountMeta}>
                 <Text style={styles.accountName}>{account.name}</Text>
@@ -561,10 +555,30 @@ export function AccountsScreen() {
                 </View>
               </View>
             ) : null}
+            </Card>
+          ))}
+        </Section>
+      </ScreenContainer>
+
+      {feedback ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.feedbackOverlay,
+            { top: Math.max(insets.top + spacing.xs, spacing.md) },
+          ]}
+        >
+          <Card
+            style={[
+              styles.feedbackCard,
+              feedback.tone === 'success' ? styles.feedbackSuccess : styles.feedbackError,
+            ]}
+          >
+            <Text style={styles.feedbackText}>{feedback.message}</Text>
           </Card>
-        ))}
-      </Section>
-    </ScreenContainer>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -599,6 +613,13 @@ function TypePicker({
 }
 
 const styles = StyleSheet.create({
+  screenRoot: {
+    flex: 1,
+  },
+  screenContent: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   centerState: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -617,12 +638,12 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   input: {
-    height: 46,
+    height: 48,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.md,
     color: colors.text,
     ...typography.body,
   },
@@ -630,6 +651,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
+    justifyContent: 'center',
   },
   disabledPressable: {
     opacity: 0.6,
@@ -700,8 +722,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   feedbackCard: {
-    marginBottom: spacing.sm,
     borderWidth: 1,
+    width: '100%',
   },
   feedbackSuccess: {
     borderColor: '#17B26A',
@@ -715,6 +737,14 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '600',
     color: colors.text,
+    textAlign: 'center',
+  },
+  feedbackOverlay: {
+    alignItems: 'center',
+    left: spacing.md,
+    position: 'absolute',
+    right: spacing.md,
+    zIndex: 9,
   },
   errorCard: {
     gap: spacing.sm,

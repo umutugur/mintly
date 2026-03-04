@@ -13,6 +13,10 @@
       "empty": "Henüz ana para birimi yok. İlk hesabınız için birini seçin.",
       "value": "Ana para birimi: {{currency}}"
     },
+    "create": {
+      "error": "Hesap oluşturulamadı. Lütfen tekrar deneyin.",
+      "success": "Hesap eklendi."
+    },
     "delete": {
       "confirmBody": "{{name}} hesabını silmek istediğinizden emin misiniz?",
       "confirmTitle": "Hesabı sil",

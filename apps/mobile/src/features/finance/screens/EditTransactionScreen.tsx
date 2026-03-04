@@ -23,6 +23,18 @@ import { apiErrorText } from '@shared/utils/apiErrorText';
 // no touch/keyboard behavior changed by this PR.
 
 const typeOptions: TransactionType[] = ['expense', 'income'];
+const CURRENCY_SYMBOL_BY_CODE: Record<string, string> = {
+  TRY: '₺',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  STG: '£',
+};
+
+function resolveCurrencySymbol(currencyCode: string): string {
+  const normalized = currencyCode.trim().toUpperCase();
+  return CURRENCY_SYMBOL_BY_CODE[normalized] ?? normalized;
+}
 
 const transactionFormSchema = z.object({
   type: z.enum(typeOptions),
@@ -96,6 +108,7 @@ export function EditTransactionScreen({ route, navigation }: Props) {
     () => categoryOptions.find((option) => option.key === selectedCategoryValue) ?? null,
     [categoryOptions, selectedCategoryValue],
   );
+  const selectedCurrency = (selectedAccount?.currency ?? transactionQuery.data?.currency ?? 'TRY').toUpperCase();
 
   useEffect(() => {
     if (!selectedCategoryValue) {
@@ -413,7 +426,16 @@ export function EditTransactionScreen({ route, navigation }: Props) {
                 keyboardType="decimal-pad"
                 label={t('transactions.create.fields.amount')}
                 leftAdornment={
-                  <Text style={[styles.adornmentText, { color: theme.colors.textMuted }]}>₺</Text>
+                  <View style={styles.amountAdornmentWrap}>
+                    <Text style={[styles.adornmentText, { color: theme.colors.textMuted }]}>
+                      {resolveCurrencySymbol(selectedCurrency)}
+                    </Text>
+                  </View>
+                }
+                rightAdornment={
+                  <Text style={[styles.amountCurrencyCode, { color: theme.colors.textMuted }]}>
+                    {selectedCurrency}
+                  </Text>
                 }
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -563,6 +585,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
+    justifyContent: 'center',
   },
   choiceChip: {
     alignItems: 'center',
@@ -570,9 +593,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     gap: spacing.xxs,
-    minHeight: 34,
+    minHeight: 38,
     justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
   choiceChipLabel: {
     ...typography.caption,
@@ -586,6 +609,16 @@ const styles = StyleSheet.create({
     ...typography.subheading,
     fontSize: 16,
     fontWeight: '700',
+  },
+  amountAdornmentWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 20,
+  },
+  amountCurrencyCode: {
+    ...typography.caption,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   nowButton: {
     paddingHorizontal: spacing.xxs,
@@ -601,8 +634,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
   },
   currencyLabel: {
     ...typography.caption,
@@ -612,6 +645,7 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontSize: 12,
     fontWeight: '700',
+    textAlign: 'right',
   },
   stateCard: {
     alignItems: 'center',

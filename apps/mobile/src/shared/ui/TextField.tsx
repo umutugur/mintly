@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
   },
   inputWrap: {
     borderRadius: radius.md,
-    height: 54,
+    height: 48,
     justifyContent: 'center',
   },
   inputWrapMultiline: {
     height: 'auto',
-    minHeight: 54,
+    minHeight: 48,
     justifyContent: 'flex-start',
   },
   inputWrapDisabled: {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontSize: 16,
     paddingHorizontal: spacing.md,
-    paddingVertical: 0,
+    paddingVertical: spacing.sm,
   },
   inputMultiline: {
     minHeight: 96,
@@ -200,19 +200,21 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   inputWithLeftAdornment: {
-    paddingLeft: 44,
+    paddingLeft: 52,
   },
   inputWithRightAdornment: {
-    paddingRight: 46,
+    paddingRight: 52,
   },
   leftAdornment: {
+    bottom: 0,
+    justifyContent: 'center',
     left: spacing.md,
     position: 'absolute',
-    top: 16,
+    top: 0,
   },
   rightAdornment: {
     alignItems: 'center',
-    height: 54,
+    height: 48,
     justifyContent: 'center',
     position: 'absolute',
     right: spacing.md,
