@@ -44,6 +44,14 @@ export function UsersPage() {
       }),
   });
 
+  const usersTotalPages = Math.max(1, usersQuery.data?.totalPages ?? 1);
+
+  useEffect(() => {
+    if (page > usersTotalPages) {
+      setPage(usersTotalPages);
+    }
+  }, [page, usersTotalPages]);
+
   const detailQuery = useQuery({
     queryKey: ['admin-user-detail', selectedUserId],
     queryFn: () => getUserDetail(selectedUserId!),
@@ -178,14 +186,18 @@ export function UsersPage() {
                 {formatNumber(usersQuery.data?.total ?? 0)} total users
               </p>
               <div className="flex items-center gap-2">
-                <Button variant="secondary" disabled={page <= 1} onClick={() => setPage((current) => current - 1)}>
-                  Previous
-                </Button>
-                <span className="text-sm text-panel-200">Page {page}</span>
                 <Button
                   variant="secondary"
-                  disabled={page >= (usersQuery.data?.totalPages ?? 0)}
-                  onClick={() => setPage((current) => current + 1)}
+                  disabled={page <= 1 || usersQuery.isFetching}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-panel-200">Page {page} / {usersTotalPages}</span>
+                <Button
+                  variant="secondary"
+                  disabled={page >= usersTotalPages || usersQuery.isFetching}
+                  onClick={() => setPage((current) => Math.min(usersTotalPages, current + 1))}
                 >
                   Next
                 </Button>

@@ -65,6 +65,14 @@ export function TransactionsPage() {
       }),
   });
 
+  const transactionsTotalPages = Math.max(1, transactionsQuery.data?.totalPages ?? 1);
+
+  useEffect(() => {
+    if (page > transactionsTotalPages) {
+      setPage(transactionsTotalPages);
+    }
+  }, [page, transactionsTotalPages]);
+
   useErrorToast(transactionsQuery.error, 'Transactions failed');
 
   const columns = [
@@ -256,14 +264,18 @@ export function TransactionsPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button variant="secondary" disabled={page <= 1} onClick={() => setPage((current) => current - 1)}>
-                  Previous
-                </Button>
-                <span className="text-sm text-panel-200">Page {page}</span>
                 <Button
                   variant="secondary"
-                  disabled={page >= (transactionsQuery.data?.totalPages ?? 0)}
-                  onClick={() => setPage((current) => current + 1)}
+                  disabled={page <= 1 || transactionsQuery.isFetching}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-panel-200">Page {page} / {transactionsTotalPages}</span>
+                <Button
+                  variant="secondary"
+                  disabled={page >= transactionsTotalPages || transactionsQuery.isFetching}
+                  onClick={() => setPage((current) => Math.min(transactionsTotalPages, current + 1))}
                 >
                   Next
                 </Button>

@@ -27,8 +27,12 @@ import {
 import { apiBaseUrl } from './utils';
 
 const TOKEN_STORAGE_KEY = 'montly_admin_access_token';
+const REFRESH_TOKEN_STORAGE_KEY = 'montly_admin_refresh_token';
+export const AUTH_EXPIRED_EVENT = 'montly-admin-auth-expired';
 
 let accessTokenMemory: string | null = null;
+let refreshTokenMemory: string | null = null;
+let refreshRequestPromise: Promise<string | null> | null = null;
 
 export class ApiClientError extends Error {
   public readonly code: string;
@@ -58,6 +62,99 @@ function readStoredToken(): string | null {
   return restored;
 }
 
+function readStoredRefreshToken(): string | null {
+  if (refreshTokenMemory) {
+    return refreshTokenMemory;
+  }
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const restored = window.sessionStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+  refreshTokenMemory = restored;
+  return restored;
+}
+
+function writeStoredRefreshToken(refreshToken: string): void {
+  refreshTokenMemory = refreshToken;
+
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
+  }
+}
+
+function decodeBase64Url(value: string): string | null {
+  try {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized + '='.repeat((4 - (normalized.length % 4 || 4)) % 4);
+
+    if (typeof atob !== 'function') {
+      return null;
+    }
+
+    return atob(padded);
+  } catch {
+    return null;
+  }
+}
+
+function readTokenMinutesRemaining(token: string | null): number | null {
+  if (!token) {
+    return null;
+  }
+
+  const segments = token.split('.');
+  if (segments.length < 2) {
+    return null;
+  }
+
+  const decoded = decodeBase64Url(segments[1] ?? '');
+  if (!decoded) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(decoded) as { exp?: number };
+    if (typeof payload.exp !== 'number') {
+      return null;
+    }
+
+    return Math.max(0, Math.round((payload.exp * 1000 - Date.now()) / 60000));
+  } catch {
+    return null;
+  }
+}
+
+function logAuthTelemetry(event: string, payload: Record<string, unknown>) {
+  console.info('[web-admin-auth]', {
+    event,
+    ...payload,
+  });
+}
+
+function notifyAuthExpired(reason: string): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(AUTH_EXPIRED_EVENT, {
+      detail: {
+        reason,
+      },
+    }),
+  );
+}
+
+function shouldAttemptRefresh(path: string, method: 'GET' | 'POST'): boolean {
+  if (method !== 'GET' && method !== 'POST') {
+    return false;
+  }
+
+  return !path.startsWith('/auth/login') && !path.startsWith('/auth/refresh');
+}
+
 export function setStoredToken(token: string): void {
   accessTokenMemory = token;
 
@@ -66,11 +163,24 @@ export function setStoredToken(token: string): void {
   }
 }
 
+function setStoredSession(accessToken: string, refreshToken: string): void {
+  setStoredToken(accessToken);
+  writeStoredRefreshToken(refreshToken);
+
+  logAuthTelemetry('session_updated', {
+    accessTokenMinutesRemaining: readTokenMinutesRemaining(accessToken),
+    refreshTokenMinutesRemaining: readTokenMinutesRemaining(refreshToken),
+  });
+}
+
 export function clearStoredToken(): void {
   accessTokenMemory = null;
+  refreshTokenMemory = null;
+  refreshRequestPromise = null;
 
   if (typeof window !== 'undefined') {
     window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.sessionStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
   }
 }
 
@@ -135,10 +245,20 @@ async function request<T>(params: {
   body?: unknown;
   query?: Record<string, unknown>;
   tokenOverride?: string | null;
+  skipAuthRefresh?: boolean;
 }): Promise<T> {
-  const token = params.tokenOverride ?? readStoredToken();
+  const method = params.method ?? 'GET';
+  const token = params.tokenOverride === undefined ? readStoredToken() : params.tokenOverride;
+  if (token) {
+    logAuthTelemetry('request_started', {
+      path: params.path,
+      method,
+      accessTokenMinutesRemaining: readTokenMinutesRemaining(token),
+    });
+  }
+
   const response = await fetch(buildUrl(params.path, params.query), {
-    method: params.method ?? 'GET',
+    method,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -147,11 +267,93 @@ async function request<T>(params: {
   });
   const payload = await readPayload(response);
 
+  if (
+    response.status === 401
+    && !params.skipAuthRefresh
+    && shouldAttemptRefresh(params.path, method)
+  ) {
+    const refreshedToken = await refreshAccessToken();
+    if (refreshedToken) {
+      logAuthTelemetry('request_retry_after_refresh', {
+        path: params.path,
+        method,
+      });
+      return request({
+        ...params,
+        tokenOverride: refreshedToken,
+        skipAuthRefresh: true,
+      });
+    }
+
+    notifyAuthExpired('refresh_failed');
+  }
+
   if (!response.ok) {
     throw toApiError(response, payload);
   }
 
   return params.schema.parse(payload);
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = readStoredRefreshToken();
+  if (!refreshToken) {
+    logAuthTelemetry('refresh_skipped', {
+      reason: 'missing_refresh_token',
+    });
+    return null;
+  }
+
+  if (refreshRequestPromise) {
+    return refreshRequestPromise;
+  }
+
+  refreshRequestPromise = (async () => {
+    logAuthTelemetry('refresh_attempt', {
+      refreshTokenMinutesRemaining: readTokenMinutesRemaining(refreshToken),
+    });
+
+    try {
+      const response = await fetch(buildUrl('/auth/refresh'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refreshToken,
+        }),
+      });
+
+      const payload = await readPayload(response);
+      if (!response.ok) {
+        logAuthTelemetry('refresh_failed', {
+          status: response.status,
+        });
+        clearStoredToken();
+        return null;
+      }
+
+      const parsed = loginResponseSchema.parse(payload);
+      setStoredSession(parsed.accessToken, parsed.refreshToken);
+
+      logAuthTelemetry('refresh_success', {
+        accessTokenMinutesRemaining: readTokenMinutesRemaining(parsed.accessToken),
+      });
+
+      return parsed.accessToken;
+    } catch (error) {
+      logAuthTelemetry('refresh_failed', {
+        status: 'network_or_parse_error',
+        reason: error instanceof Error ? error.message : 'unknown_error',
+      });
+      clearStoredToken();
+      return null;
+    } finally {
+      refreshRequestPromise = null;
+    }
+  })();
+
+  return refreshRequestPromise;
 }
 
 export async function login(input: { email: string; password: string }): Promise<void> {
@@ -161,9 +363,10 @@ export async function login(input: { email: string; password: string }): Promise
     method: 'POST',
     body: input,
     tokenOverride: null,
+    skipAuthRefresh: true,
   });
 
-  setStoredToken(auth.accessToken);
+  setStoredSession(auth.accessToken, auth.refreshToken);
 
   try {
     const session = await getAdminSession(auth.accessToken);

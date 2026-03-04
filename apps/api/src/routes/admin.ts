@@ -1080,12 +1080,21 @@ export function registerAdminRoutes(app: FastifyInstance): void {
 
     const payload = result[0] ?? { rows: [], meta: [] };
     const total = payload.meta[0]?.total ?? 0;
+    const totalPages = total > 0 ? Math.ceil(total / query.limit) : 0;
+
+    console.info('[admin][pagination]', {
+      route: '/admin/users',
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages,
+    });
 
     return {
       page: query.page,
       limit: query.limit,
       total,
-      totalPages: total > 0 ? Math.ceil(total / query.limit) : 0,
+      totalPages,
       users: payload.rows.map((row) => toSafeUserSummary(row, now)),
     };
   });
@@ -1363,12 +1372,21 @@ export function registerAdminRoutes(app: FastifyInstance): void {
       expenseTotal: 0,
       netTotal: 0,
     };
+    const totalPages = totals.countTotal > 0 ? Math.ceil(totals.countTotal / query.limit) : 0;
+
+    console.info('[admin][pagination]', {
+      route: '/admin/transactions',
+      page: query.page,
+      limit: query.limit,
+      total: totals.countTotal,
+      totalPages,
+    });
 
     return {
       page: query.page,
       limit: query.limit,
       total: totals.countTotal,
-      totalPages: totals.countTotal > 0 ? Math.ceil(totals.countTotal / query.limit) : 0,
+      totalPages,
       totals,
       transactions: payload.rows.map((row) => ({
         id: row._id.toString(),
@@ -1817,12 +1835,21 @@ export function registerAdminRoutes(app: FastifyInstance): void {
       iosTokens: 0,
       androidTokens: 0,
     };
+    const totalPages = total > 0 ? Math.ceil(total / query.limit) : 0;
+
+    console.info('[admin][pagination]', {
+      route: '/admin/notifications/tokens',
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages,
+    });
 
     return {
       page: query.page,
       limit: query.limit,
       total,
-      totalPages: total > 0 ? Math.ceil(total / query.limit) : 0,
+      totalPages,
       summary: {
         totalUsers: summary.totalUsers,
         usersWithTokens: summary.usersWithTokens,

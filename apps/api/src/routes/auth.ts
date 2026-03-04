@@ -327,6 +327,9 @@ export function registerAuthRoutes(app: FastifyInstance): void {
     },
     async (request) => {
       const input = parseBody<RefreshInput>(refreshInputSchema, request.body);
+      console.info('[auth][refresh]', {
+        event: 'attempt',
+      });
       const claims = verifyRefreshToken(input.refreshToken);
       const tokenHash = hashRefreshToken(input.refreshToken);
 
@@ -337,6 +340,10 @@ export function registerAuthRoutes(app: FastifyInstance): void {
       });
 
       if (!currentRefresh || currentRefresh.userId.toString() !== claims.sub) {
+        console.info('[auth][refresh]', {
+          event: 'failed',
+          reason: 'token_not_found_or_mismatch',
+        });
         throw new ApiError({
           code: 'INVALID_REFRESH_TOKEN',
           message: 'Refresh token is invalid or expired',
@@ -346,6 +353,10 @@ export function registerAuthRoutes(app: FastifyInstance): void {
 
       const user = await UserModel.findById(currentRefresh.userId);
       if (!user) {
+        console.info('[auth][refresh]', {
+          event: 'failed',
+          reason: 'user_not_found',
+        });
         throw new ApiError({
           code: 'INVALID_REFRESH_TOKEN',
           message: 'Refresh token is invalid or expired',
@@ -355,6 +366,11 @@ export function registerAuthRoutes(app: FastifyInstance): void {
 
       currentRefresh.revokedAt = new Date();
       await currentRefresh.save();
+
+      console.info('[auth][refresh]', {
+        event: 'success',
+        userId: user.id,
+      });
 
       return createSessionForUser(user);
     },

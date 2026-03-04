@@ -1,5 +1,5 @@
 import { BellOff, Send, Smartphone, TriangleAlert, Users } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -39,6 +39,14 @@ export function NotificationsPage() {
         limit: 12,
       }),
   });
+
+  const notificationTotalPages = Math.max(1, tokensQuery.data?.totalPages ?? 1);
+
+  useEffect(() => {
+    if (page > notificationTotalPages) {
+      setPage(notificationTotalPages);
+    }
+  }, [notificationTotalPages, page]);
 
   const userSearchQuery = useQuery({
     queryKey: ['notification-user-search', userSearch],
@@ -386,16 +394,16 @@ export function NotificationsPage() {
                   type="button"
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
                   className="rounded-2xl bg-white/[0.03] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                  disabled={page <= 1}
+                  disabled={page <= 1 || tokensQuery.isFetching}
                 >
                   Geri
                 </button>
-                <span className="text-sm text-panel-200">Sayfa {page}</span>
+                <span className="text-sm text-panel-200">Sayfa {page} / {notificationTotalPages}</span>
                 <button
                   type="button"
-                  onClick={() => setPage((current) => current + 1)}
+                  onClick={() => setPage((current) => Math.min(notificationTotalPages, current + 1))}
                   className="rounded-2xl bg-white/[0.03] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                  disabled={page >= (tokensQuery.data?.totalPages ?? 0)}
+                  disabled={page >= notificationTotalPages || tokensQuery.isFetching}
                 >
                   İleri
                 </button>

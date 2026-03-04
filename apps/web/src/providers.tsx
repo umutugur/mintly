@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import {
+  useCallback,
   createContext,
   useContext,
   useEffect,
@@ -23,6 +24,7 @@ import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
+  AUTH_EXPIRED_EVENT,
   asApiError,
   clearStoredToken,
   getAdminSession,
@@ -246,12 +248,28 @@ export function AuthProvider(props: PropsWithChildren) {
     setIsHydrated(true);
   }, []);
 
-  function logout() {
+  const logout = useCallback(() => {
     clearStoredToken();
     setToken(null);
     setAdmin(null);
     queryClient.clear();
-  }
+  }, [queryClient]);
+
+  useEffect(() => {
+    function handleAuthExpired(event: Event) {
+      const customEvent = event as CustomEvent<{ reason?: string }>;
+      console.info('[web-admin-auth]', {
+        event: 'auth_expired_event_received',
+        reason: customEvent.detail?.reason ?? 'unknown',
+      });
+      logout();
+    }
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired as EventListener);
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired as EventListener);
+    };
+  }, [logout]);
 
   async function restoreSession(): Promise<AdminIdentity> {
     const session = await getAdminSession();
