@@ -29,6 +29,13 @@ export async function registerUserExpoPushToken(
 
   const nextToken = input.expoPushToken.trim();
   const now = new Date();
+  if (!nextToken) {
+    throw new ApiError({
+      code: 'VALIDATION_ERROR',
+      message: 'Push token is required',
+      statusCode: 400,
+    });
+  }
 
   if (!Array.isArray(user.expoPushTokens)) {
     user.expoPushTokens = [];
@@ -48,7 +55,7 @@ export async function registerUserExpoPushToken(
     },
   );
 
-  const existing = user.expoPushTokens.find(
+  const existingMatches = user.expoPushTokens.filter(
     (item: {
       token: string;
       device?: string | null;
@@ -59,30 +66,24 @@ export async function registerUserExpoPushToken(
       updatedAt?: Date;
     }) => item.token === nextToken,
   );
+  const existing = existingMatches[0];
+  const nextEntry = {
+    token: nextToken,
+    device: input.device ?? existing?.device ?? null,
+    platform: input.platform ?? existing?.platform ?? null,
+    deviceInfo: input.deviceInfo ?? existing?.deviceInfo ?? null,
+    createdAt: existing?.createdAt ?? now,
+    lastUsedAt: now,
+    updatedAt: now,
+  };
 
-  if (existing) {
-    existing.device = input.device ?? null;
-    existing.platform = input.platform ?? existing.platform ?? null;
-    existing.deviceInfo = input.deviceInfo ?? null;
-    existing.lastUsedAt = now;
-    existing.updatedAt = now;
-  } else {
-    user.expoPushTokens.push({
-      token: nextToken,
-      device: input.device ?? null,
-      platform: input.platform ?? null,
-      deviceInfo: input.deviceInfo ?? null,
-      createdAt: now,
-      lastUsedAt: now,
-      updatedAt: now,
-    });
-  }
+  user.expoPushTokens = [nextEntry];
 
   await user.save();
 
   return {
     tokensCount: user.expoPushTokens.length,
-    reusedExisting: Boolean(existing),
+    reusedExisting: existingMatches.length > 0,
     tokenUpdatedAt: now,
   };
 }

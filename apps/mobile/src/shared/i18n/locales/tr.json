@@ -762,8 +762,9 @@
     "state": {
       "errorTitle": "Panel yüklenemedi",
       "loading": "Panel yükleniyor...",
-      "noAccounts": "Hesap bulunamadı.",
-      "createAccount": "Hesap Oluştur",
+      "noAccounts": "Henüz hesap eklenmedi",
+      "noAccountsDescription": "Gelir ve giderlerini takip etmek için ilk hesabını şimdi ekle.",
+      "createAccount": "Hesap Ekle",
       "noData": "Panel verisi bulunamadı.",
       "noTransactions": "Henüz işlem bulunmuyor."
     },

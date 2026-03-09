@@ -763,7 +763,8 @@
       "errorTitle": "Dashboard unavailable",
       "loading": "Loading dashboard...",
       "noAccounts": "No accounts found.",
-      "createAccount": "Create Account",
+      "noAccountsDescription": "Add your first account to start tracking your money flow.",
+      "createAccount": "Add Account",
       "noData": "No dashboard data available.",
       "noTransactions": "No recent transactions yet."
     },

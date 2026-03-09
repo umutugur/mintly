@@ -11,6 +11,19 @@ import { registerUserExpoPushToken } from '../lib/push-token-registration.js';
 
 import { parseBody, requireUser } from './utils.js';
 
+function maskPushToken(token: string): string {
+  const value = token.trim();
+  if (!value) {
+    return '';
+  }
+
+  if (value.length <= 20) {
+    return `${value.slice(0, 8)}...`;
+  }
+
+  return `${value.slice(0, 12)}...${value.slice(-8)}`;
+}
+
 export function registerNotificationRoutes(app: FastifyInstance): void {
   app.post('/notifications/register-token', { preHandler: authenticate }, async (request) => {
     const authUser = requireUser(request);
@@ -28,8 +41,8 @@ export function registerNotificationRoutes(app: FastifyInstance): void {
     }
 
     console.log('PUSH TOKEN REGISTER', {
-      userId: input.userId,
-      token: input.expoPushToken,
+      userIdSuffix: input.userId.slice(-8),
+      token: maskPushToken(input.expoPushToken),
       platform: input.platform,
     });
 

@@ -3,7 +3,7 @@ import { type PipelineStage, Types } from 'mongoose';
 import { z } from 'zod';
 
 import { requireAdmin } from '../auth/middleware.js';
-import { isExpoPushToken, sendExpoPushNotifications } from '../lib/expo-push.js';
+import { isExpoPushToken, pickLatestExpoPushToken, sendExpoPushNotifications } from '../lib/expo-push.js';
 import { TransactionModel } from '../models/Transaction.js';
 import { UserModel } from '../models/User.js';
 
@@ -118,8 +118,10 @@ const adminNotificationSendBodySchema = z
   });
 
 interface SafeExpoPushTokenMeta {
+  token?: string | null;
   platform: 'ios' | 'android' | null;
   updatedAt: Date | null;
+  lastUsedAt?: Date | string | null;
 }
 
 interface UserListAggregateRow {
@@ -139,6 +141,7 @@ interface UserListAggregateRow {
     device?: string | null;
     platform?: 'ios' | 'android' | null;
     updatedAt?: Date | null;
+    lastUsedAt?: Date | null;
   }>;
   lastTransactionAt?: Date | null;
   derivedLastActiveAt?: Date | null;
@@ -237,22 +240,37 @@ function uniqueProviders(
 
 function toSafeTokenMeta(
   tokens: Array<{
+    token?: string | null;
     platform?: 'ios' | 'android' | null;
     updatedAt?: Date | string | null;
     lastUsedAt?: Date | string | null;
   }> | undefined,
 ): { count: number; lastUpdatedAt: string | null; platformSplit: { ios: number; android: number } } {
-  let lastUpdatedAt: Date | null = null;
-  let ios = 0;
-  let android = 0;
   const values = tokens ?? [];
+  const latestToken = pickLatestExpoPushToken(values);
+
+  if (!latestToken) {
+    return {
+      count: 0,
+      lastUpdatedAt: null,
+      platformSplit: {
+        ios: 0,
+        android: 0,
+      },
+    };
+  }
+
+  let lastUpdatedAt: Date | null = null;
+  let platform: 'ios' | 'android' | null = null;
 
   for (const token of values) {
-    if (token.platform === 'ios') {
-      ios += 1;
+    const rawToken = typeof token.token === 'string' ? token.token.trim() : '';
+    if (rawToken !== latestToken) {
+      continue;
     }
-    if (token.platform === 'android') {
-      android += 1;
+
+    if (!platform && (token.platform === 'ios' || token.platform === 'android')) {
+      platform = token.platform;
     }
 
     const rawUpdatedAt = token.lastUsedAt ?? token.updatedAt ?? null;
@@ -269,15 +287,16 @@ function toSafeTokenMeta(
       && (!lastUpdatedAt || candidateUpdatedAt > lastUpdatedAt)
     ) {
       lastUpdatedAt = candidateUpdatedAt;
+      platform = token.platform ?? null;
     }
   }
 
   return {
-    count: values.length,
+    count: 1,
     lastUpdatedAt: toIso(lastUpdatedAt),
     platformSplit: {
-      ios,
-      android,
+      ios: platform === 'ios' ? 1 : 0,
+      android: platform === 'android' ? 1 : 0,
     },
   };
 }
@@ -1763,23 +1782,17 @@ export function registerAdminRoutes(app: FastifyInstance): void {
         {
           $project: {
             tokensCount: { $size: '$tokens' },
+            latestToken: { $arrayElemAt: ['$tokens', -1] },
+          },
+        },
+        {
+          $project: {
+            tokensCount: 1,
             iosTokens: {
-              $size: {
-                $filter: {
-                  input: '$tokens',
-                  as: 'token',
-                  cond: { $eq: ['$$token.platform', 'ios'] },
-                },
-              },
+              $cond: [{ $eq: ['$latestToken.platform', 'ios'] }, 1, 0],
             },
             androidTokens: {
-              $size: {
-                $filter: {
-                  input: '$tokens',
-                  as: 'token',
-                  cond: { $eq: ['$$token.platform', 'android'] },
-                },
-              },
+              $cond: [{ $eq: ['$latestToken.platform', 'android'] }, 1, 0],
             },
           },
         },

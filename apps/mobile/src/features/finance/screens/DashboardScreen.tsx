@@ -733,9 +733,12 @@ export function DashboardScreen() {
                 </View>
               </View>
             ) : (
-              <Card style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xl }}>
-                <Text style={[styles.emptyText, { color: theme.colors.textMuted, textAlign: 'center' }]}>
+              <Card style={styles.accountsEmptyCard}>
+                <Text style={[styles.accountsEmptyTitle, { color: theme.colors.text }]}>
                   {t('dashboard.state.noAccounts')}
+                </Text>
+                <Text style={[styles.accountsEmptyDescription, { color: theme.colors.textMuted }]}>
+                  {t('dashboard.state.noAccountsDescription')}
                 </Text>
                 <PrimaryButton
                   label={t('dashboard.state.createAccount')}
@@ -1503,6 +1506,21 @@ const styles = StyleSheet.create({
     ...typography.body,
   },
   emptyText: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  accountsEmptyCard: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.xl,
+  },
+  accountsEmptyTitle: {
+    ...typography.subheading,
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  accountsEmptyDescription: {
     ...typography.body,
     textAlign: 'center',
   },

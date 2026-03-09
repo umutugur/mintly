@@ -52,6 +52,61 @@ function logPushDebug(stage: string, details: Record<string, unknown>): void {
   console.log(`[push][bootstrap] ${stage}`, details);
 }
 
+function maskPushToken(token: string | null | undefined): string | null {
+  const value = token?.trim();
+  if (!value) {
+    return null;
+  }
+
+  if (value.length <= 20) {
+    return `${value.slice(0, 8)}...`;
+  }
+
+  return `${value.slice(0, 12)}...${value.slice(-8)}`;
+}
+
+async function getExpoPushTokenWithRetry(
+  projectId: string,
+  platform: 'ios' | 'android',
+): Promise<string | null> {
+  const maxAttempts = 2;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
+      const token = tokenResponse.data?.trim() ?? '';
+      if (token.length > 0) {
+        return token;
+      }
+
+      logPushDebug('token_generation_empty', {
+        attempt,
+        maxAttempts,
+        platform,
+      });
+    } catch (error) {
+      logPushDebug('token_generation_error', {
+        attempt,
+        maxAttempts,
+        platform,
+        reason: error instanceof Error ? error.message : 'unknown_error',
+      });
+
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+    }
+
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 350);
+      });
+    }
+  }
+
+  return null;
+}
+
 export function PushNotificationsBootstrap() {
   const { status, isGuest, user, withAuth } = useAuth();
   const savedTokenRef = useRef<string | null>(null);
@@ -184,10 +239,9 @@ export function PushNotificationsBootstrap() {
           return;
         }
 
-        const tokenResponse = await Notifications.getExpoPushTokenAsync({ projectId });
-        const expoPushToken = tokenResponse.data?.trim();
+        const expoPushToken = await getExpoPushTokenWithRetry(projectId, pushPlatform);
         logPushDebug('token_generated', {
-          token: expoPushToken ?? null,
+          token: maskPushToken(expoPushToken),
           projectId,
           platform: pushPlatform,
         });
@@ -210,7 +264,7 @@ export function PushNotificationsBootstrap() {
         if (savedTokenRef.current === expoPushToken) {
           logPushDebug('skipped', {
             reason: 'token_already_saved',
-            token: expoPushToken,
+            token: maskPushToken(expoPushToken),
             platform: pushPlatform,
           });
           return;
@@ -230,15 +284,20 @@ export function PushNotificationsBootstrap() {
         );
 
         logPushDebug('register_response', {
-          token: expoPushToken,
+          token: maskPushToken(expoPushToken),
           platform: pushPlatform,
-          response: registerResponse,
+          response: {
+            ok: registerResponse.ok,
+            reusedExisting: registerResponse.reusedExisting,
+            tokensCount: registerResponse.tokensCount,
+            tokenUpdatedAt: registerResponse.tokenUpdatedAt,
+          },
         });
 
         savedTokenRef.current = expoPushToken;
         logPushDebug('saved', {
           pushTokenSaved: true,
-          token: expoPushToken,
+          token: maskPushToken(expoPushToken),
           platform: pushPlatform,
         });
       } catch (error) {
