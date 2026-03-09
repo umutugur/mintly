@@ -253,6 +253,29 @@ export const accountLoanCreateInputSchema = z.object({
   path: ['totalRepayable'],
 });
 
+export const accountLoanUpdateInputSchema = z.object({
+  borrowedAmount: z.number().positive().optional(),
+  totalRepayable: z.number().positive().optional(),
+  monthlyPayment: z.number().positive().optional(),
+  installmentCount: z.number().int().min(1).max(360).optional(),
+  paymentDay: z.number().int().min(1).max(28).optional(),
+  firstPaymentDate: dateTimeStringSchema.optional(),
+  paymentAccountId: z.string().trim().min(1).optional(),
+  note: z.string().trim().max(500).optional(),
+}).superRefine((value, ctx) => {
+  if (
+    typeof value.totalRepayable === 'number'
+    && typeof value.borrowedAmount === 'number'
+    && value.totalRepayable < value.borrowedAmount
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: '`totalRepayable` must be greater than or equal to `borrowedAmount`',
+      path: ['totalRepayable'],
+    });
+  }
+});
+
 export const accountSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(120),
@@ -299,7 +322,7 @@ export const accountUpdateInputSchema = z
     type: accountTypeSchema.optional(),
     currency: currencySchema.optional(),
     openingBalance: z.number().finite().optional(),
-    loan: accountLoanCreateInputSchema.partial().optional(),
+    loan: accountLoanUpdateInputSchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
