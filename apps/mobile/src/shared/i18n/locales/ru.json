@@ -464,6 +464,17 @@
       },
       "forgot": "Забыли?",
       "hidePassword": "Скрыть пароль",
+      "oauth": {
+        "appleCta": "Продолжить через Apple",
+        "appleUnavailable": "Вход через Apple сейчас недоступен.",
+        "genericError": "Не удалось выполнить социальный вход. Попробуйте снова.",
+        "googleAndroidConfigError": "Вход через Google не настроен для Android.",
+        "googleCta": "Продолжить через Google",
+        "googleEnvMissingInBuild": "В этой сборке вход через Google недоступен.",
+        "googlePlayServicesUnavailable": "Сервисы Google Play недоступны на этом устройстве.",
+        "googleUnavailable": "Вход через Google сейчас недоступен.",
+        "tokenMissing": "Не удалось получить токен входа. Попробуйте снова."
+      },
       "secureBadge": "БЕЗОПАСНЫЙ ЗАШИФРОВАННЫЙ ВХОД",
       "showPassword": "Показать пароль",
       "submit": "Войти в аккаунт",
@@ -554,7 +565,9 @@
     "delete": "Удалить",
     "deleted": "Удалено",
     "edit": "Редактировать",
+    "error": "Ошибка",
     "goBack": "Назад",
+    "loading": "Загрузка...",
     "loadingShort": "Загрузка...",
     "next": "Далее",
     "notAvailable": "Н/Д",
@@ -1338,6 +1351,10 @@
       "normal": "ОБЫЧНОЕ",
       "transfer": "ПЕРЕВОД"
     },
+    "type": {
+      "expense": "Расход",
+      "income": "Доход"
+    },
     "rule": {
       "account": "Счет: {{account}}",
       "amount": "Сумма: {{amount}}",
@@ -1375,6 +1392,33 @@
     "successMessage": "Правило теперь активно.",
     "successTitle": "Повторяющееся правило создано",
     "title": "Повторяющиеся правила"
+  },
+  "transfer": {
+    "delete": {
+      "confirmBody": "Вы уверены, что хотите удалить этот перевод?",
+      "confirmTitle": "Удалить перевод?",
+      "success": "Перевод удален."
+    },
+    "edit": {
+      "recreateWarning": "Редактирование переводов пока не поддерживается. Удалите и создайте перевод заново.",
+      "title": "Редактирование перевода"
+    }
+  },
+  "tx": {
+    "delete": {
+      "confirmBody": "Удалить \"{{title}}\"?",
+      "confirmTitle": "Удалить транзакцию?",
+      "success": "Транзакция удалена."
+    },
+    "edit": {
+      "errorTitle": "Не удалось обновить транзакцию",
+      "success": "Транзакция обновлена.",
+      "title": "Редактировать транзакцию",
+      "transferReadOnly": "Транзакции перевода доступны только для чтения. Удалите и создайте перевод заново."
+    },
+    "form": {
+      "save": "Сохранить изменения"
+    }
   },
   "scan": {
     "receipt": {

@@ -464,6 +464,17 @@
       },
       "forgot": "Forgot?",
       "hidePassword": "Hide password",
+      "oauth": {
+        "appleCta": "Continue with Apple",
+        "appleUnavailable": "Apple sign-in is currently unavailable.",
+        "genericError": "Social sign-in failed. Please try again.",
+        "googleAndroidConfigError": "Google sign-in is not configured for Android.",
+        "googleCta": "Continue with Google",
+        "googleEnvMissingInBuild": "Google sign-in is not available in this build.",
+        "googlePlayServicesUnavailable": "Google Play Services is unavailable on this device.",
+        "googleUnavailable": "Google sign-in is currently unavailable.",
+        "tokenMissing": "Sign-in token could not be retrieved. Please try again."
+      },
       "secureBadge": "SECURE ENCRYPTED LOGIN",
       "showPassword": "Show password",
       "submit": "Sign In to Account",
@@ -554,7 +565,9 @@
     "delete": "Delete",
     "deleted": "Deleted",
     "edit": "Edit",
+    "error": "Error",
     "goBack": "Back",
+    "loading": "Loading...",
     "loadingShort": "Loading...",
     "next": "Next",
     "notAvailable": "N/A",
@@ -1338,6 +1351,10 @@
       "normal": "NORMAL",
       "transfer": "TRANSFER"
     },
+    "type": {
+      "expense": "Expense",
+      "income": "Income"
+    },
     "rule": {
       "account": "Account: {{account}}",
       "amount": "Amount: {{amount}}",
@@ -1375,6 +1392,33 @@
     "successMessage": "The rule is now active.",
     "successTitle": "Recurring rule created",
     "title": "Recurring Rules"
+  },
+  "transfer": {
+    "delete": {
+      "confirmBody": "Are you sure you want to delete this transfer?",
+      "confirmTitle": "Delete transfer",
+      "success": "Transfer deleted."
+    },
+    "edit": {
+      "recreateWarning": "Editing transfer is not supported yet. Delete and recreate the transfer.",
+      "title": "Transfer edit"
+    }
+  },
+  "tx": {
+    "delete": {
+      "confirmBody": "Delete \"{{title}}\"?",
+      "confirmTitle": "Delete transaction",
+      "success": "Transaction deleted."
+    },
+    "edit": {
+      "errorTitle": "Could not update transaction",
+      "success": "Transaction updated.",
+      "title": "Edit transaction",
+      "transferReadOnly": "Transfer transactions are read-only. You can delete and recreate instead."
+    },
+    "form": {
+      "save": "Save changes"
+    }
   },
   "scan": {
     "receipt": {

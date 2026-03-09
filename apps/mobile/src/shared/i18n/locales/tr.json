@@ -464,6 +464,17 @@
       },
       "forgot": "Unuttun mu?",
       "hidePassword": "Şifreyi gizle",
+      "oauth": {
+        "appleCta": "Apple ile devam et",
+        "appleUnavailable": "Apple ile giriş şu anda kullanılamıyor.",
+        "genericError": "Sosyal giriş başarısız oldu. Lütfen tekrar deneyin.",
+        "googleAndroidConfigError": "Google ile giriş Android için yapılandırılmamış.",
+        "googleCta": "Google ile devam et",
+        "googleEnvMissingInBuild": "Bu derlemede Google ile giriş kullanılamıyor.",
+        "googlePlayServicesUnavailable": "Bu cihazda Google Play Hizmetleri kullanılamıyor.",
+        "googleUnavailable": "Google ile giriş şu anda kullanılamıyor.",
+        "tokenMissing": "Giriş belirteci alınamadı. Lütfen tekrar deneyin."
+      },
       "secureBadge": "GÜVENLİ ŞİFRELİ GİRİŞ",
       "showPassword": "Şifreyi göster",
       "submit": "Hesaba Giriş Yap",
@@ -554,7 +565,9 @@
     "delete": "Sil",
     "deleted": "Silindi",
     "edit": "Düzenle",
+    "error": "Hata",
     "goBack": "Geri",
+    "loading": "Yükleniyor...",
     "loadingShort": "Yükleniyor...",
     "next": "İleri",
     "notAvailable": "Yok",
@@ -1338,6 +1351,10 @@
       "normal": "NORMAL",
       "transfer": "TRANSFER"
     },
+    "type": {
+      "expense": "Gider",
+      "income": "Gelir"
+    },
     "rule": {
       "account": "Hesap: {{account}}",
       "amount": "Tutar: {{amount}}",
@@ -1375,6 +1392,33 @@
     "successMessage": "Kural artık aktif.",
     "successTitle": "Tekrarlayan kural oluşturuldu",
     "title": "Tekrarlayan Kurallar"
+  },
+  "transfer": {
+    "delete": {
+      "confirmBody": "Bu transferi silmek istediğinize emin misiniz?",
+      "confirmTitle": "Transfer silinsin mi?",
+      "success": "Transfer silindi."
+    },
+    "edit": {
+      "recreateWarning": "Transfer düzenleme henüz desteklenmiyor. Transferi silip yeniden oluşturun.",
+      "title": "Transfer düzenleme"
+    }
+  },
+  "tx": {
+    "delete": {
+      "confirmBody": "\"{{title}}\" işlemi silinsin mi?",
+      "confirmTitle": "İşlem silinsin mi?",
+      "success": "İşlem silindi."
+    },
+    "edit": {
+      "errorTitle": "İşlem güncellenemedi",
+      "success": "İşlem güncellendi.",
+      "title": "İşlemi düzenle",
+      "transferReadOnly": "Transfer işlemleri salt okunur. Bunun yerine silip yeniden oluşturabilirsiniz."
+    },
+    "form": {
+      "save": "Değişiklikleri kaydet"
+    }
   },
   "scan": {
     "receipt": {
