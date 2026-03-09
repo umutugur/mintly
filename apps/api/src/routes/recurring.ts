@@ -52,6 +52,11 @@ function toRecurringDto(rule: RecurringRuleDocument): RecurringRule {
     nextRunAt: rule.nextRunAt.toISOString(),
     lastRunAt: rule.lastRunAt ? rule.lastRunAt.toISOString() : null,
     isPaused: rule.isPaused,
+    relatedLoanAccountId: rule.relatedLoanAccountId ? rule.relatedLoanAccountId.toString() : null,
+    installmentIndex: rule.installmentIndex ?? null,
+    installmentCount: rule.installmentCount ?? null,
+    paymentDay: rule.paymentDay ?? null,
+    installmentStatus: rule.installmentStatus ?? null,
     deletedAt: rule.deletedAt ? rule.deletedAt.toISOString() : null,
     createdAt: stamped.createdAt.toISOString(),
     updatedAt: stamped.updatedAt.toISOString(),
@@ -298,6 +303,14 @@ export function registerRecurringRoutes(app: FastifyInstance): void {
       const account = await resolveActiveAccount(userId, parseObjectId(input.accountId, 'accountId'));
       const categoryId = input.categoryId ? parseObjectId(input.categoryId, 'categoryId') : null;
 
+      if (account.type === 'loan') {
+        throw new ApiError({
+          code: 'VALIDATION_ERROR',
+          message: 'Loan accounts only support transfer-based settlements',
+          statusCode: 400,
+        });
+      }
+
       if (!categoryId && !input.categoryKey) {
         throw new ApiError({
           code: 'VALIDATION_ERROR',
@@ -372,6 +385,11 @@ export function registerRecurringRoutes(app: FastifyInstance): void {
       nextRunAt,
       lastRunAt: null,
       isPaused: false,
+      relatedLoanAccountId: null,
+      installmentIndex: null,
+      installmentCount: null,
+      paymentDay: null,
+      installmentStatus: null,
       deletedAt: null,
     });
 
@@ -422,6 +440,9 @@ export function registerRecurringRoutes(app: FastifyInstance): void {
     }
     if (input.endAt !== undefined) {
       rule.endAt = input.endAt ? new Date(input.endAt) : null;
+    }
+    if (input.installmentStatus !== undefined) {
+      rule.installmentStatus = input.installmentStatus;
     }
     if (input.isPaused !== undefined) {
       rule.isPaused = input.isPaused;

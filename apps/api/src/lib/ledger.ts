@@ -95,9 +95,20 @@ export function validateTransactionType(
 export async function createNormalTransaction(
   input: CreateNormalTransactionInput,
 ): Promise<TransactionDocument> {
+  const account = await resolveActiveAccount(input.userId, input.accountId);
+  if (account.type === 'loan') {
+    throw new ApiError({
+      code: 'VALIDATION_ERROR',
+      message: 'Loan accounts only support transfer-based settlements',
+      statusCode: 400,
+    });
+  }
+
+  validateCurrency(account.currency, input.currency);
+
   return TransactionModel.create({
     userId: input.userId,
-    accountId: input.accountId,
+    accountId: account._id,
     categoryId: input.categoryId ?? null,
     categoryKey: input.categoryKey ?? null,
     type: input.type,
@@ -106,7 +117,7 @@ export async function createNormalTransaction(
     transferDirection: null,
     relatedAccountId: null,
     amount: input.amount,
-    currency: input.currency,
+    currency: account.currency,
     description: input.description ?? null,
     occurredAt: input.occurredAt,
     deletedAt: null,

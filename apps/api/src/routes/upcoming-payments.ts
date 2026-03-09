@@ -19,6 +19,7 @@ import { authenticate } from '../auth/middleware.js';
 import { ApiError } from '../errors.js';
 import {
   createNormalTransaction,
+  createTransferPair,
   resolveActiveAccount,
   validateCurrency,
 } from '../lib/ledger.js';
@@ -55,6 +56,13 @@ function toUpcomingPaymentDto(payment: UpcomingPaymentDocument): UpcomingPayment
           invoiceNo: payment.meta.invoiceNo ?? undefined,
           rawText: payment.meta.rawText ?? undefined,
           detectedCurrency: payment.meta.detectedCurrency ?? undefined,
+          relatedLoanAccountId: payment.meta.relatedLoanAccountId
+            ? payment.meta.relatedLoanAccountId.toString()
+            : undefined,
+          installmentIndex: payment.meta.installmentIndex ?? undefined,
+          installmentCount: payment.meta.installmentCount ?? undefined,
+          remainingInstallments: payment.meta.remainingInstallments ?? undefined,
+          paymentDay: payment.meta.paymentDay ?? undefined,
         }
       : null,
     createdAt: stamped.createdAt.toISOString(),
@@ -288,6 +296,112 @@ async function resolveRecurringProjectionUpcoming(params: {
   };
 }
 
+async function calculateLoanBalance(params: {
+  userId: Types.ObjectId;
+  loanAccountId: Types.ObjectId;
+  openingBalance: number;
+}): Promise<number> {
+  const rows = await TransactionModel.aggregate<{
+    income: number;
+    expense: number;
+  }>([
+    {
+      $match: {
+        userId: params.userId,
+        accountId: params.loanAccountId,
+        deletedAt: null,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        income: {
+          $sum: {
+            $cond: [{ $eq: ['$type', 'income'] }, '$amount', 0],
+          },
+        },
+        expense: {
+          $sum: {
+            $cond: [{ $eq: ['$type', 'expense'] }, '$amount', 0],
+          },
+        },
+      },
+    },
+  ]);
+
+  const net = (rows[0]?.income ?? 0) - (rows[0]?.expense ?? 0);
+  return params.openingBalance + net;
+}
+
+async function refreshLoanUpcomingRemainingInstallments(params: {
+  userId: Types.ObjectId;
+  loanAccountId: Types.ObjectId;
+}): Promise<void> {
+  const upcomingItems = await UpcomingPaymentModel.find({
+    userId: params.userId,
+    status: 'upcoming',
+    'meta.relatedLoanAccountId': params.loanAccountId,
+  })
+    .sort({ 'meta.installmentIndex': 1, dueDate: 1, _id: 1 })
+    .select('_id meta');
+
+  for (let index = 0; index < upcomingItems.length; index += 1) {
+    const item = upcomingItems[index];
+    const nextRemaining = upcomingItems.length - index;
+    const current = item.meta?.remainingInstallments ?? null;
+    if (current !== nextRemaining) {
+      await UpcomingPaymentModel.updateOne(
+        { _id: item._id },
+        {
+          $set: {
+            'meta.remainingInstallments': nextRemaining,
+          },
+        },
+      );
+    }
+  }
+}
+
+async function cancelLoanFutureInstallments(params: {
+  userId: Types.ObjectId;
+  loanAccountId: Types.ObjectId;
+}): Promise<void> {
+  const scheduledRules = await RecurringRuleModel.find({
+    userId: params.userId,
+    relatedLoanAccountId: params.loanAccountId,
+    deletedAt: null,
+    installmentStatus: 'scheduled',
+  }).select('_id');
+
+  if (scheduledRules.length === 0) {
+    await refreshLoanUpcomingRemainingInstallments(params);
+    return;
+  }
+
+  const ruleIds = scheduledRules.map((rule) => rule._id);
+
+  await Promise.all([
+    RecurringRuleModel.updateMany(
+      { _id: { $in: ruleIds } },
+      { $set: { installmentStatus: 'cancelled', isPaused: true } },
+    ),
+    UpcomingPaymentModel.updateMany(
+      {
+        userId: params.userId,
+        recurringTemplateId: { $in: ruleIds },
+        status: 'upcoming',
+      },
+      {
+        $set: {
+          status: 'cancelled',
+        },
+      },
+    ),
+  ]);
+
+  await refreshLoanUpcomingRemainingInstallments(params);
+}
+
 export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
   app.get('/upcoming-payments', { preHandler: authenticate }, async (request) => {
     const user = requireUser(request);
@@ -446,6 +560,117 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
       });
     }
 
+    if (upcomingPayment.status === 'skipped' || upcomingPayment.status === 'cancelled') {
+      throw new ApiError({
+        code: 'VALIDATION_ERROR',
+        message: 'Upcoming payment is not payable',
+        statusCode: 400,
+      });
+    }
+
+    const occurredAt = input.occurredAt ? new Date(input.occurredAt) : new Date();
+    const metaRelatedLoanAccountId = upcomingPayment.meta?.relatedLoanAccountId
+      ? parseObjectId(upcomingPayment.meta.relatedLoanAccountId.toString(), 'relatedLoanAccountId')
+      : null;
+    const loanAccountId = recurringRule?.relatedLoanAccountId ?? metaRelatedLoanAccountId;
+
+    if (loanAccountId) {
+      const loanAccount = await resolveActiveAccount(userId, loanAccountId);
+      if (loanAccount.type !== 'loan' || !loanAccount.loan) {
+        throw new ApiError({
+          code: 'ACCOUNT_NOT_FOUND',
+          message: 'Loan account not found',
+          statusCode: 404,
+        });
+      }
+
+      if (loanAccount.loan.status !== 'active') {
+        throw new ApiError({
+          code: 'VALIDATION_ERROR',
+          message: 'Loan is not active',
+          statusCode: 400,
+        });
+      }
+
+      const fromAccount = input.accountId
+        ? await resolveActiveAccount(userId, parseObjectId(input.accountId, 'accountId'))
+        : recurringRule?.fromAccountId
+          ? await resolveActiveAccount(userId, recurringRule.fromAccountId)
+          : loanAccount.loan.paymentAccountId
+            ? await resolveActiveAccount(userId, parseObjectId(loanAccount.loan.paymentAccountId.toString(), 'paymentAccountId'))
+            : null;
+
+      if (!fromAccount) {
+        throw new ApiError({
+          code: 'ACCOUNT_NOT_FOUND',
+          message: 'Payment account is required',
+          statusCode: 400,
+        });
+      }
+
+      if (fromAccount.currency !== loanAccount.currency) {
+        throw new ApiError({
+          code: 'TRANSFER_CURRENCY_MISMATCH',
+          message: 'Loan and payment accounts must have matching currencies',
+          statusCode: 400,
+        });
+      }
+
+      const transfer = await createTransferPair({
+        userId,
+        fromAccountId: fromAccount._id,
+        toAccountId: loanAccount._id,
+        amount: upcomingPayment.amount,
+        occurredAt,
+        description: upcomingPayment.title,
+      });
+
+      upcomingPayment.status = 'paid';
+      upcomingPayment.linkedTransactionId = transfer.fromTransaction._id;
+      await upcomingPayment.save();
+
+      if (recurringRule) {
+        recurringRule.installmentStatus = 'paid';
+        recurringRule.isPaused = true;
+        recurringRule.lastRunAt = occurredAt;
+        if (!recurringRule.fromAccountId) {
+          recurringRule.fromAccountId = fromAccount._id;
+        }
+        await recurringRule.save();
+      }
+
+      await refreshLoanUpcomingRemainingInstallments({
+        userId,
+        loanAccountId: loanAccount._id,
+      });
+
+      const remainingBalance = await calculateLoanBalance({
+        userId,
+        loanAccountId: loanAccount._id,
+        openingBalance: loanAccount.openingBalance ?? 0,
+      });
+
+      if (remainingBalance >= -0.005) {
+        if (Math.abs(remainingBalance) > 0.0001) {
+          loanAccount.openingBalance = (loanAccount.openingBalance ?? 0) - remainingBalance;
+        }
+        loanAccount.loan.status = 'closed';
+        loanAccount.loan.closedAt = occurredAt;
+        await Promise.all([
+          loanAccount.save(),
+          cancelLoanFutureInstallments({ userId, loanAccountId: loanAccount._id }),
+        ]);
+      } else if (loanAccount.loan.paymentAccountId == null) {
+        loanAccount.loan.paymentAccountId = fromAccount._id;
+        await loanAccount.save();
+      }
+
+      return upcomingPaymentMarkPaidResponseSchema.parse({
+        upcomingPayment: toUpcomingPaymentDto(upcomingPayment),
+        transaction: toTransactionDto(transfer.fromTransaction),
+      });
+    }
+
     const account = input.accountId
       ? await resolveActiveAccount(userId, parseObjectId(input.accountId, 'accountId'))
       : recurringRule?.accountId
@@ -475,8 +700,6 @@ export function registerUpcomingPaymentRoutes(app: FastifyInstance): void {
     if (!category) {
       category = await resolvePreferredExpenseCategory(userId, upcomingPayment.type, upcomingPayment.title);
     }
-
-    const occurredAt = input.occurredAt ? new Date(input.occurredAt) : new Date();
 
     const transaction = await createNormalTransaction({
       userId,

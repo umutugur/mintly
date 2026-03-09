@@ -138,6 +138,18 @@ export function UpcomingPaymentsScreen() {
 function UpcomingPaymentRow({ item, locale }: { item: UpcomingPayment; locale: string }) {
   const { theme, mode } = useTheme();
   const { t } = useI18n();
+  const isLoanInstallment = Boolean(item.meta?.relatedLoanAccountId);
+  const installmentLabel =
+    item.meta?.installmentIndex && item.meta?.installmentCount
+      ? t('upcoming.list.row.loanInstallment', {
+          current: item.meta.installmentIndex,
+          total: item.meta.installmentCount,
+        })
+      : null;
+  const remainingLabel =
+    typeof item.meta?.remainingInstallments === 'number'
+      ? t('upcoming.list.row.remainingInstallments', { count: item.meta.remainingInstallments })
+      : null;
 
   return (
     <Card
@@ -157,6 +169,12 @@ function UpcomingPaymentRow({ item, locale }: { item: UpcomingPayment; locale: s
         <Text style={[styles.rowMeta, { color: theme.colors.textMuted }]}>
           {t('upcoming.list.row.dueDate', { date: formatDueDate(item.dueDate, locale) })}
         </Text>
+        {isLoanInstallment && installmentLabel ? (
+          <Text style={[styles.rowMeta, { color: theme.colors.textMuted }]}>{installmentLabel}</Text>
+        ) : null}
+        {isLoanInstallment && remainingLabel ? (
+          <Text style={[styles.rowMeta, { color: theme.colors.textMuted }]}>{remainingLabel}</Text>
+        ) : null}
       </View>
       <Text style={[styles.rowAmount, { color: theme.colors.expense }]}>{formatMoney(item.amount, item.currency, locale)}</Text>
     </Card>

@@ -95,7 +95,10 @@ export function EditTransactionScreen({ route, navigation }: Props) {
   const selectedCategoryValue = form.watch('categoryKey');
 
   const selectedAccount = useMemo(
-    () => accountsQuery.data?.accounts.find((account) => account.id === selectedAccountId) ?? null,
+    () =>
+      accountsQuery.data?.accounts.find(
+        (account) => account.id === selectedAccountId && account.type !== 'loan',
+      ) ?? null,
     [accountsQuery.data?.accounts, selectedAccountId],
   );
 
@@ -129,9 +132,15 @@ export function EditTransactionScreen({ route, navigation }: Props) {
       return;
     }
 
+    const editableAccounts = accounts.filter((account) => account.type !== 'loan');
+    const resolvedAccountId =
+      editableAccounts.find((account) => account.id === transaction.accountId)?.id ??
+      editableAccounts[0]?.id ??
+      '';
+
     form.reset({
       type: transaction.type,
-      accountId: transaction.accountId,
+      accountId: resolvedAccountId,
       categoryKey: transaction.categoryKey ?? '',
       amount: String(transaction.amount),
       description: transaction.description ?? '',
@@ -228,7 +237,7 @@ export function EditTransactionScreen({ route, navigation }: Props) {
   }
 
   const dark = mode === 'dark';
-  const accounts = accountsQuery.data?.accounts ?? [];
+  const accounts = (accountsQuery.data?.accounts ?? []).filter((account) => account.type !== 'loan');
   const panelBg = dark ? '#121826' : theme.colors.surface;
   const panelBorder = dark ? '#27344F' : theme.colors.border;
 

@@ -11,6 +11,7 @@
       "debtBorrowed": "Полученный долг",
       "debt_lent": "Выданный долг",
       "debt_borrowed": "Полученный долг",
+      "loan": "Кредит",
       "savings": "Сберегательный счет"
     },
     "balance": {
@@ -44,8 +45,52 @@
       "typeLabel": "Тип",
       "openingBalanceLabel": "Начальный баланс",
       "openingBalancePlaceholder": "0.00",
+      "loanBorrowedAmountLabel": "Сумма займа",
+      "loanBorrowedAmountPlaceholder": "100000",
+      "loanTotalRepayableLabel": "Общая сумма к выплате",
+      "loanTotalRepayablePlaceholder": "130000",
+      "loanMonthlyPaymentLabel": "Ежемесячный платеж",
+      "loanMonthlyPaymentPlaceholder": "10833",
+      "loanInstallmentCountLabel": "Количество платежей",
+      "loanInstallmentCountPlaceholder": "12",
+      "loanPaymentDayLabel": "День платежа (1-28)",
+      "loanPaymentDayPlaceholder": "15",
+      "loanFirstPaymentDateLabel": "Дата первого платежа",
+      "loanFirstPaymentDatePlaceholder": "2026-03-15",
+      "loanPaymentAccountLabel": "Счет списания (опционально)",
+      "loanPaymentAccountOptional": "Выбрать позже",
+      "loanNoteLabel": "Заметка (опционально)",
+      "loanNotePlaceholder": "Заметка по кредиту",
+      "loanTypeLockedHint": "Тип кредитного счета изменить нельзя.",
       "assetHint": "Положительный баланс учитывается как актив.",
       "liabilityHint": "Этот счет учитывается как обязательство."
+    },
+    "loan": {
+      "remainingBalance": "Остаток долга: {{value}}",
+      "borrowedAmount": "Получено: {{value}}",
+      "totalRepayable": "Всего к выплате: {{value}}",
+      "monthlyPayment": "Ежемесячно: {{value}}",
+      "installmentProgress": "Платеж: {{current}} / {{total}}",
+      "remainingInstallments": "Осталось платежей: {{count}}",
+      "nextPaymentDate": "Следующий платеж: {{date}}",
+      "statusLabel": "Статус: {{status}}",
+      "status": {
+        "active": "Активен",
+        "closed": "Закрыт",
+        "closedEarly": "Закрыт досрочно"
+      },
+      "paymentAction": "Оплатить",
+      "earlyPayoffAction": "Досрочно закрыть",
+      "actionFromAccount": "Счет списания",
+      "actionAmount": "Сумма",
+      "actionDate": "Дата (ISO)",
+      "actionDatePlaceholder": "2026-03-15T10:30:00.000Z",
+      "actionNote": "Заметка",
+      "actionNoSourceAccount": "Не найден подходящий счет для оплаты кредита.",
+      "actionSubmitPayment": "Подтвердить оплату",
+      "actionSubmitEarlyPayoff": "Подтвердить досрочное закрытие",
+      "actionSuccessPayment": "Платеж по кредиту сохранен.",
+      "actionSuccessEarlyPayoff": "Кредит закрыт досрочно."
     },
     "sections": {
       "baseCurrency": {
@@ -690,7 +735,8 @@
       "cash": "Наличные",
       "credit": "Кредит",
       "debt_lent": "Выданный долг",
-      "debt_borrowed": "Полученный долг"
+      "debt_borrowed": "Полученный долг",
+      "loan": "Кредит"
     },
     "accounts": "Счета",
     "addExpense": "Добавить расход",
@@ -805,6 +851,8 @@
       "dayOfWeekRange": "День недели должен быть от 0 до 6.",
       "invalidIsoDateTime": "Введите корректную дату/время в ISO формате.",
       "invalidSignedAmount": "Введите корректный начальный баланс.",
+      "loanInstallmentCountRange": "Количество платежей должно быть от 1 до 360.",
+      "loanTotalRepayableMin": "Общая сумма к выплате не может быть меньше суммы займа.",
       "limitAmountPositive": "Лимит должен быть больше нуля.",
       "limitAmountRequired": "Лимит обязателен.",
       "nameRequired": "Имя обязательно.",
@@ -1289,6 +1337,9 @@
       "cadence": "Период: {{cadence}}",
       "category": "Категория: {{category}}",
       "from": "Со счета: {{account}}",
+      "installmentProgress": "Платеж: {{current}} / {{total}}",
+      "remainingInstallments": "Осталось платежей: {{count}}",
+      "loanInstallment": "Платеж по кредиту",
       "nextRun": "Следующий запуск: {{date}}",
       "normal": "Обычное правило",
       "note": "Заметка: {{note}}",
@@ -1307,6 +1358,11 @@
     "status": {
       "active": "АКТИВНО",
       "paused": "ПАУЗА"
+    },
+    "installmentStatus": {
+      "scheduled": "ЗАПЛАНИРОВАНО",
+      "paid": "ОПЛАЧЕНО",
+      "cancelled": "ОТМЕНЕНО"
     },
     "subtitle": "Создавайте правила для автозапуска по расписанию",
     "successMessage": "Правило теперь активно.",
@@ -1399,7 +1455,9 @@
         "empty": "На ближайшие 45 дней платежей нет."
       },
       "row": {
-        "dueDate": "Срок: {{date}}"
+        "dueDate": "Срок: {{date}}",
+        "loanInstallment": "Платеж {{current}} / {{total}}",
+        "remainingInstallments": "Осталось платежей: {{count}}"
       }
     },
     "detail": {
@@ -1414,12 +1472,18 @@
       "markPaid": {
         "cta": "Отметить как оплаченный",
         "successTitle": "Платеж выполнен",
-        "successMessage": "Из ближайшего платежа создана расходная транзакция."
+        "successMessage": "Из ближайшего платежа создана расходная транзакция.",
+        "successMessageLoan": "Платеж по кредиту успешно сохранен."
       },
       "markSkipped": {
         "cta": "Пропустить",
         "successTitle": "Платеж пропущен",
         "successMessage": "Платеж помечен как пропущенный."
+      },
+      "loan": {
+        "installmentProgress": "Платеж: {{current}} / {{total}}",
+        "remainingInstallments": "Осталось платежей: {{count}}",
+        "noSourceAccount": "Не найден подходящий счет для этого платежа."
       }
     },
     "notifications": {

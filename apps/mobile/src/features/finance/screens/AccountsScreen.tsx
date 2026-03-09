@@ -3,7 +3,13 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  accountTypeSchema, accountCreateInputSchema, type AccountType, type AccountUpdateInput, } from '@mintly/shared';
+  accountCreateInputSchema,
+  accountTypeSchema,
+  type Account,
+  type AccountCreateInput,
+  type AccountType,
+  type AccountUpdateInput,
+} from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,13 +23,29 @@ import { financeQueryKeys } from '@core/api/queryKeys';
 import type { TransferScreenParams } from '@core/navigation/stacks/AddStack';
 import type { ProfileStackParamList } from '@core/navigation/stacks/ProfileStack';
 import type { RootTabParamList } from '@core/navigation/types';
-import { Card, Chip, PrimaryButton, ScreenContainer, Section, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
+import { Card, Chip, PrimaryButton, ScreenContainer, Section, showAlert } from '@shared/ui';
 import { colors, radius, spacing, typography } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 
-const accountTypes: AccountType[] = ['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed'];
-const LIABILITY_ACCOUNT_TYPES: AccountType[] = ['credit', 'debt_borrowed'];
+const accountTypes: AccountType[] = ['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed', 'loan'];
+const LIABILITY_ACCOUNT_TYPES: AccountType[] = ['credit', 'debt_borrowed', 'loan'];
+
+type LoanActionMode = 'payment' | 'earlyPayoff';
+
+type FeedbackState = {
+  tone: 'success' | 'error';
+  message: string;
+};
+
+type LoanActionState = {
+  accountId: string | null;
+  mode: LoanActionMode | null;
+  fromAccountId: string;
+  amount: string;
+  occurredAt: string;
+  note: string;
+};
 
 function isLiabilityAccountType(type: AccountType): boolean {
   return LIABILITY_ACCOUNT_TYPES.includes(type);
@@ -41,6 +63,56 @@ function parseSignedAmount(value: string): number | null {
   }
 
   return parsed;
+}
+
+function parsePositiveAmount(value: string): number | null {
+  const parsed = parseSignedAmount(value);
+  if (parsed === null || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
+function parsePositiveInteger(value: string): number | null {
+  const normalized = value.trim();
+  if (!normalized) {
+    return null;
+  }
+  const parsed = Number(normalized);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
+function normalizeDateTimeInput(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const dateOnly = new Date(`${trimmed}T00:00:00.000Z`);
+    return Number.isNaN(dateOnly.getTime()) ? null : dateOnly.toISOString();
+  }
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed.toISOString();
+}
+
+function toDateInputValue(value: string | null | undefined): string {
+  if (!value) {
+    return '';
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  return parsed.toISOString().slice(0, 10);
 }
 
 function formatSignedBalance(amount: number, currency: string, locale: string): string {
@@ -61,31 +133,206 @@ function formatSignedBalance(amount: number, currency: string, locale: string): 
   return formatted;
 }
 
+function formatAbsoluteMoney(amount: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(amount));
+}
+
+function formatDateLabel(value: string | null | undefined, locale: string): string {
+  if (!value) {
+    return '—';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}
+
 const signedAmountInputSchema = z
   .string()
   .trim()
   .min(1, 'errors.validation.amountRequired')
   .refine((value) => parseSignedAmount(value) !== null, 'errors.validation.invalidSignedAmount');
 
-const createAccountFormSchema = z.object({
-  name: accountCreateInputSchema.shape.name,
-  type: accountCreateInputSchema.shape.type,
-  currency: accountCreateInputSchema.shape.currency,
-  openingBalance: signedAmountInputSchema,
-});
+const optionalShortTextSchema = z.string().trim().max(500).optional();
 
-const editAccountFormSchema = z.object({
-  name: z.string().trim().min(1, 'errors.validation.nameRequired').max(120),
-  type: accountTypeSchema,
-  openingBalance: signedAmountInputSchema,
-});
+const createAccountFormSchema = z
+  .object({
+    name: accountCreateInputSchema.shape.name,
+    type: accountCreateInputSchema.shape.type,
+    currency: accountCreateInputSchema.shape.currency,
+    openingBalance: signedAmountInputSchema,
+    loanBorrowedAmount: z.string().trim().optional(),
+    loanTotalRepayable: z.string().trim().optional(),
+    loanMonthlyPayment: z.string().trim().optional(),
+    loanInstallmentCount: z.string().trim().optional(),
+    loanPaymentDay: z.string().trim().optional(),
+    loanFirstPaymentDate: z.string().trim().optional(),
+    loanPaymentAccountId: z.string().trim().optional(),
+    loanNote: optionalShortTextSchema,
+  })
+  .superRefine((value, ctx) => {
+    if (value.type !== 'loan') {
+      return;
+    }
+
+    const borrowedAmount = parsePositiveAmount(value.loanBorrowedAmount ?? '');
+    const totalRepayable = parsePositiveAmount(value.loanTotalRepayable ?? '');
+    const monthlyPayment = parsePositiveAmount(value.loanMonthlyPayment ?? '');
+    const installmentCount = parsePositiveInteger(value.loanInstallmentCount ?? '');
+    const paymentDay = parsePositiveInteger(value.loanPaymentDay ?? '');
+    const firstPaymentDate = normalizeDateTimeInput(value.loanFirstPaymentDate ?? '');
+
+    if (borrowedAmount === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanBorrowedAmount'],
+        message: 'errors.validation.amountPositive',
+      });
+    }
+
+    if (totalRepayable === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanTotalRepayable'],
+        message: 'errors.validation.amountPositive',
+      });
+    }
+
+    if (borrowedAmount !== null && totalRepayable !== null && totalRepayable < borrowedAmount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanTotalRepayable'],
+        message: 'errors.validation.loanTotalRepayableMin',
+      });
+    }
+
+    if (monthlyPayment === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanMonthlyPayment'],
+        message: 'errors.validation.amountPositive',
+      });
+    }
+
+    if (installmentCount === null || installmentCount < 1 || installmentCount > 360) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanInstallmentCount'],
+        message: 'errors.validation.loanInstallmentCountRange',
+      });
+    }
+
+    if (paymentDay === null || paymentDay < 1 || paymentDay > 28) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanPaymentDay'],
+        message: 'errors.validation.dayOfMonthRange',
+      });
+    }
+
+    if (!firstPaymentDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanFirstPaymentDate'],
+        message: 'errors.validation.startDateTimeRequired',
+      });
+    }
+  });
+
+const editAccountFormSchema = z
+  .object({
+    name: z.string().trim().min(1, 'errors.validation.nameRequired').max(120),
+    type: accountTypeSchema,
+    openingBalance: signedAmountInputSchema,
+    loanBorrowedAmount: z.string().trim().optional(),
+    loanTotalRepayable: z.string().trim().optional(),
+    loanMonthlyPayment: z.string().trim().optional(),
+    loanInstallmentCount: z.string().trim().optional(),
+    loanPaymentDay: z.string().trim().optional(),
+    loanFirstPaymentDate: z.string().trim().optional(),
+    loanPaymentAccountId: z.string().trim().optional(),
+    loanNote: optionalShortTextSchema,
+  })
+  .superRefine((value, ctx) => {
+    if (value.type !== 'loan') {
+      return;
+    }
+
+    const borrowedAmount = parsePositiveAmount(value.loanBorrowedAmount ?? '');
+    const totalRepayable = parsePositiveAmount(value.loanTotalRepayable ?? '');
+    const monthlyPayment = parsePositiveAmount(value.loanMonthlyPayment ?? '');
+    const installmentCount = parsePositiveInteger(value.loanInstallmentCount ?? '');
+    const paymentDay = parsePositiveInteger(value.loanPaymentDay ?? '');
+    const firstPaymentDate = normalizeDateTimeInput(value.loanFirstPaymentDate ?? '');
+
+    if (borrowedAmount === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanBorrowedAmount'],
+        message: 'errors.validation.amountPositive',
+      });
+    }
+
+    if (totalRepayable === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanTotalRepayable'],
+        message: 'errors.validation.amountPositive',
+      });
+    }
+
+    if (borrowedAmount !== null && totalRepayable !== null && totalRepayable < borrowedAmount) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanTotalRepayable'],
+        message: 'errors.validation.loanTotalRepayableMin',
+      });
+    }
+
+    if (monthlyPayment === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanMonthlyPayment'],
+        message: 'errors.validation.amountPositive',
+      });
+    }
+
+    if (installmentCount === null || installmentCount < 1 || installmentCount > 360) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanInstallmentCount'],
+        message: 'errors.validation.loanInstallmentCountRange',
+      });
+    }
+
+    if (paymentDay === null || paymentDay < 1 || paymentDay > 28) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanPaymentDay'],
+        message: 'errors.validation.dayOfMonthRange',
+      });
+    }
+
+    if (!firstPaymentDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['loanFirstPaymentDate'],
+        message: 'errors.validation.startDateTimeRequired',
+      });
+    }
+  });
 
 type CreateAccountFormValues = z.infer<typeof createAccountFormSchema>;
 type EditAccountFormValues = z.infer<typeof editAccountFormSchema>;
-type FeedbackState = {
-  tone: 'success' | 'error';
-  message: string;
-};
 
 function getAccountTypeLabel(
   type: AccountType,
@@ -115,6 +362,7 @@ function getAccountTypeLabel(
     credit: 'accounts.accountType.creditCard',
     debt_lent: 'accounts.accountType.debtLent',
     debt_borrowed: 'accounts.accountType.debtBorrowed',
+    loan: 'accounts.accountType.loan',
   };
 
   const rich = t(richKeyByType[type]);
@@ -135,6 +383,62 @@ function getAccountTypeLabel(
   return type.toUpperCase();
 }
 
+function getLoanStatusLabel(
+  status: 'active' | 'closed' | 'closed_early',
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  if (status === 'closed_early') {
+    return t('accounts.loan.status.closedEarly');
+  }
+  return t(`accounts.loan.status.${status}`);
+}
+
+function buildLoanPayloadFromForm(
+  values:
+    | CreateAccountFormValues
+    | EditAccountFormValues,
+): AccountCreateInput['loan'] {
+  const borrowedAmount = parsePositiveAmount(values.loanBorrowedAmount ?? '');
+  const totalRepayable = parsePositiveAmount(values.loanTotalRepayable ?? '');
+  const monthlyPayment = parsePositiveAmount(values.loanMonthlyPayment ?? '');
+  const installmentCount = parsePositiveInteger(values.loanInstallmentCount ?? '');
+  const paymentDay = parsePositiveInteger(values.loanPaymentDay ?? '');
+  const firstPaymentDate = normalizeDateTimeInput(values.loanFirstPaymentDate ?? '');
+
+  if (
+    borrowedAmount === null ||
+    totalRepayable === null ||
+    monthlyPayment === null ||
+    installmentCount === null ||
+    paymentDay === null ||
+    !firstPaymentDate
+  ) {
+    throw new Error('VALIDATION_ERROR');
+  }
+
+  return {
+    borrowedAmount,
+    totalRepayable,
+    monthlyPayment,
+    installmentCount,
+    paymentDay,
+    firstPaymentDate,
+    paymentAccountId: values.loanPaymentAccountId?.trim() || undefined,
+    note: values.loanNote?.trim() || undefined,
+  };
+}
+
+function initialLoanActionState(): LoanActionState {
+  return {
+    accountId: null,
+    mode: null,
+    fromAccountId: '',
+    amount: '',
+    occurredAt: new Date().toISOString(),
+    note: '',
+  };
+}
+
 export function AccountsScreen() {
   const { withAuth, user, refreshUser, logout } = useAuth();
   const { t, locale } = useI18n();
@@ -143,6 +447,7 @@ export function AccountsScreen() {
   const queryClient = useQueryClient();
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const [loanActionState, setLoanActionState] = useState<LoanActionState>(initialLoanActionState);
 
   const baseCurrency = user?.baseCurrency ?? null;
 
@@ -155,6 +460,8 @@ export function AccountsScreen() {
     queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
   });
 
+  const accounts = accountsQuery.data?.accounts ?? [];
+
   const createForm = useForm<CreateAccountFormValues>({
     resolver: zodResolver(createAccountFormSchema),
     defaultValues: {
@@ -162,6 +469,14 @@ export function AccountsScreen() {
       type: 'bank',
       currency: baseCurrency ?? 'USD',
       openingBalance: '0',
+      loanBorrowedAmount: '',
+      loanTotalRepayable: '',
+      loanMonthlyPayment: '',
+      loanInstallmentCount: '',
+      loanPaymentDay: '',
+      loanFirstPaymentDate: toDateInputValue(new Date().toISOString()),
+      loanPaymentAccountId: '',
+      loanNote: '',
     },
   });
 
@@ -171,6 +486,14 @@ export function AccountsScreen() {
       name: '',
       type: 'bank',
       openingBalance: '0',
+      loanBorrowedAmount: '',
+      loanTotalRepayable: '',
+      loanMonthlyPayment: '',
+      loanInstallmentCount: '',
+      loanPaymentDay: '',
+      loanFirstPaymentDate: toDateInputValue(new Date().toISOString()),
+      loanPaymentAccountId: '',
+      loanNote: '',
     },
   });
 
@@ -200,6 +523,8 @@ export function AccountsScreen() {
       queryClient.invalidateQueries({ queryKey: financeQueryKeys.dashboard.recent() }),
       queryClient.invalidateQueries({ queryKey: financeQueryKeys.analytics.all() }),
       queryClient.invalidateQueries({ queryKey: financeQueryKeys.transactions.all() }),
+      queryClient.invalidateQueries({ queryKey: financeQueryKeys.recurring.all() }),
+      queryClient.invalidateQueries({ queryKey: financeQueryKeys.upcomingPayments.all() }),
     ]);
   }, [queryClient]);
 
@@ -210,26 +535,41 @@ export function AccountsScreen() {
 
   const createSelectedType = createForm.watch('type');
   const createOpeningBalance = parseSignedAmount(createForm.watch('openingBalance') ?? '') ?? 0;
-  const createLooksLiability = isLiabilityAccountType(createSelectedType) || createOpeningBalance < 0;
+  const createIsLoan = createSelectedType === 'loan';
+  const createLooksLiability = createIsLoan || isLiabilityAccountType(createSelectedType) || createOpeningBalance < 0;
+
   const editSelectedType = editForm.watch('type');
   const editOpeningBalance = parseSignedAmount(editForm.watch('openingBalance') ?? '') ?? 0;
-  const editLooksLiability = isLiabilityAccountType(editSelectedType) || editOpeningBalance < 0;
+  const editIsLoan = editSelectedType === 'loan';
+  const editLooksLiability = editIsLoan || isLiabilityAccountType(editSelectedType) || editOpeningBalance < 0;
+
+  const createCurrency = (baseCurrency ?? createForm.watch('currency') ?? '').toUpperCase();
+  const createLoanSourceAccounts = useMemo(
+    () =>
+      accounts.filter(
+        (account) =>
+          account.type !== 'loan' &&
+          (!createCurrency || account.currency === createCurrency),
+      ),
+    [accounts, createCurrency],
+  );
 
   const createAccountMutation = useMutation({
-    mutationFn: (values: CreateAccountFormValues) => {
-      const openingBalance = parseSignedAmount(values.openingBalance) ?? 0;
-      return withAuth((token) =>
-        apiClient.createAccount(
-          {
-            name: values.name.trim(),
-            type: values.type,
-            currency: (baseCurrency ?? values.currency).toUpperCase(),
-            openingBalance,
-          },
-          token,
-        ),
-      );
-    },
+    mutationFn: (values: CreateAccountFormValues) =>
+      withAuth((token) => {
+        const payload: AccountCreateInput = {
+          name: values.name.trim(),
+          type: values.type,
+          currency: (baseCurrency ?? values.currency).toUpperCase(),
+          openingBalance: values.type === 'loan' ? 0 : parseSignedAmount(values.openingBalance) ?? 0,
+        };
+
+        if (values.type === 'loan') {
+          payload.loan = buildLoanPayloadFromForm(values);
+        }
+
+        return apiClient.createAccount(payload, token);
+      }),
     onSuccess: async () => {
       await invalidateAccountRelatedQueries();
 
@@ -242,30 +582,43 @@ export function AccountsScreen() {
         type: 'bank',
         currency: baseCurrency ?? createForm.getValues('currency'),
         openingBalance: '0',
+        loanBorrowedAmount: '',
+        loanTotalRepayable: '',
+        loanMonthlyPayment: '',
+        loanInstallmentCount: '',
+        loanPaymentDay: '',
+        loanFirstPaymentDate: toDateInputValue(new Date().toISOString()),
+        loanPaymentAccountId: '',
+        loanNote: '',
       });
       setFeedback({ tone: 'success', message: t('accounts.create.success') });
     },
     onError: (error) => {
-      showAlert(t('errors.account.createFailedTitle'), apiErrorText(error));
+      if (error instanceof Error && error.message === 'VALIDATION_ERROR') {
+        showAlert(t('common.error'), t('errors.validation.invalidIsoDateTime'));
+      } else {
+        showAlert(t('errors.account.createFailedTitle'), apiErrorText(error));
+      }
       setFeedback({ tone: 'error', message: t('accounts.create.error') });
     },
   });
 
   const updateAccountMutation = useMutation({
-    mutationFn: (params: { id: string; values: EditAccountFormValues }) => {
-      const openingBalance = parseSignedAmount(params.values.openingBalance) ?? 0;
-      return withAuth((token) =>
-        apiClient.updateAccount(
-          params.id,
-          {
-            name: params.values.name.trim(),
-            type: params.values.type,
-            openingBalance,
-          } satisfies AccountUpdateInput,
-          token,
-        ),
-      );
-    },
+    mutationFn: (params: { id: string; values: EditAccountFormValues }) =>
+      withAuth((token) => {
+        const payload: AccountUpdateInput = {
+          name: params.values.name.trim(),
+          type: params.values.type,
+        };
+
+        if (params.values.type === 'loan') {
+          payload.loan = buildLoanPayloadFromForm(params.values);
+        } else {
+          payload.openingBalance = parseSignedAmount(params.values.openingBalance) ?? 0;
+        }
+
+        return apiClient.updateAccount(params.id, payload, token);
+      }),
     onSuccess: async () => {
       setEditingAccountId(null);
       await invalidateAccountRelatedQueries();
@@ -279,8 +632,7 @@ export function AccountsScreen() {
   });
 
   const deleteAccountMutation = useMutation({
-    mutationFn: (accountId: string) =>
-      withAuth((token) => apiClient.deleteAccount(accountId, token)),
+    mutationFn: (accountId: string) => withAuth((token) => apiClient.deleteAccount(accountId, token)),
     onSuccess: async (_, accountId) => {
       if (editingAccountId === accountId) {
         setEditingAccountId(null);
@@ -295,9 +647,60 @@ export function AccountsScreen() {
     },
   });
 
+  const loanActionMutation = useMutation({
+    mutationFn: (params: {
+      mode: LoanActionMode;
+      accountId: string;
+      fromAccountId: string;
+      amount: number;
+      occurredAt?: string;
+      note?: string;
+    }) =>
+      withAuth((token) => {
+        if (params.mode === 'payment') {
+          return apiClient.payLoanInstallment(
+            params.accountId,
+            {
+              fromAccountId: params.fromAccountId,
+              amount: params.amount,
+              occurredAt: params.occurredAt,
+              note: params.note,
+            },
+            token,
+          );
+        }
+
+        return apiClient.earlyPayoffLoan(
+          params.accountId,
+          {
+            fromAccountId: params.fromAccountId,
+            amount: params.amount,
+            occurredAt: params.occurredAt,
+            note: params.note,
+          },
+          token,
+        );
+      }),
+    onSuccess: async (_, variables) => {
+      await invalidateAccountRelatedQueries();
+      setLoanActionState(initialLoanActionState());
+      setFeedback({
+        tone: 'success',
+        message:
+          variables.mode === 'payment'
+            ? t('accounts.loan.actionSuccessPayment')
+            : t('accounts.loan.actionSuccessEarlyPayoff'),
+      });
+    },
+    onError: (error) => {
+      showAlert(t('common.error'), apiErrorText(error));
+      setFeedback({ tone: 'error', message: t('common.error') });
+    },
+  });
+
   const editingAccount = useMemo(
-    () => accountsQuery.data?.accounts.find((account) => account.id === editingAccountId) ?? null,
-    [accountsQuery.data?.accounts, editingAccountId],
+    () => accounts.find((account) => account.id === editingAccountId) ?? null,
+    [accounts, editingAccountId],
   );
 
   const handleLogout = useCallback(async () => {
@@ -308,19 +711,46 @@ export function AccountsScreen() {
     }
   }, [logout, t]);
 
-  const openTransfer = useCallback((params?: TransferScreenParams) => {
-    const parent = navigation.getParent?.();
-    if (!parent || !('navigate' in parent)) {
-      return;
-    }
+  const openTransfer = useCallback(
+    (params?: TransferScreenParams) => {
+      const parent = navigation.getParent?.();
+      if (!parent || !('navigate' in parent)) {
+        return;
+      }
 
-    (parent as {
-      navigate: (routeName: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
-    }).navigate('AddTab', {
-      screen: 'Transfer',
-      params,
-    });
-  }, [navigation]);
+      (
+        parent as {
+          navigate: (routeName: keyof RootTabParamList, params?: RootTabParamList['AddTab']) => void;
+        }
+      ).navigate('AddTab', {
+        screen: 'Transfer',
+        params,
+      });
+    },
+    [navigation],
+  );
+
+  const openLoanAction = useCallback(
+    (account: Account, mode: LoanActionMode, suggestedAmount: number) => {
+      const sourceAccounts = accounts.filter(
+        (candidate) =>
+          candidate.id !== account.id &&
+          candidate.type !== 'loan' &&
+          candidate.currency === account.currency,
+      );
+      const defaultSource = account.loan?.paymentAccountId ?? sourceAccounts[0]?.id ?? '';
+
+      setLoanActionState({
+        accountId: account.id,
+        mode,
+        fromAccountId: defaultSource,
+        amount: suggestedAmount > 0 ? String(Math.round(suggestedAmount * 100) / 100) : '',
+        occurredAt: new Date().toISOString(),
+        note: '',
+      });
+    },
+    [accounts],
+  );
 
   const confirmDeleteAccount = useCallback(
     (accountId: string, accountName: string) => {
@@ -333,7 +763,10 @@ export function AccountsScreen() {
       if (Math.abs(accountBalance) > 0.0001) {
         showAlert(
           t('accounts.delete.hasBalanceTitle', { defaultValue: 'Hesapta Bakiye Var' }),
-          t('accounts.delete.hasBalanceBody', { defaultValue: 'Bu hesabı silmeden önce içindeki bakiyeyi başka bir hesaba aktarmanız gerekmektedir.' }),
+          t('accounts.delete.hasBalanceBody', {
+            defaultValue:
+              'Bu hesabı silmeden önce içindeki bakiyeyi başka bir hesaba aktarmanız gerekmektedir.',
+          }),
           [
             { text: t('common.cancel'), style: 'cancel' },
             {
@@ -344,26 +777,22 @@ export function AccountsScreen() {
                   deleteSourceAccountName: accountName,
                   deleteSourceBalance: accountBalance,
                 }),
-            }
-          ]
+            },
+          ],
         );
         return;
       }
 
-      showAlert(
-        t('accounts.delete.confirmTitle'),
-        t('accounts.delete.confirmBody', { name: accountName }),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('common.delete'),
-            style: 'destructive',
-            onPress: () => {
-              deleteAccountMutation.mutate(accountId);
-            },
+      showAlert(t('accounts.delete.confirmTitle'), t('accounts.delete.confirmBody', { name: accountName }), [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            deleteAccountMutation.mutate(accountId);
           },
-        ],
-      );
+        },
+      ]);
     },
     [balanceByAccountId, deleteAccountMutation, openTransfer, t, updateAccountMutation.isPending],
   );
@@ -391,12 +820,13 @@ export function AccountsScreen() {
     );
   }
 
-  const accounts = accountsQuery.data?.accounts ?? [];
-
   return (
     <View style={styles.screenRoot}>
       <ScreenContainer safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
-        <Section title={t('accounts.sections.baseCurrency.title')} subtitle={t('accounts.sections.baseCurrency.subtitle')}>
+        <Section
+          title={t('accounts.sections.baseCurrency.title')}
+          subtitle={t('accounts.sections.baseCurrency.subtitle')}
+        >
           <Card>
             <Text style={styles.baseCurrencyText}>
               {baseCurrency
@@ -406,13 +836,12 @@ export function AccountsScreen() {
           </Card>
         </Section>
 
-        <Section title={t('accounts.sections.session.title')} subtitle={user?.email ?? t('accounts.session.signedIn')}>
+        <Section
+          title={t('accounts.sections.session.title')}
+          subtitle={user?.email ?? t('accounts.session.signedIn')}
+        >
           <Card style={styles.sessionCard}>
-            <PrimaryButton
-              iconName="swap-horizontal-outline"
-              label={t('add.hub.transferAction')}
-              onPress={openTransfer}
-            />
+            <PrimaryButton iconName="swap-horizontal-outline" label={t('add.hub.transferAction')} onPress={openTransfer} />
             <PrimaryButton
               label={t('profile.logOut')}
               onPress={() => {
@@ -432,101 +861,271 @@ export function AccountsScreen() {
 
         <Section title={t('accounts.sections.create.title')}>
           <Card style={styles.formCard}>
-          <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
-          <Controller
-            control={createForm.control}
-            name="name"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={styles.input}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                editable={!createAccountMutation.isPending}
-                placeholder={t('accounts.form.namePlaceholder')}
-                placeholderTextColor={colors.textMuted}
-              />
-            )}
-          />
-          {createForm.formState.errors.name ? (
-            <Text style={styles.errorText}>{t(createForm.formState.errors.name.message ?? '')}</Text>
-          ) : null}
-
-          <Text style={styles.fieldLabel}>{t('accounts.form.typeLabel')}</Text>
-          <Controller
-            control={createForm.control}
-            name="type"
-            render={({ field: { onChange, value } }) => (
-              <TypePicker
-                selected={value}
-                onSelect={onChange}
-                disabled={createAccountMutation.isPending}
-              />
-            )}
-          />
-
-          <Text style={styles.fieldLabel}>{t('accounts.form.currencyLabel')}</Text>
-          {baseCurrency ? (
-            <Chip label={baseCurrency} tone="primary" />
-          ) : (
+            <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
             <Controller
               control={createForm.control}
-              name="currency"
+              name="name"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={styles.input}
                   value={value}
-                  onChangeText={(next) => onChange(next.toUpperCase())}
+                  onChangeText={onChange}
                   onBlur={onBlur}
                   editable={!createAccountMutation.isPending}
-                  placeholder={t('accounts.form.currencyPlaceholder')}
-                  autoCapitalize="characters"
-                  maxLength={3}
+                  placeholder={t('accounts.form.namePlaceholder')}
                   placeholderTextColor={colors.textMuted}
                 />
               )}
             />
-          )}
-          {createForm.formState.errors.currency ? (
-            <Text style={styles.errorText}>{t(createForm.formState.errors.currency.message ?? '')}</Text>
-          ) : null}
+            {createForm.formState.errors.name ? (
+              <Text style={styles.errorText}>{t(createForm.formState.errors.name.message ?? '')}</Text>
+            ) : null}
 
-          <Text style={styles.fieldLabel}>{t('accounts.form.openingBalanceLabel')}</Text>
-          <Controller
-            control={createForm.control}
-            name="openingBalance"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={styles.input}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                editable={!createAccountMutation.isPending}
-                placeholder={t('accounts.form.openingBalancePlaceholder')}
-                keyboardType="numbers-and-punctuation"
-                placeholderTextColor={colors.textMuted}
+            <Text style={styles.fieldLabel}>{t('accounts.form.typeLabel')}</Text>
+            <Controller
+              control={createForm.control}
+              name="type"
+              render={({ field: { onChange, value } }) => (
+                <TypePicker selected={value} onSelect={onChange} disabled={createAccountMutation.isPending} />
+              )}
+            />
+
+            <Text style={styles.fieldLabel}>{t('accounts.form.currencyLabel')}</Text>
+            {baseCurrency ? (
+              <Chip label={baseCurrency} tone="primary" />
+            ) : (
+              <Controller
+                control={createForm.control}
+                name="currency"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={styles.input}
+                    value={value}
+                    onChangeText={(next) => onChange(next.toUpperCase())}
+                    onBlur={onBlur}
+                    editable={!createAccountMutation.isPending}
+                    placeholder={t('accounts.form.currencyPlaceholder')}
+                    autoCapitalize="characters"
+                    maxLength={3}
+                    placeholderTextColor={colors.textMuted}
+                  />
+                )}
               />
             )}
-          />
-          {createForm.formState.errors.openingBalance ? (
-            <Text style={styles.errorText}>{t(createForm.formState.errors.openingBalance.message ?? '')}</Text>
-          ) : null}
-          <Text style={styles.helperText}>
-            {createLooksLiability ? t('accounts.form.liabilityHint') : t('accounts.form.assetHint')}
-          </Text>
+            {createForm.formState.errors.currency ? (
+              <Text style={styles.errorText}>{t(createForm.formState.errors.currency.message ?? '')}</Text>
+            ) : null}
 
-          <PrimaryButton
-            label={createAccountMutation.isPending ? t('accounts.form.creating') : t('accounts.form.create')}
-            loading={createAccountMutation.isPending}
-            disabled={createAccountMutation.isPending}
-            onPress={createForm.handleSubmit((values) => {
-              createAccountMutation.mutate(values);
-            })}
-          />
+            {createIsLoan ? (
+              <>
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanBorrowedAmountLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanBorrowedAmount"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      keyboardType="numbers-and-punctuation"
+                      placeholder={t('accounts.form.loanBorrowedAmountPlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.loanBorrowedAmount ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanBorrowedAmount.message ?? '')}</Text>
+                ) : null}
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanTotalRepayableLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanTotalRepayable"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      keyboardType="numbers-and-punctuation"
+                      placeholder={t('accounts.form.loanTotalRepayablePlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.loanTotalRepayable ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanTotalRepayable.message ?? '')}</Text>
+                ) : null}
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanMonthlyPaymentLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanMonthlyPayment"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      keyboardType="numbers-and-punctuation"
+                      placeholder={t('accounts.form.loanMonthlyPaymentPlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.loanMonthlyPayment ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanMonthlyPayment.message ?? '')}</Text>
+                ) : null}
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanInstallmentCountLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanInstallmentCount"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      keyboardType="number-pad"
+                      placeholder={t('accounts.form.loanInstallmentCountPlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.loanInstallmentCount ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanInstallmentCount.message ?? '')}</Text>
+                ) : null}
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentDayLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanPaymentDay"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      keyboardType="number-pad"
+                      placeholder={t('accounts.form.loanPaymentDayPlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.loanPaymentDay ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanPaymentDay.message ?? '')}</Text>
+                ) : null}
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanFirstPaymentDateLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanFirstPaymentDate"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      placeholder={t('accounts.form.loanFirstPaymentDatePlaceholder')}
+                      autoCapitalize="none"
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.loanFirstPaymentDate ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanFirstPaymentDate.message ?? '')}</Text>
+                ) : null}
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentAccountLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanPaymentAccountId"
+                  render={({ field: { onChange, value } }) => (
+                    <View style={styles.chipWrap}>
+                      <Pressable onPress={() => onChange('')}>
+                        <Chip
+                          label={t('accounts.form.loanPaymentAccountOptional')}
+                          tone={!value ? 'primary' : 'default'}
+                        />
+                      </Pressable>
+                      {createLoanSourceAccounts.map((account) => (
+                        <Pressable key={`create-loan-payment-${account.id}`} onPress={() => onChange(account.id)}>
+                          <Chip label={account.name} tone={value === account.id ? 'primary' : 'default'} />
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                />
+
+                <Text style={styles.fieldLabel}>{t('accounts.form.loanNoteLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="loanNote"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      placeholder={t('accounts.form.loanNotePlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.fieldLabel}>{t('accounts.form.openingBalanceLabel')}</Text>
+                <Controller
+                  control={createForm.control}
+                  name="openingBalance"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!createAccountMutation.isPending}
+                      placeholder={t('accounts.form.openingBalancePlaceholder')}
+                      keyboardType="numbers-and-punctuation"
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {createForm.formState.errors.openingBalance ? (
+                  <Text style={styles.errorText}>{t(createForm.formState.errors.openingBalance.message ?? '')}</Text>
+                ) : null}
+              </>
+            )}
+
+            <Text style={styles.helperText}>
+              {createLooksLiability ? t('accounts.form.liabilityHint') : t('accounts.form.assetHint')}
+            </Text>
+
+            <PrimaryButton
+              label={createAccountMutation.isPending ? t('accounts.form.creating') : t('accounts.form.create')}
+              loading={createAccountMutation.isPending}
+              disabled={createAccountMutation.isPending}
+              onPress={createForm.handleSubmit((values) => {
+                createAccountMutation.mutate(values);
+              })}
+            />
           </Card>
         </Section>
 
-        <Section title={t('accounts.sections.list.title')} subtitle={t('accounts.sections.list.total', { count: accounts.length })}>
+        <Section
+          title={t('accounts.sections.list.title')}
+          subtitle={t('accounts.sections.list.total', { count: accounts.length })}
+        >
           {accounts.length === 0 ? (
             <Card>
               <Text style={styles.emptyText}>{t('accounts.state.empty')}</Text>
@@ -535,170 +1134,591 @@ export function AccountsScreen() {
 
           {accounts.map((account) => {
             const accountBalance = balanceByAccountId.get(account.id) ?? account.openingBalance ?? 0;
+            const loanStats = account.loanStats ?? null;
+            const isLoan = account.type === 'loan';
+            const remainingLoanBalance = isLoan ? loanStats?.remainingBalance ?? accountBalance : accountBalance;
+            const paidInstallments = loanStats?.paidInstallments ?? 0;
+            const totalInstallments = loanStats?.totalInstallments ?? account.loan?.installmentCount ?? 0;
+            const remainingInstallments =
+              loanStats?.remainingInstallments ??
+              Math.max(totalInstallments - paidInstallments, 0);
             const accountRoleLabel = isLiabilityAccountType(account.type)
               ? t('accounts.balance.liabilityTag')
               : account.type === 'debt_lent'
                 ? t('accounts.balance.assetTag')
                 : null;
+            const isLoanActionOpen = loanActionState.accountId === account.id && loanActionState.mode !== null;
+            const loanPaymentSourceAccounts = accounts.filter(
+              (candidate) =>
+                candidate.id !== account.id &&
+                candidate.type !== 'loan' &&
+                candidate.currency === account.currency,
+            );
 
             return (
-            <Card key={account.id} style={styles.accountCard}>
-            <View style={styles.accountHeader}>
-              <View style={styles.accountMeta}>
-                <Text style={styles.accountName}>{account.name}</Text>
-                <Text style={styles.accountSub}>{`${getAccountTypeLabel(account.type, t, account.name)} · ${account.currency}`}</Text>
-                <Text
-                  style={[
-                    styles.accountBalance,
-                    accountBalance > 0
-                      ? styles.accountBalancePositive
-                      : accountBalance < 0
-                        ? styles.accountBalanceNegative
-                        : styles.accountBalanceNeutral,
-                  ]}
-                >
-                  {t('accounts.balance.value', {
-                    value: formatSignedBalance(accountBalance, account.currency, locale),
-                  })}
-                </Text>
-                {accountRoleLabel ? <Text style={styles.accountRole}>{accountRoleLabel}</Text> : null}
-              </View>
+              <Card key={account.id} style={styles.accountCard}>
+                <View style={styles.accountHeader}>
+                  <View style={styles.accountMeta}>
+                    <Text style={styles.accountName}>{account.name}</Text>
+                    <Text style={styles.accountSub}>{`${getAccountTypeLabel(account.type, t, account.name)} · ${account.currency}`}</Text>
+                    <Text
+                      style={[
+                        styles.accountBalance,
+                        (isLoan ? remainingLoanBalance : accountBalance) > 0
+                          ? styles.accountBalancePositive
+                          : (isLoan ? remainingLoanBalance : accountBalance) < 0
+                            ? styles.accountBalanceNegative
+                            : styles.accountBalanceNeutral,
+                      ]}
+                    >
+                      {t(isLoan ? 'accounts.loan.remainingBalance' : 'accounts.balance.value', {
+                        value: formatSignedBalance(
+                          isLoan ? remainingLoanBalance : accountBalance,
+                          account.currency,
+                          locale,
+                        ),
+                      })}
+                    </Text>
+                    {accountRoleLabel ? <Text style={styles.accountRole}>{accountRoleLabel}</Text> : null}
 
-              <View style={styles.accountActions}>
-                <Pressable
-                  disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
-                  onPress={() => {
-                    setEditingAccountId(account.id);
-                    editForm.reset({
-                      name: account.name,
-                      type: account.type,
-                      openingBalance: String(account.openingBalance ?? 0),
-                    });
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.linkText,
-                      updateAccountMutation.isPending || deleteAccountMutation.isPending
-                        ? styles.disabledLinkText
-                        : null,
-                    ]}
-                  >
-                    {t('common.edit')}
-                  </Text>
-                </Pressable>
+                    {isLoan && account.loan ? (
+                      <View style={styles.loanMetaWrap}>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.borrowedAmount', {
+                            value: formatAbsoluteMoney(account.loan.borrowedAmount, account.currency, locale),
+                          })}
+                        </Text>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.totalRepayable', {
+                            value: formatAbsoluteMoney(account.loan.totalRepayable, account.currency, locale),
+                          })}
+                        </Text>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.monthlyPayment', {
+                            value: formatAbsoluteMoney(account.loan.monthlyPayment, account.currency, locale),
+                          })}
+                        </Text>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.installmentProgress', {
+                            current: Math.min(paidInstallments, totalInstallments),
+                            total: totalInstallments,
+                          })}
+                        </Text>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.remainingInstallments', { count: remainingInstallments })}
+                        </Text>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.nextPaymentDate', {
+                            date: formatDateLabel(loanStats?.nextPaymentDate, locale),
+                          })}
+                        </Text>
+                        <Text style={styles.loanMetaText}>
+                          {t('accounts.loan.statusLabel', {
+                            status: getLoanStatusLabel(account.loan.status, t),
+                          })}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
 
-                <Pressable
-                  disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
-                  onPress={() => {
-                    confirmDeleteAccount(account.id, account.name);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.deleteLinkText,
-                      updateAccountMutation.isPending || deleteAccountMutation.isPending
-                        ? styles.disabledLinkText
-                        : null,
-                    ]}
-                  >
-                    {t('common.delete')}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
+                  <View style={styles.accountActions}>
+                    <Pressable
+                      disabled={
+                        updateAccountMutation.isPending ||
+                        deleteAccountMutation.isPending ||
+                        loanActionMutation.isPending
+                      }
+                      onPress={() => {
+                        setEditingAccountId(account.id);
+                        editForm.reset({
+                          name: account.name,
+                          type: account.type,
+                          openingBalance: String(account.openingBalance ?? 0),
+                          loanBorrowedAmount: account.loan ? String(account.loan.borrowedAmount) : '',
+                          loanTotalRepayable: account.loan ? String(account.loan.totalRepayable) : '',
+                          loanMonthlyPayment: account.loan ? String(account.loan.monthlyPayment) : '',
+                          loanInstallmentCount: account.loan ? String(account.loan.installmentCount) : '',
+                          loanPaymentDay: account.loan ? String(account.loan.paymentDay) : '',
+                          loanFirstPaymentDate: account.loan
+                            ? toDateInputValue(account.loan.firstPaymentDate)
+                            : toDateInputValue(new Date().toISOString()),
+                          loanPaymentAccountId: account.loan?.paymentAccountId ?? '',
+                          loanNote: account.loan?.note ?? '',
+                        });
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.linkText,
+                          updateAccountMutation.isPending ||
+                          deleteAccountMutation.isPending ||
+                          loanActionMutation.isPending
+                            ? styles.disabledLinkText
+                            : null,
+                        ]}
+                      >
+                        {t('common.edit')}
+                      </Text>
+                    </Pressable>
 
-            {editingAccountId === account.id && editingAccount ? (
-              <View style={styles.inlineEditor}>
-                <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
-                <Controller
-                  control={editForm.control}
-                  name="name"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      style={styles.input}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
-                      placeholder={t('accounts.form.namePlaceholder')}
-                      placeholderTextColor={colors.textMuted}
-                    />
-                  )}
-                />
-                {editForm.formState.errors.name ? (
-                  <Text style={styles.errorText}>{t(editForm.formState.errors.name.message ?? '')}</Text>
-                ) : null}
-
-                <Text style={styles.fieldLabel}>{t('accounts.form.typeLabel')}</Text>
-                <Controller
-                  control={editForm.control}
-                  name="type"
-                  render={({ field: { onChange, value } }) => (
-                    <TypePicker
-                      selected={value}
-                      onSelect={onChange}
-                      disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
-                    />
-                  )}
-                />
-
-                <Text style={styles.fieldLabel}>{t('accounts.form.openingBalanceLabel')}</Text>
-                <Controller
-                  control={editForm.control}
-                  name="openingBalance"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      style={styles.input}
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
-                      placeholder={t('accounts.form.openingBalancePlaceholder')}
-                      keyboardType="numbers-and-punctuation"
-                      placeholderTextColor={colors.textMuted}
-                    />
-                  )}
-                />
-                {editForm.formState.errors.openingBalance ? (
-                  <Text style={styles.errorText}>{t(editForm.formState.errors.openingBalance.message ?? '')}</Text>
-                ) : null}
-                <Text style={styles.helperText}>
-                  {editLooksLiability ? t('accounts.form.liabilityHint') : t('accounts.form.assetHint')}
-                </Text>
-
-                <View style={styles.editorActions}>
-                  <PrimaryButton
-                    label={updateAccountMutation.isPending ? t('common.saving') : t('common.save')}
-                    loading={updateAccountMutation.isPending}
-                    disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
-                    onPress={editForm.handleSubmit((values) => {
-                      updateAccountMutation.mutate({ id: editingAccount.id, values });
-                    })}
-                  />
-                  <Pressable
-                    disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
-                    style={styles.secondaryAction}
-                    onPress={() => {
-                      setEditingAccountId(null);
-                    }}
-                  >
-                    <Text style={styles.secondaryActionText}>{t('common.cancel')}</Text>
-                  </Pressable>
-
-                  <Pressable
-                    disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
-                    style={styles.secondaryAction}
-                    onPress={() => {
-                      confirmDeleteAccount(editingAccount.id, editingAccount.name);
-                    }}
-                  >
-                    <Text style={styles.deleteLinkText}>{t('common.delete')}</Text>
-                  </Pressable>
+                    <Pressable
+                      disabled={
+                        updateAccountMutation.isPending ||
+                        deleteAccountMutation.isPending ||
+                        loanActionMutation.isPending
+                      }
+                      onPress={() => {
+                        confirmDeleteAccount(account.id, account.name);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.deleteLinkText,
+                          updateAccountMutation.isPending ||
+                          deleteAccountMutation.isPending ||
+                          loanActionMutation.isPending
+                            ? styles.disabledLinkText
+                            : null,
+                        ]}
+                      >
+                        {t('common.delete')}
+                      </Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </View>
-            ) : null}
-            </Card>
+
+                {isLoan && account.loan?.status === 'active' ? (
+                  <View style={styles.loanActionsWrap}>
+                    <Pressable
+                      style={styles.secondaryAction}
+                      onPress={() => {
+                        openLoanAction(account, 'payment', account.loan?.monthlyPayment ?? 0);
+                      }}
+                      disabled={loanActionMutation.isPending || updateAccountMutation.isPending}
+                    >
+                      <Text style={styles.linkText}>{t('accounts.loan.paymentAction')}</Text>
+                    </Pressable>
+                    <Pressable
+                      style={styles.secondaryAction}
+                      onPress={() => {
+                        openLoanAction(account, 'earlyPayoff', Math.abs(remainingLoanBalance));
+                      }}
+                      disabled={loanActionMutation.isPending || updateAccountMutation.isPending}
+                    >
+                      <Text style={styles.deleteLinkText}>{t('accounts.loan.earlyPayoffAction')}</Text>
+                    </Pressable>
+                  </View>
+                ) : null}
+
+                {isLoanActionOpen ? (
+                  <View style={styles.inlineEditor}>
+                    <Text style={styles.fieldLabel}>{t('accounts.loan.actionFromAccount')}</Text>
+                    {loanPaymentSourceAccounts.length === 0 ? (
+                      <Text style={styles.errorText}>{t('accounts.loan.actionNoSourceAccount')}</Text>
+                    ) : (
+                      <View style={styles.chipWrap}>
+                        {loanPaymentSourceAccounts.map((candidate) => (
+                          <Pressable
+                            key={`loan-action-source-${account.id}-${candidate.id}`}
+                            onPress={() =>
+                              setLoanActionState((current) => ({
+                                ...current,
+                                fromAccountId: candidate.id,
+                              }))
+                            }
+                          >
+                            <Chip
+                              label={candidate.name}
+                              tone={loanActionState.fromAccountId === candidate.id ? 'primary' : 'default'}
+                            />
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+
+                    <Text style={styles.fieldLabel}>{t('accounts.loan.actionAmount')}</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={loanActionState.amount}
+                      onChangeText={(next) =>
+                        setLoanActionState((current) => ({
+                          ...current,
+                          amount: next,
+                        }))
+                      }
+                      keyboardType="numbers-and-punctuation"
+                      placeholder={t('accounts.form.loanMonthlyPaymentPlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+
+                    <Text style={styles.fieldLabel}>{t('accounts.loan.actionDate')}</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={loanActionState.occurredAt}
+                      onChangeText={(next) =>
+                        setLoanActionState((current) => ({
+                          ...current,
+                          occurredAt: next,
+                        }))
+                      }
+                      autoCapitalize="none"
+                      placeholder={t('accounts.loan.actionDatePlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+
+                    <Text style={styles.fieldLabel}>{t('accounts.loan.actionNote')}</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={loanActionState.note}
+                      onChangeText={(next) =>
+                        setLoanActionState((current) => ({
+                          ...current,
+                          note: next,
+                        }))
+                      }
+                      placeholder={t('accounts.form.loanNotePlaceholder')}
+                      placeholderTextColor={colors.textMuted}
+                    />
+
+                    <View style={styles.editorActions}>
+                      <PrimaryButton
+                        label={
+                          loanActionMutation.isPending
+                            ? t('common.saving')
+                            : loanActionState.mode === 'payment'
+                              ? t('accounts.loan.actionSubmitPayment')
+                              : t('accounts.loan.actionSubmitEarlyPayoff')
+                        }
+                        loading={loanActionMutation.isPending}
+                        disabled={loanActionMutation.isPending}
+                        onPress={() => {
+                          if (!loanActionState.accountId || !loanActionState.mode) {
+                            return;
+                          }
+
+                          if (!loanActionState.fromAccountId) {
+                            showAlert(t('common.error'), t('errors.validation.selectSourceAccount'));
+                            return;
+                          }
+
+                          const amount = parsePositiveAmount(loanActionState.amount);
+                          if (amount === null) {
+                            showAlert(t('common.error'), t('errors.validation.amountPositive'));
+                            return;
+                          }
+
+                          const occurredAt = loanActionState.occurredAt.trim()
+                            ? normalizeDateTimeInput(loanActionState.occurredAt)
+                            : null;
+                          if (loanActionState.occurredAt.trim() && !occurredAt) {
+                            showAlert(t('common.error'), t('errors.validation.invalidIsoDateTime'));
+                            return;
+                          }
+
+                          loanActionMutation.mutate({
+                            mode: loanActionState.mode,
+                            accountId: loanActionState.accountId,
+                            fromAccountId: loanActionState.fromAccountId,
+                            amount,
+                            occurredAt: occurredAt ?? undefined,
+                            note: loanActionState.note.trim() || undefined,
+                          });
+                        }}
+                      />
+
+                      <Pressable
+                        style={styles.secondaryAction}
+                        onPress={() => setLoanActionState(initialLoanActionState())}
+                        disabled={loanActionMutation.isPending}
+                      >
+                        <Text style={styles.secondaryActionText}>{t('common.cancel')}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+
+                {editingAccountId === account.id && editingAccount ? (
+                  <View style={styles.inlineEditor}>
+                    <Text style={styles.fieldLabel}>{t('accounts.form.nameLabel')}</Text>
+                    <Controller
+                      control={editForm.control}
+                      name="name"
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <TextInput
+                          style={styles.input}
+                          value={value}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                          editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                          placeholder={t('accounts.form.namePlaceholder')}
+                          placeholderTextColor={colors.textMuted}
+                        />
+                      )}
+                    />
+                    {editForm.formState.errors.name ? (
+                      <Text style={styles.errorText}>{t(editForm.formState.errors.name.message ?? '')}</Text>
+                    ) : null}
+
+                    <Text style={styles.fieldLabel}>{t('accounts.form.typeLabel')}</Text>
+                    <Controller
+                      control={editForm.control}
+                      name="type"
+                      render={({ field: { onChange, value } }) => (
+                        <TypePicker
+                          selected={value}
+                          onSelect={onChange}
+                          disabled={
+                            updateAccountMutation.isPending ||
+                            deleteAccountMutation.isPending ||
+                            account.type === 'loan'
+                          }
+                        />
+                      )}
+                    />
+                    {account.type === 'loan' ? (
+                      <Text style={styles.helperText}>{t('accounts.form.loanTypeLockedHint')}</Text>
+                    ) : null}
+
+                    {editIsLoan ? (
+                      <>
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanBorrowedAmountLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanBorrowedAmount"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              keyboardType="numbers-and-punctuation"
+                              placeholder={t('accounts.form.loanBorrowedAmountPlaceholder')}
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.loanBorrowedAmount ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanBorrowedAmount.message ?? '')}</Text>
+                        ) : null}
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanTotalRepayableLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanTotalRepayable"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              keyboardType="numbers-and-punctuation"
+                              placeholder={t('accounts.form.loanTotalRepayablePlaceholder')}
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.loanTotalRepayable ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanTotalRepayable.message ?? '')}</Text>
+                        ) : null}
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanMonthlyPaymentLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanMonthlyPayment"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              keyboardType="numbers-and-punctuation"
+                              placeholder={t('accounts.form.loanMonthlyPaymentPlaceholder')}
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.loanMonthlyPayment ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanMonthlyPayment.message ?? '')}</Text>
+                        ) : null}
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanInstallmentCountLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanInstallmentCount"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              keyboardType="number-pad"
+                              placeholder={t('accounts.form.loanInstallmentCountPlaceholder')}
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.loanInstallmentCount ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanInstallmentCount.message ?? '')}</Text>
+                        ) : null}
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentDayLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanPaymentDay"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              keyboardType="number-pad"
+                              placeholder={t('accounts.form.loanPaymentDayPlaceholder')}
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.loanPaymentDay ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanPaymentDay.message ?? '')}</Text>
+                        ) : null}
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanFirstPaymentDateLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanFirstPaymentDate"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              placeholder={t('accounts.form.loanFirstPaymentDatePlaceholder')}
+                              autoCapitalize="none"
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.loanFirstPaymentDate ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanFirstPaymentDate.message ?? '')}</Text>
+                        ) : null}
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentAccountLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanPaymentAccountId"
+                          render={({ field: { onChange, value } }) => (
+                            <View style={styles.chipWrap}>
+                              <Pressable onPress={() => onChange('')}>
+                                <Chip
+                                  label={t('accounts.form.loanPaymentAccountOptional')}
+                                  tone={!value ? 'primary' : 'default'}
+                                />
+                              </Pressable>
+                              {accounts
+                                .filter(
+                                  (candidate) =>
+                                    candidate.type !== 'loan' &&
+                                    candidate.currency === account.currency &&
+                                    candidate.id !== account.id,
+                                )
+                                .map((candidate) => (
+                                  <Pressable
+                                    key={`edit-loan-payment-${account.id}-${candidate.id}`}
+                                    onPress={() => onChange(candidate.id)}
+                                  >
+                                    <Chip
+                                      label={candidate.name}
+                                      tone={value === candidate.id ? 'primary' : 'default'}
+                                    />
+                                  </Pressable>
+                                ))}
+                            </View>
+                          )}
+                        />
+
+                        <Text style={styles.fieldLabel}>{t('accounts.form.loanNoteLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="loanNote"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              placeholder={t('accounts.form.loanNotePlaceholder')}
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.fieldLabel}>{t('accounts.form.openingBalanceLabel')}</Text>
+                        <Controller
+                          control={editForm.control}
+                          name="openingBalance"
+                          render={({ field: { onChange, onBlur, value } }) => (
+                            <TextInput
+                              style={styles.input}
+                              value={value}
+                              onChangeText={onChange}
+                              onBlur={onBlur}
+                              editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                              placeholder={t('accounts.form.openingBalancePlaceholder')}
+                              keyboardType="numbers-and-punctuation"
+                              placeholderTextColor={colors.textMuted}
+                            />
+                          )}
+                        />
+                        {editForm.formState.errors.openingBalance ? (
+                          <Text style={styles.errorText}>{t(editForm.formState.errors.openingBalance.message ?? '')}</Text>
+                        ) : null}
+                      </>
+                    )}
+
+                    <Text style={styles.helperText}>
+                      {editLooksLiability ? t('accounts.form.liabilityHint') : t('accounts.form.assetHint')}
+                    </Text>
+
+                    <View style={styles.editorActions}>
+                      <PrimaryButton
+                        label={updateAccountMutation.isPending ? t('common.saving') : t('common.save')}
+                        loading={updateAccountMutation.isPending}
+                        disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
+                        onPress={editForm.handleSubmit((values) => {
+                          updateAccountMutation.mutate({ id: editingAccount.id, values });
+                        })}
+                      />
+                      <Pressable
+                        disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
+                        style={styles.secondaryAction}
+                        onPress={() => {
+                          setEditingAccountId(null);
+                        }}
+                      >
+                        <Text style={styles.secondaryActionText}>{t('common.cancel')}</Text>
+                      </Pressable>
+
+                      <Pressable
+                        disabled={updateAccountMutation.isPending || deleteAccountMutation.isPending}
+                        style={styles.secondaryAction}
+                        onPress={() => {
+                          confirmDeleteAccount(editingAccount.id, editingAccount.name);
+                        }}
+                      >
+                        <Text style={styles.deleteLinkText}>{t('common.delete')}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+              </Card>
             );
           })}
         </Section>
@@ -746,10 +1766,7 @@ function TypePicker({
           onPress={() => onSelect(type)}
           style={disabled ? styles.disabledPressable : null}
         >
-          <Chip
-            label={getAccountTypeLabel(type, t)}
-            tone={selected === type ? 'primary' : 'default'}
-          />
+          <Chip label={getAccountTypeLabel(type, t)} tone={selected === type ? 'primary' : 'default'} />
         </Pressable>
       ))}
     </View>
@@ -800,7 +1817,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xs,
-    justifyContent: 'center',
   },
   disabledPressable: {
     opacity: 0.6,
@@ -843,6 +1859,19 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
   },
+  loanMetaWrap: {
+    marginTop: spacing.xxs,
+    gap: 2,
+  },
+  loanMetaText: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  loanActionsWrap: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'space-between',
+  },
   linkText: {
     ...typography.caption,
     color: colors.primary,
@@ -874,6 +1903,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
   },
   secondaryActionText: {
     ...typography.caption,

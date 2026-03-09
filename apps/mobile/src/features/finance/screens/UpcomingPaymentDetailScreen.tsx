@@ -22,7 +22,7 @@ import {
 } from '../utils/upcomingPaymentAccountPreference';
 import { cancelUpcomingPaymentNotifications } from '../utils/notificationsForUpcomingPayment';
 
-type UpcomingPaymentView = Pick<UpcomingPayment, 'id' | 'title' | 'amount' | 'currency' | 'dueDate'>;
+type UpcomingPaymentView = Pick<UpcomingPayment, 'id' | 'title' | 'amount' | 'currency' | 'dueDate' | 'meta'>;
 
 function formatMoney(amount: number, currency: string, locale: string): string {
   return new Intl.NumberFormat(locale, {
@@ -118,6 +118,7 @@ export function UpcomingPaymentDetailScreen() {
       amount: foundDashboard.amount,
       currency: foundDashboard.currency,
       dueDate: foundDashboard.dueDate,
+      meta: null,
     };
   }, [
     dashboardQuery.data?.upcomingPaymentsDueSoon,
@@ -125,6 +126,30 @@ export function UpcomingPaymentDetailScreen() {
     route.params.paymentId,
     upcomingQuery.data?.upcomingPayments,
   ]);
+
+  const isLoanInstallment = Boolean(payment?.meta?.relatedLoanAccountId);
+  const availableAccounts = useMemo(() => {
+    const allAccounts = accountsQuery.data?.accounts ?? [];
+    if (!payment) {
+      return allAccounts;
+    }
+
+    return allAccounts.filter((account) => {
+      if (account.type === 'loan') {
+        return false;
+      }
+
+      if (account.currency !== payment.currency) {
+        return false;
+      }
+
+      if (!isLoanInstallment) {
+        return true;
+      }
+
+      return account.id !== payment.meta?.relatedLoanAccountId;
+    });
+  }, [accountsQuery.data?.accounts, isLoanInstallment, payment]);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,11 +161,14 @@ export function UpcomingPaymentDetailScreen() {
       }
 
       if (preferredAccount) {
-        setAccountId(preferredAccount);
-        return;
+        const matchedPreferred = availableAccounts.find((account) => account.id === preferredAccount);
+        if (matchedPreferred) {
+          setAccountId(matchedPreferred.id);
+          return;
+        }
       }
 
-      const firstAccount = accountsQuery.data?.accounts[0];
+      const firstAccount = availableAccounts[0];
       if (firstAccount) {
         setAccountId(firstAccount.id);
       }
@@ -151,7 +179,7 @@ export function UpcomingPaymentDetailScreen() {
     return () => {
       cancelled = true;
     };
-  }, [accountsQuery.data?.accounts, route.params.paymentId]);
+  }, [availableAccounts, route.params.paymentId]);
 
   const markPaidMutation = useMutation({
     mutationFn: async () => {
@@ -175,7 +203,14 @@ export function UpcomingPaymentDetailScreen() {
         queryClient.invalidateQueries({ queryKey: financeQueryKeys.recurring.all() }),
       ]);
 
-      showAlert(t('upcoming.detail.markPaid.successTitle'), t('upcoming.detail.markPaid.successMessage'));
+      showAlert(
+        t('upcoming.detail.markPaid.successTitle'),
+        t(
+          isLoanInstallment
+            ? 'upcoming.detail.markPaid.successMessageLoan'
+            : 'upcoming.detail.markPaid.successMessage',
+        ),
+      );
       navigation.goBack();
     },
     onError: (error) => {
@@ -254,6 +289,19 @@ export function UpcomingPaymentDetailScreen() {
     );
   }
 
+  const installmentLabel =
+    payment.meta?.installmentIndex && payment.meta?.installmentCount
+      ? t('upcoming.detail.loan.installmentProgress', {
+          current: payment.meta.installmentIndex,
+          total: payment.meta.installmentCount,
+        })
+      : null;
+  const remainingLabel =
+    typeof payment.meta?.remainingInstallments === 'number'
+      ? t('upcoming.detail.loan.remainingInstallments', { count: payment.meta.remainingInstallments })
+      : null;
+  const canSkip = !isRecurringProjection && !isLoanInstallment;
+
   return (
     <ScreenContainer dark={mode === 'dark'}>
       <View style={styles.container}>
@@ -265,12 +313,21 @@ export function UpcomingPaymentDetailScreen() {
           <Text style={[styles.meta, { color: theme.colors.textMuted }]}>
             {t('upcoming.detail.dueDateValue', { date: formatDate(payment.dueDate, locale) })}
           </Text>
+          {isLoanInstallment && installmentLabel ? (
+            <Text style={[styles.meta, { color: theme.colors.textMuted }]}>{installmentLabel}</Text>
+          ) : null}
+          {isLoanInstallment && remainingLabel ? (
+            <Text style={[styles.meta, { color: theme.colors.textMuted }]}>{remainingLabel}</Text>
+          ) : null}
         </Card>
 
         <Card dark={mode === 'dark'} style={styles.accountCard}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{t('upcoming.detail.accountTitle')}</Text>
-          <View style={styles.accountRow}>
-            {(accountsQuery.data?.accounts ?? []).map((account) => {
+          {availableAccounts.length === 0 ? (
+            <Text style={[styles.meta, { color: theme.colors.expense }]}>{t('upcoming.detail.loan.noSourceAccount')}</Text>
+          ) : (
+            <View style={styles.accountRow}>
+              {availableAccounts.map((account) => {
               const selected = account.id === accountId;
 
               return (
@@ -297,12 +354,13 @@ export function UpcomingPaymentDetailScreen() {
                   </Text>
                 </Pressable>
               );
-            })}
-          </View>
+              })}
+            </View>
+          )}
         </Card>
 
         <View style={styles.actionsRow}>
-          {isRecurringProjection ? null : (
+          {canSkip ? (
             <Pressable
               accessibilityRole="button"
               onPress={() => {
@@ -322,13 +380,13 @@ export function UpcomingPaymentDetailScreen() {
                 {t('upcoming.detail.markSkipped.cta')}
               </Text>
             </Pressable>
-          )}
+          ) : null}
 
           <View style={styles.markPaidWrap}>
             <PrimaryButton
               label={t('upcoming.detail.markPaid.cta')}
               loading={markPaidMutation.isPending}
-              disabled={markPaidMutation.isPending || markSkippedMutation.isPending}
+              disabled={markPaidMutation.isPending || markSkippedMutation.isPending || !accountId}
               onPress={() => {
                 void markPaidMutation.mutateAsync();
               }}

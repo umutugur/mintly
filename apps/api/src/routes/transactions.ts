@@ -101,6 +101,14 @@ export function registerTransactionRoutes(app: FastifyInstance): void {
     const account = await resolveActiveAccount(userId, accountId);
     const category = categoryId ? await resolveActiveCategory(userId, categoryId) : null;
 
+    if (account.type === 'loan') {
+      throw new ApiError({
+        code: 'VALIDATION_ERROR',
+        message: 'Loan accounts only support transfer-based settlements',
+        statusCode: 400,
+      });
+    }
+
     validateCurrency(account.currency, input.currency);
     if (category) {
       validateTransactionType(category.type, input.type);
@@ -175,6 +183,14 @@ export function registerTransactionRoutes(app: FastifyInstance): void {
     const accountId =
       input.accountId !== undefined ? parseObjectId(input.accountId, 'accountId') : transaction.accountId;
     const account = await resolveActiveAccount(userId, accountId);
+
+    if (account.type === 'loan') {
+      throw new ApiError({
+        code: 'VALIDATION_ERROR',
+        message: 'Loan accounts only support transfer-based settlements',
+        statusCode: 400,
+      });
+    }
 
     const nextCategoryId =
       input.categoryId !== undefined

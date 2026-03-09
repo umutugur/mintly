@@ -11,6 +11,7 @@
       "debtBorrowed": "Debt Borrowed",
       "debt_lent": "Debt Lent",
       "debt_borrowed": "Debt Borrowed",
+      "loan": "Loan",
       "savings": "Savings Account"
     },
     "balance": {
@@ -44,8 +45,52 @@
       "typeLabel": "Type",
       "openingBalanceLabel": "Starting Balance",
       "openingBalancePlaceholder": "0.00",
+      "loanBorrowedAmountLabel": "Borrowed Amount",
+      "loanBorrowedAmountPlaceholder": "100000",
+      "loanTotalRepayableLabel": "Total Repayable",
+      "loanTotalRepayablePlaceholder": "130000",
+      "loanMonthlyPaymentLabel": "Monthly Payment",
+      "loanMonthlyPaymentPlaceholder": "10833",
+      "loanInstallmentCountLabel": "Installment Count",
+      "loanInstallmentCountPlaceholder": "12",
+      "loanPaymentDayLabel": "Payment Day (1-28)",
+      "loanPaymentDayPlaceholder": "15",
+      "loanFirstPaymentDateLabel": "First Payment Date",
+      "loanFirstPaymentDatePlaceholder": "2026-03-15",
+      "loanPaymentAccountLabel": "Payment Account (optional)",
+      "loanPaymentAccountOptional": "Select later",
+      "loanNoteLabel": "Note (optional)",
+      "loanNotePlaceholder": "Loan note",
+      "loanTypeLockedHint": "Loan account type cannot be changed.",
       "assetHint": "Positive balance is tracked as an asset.",
       "liabilityHint": "This account is tracked as a liability."
+    },
+    "loan": {
+      "remainingBalance": "Remaining Debt: {{value}}",
+      "borrowedAmount": "Borrowed: {{value}}",
+      "totalRepayable": "Total repayable: {{value}}",
+      "monthlyPayment": "Monthly payment: {{value}}",
+      "installmentProgress": "Installment: {{current}} / {{total}}",
+      "remainingInstallments": "Remaining installments: {{count}}",
+      "nextPaymentDate": "Next payment: {{date}}",
+      "statusLabel": "Status: {{status}}",
+      "status": {
+        "active": "Active",
+        "closed": "Closed",
+        "closedEarly": "Closed early"
+      },
+      "paymentAction": "Make Payment",
+      "earlyPayoffAction": "Early Payoff",
+      "actionFromAccount": "Payment Account",
+      "actionAmount": "Amount",
+      "actionDate": "Date (ISO)",
+      "actionDatePlaceholder": "2026-03-15T10:30:00.000Z",
+      "actionNote": "Note",
+      "actionNoSourceAccount": "No eligible payment account found for this loan.",
+      "actionSubmitPayment": "Submit Payment",
+      "actionSubmitEarlyPayoff": "Complete Early Payoff",
+      "actionSuccessPayment": "Loan payment recorded.",
+      "actionSuccessEarlyPayoff": "Loan closed early."
     },
     "sections": {
       "baseCurrency": {
@@ -690,7 +735,8 @@
       "cash": "Cash",
       "credit": "Credit",
       "debt_lent": "Debt Lent",
-      "debt_borrowed": "Debt Borrowed"
+      "debt_borrowed": "Debt Borrowed",
+      "loan": "Loan"
     },
     "accounts": "Accounts",
     "addExpense": "Add Expense",
@@ -805,6 +851,8 @@
       "dayOfWeekRange": "Day of week must be between 0 and 6.",
       "invalidIsoDateTime": "Enter a valid ISO datetime.",
       "invalidSignedAmount": "Enter a valid starting balance.",
+      "loanInstallmentCountRange": "Installment count must be between 1 and 360.",
+      "loanTotalRepayableMin": "Total repayable cannot be lower than borrowed amount.",
       "limitAmountPositive": "Limit amount must be greater than zero.",
       "limitAmountRequired": "Limit amount is required.",
       "nameRequired": "Name is required.",
@@ -1289,6 +1337,9 @@
       "cadence": "Cadence: {{cadence}}",
       "category": "Category: {{category}}",
       "from": "From: {{account}}",
+      "installmentProgress": "Installment: {{current}} / {{total}}",
+      "remainingInstallments": "Remaining installments: {{count}}",
+      "loanInstallment": "Loan installment",
       "nextRun": "Next run: {{date}}",
       "normal": "Normal rule",
       "note": "Note: {{note}}",
@@ -1307,6 +1358,11 @@
     "status": {
       "active": "ACTIVE",
       "paused": "PAUSED"
+    },
+    "installmentStatus": {
+      "scheduled": "SCHEDULED",
+      "paid": "PAID",
+      "cancelled": "CANCELLED"
     },
     "subtitle": "Create scheduler-ready rules",
     "successMessage": "The rule is now active.",
@@ -1399,7 +1455,9 @@
         "empty": "No upcoming payments in the next 45 days."
       },
       "row": {
-        "dueDate": "Due: {{date}}"
+        "dueDate": "Due: {{date}}",
+        "loanInstallment": "Installment {{current}} / {{total}}",
+        "remainingInstallments": "{{count}} installments left"
       }
     },
     "detail": {
@@ -1414,12 +1472,18 @@
       "markPaid": {
         "cta": "Mark as Paid",
         "successTitle": "Payment completed",
-        "successMessage": "Expense transaction created from upcoming payment."
+        "successMessage": "Expense transaction created from upcoming payment.",
+        "successMessageLoan": "Loan installment payment recorded successfully."
       },
       "markSkipped": {
         "cta": "Skip",
         "successTitle": "Payment skipped",
         "successMessage": "Upcoming payment has been marked as skipped."
+      },
+      "loan": {
+        "installmentProgress": "Installment: {{current}} / {{total}}",
+        "remainingInstallments": "Remaining installments: {{count}}",
+        "noSourceAccount": "No eligible account found for this payment."
       }
     },
     "notifications": {

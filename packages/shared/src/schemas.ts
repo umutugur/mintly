@@ -208,13 +208,50 @@ export const logoutResponseSchema = z.object({
   ok: z.literal(true),
 });
 
-export const accountTypeSchema = z.enum(['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed']);
+export const accountTypeSchema = z.enum(['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed', 'loan']);
 export const categoryTypeSchema = z.enum(['income', 'expense']);
 export const transactionTypeSchema = z.enum(['income', 'expense']);
 export const transactionKindSchema = z.enum(['normal', 'transfer']);
 export const transferDirectionSchema = z.enum(['out', 'in']);
 export const recurringCadenceSchema = z.enum(['weekly', 'monthly']);
 export const recurringKindSchema = z.enum(['normal', 'transfer']);
+export const loanStatusSchema = z.enum(['active', 'closed', 'closed_early']);
+export const recurringInstallmentStatusSchema = z.enum(['scheduled', 'paid', 'cancelled']);
+
+export const accountLoanSchema = z.object({
+  borrowedAmount: z.number().positive(),
+  totalRepayable: z.number().positive(),
+  monthlyPayment: z.number().positive(),
+  installmentCount: z.number().int().min(1).max(360),
+  paymentDay: z.number().int().min(1).max(28),
+  firstPaymentDate: dateTimeStringSchema,
+  paymentAccountId: z.string().min(1).nullable(),
+  note: z.string().max(500).nullable(),
+  status: loanStatusSchema,
+  closedAt: dateTimeStringSchema.nullable(),
+});
+
+export const accountLoanStatsSchema = z.object({
+  remainingBalance: z.number(),
+  paidInstallments: z.number().int().min(0),
+  remainingInstallments: z.number().int().min(0),
+  totalInstallments: z.number().int().min(0),
+  nextPaymentDate: dateTimeStringSchema.nullable(),
+});
+
+export const accountLoanCreateInputSchema = z.object({
+  borrowedAmount: z.number().positive(),
+  totalRepayable: z.number().positive(),
+  monthlyPayment: z.number().positive(),
+  installmentCount: z.number().int().min(1).max(360),
+  paymentDay: z.number().int().min(1).max(28),
+  firstPaymentDate: dateTimeStringSchema,
+  paymentAccountId: z.string().trim().min(1).optional(),
+  note: z.string().trim().max(500).optional(),
+}).refine((value) => value.totalRepayable >= value.borrowedAmount, {
+  message: '`totalRepayable` must be greater than or equal to `borrowedAmount`',
+  path: ['totalRepayable'],
+});
 
 export const accountSchema = z.object({
   id: z.string().min(1),
@@ -222,6 +259,8 @@ export const accountSchema = z.object({
   type: accountTypeSchema,
   currency: currencySchema,
   openingBalance: z.number().finite(),
+  loan: accountLoanSchema.nullable().optional(),
+  loanStats: accountLoanStatsSchema.nullable().optional(),
   createdAt: dateTimeStringSchema,
   updatedAt: dateTimeStringSchema,
 });
@@ -235,6 +274,23 @@ export const accountCreateInputSchema = z.object({
   type: accountTypeSchema,
   currency: currencySchema,
   openingBalance: z.number().finite().default(0),
+  loan: accountLoanCreateInputSchema.optional(),
+}).superRefine((value, ctx) => {
+  if (value.type === 'loan' && !value.loan) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: '`loan` details are required when account type is `loan`',
+      path: ['loan'],
+    });
+  }
+
+  if (value.type !== 'loan' && value.loan) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: '`loan` details are only allowed when account type is `loan`',
+      path: ['loan'],
+    });
+  }
 });
 
 export const accountUpdateInputSchema = z
@@ -243,6 +299,7 @@ export const accountUpdateInputSchema = z
     type: accountTypeSchema.optional(),
     currency: currencySchema.optional(),
     openingBalance: z.number().finite().optional(),
+    loan: accountLoanCreateInputSchema.partial().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
@@ -374,7 +431,7 @@ export const upcomingPaymentTypeSchema = z.enum([
   'other',
 ]);
 
-export const upcomingPaymentStatusSchema = z.enum(['upcoming', 'paid', 'skipped']);
+export const upcomingPaymentStatusSchema = z.enum(['upcoming', 'paid', 'skipped', 'cancelled']);
 export const upcomingPaymentSourceSchema = z.enum(['ocr', 'template', 'manual']);
 
 export const upcomingPaymentMetaSchema = z.object({
@@ -382,6 +439,11 @@ export const upcomingPaymentMetaSchema = z.object({
   invoiceNo: z.string().trim().min(1).max(120).optional(),
   rawText: z.string().trim().min(1).max(6000).optional(),
   detectedCurrency: currencySchema.optional(),
+  relatedLoanAccountId: z.string().trim().min(1).optional(),
+  installmentIndex: z.number().int().min(1).optional(),
+  installmentCount: z.number().int().min(1).optional(),
+  remainingInstallments: z.number().int().min(0).optional(),
+  paymentDay: z.number().int().min(1).max(28).optional(),
 });
 
 export const upcomingPaymentSchema = z.object({
@@ -991,6 +1053,11 @@ export const recurringRuleSchema = z.object({
   nextRunAt: dateTimeStringSchema,
   lastRunAt: dateTimeStringSchema.nullable(),
   isPaused: z.boolean(),
+  relatedLoanAccountId: z.string().min(1).nullable().optional(),
+  installmentIndex: z.number().int().min(1).nullable().optional(),
+  installmentCount: z.number().int().min(1).nullable().optional(),
+  paymentDay: z.number().int().min(1).max(28).nullable().optional(),
+  installmentStatus: recurringInstallmentStatusSchema.nullable().optional(),
   deletedAt: dateTimeStringSchema.nullable(),
   createdAt: dateTimeStringSchema,
   updatedAt: dateTimeStringSchema,
@@ -1070,6 +1137,7 @@ export const recurringUpdateInputSchema = z
     dayOfWeek: z.number().int().min(0).max(6).optional(),
     dayOfMonth: z.number().int().min(1).max(28).optional(),
     endAt: dateTimeStringSchema.nullable().optional(),
+    installmentStatus: recurringInstallmentStatusSchema.optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
@@ -1105,6 +1173,37 @@ export const recurringRunDueResponseSchema = z.object({
   processedRules: z.number().int().min(0),
   processedRuns: z.number().int().min(0),
   generatedTransactions: z.number().int().min(0),
+});
+
+export const loanPaymentInputSchema = z.object({
+  fromAccountId: z.string().trim().min(1),
+  amount: z.number().positive(),
+  occurredAt: dateTimeStringSchema.optional(),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const loanPaymentResponseSchema = z.object({
+  account: accountSchema,
+  fromTransactionId: z.string().min(1),
+  toTransactionId: z.string().min(1),
+  remainingBalance: z.number(),
+});
+
+export const loanEarlyPayoffInputSchema = z.object({
+  fromAccountId: z.string().trim().min(1),
+  amount: z.number().positive(),
+  occurredAt: dateTimeStringSchema.optional(),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const loanEarlyPayoffResponseSchema = z.object({
+  account: accountSchema,
+  fromTransactionId: z.string().min(1),
+  toTransactionId: z.string().min(1),
+  adjustmentTransactionId: z.string().min(1).nullable(),
+  cancelledInstallments: z.number().int().min(0),
+  waiverAmount: z.number().min(0),
+  remainingBalance: z.number(),
 });
 
 export const exportTransactionsQuerySchema = z
@@ -1159,13 +1258,18 @@ export type NotificationRegisterTokenResponse = z.infer<typeof notificationRegis
 export type MeChangePasswordInput = z.infer<typeof meChangePasswordInputSchema>;
 export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
 export type AccountType = z.infer<typeof accountTypeSchema>;
+export type LoanStatus = z.infer<typeof loanStatusSchema>;
 export type CategoryType = z.infer<typeof categoryTypeSchema>;
 export type TransactionType = z.infer<typeof transactionTypeSchema>;
 export type TransactionKind = z.infer<typeof transactionKindSchema>;
 export type TransferDirection = z.infer<typeof transferDirectionSchema>;
 export type RecurringCadence = z.infer<typeof recurringCadenceSchema>;
 export type RecurringKind = z.infer<typeof recurringKindSchema>;
+export type RecurringInstallmentStatus = z.infer<typeof recurringInstallmentStatusSchema>;
 export type Account = z.infer<typeof accountSchema>;
+export type AccountLoan = z.infer<typeof accountLoanSchema>;
+export type AccountLoanStats = z.infer<typeof accountLoanStatsSchema>;
+export type AccountLoanCreateInput = z.infer<typeof accountLoanCreateInputSchema>;
 export type AccountListResponse = z.infer<typeof accountListResponseSchema>;
 export type AccountCreateInput = z.infer<typeof accountCreateInputSchema>;
 export type AccountUpdateInput = z.infer<typeof accountUpdateInputSchema>;
@@ -1266,6 +1370,10 @@ export type RecurringUpdateInput = z.infer<typeof recurringUpdateInputSchema>;
 export type RecurringListQuery = z.infer<typeof recurringListQuerySchema>;
 export type RecurringListResponse = z.infer<typeof recurringListResponseSchema>;
 export type RecurringRunDueResponse = z.infer<typeof recurringRunDueResponseSchema>;
+export type LoanPaymentInput = z.infer<typeof loanPaymentInputSchema>;
+export type LoanPaymentResponse = z.infer<typeof loanPaymentResponseSchema>;
+export type LoanEarlyPayoffInput = z.infer<typeof loanEarlyPayoffInputSchema>;
+export type LoanEarlyPayoffResponse = z.infer<typeof loanEarlyPayoffResponseSchema>;
 export type ExportTransactionsQuery = z.infer<typeof exportTransactionsQuerySchema>;
 export type ExportTransactionsCsvResponse = z.infer<typeof exportTransactionsCsvResponseSchema>;
 export type ApiErrorResponse = z.infer<typeof apiErrorSchema>;

@@ -53,6 +53,10 @@ import {
   groupSchema,
   groupSettleResponseSchema,
   healthResponseSchema,
+  loanEarlyPayoffInputSchema,
+  loanEarlyPayoffResponseSchema,
+  loanPaymentInputSchema,
+  loanPaymentResponseSchema,
   logoutResponseSchema,
   meChangePasswordInputSchema,
   meExpoPushTokenInputSchema,
@@ -130,6 +134,10 @@ import {
   type GroupSettleResponse,
   type HealthResponse,
   type LoginInput,
+  type LoanEarlyPayoffInput,
+  type LoanEarlyPayoffResponse,
+  type LoanPaymentInput,
+  type LoanPaymentResponse,
   type OauthInput,
   type LogoutInput,
   type MeChangePasswordInput,
@@ -451,6 +459,30 @@ export class ApiClient {
     await this.request(`/accounts/${encodeURIComponent(id)}`, logoutResponseSchema, {
       method: 'DELETE',
       accessToken,
+    });
+  }
+
+  async payLoanInstallment(
+    id: string,
+    input: LoanPaymentInput,
+    accessToken: string,
+  ): Promise<LoanPaymentResponse> {
+    return this.request(`/accounts/${encodeURIComponent(id)}/loan/pay`, loanPaymentResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: loanPaymentInputSchema.parse(input),
+    });
+  }
+
+  async earlyPayoffLoan(
+    id: string,
+    input: LoanEarlyPayoffInput,
+    accessToken: string,
+  ): Promise<LoanEarlyPayoffResponse> {
+    return this.request(`/accounts/${encodeURIComponent(id)}/loan/early-payoff`, loanEarlyPayoffResponseSchema, {
+      method: 'POST',
+      accessToken,
+      body: loanEarlyPayoffInputSchema.parse(input),
     });
   }
 

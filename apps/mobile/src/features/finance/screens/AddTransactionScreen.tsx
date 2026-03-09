@@ -101,7 +101,10 @@ export function AddTransactionScreen() {
   const selectedCategoryValue = form.watch('categoryKey');
 
   const selectedAccount = useMemo(
-    () => accountsQuery.data?.accounts.find((account) => account.id === selectedAccountId) ?? null,
+    () =>
+      accountsQuery.data?.accounts.find(
+        (account) => account.id === selectedAccountId && account.type !== 'loan',
+      ) ?? null,
     [accountsQuery.data?.accounts, selectedAccountId],
   );
 
@@ -250,7 +253,7 @@ export function AddTransactionScreen() {
   }
 
   const dark = mode === 'dark';
-  const accounts = accountsQuery.data?.accounts ?? [];
+  const accounts = (accountsQuery.data?.accounts ?? []).filter((account) => account.type !== 'loan');
   const panelBg = dark ? '#121826' : theme.colors.surface;
   const panelBorder = dark ? '#27344F' : theme.colors.border;
 

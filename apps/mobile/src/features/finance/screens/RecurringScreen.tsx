@@ -167,6 +167,10 @@ export function RecurringScreen() {
   );
 
   const accounts = accountsQuery.data?.accounts ?? [];
+  const normalRecurringAccounts = useMemo(
+    () => accounts.filter((account) => account.type !== 'loan'),
+    [accounts],
+  );
 
   const accountNameById = useMemo(
     () => new Map(accounts.map((account) => [account.id, account.name])),
@@ -182,6 +186,22 @@ export function RecurringScreen() {
       form.setValue('categoryKey', '');
     }
   }, [categoryOptions, form, selectedCategoryValue]);
+
+  useEffect(() => {
+    if (kind !== 'normal') {
+      return;
+    }
+
+    const selectedAccountId = form.getValues('accountId');
+    if (!selectedAccountId) {
+      return;
+    }
+
+    const exists = normalRecurringAccounts.some((account) => account.id === selectedAccountId);
+    if (!exists) {
+      form.setValue('accountId', '');
+    }
+  }, [form, kind, normalRecurringAccounts]);
 
   async function refreshRecurringList(): Promise<void> {
     await Promise.all([
@@ -358,7 +378,7 @@ export function RecurringScreen() {
                 name="accountId"
                 render={({ field: { value, onChange } }) => (
                   <View style={styles.chipWrap}>
-                    {accounts.map((account) => (
+                    {normalRecurringAccounts.map((account) => (
                       <Pressable key={account.id} onPress={() => onChange(account.id)}>
                         <Chip label={account.name} tone={value === account.id ? 'primary' : 'default'} />
                       </Pressable>
@@ -572,83 +592,144 @@ export function RecurringScreen() {
           </Card>
         ) : null}
 
-        {rules.map((rule) => (
-          <Card key={rule.id} style={styles.ruleCard}>
-            <View style={styles.ruleHeader}>
-              <Text style={styles.ruleTitle}>
-                {rule.kind === 'transfer' ? t('recurring.rule.transfer') : t('recurring.rule.normal')}
+        {rules.map((rule) => {
+          const isLoanInstallment = Boolean(rule.relatedLoanAccountId);
+          const installmentRemaining =
+            rule.installmentCount && rule.installmentIndex
+              ? Math.max(
+                  rule.installmentCount -
+                    (rule.installmentStatus === 'paid' ? rule.installmentIndex : rule.installmentIndex - 1),
+                  0,
+                )
+              : null;
+          const installmentStatusLabel = rule.installmentStatus
+            ? t(`recurring.installmentStatus.${rule.installmentStatus}`)
+            : null;
+
+          return (
+            <Card key={rule.id} style={styles.ruleCard}>
+              <View style={styles.ruleHeader}>
+                <Text style={styles.ruleTitle}>
+                  {isLoanInstallment
+                    ? t('recurring.rule.loanInstallment')
+                    : rule.kind === 'transfer'
+                      ? t('recurring.rule.transfer')
+                      : t('recurring.rule.normal')}
+                </Text>
+                <Chip
+                  label={
+                    isLoanInstallment && installmentStatusLabel
+                      ? installmentStatusLabel
+                      : rule.isPaused
+                        ? t('recurring.status.paused')
+                        : t('recurring.status.active')
+                  }
+                  tone={
+                    isLoanInstallment
+                      ? rule.installmentStatus === 'paid'
+                        ? 'income'
+                        : rule.installmentStatus === 'cancelled'
+                          ? 'default'
+                          : 'primary'
+                      : rule.isPaused
+                        ? 'default'
+                        : 'primary'
+                  }
+                />
+              </View>
+
+              <Text style={styles.ruleText}>{t('recurring.rule.amount', { amount: String(rule.amount) })}</Text>
+              <Text style={styles.ruleText}>
+                {t('recurring.rule.cadence', { cadence: t(`recurring.cadence.${rule.cadence}`) })}
               </Text>
-              <Chip
-                label={rule.isPaused ? t('recurring.status.paused') : t('recurring.status.active')}
-                tone={rule.isPaused ? 'default' : 'primary'}
-              />
-            </View>
+              <Text style={styles.ruleText}>{t('recurring.rule.nextRun', { date: formatDateTime(rule.nextRunAt) })}</Text>
+              {isLoanInstallment && rule.installmentIndex && rule.installmentCount ? (
+                <Text style={styles.ruleText}>
+                  {t('recurring.rule.installmentProgress', {
+                    current: rule.installmentIndex,
+                    total: rule.installmentCount,
+                  })}
+                </Text>
+              ) : null}
+              {isLoanInstallment && installmentRemaining !== null ? (
+                <Text style={styles.ruleText}>{t('recurring.rule.remainingInstallments', { count: installmentRemaining })}</Text>
+              ) : null}
 
-            <Text style={styles.ruleText}>{t('recurring.rule.amount', { amount: String(rule.amount) })}</Text>
-            <Text style={styles.ruleText}>{t('recurring.rule.cadence', { cadence: t(`recurring.cadence.${rule.cadence}`) })}</Text>
-            <Text style={styles.ruleText}>{t('recurring.rule.nextRun', { date: formatDateTime(rule.nextRunAt) })}</Text>
-            {rule.kind === 'normal' ? (
-              <>
-                <Text style={styles.ruleText}>{t('recurring.rule.type', { type: rule.type ? t(`recurring.type.${rule.type}`) : t('common.notAvailable') })}</Text>
-                <Text style={styles.ruleText}>
-                  {t('recurring.rule.account', {
-                    account: rule.accountId ? accountNameById.get(rule.accountId) ?? rule.accountId : t('common.notAvailable'),
-                  })}
-                </Text>
-                <Text style={styles.ruleText}>
-                  {t('recurring.rule.category', {
-                    category: rule.categoryKey
-                      ? getCategoryLabel(rule.categoryKey, locale) || t('transactions.row.uncategorized')
-                      : t('transactions.row.uncategorized'),
-                  })}
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.ruleText}>
-                  {t('recurring.rule.from', {
-                    account: rule.fromAccountId
-                      ? accountNameById.get(rule.fromAccountId) ?? rule.fromAccountId
-                      : t('common.notAvailable'),
-                  })}
-                </Text>
-                <Text style={styles.ruleText}>
-                  {t('recurring.rule.to', {
-                    account: rule.toAccountId ? accountNameById.get(rule.toAccountId) ?? rule.toAccountId : t('common.notAvailable'),
-                  })}
-                </Text>
-              </>
-            )}
+              {rule.kind === 'normal' ? (
+                <>
+                  <Text style={styles.ruleText}>
+                    {t('recurring.rule.type', {
+                      type: rule.type ? t(`recurring.type.${rule.type}`) : t('common.notAvailable'),
+                    })}
+                  </Text>
+                  <Text style={styles.ruleText}>
+                    {t('recurring.rule.account', {
+                      account: rule.accountId
+                        ? accountNameById.get(rule.accountId) ?? rule.accountId
+                        : t('common.notAvailable'),
+                    })}
+                  </Text>
+                  <Text style={styles.ruleText}>
+                    {t('recurring.rule.category', {
+                      category: rule.categoryKey
+                        ? getCategoryLabel(rule.categoryKey, locale) || t('transactions.row.uncategorized')
+                        : t('transactions.row.uncategorized'),
+                    })}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.ruleText}>
+                    {t('recurring.rule.from', {
+                      account: rule.fromAccountId
+                        ? accountNameById.get(rule.fromAccountId) ?? rule.fromAccountId
+                        : t('common.notAvailable'),
+                    })}
+                  </Text>
+                  <Text style={styles.ruleText}>
+                    {t('recurring.rule.to', {
+                      account: rule.toAccountId
+                        ? accountNameById.get(rule.toAccountId) ?? rule.toAccountId
+                        : t('common.notAvailable'),
+                    })}
+                  </Text>
+                </>
+              )}
 
-            {rule.description ? <Text style={styles.ruleText}>{t('recurring.rule.note', { note: rule.description })}</Text> : null}
+              {rule.description ? (
+                <Text style={styles.ruleText}>{t('recurring.rule.note', { note: rule.description })}</Text>
+              ) : null}
 
-            <View style={styles.actionRow}>
-              <Pressable
-                onPress={() => {
-                  togglePausedMutation.mutate(rule);
-                }}
-              >
-                <Text style={styles.linkText}>{rule.isPaused ? t('common.resume') : t('common.pause')}</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  showAlert(t('recurring.delete.title'), t('recurring.delete.message'), [
-                    { text: t('common.cancel'), style: 'cancel' },
-                    {
-                      text: t('common.delete'),
-                      style: 'destructive',
-                      onPress: () => {
-                        deleteMutation.mutate(rule.id);
-                      },
-                    },
-                  ]);
-                }}
-              >
-                <Text style={styles.deleteText}>{t('common.delete')}</Text>
-              </Pressable>
-            </View>
-          </Card>
-        ))}
+              {isLoanInstallment ? null : (
+                <View style={styles.actionRow}>
+                  <Pressable
+                    onPress={() => {
+                      togglePausedMutation.mutate(rule);
+                    }}
+                  >
+                    <Text style={styles.linkText}>{rule.isPaused ? t('common.resume') : t('common.pause')}</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      showAlert(t('recurring.delete.title'), t('recurring.delete.message'), [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        {
+                          text: t('common.delete'),
+                          style: 'destructive',
+                          onPress: () => {
+                            deleteMutation.mutate(rule.id);
+                          },
+                        },
+                      ]);
+                    }}
+                  >
+                    <Text style={styles.deleteText}>{t('common.delete')}</Text>
+                  </Pressable>
+                </View>
+              )}
+            </Card>
+          );
+        })}
       </Section>
     </ScreenContainer>
   );

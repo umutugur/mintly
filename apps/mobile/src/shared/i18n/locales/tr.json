@@ -11,6 +11,7 @@
       "debtBorrowed": "Alınan Borç",
       "debt_lent": "Verilen Borç",
       "debt_borrowed": "Alınan Borç",
+      "loan": "Kredi",
       "savings": "Birikim Hesabı"
     },
     "balance": {
@@ -44,8 +45,52 @@
       "typeLabel": "Tür",
       "openingBalanceLabel": "Başlangıç Bakiyesi",
       "openingBalancePlaceholder": "0,00",
+      "loanBorrowedAmountLabel": "Çekilen Tutar",
+      "loanBorrowedAmountPlaceholder": "100000",
+      "loanTotalRepayableLabel": "Toplam Geri Ödeme",
+      "loanTotalRepayablePlaceholder": "130000",
+      "loanMonthlyPaymentLabel": "Aylık Ödeme",
+      "loanMonthlyPaymentPlaceholder": "10833",
+      "loanInstallmentCountLabel": "Taksit Sayısı",
+      "loanInstallmentCountPlaceholder": "12",
+      "loanPaymentDayLabel": "Ödeme Günü (1-28)",
+      "loanPaymentDayPlaceholder": "15",
+      "loanFirstPaymentDateLabel": "İlk Ödeme Tarihi",
+      "loanFirstPaymentDatePlaceholder": "2026-03-15",
+      "loanPaymentAccountLabel": "Ödeme Hesabı (opsiyonel)",
+      "loanPaymentAccountOptional": "Sonra seç",
+      "loanNoteLabel": "Not (opsiyonel)",
+      "loanNotePlaceholder": "Kredi notu",
+      "loanTypeLockedHint": "Kredi hesabı türü değiştirilemez.",
       "assetHint": "Pozitif bakiye varlık tarafında görünür.",
       "liabilityHint": "Bu hesap borç/yükümlülük olarak takip edilir."
+    },
+    "loan": {
+      "remainingBalance": "Kalan Borç: {{value}}",
+      "borrowedAmount": "Çekilen: {{value}}",
+      "totalRepayable": "Toplam geri ödeme: {{value}}",
+      "monthlyPayment": "Aylık ödeme: {{value}}",
+      "installmentProgress": "Taksit: {{current}} / {{total}}",
+      "remainingInstallments": "Kalan taksit: {{count}}",
+      "nextPaymentDate": "Sonraki ödeme: {{date}}",
+      "statusLabel": "Durum: {{status}}",
+      "status": {
+        "active": "Aktif",
+        "closed": "Kapandı",
+        "closedEarly": "Erken kapatıldı"
+      },
+      "paymentAction": "Ödeme Yap",
+      "earlyPayoffAction": "Erken Kapat",
+      "actionFromAccount": "Ödeme Hesabı",
+      "actionAmount": "Tutar",
+      "actionDate": "Tarih (ISO)",
+      "actionDatePlaceholder": "2026-03-15T10:30:00.000Z",
+      "actionNote": "Not",
+      "actionNoSourceAccount": "Bu kredi için uygun ödeme hesabı bulunamadı.",
+      "actionSubmitPayment": "Ödemeyi Kaydet",
+      "actionSubmitEarlyPayoff": "Erken Kapatmayı Tamamla",
+      "actionSuccessPayment": "Kredi ödemesi kaydedildi.",
+      "actionSuccessEarlyPayoff": "Kredi erken kapatıldı."
     },
     "sections": {
       "baseCurrency": {
@@ -690,7 +735,8 @@
       "cash": "Nakit",
       "credit": "Kredi",
       "debt_lent": "Verilen Borç",
-      "debt_borrowed": "Alınan Borç"
+      "debt_borrowed": "Alınan Borç",
+      "loan": "Kredi"
     },
     "accounts": "Hesaplar",
     "addExpense": "Gider Ekle",
@@ -805,6 +851,8 @@
       "dayOfWeekRange": "Haftanın günü 0 ile 6 arasında olmalıdır.",
       "invalidIsoDateTime": "Geçerli ISO tarih/saat girin.",
       "invalidSignedAmount": "Geçerli bir başlangıç bakiyesi girin.",
+      "loanInstallmentCountRange": "Taksit sayısı 1 ile 360 arasında olmalıdır.",
+      "loanTotalRepayableMin": "Toplam geri ödeme tutarı çekilen tutardan düşük olamaz.",
       "limitAmountPositive": "Limit tutarı sıfırdan büyük olmalıdır.",
       "limitAmountRequired": "Limit tutarı zorunludur.",
       "nameRequired": "Ad zorunludur.",
@@ -1289,6 +1337,9 @@
       "cadence": "Periyot: {{cadence}}",
       "category": "Kategori: {{category}}",
       "from": "Kaynak: {{account}}",
+      "installmentProgress": "Taksit: {{current}} / {{total}}",
+      "remainingInstallments": "Kalan taksit: {{count}}",
+      "loanInstallment": "Kredi taksiti",
       "nextRun": "Sonraki çalışma: {{date}}",
       "normal": "Normal kural",
       "note": "Not: {{note}}",
@@ -1307,6 +1358,11 @@
     "status": {
       "active": "AKTİF",
       "paused": "DURAKLATILDI"
+    },
+    "installmentStatus": {
+      "scheduled": "PLANLANDI",
+      "paid": "ÖDENDİ",
+      "cancelled": "İPTAL"
     },
     "subtitle": "Zamanlayıcıya hazır kurallar oluşturun",
     "successMessage": "Kural artık aktif.",
@@ -1399,7 +1455,9 @@
         "empty": "Önümüzdeki 45 gün için yaklaşan ödeme yok."
       },
       "row": {
-        "dueDate": "Vade: {{date}}"
+        "dueDate": "Vade: {{date}}",
+        "loanInstallment": "Taksit {{current}} / {{total}}",
+        "remainingInstallments": "{{count}} taksit kaldı"
       }
     },
     "detail": {
@@ -1414,12 +1472,18 @@
       "markPaid": {
         "cta": "Ödendi Olarak İşaretle",
         "successTitle": "Ödeme tamamlandı",
-        "successMessage": "Yaklaşan ödemeden gider işlemi oluşturuldu."
+        "successMessage": "Yaklaşan ödemeden gider işlemi oluşturuldu.",
+        "successMessageLoan": "Kredi taksiti ödemesi başarıyla kaydedildi."
       },
       "markSkipped": {
         "cta": "Atla",
         "successTitle": "Ödeme atlandı",
         "successMessage": "Yaklaşan ödeme atlandı olarak işaretlendi."
+      },
+      "loan": {
+        "installmentProgress": "Taksit: {{current}} / {{total}}",
+        "remainingInstallments": "Kalan taksit: {{count}}",
+        "noSourceAccount": "Bu ödeme için uygun hesap bulunamadı."
       }
     },
     "notifications": {

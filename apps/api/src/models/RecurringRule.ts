@@ -106,6 +106,39 @@ const recurringRuleSchema = new Schema(
       required: true,
       default: false,
     },
+    relatedLoanAccountId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Account',
+      required: false,
+      default: null,
+      index: true,
+    },
+    installmentIndex: {
+      type: Number,
+      required: false,
+      min: 1,
+      default: null,
+    },
+    installmentCount: {
+      type: Number,
+      required: false,
+      min: 1,
+      default: null,
+    },
+    paymentDay: {
+      type: Number,
+      required: false,
+      min: 1,
+      max: 28,
+      default: null,
+    },
+    installmentStatus: {
+      type: String,
+      enum: ['scheduled', 'paid', 'cancelled'],
+      required: false,
+      default: null,
+      index: true,
+    },
     deletedAt: {
       type: Date,
       required: false,
@@ -123,6 +156,7 @@ const recurringRuleSchema = new Schema(
 recurringRuleSchema.index({ userId: 1, nextRunAt: 1, deletedAt: 1, isPaused: 1 });
 // Supports user-facing recurring rule listing/filtering.
 recurringRuleSchema.index({ userId: 1, deletedAt: 1, cadence: 1 });
+recurringRuleSchema.index({ userId: 1, relatedLoanAccountId: 1, deletedAt: 1, installmentStatus: 1 });
 
 export interface RecurringRule extends InferSchemaType<typeof recurringRuleSchema> {
   userId: Types.ObjectId;
@@ -131,6 +165,7 @@ export interface RecurringRule extends InferSchemaType<typeof recurringRuleSchem
   categoryKey: string | null;
   fromAccountId: Types.ObjectId | null;
   toAccountId: Types.ObjectId | null;
+  relatedLoanAccountId: Types.ObjectId | null;
 }
 
 export type RecurringRuleDocument = HydratedDocument<RecurringRule>;

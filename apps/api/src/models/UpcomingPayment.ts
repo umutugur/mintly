@@ -34,6 +34,37 @@ const upcomingPaymentMetaSchema = new Schema(
       maxlength: 3,
       default: null,
     },
+    relatedLoanAccountId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Account',
+      required: false,
+      default: null,
+    },
+    installmentIndex: {
+      type: Number,
+      required: false,
+      min: 1,
+      default: null,
+    },
+    installmentCount: {
+      type: Number,
+      required: false,
+      min: 1,
+      default: null,
+    },
+    remainingInstallments: {
+      type: Number,
+      required: false,
+      min: 0,
+      default: null,
+    },
+    paymentDay: {
+      type: Number,
+      required: false,
+      min: 1,
+      max: 28,
+      default: null,
+    },
   },
   {
     _id: false,
@@ -81,7 +112,7 @@ const upcomingPaymentSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['upcoming', 'paid', 'skipped'],
+      enum: ['upcoming', 'paid', 'skipped', 'cancelled'],
       required: true,
       default: 'upcoming',
       index: true,
@@ -117,6 +148,7 @@ const upcomingPaymentSchema = new Schema(
 
 upcomingPaymentSchema.index({ userId: 1, status: 1, dueDate: 1 });
 upcomingPaymentSchema.index({ userId: 1, dueDate: 1 });
+upcomingPaymentSchema.index({ userId: 1, recurringTemplateId: 1, status: 1, dueDate: 1 });
 
 export interface UpcomingPayment extends InferSchemaType<typeof upcomingPaymentSchema> {
   userId: Types.ObjectId;
