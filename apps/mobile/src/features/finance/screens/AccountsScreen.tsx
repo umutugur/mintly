@@ -65,6 +65,43 @@ function parseSignedAmount(value: string): number | null {
   return parsed;
 }
 
+function toFiniteNumber(value: unknown, fallback = 0): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return fallback;
+  }
+
+  return value;
+}
+
+function maskIdentifierForDebug(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.length <= 10) {
+    return `${normalized.slice(0, 4)}...`;
+  }
+
+  return `${normalized.slice(0, 6)}...${normalized.slice(-4)}`;
+}
+
+function looksLikeIsoDateTime(value: string | null | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+    return false;
+  }
+
+  return !Number.isNaN(Date.parse(value));
+}
+
+function logLoanCreateDebug(stage: string, details: Record<string, unknown>): void {
+  console.info(`[accounts][loan-create] ${stage}`, details);
+}
+
 function parsePositiveAmount(value: string): number | null {
   const parsed = parseSignedAmount(value);
   if (parsed === null || parsed <= 0) {
@@ -74,7 +111,7 @@ function parsePositiveAmount(value: string): number | null {
 }
 
 function parsePositiveInteger(value: string): number | null {
-  const normalized = value.trim();
+  const normalized = value.trim().replace(/,/g, '.');
   if (!normalized) {
     return null;
   }
@@ -116,17 +153,18 @@ function toDateInputValue(value: string | null | undefined): string {
 }
 
 function formatSignedBalance(amount: number, currency: string, locale: string): string {
+  const safeAmount = toFiniteNumber(amount, 0);
   const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     maximumFractionDigits: 2,
-  }).format(Math.abs(amount));
+  }).format(Math.abs(safeAmount));
 
-  if (amount > 0) {
+  if (safeAmount > 0) {
     return `+${formatted}`;
   }
 
-  if (amount < 0) {
+  if (safeAmount < 0) {
     return `-${formatted}`;
   }
 
@@ -134,11 +172,12 @@ function formatSignedBalance(amount: number, currency: string, locale: string): 
 }
 
 function formatAbsoluteMoney(amount: number, currency: string, locale: string): string {
+  const safeAmount = toFiniteNumber(amount, 0);
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     maximumFractionDigits: 2,
-  }).format(Math.abs(amount));
+  }).format(Math.abs(safeAmount));
 }
 
 function formatDateLabel(value: string | null | undefined, locale: string): string {
@@ -154,6 +193,72 @@ function formatDateLabel(value: string | null | undefined, locale: string): stri
     month: 'long',
     year: 'numeric',
   }).format(date);
+}
+
+function resolveFormErrorText(
+  message: string | undefined,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  if (!message) {
+    return '';
+  }
+
+  if (message.includes('.')) {
+    return t(message);
+  }
+
+  return message;
+}
+
+function extractValidationErrorMessage(
+  error: unknown,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string | null {
+  if (!error || typeof error !== 'object' || !('code' in error)) {
+    return null;
+  }
+
+  const code = typeof error.code === 'string' ? error.code : null;
+  if (code !== 'VALIDATION_ERROR') {
+    return null;
+  }
+
+  const details = 'details' in error ? error.details : null;
+  if (!details || typeof details !== 'object') {
+    return t('errors.api.VALIDATION_ERROR');
+  }
+
+  const detailsRecord = details as {
+    formErrors?: unknown;
+    fieldErrors?: Record<string, unknown>;
+  };
+
+  if (Array.isArray(detailsRecord.formErrors)) {
+    const firstFormError = detailsRecord.formErrors.find(
+      (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+    );
+    if (firstFormError) {
+      return resolveFormErrorText(firstFormError, t);
+    }
+  }
+
+  const fieldErrors = detailsRecord.fieldErrors;
+  if (fieldErrors && typeof fieldErrors === 'object') {
+    for (const value of Object.values(fieldErrors)) {
+      if (!Array.isArray(value)) {
+        continue;
+      }
+
+      const firstFieldError = value.find(
+        (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+      );
+      if (firstFieldError) {
+        return resolveFormErrorText(firstFieldError, t);
+      }
+    }
+  }
+
+  return t('errors.api.VALIDATION_ERROR');
 }
 
 const signedAmountInputSchema = z
@@ -397,7 +502,7 @@ function buildLoanPayloadFromForm(
   values:
     | CreateAccountFormValues
     | EditAccountFormValues,
-): AccountCreateInput['loan'] {
+): NonNullable<AccountCreateInput['loan']> {
   const borrowedAmount = parsePositiveAmount(values.loanBorrowedAmount ?? '');
   const totalRepayable = parsePositiveAmount(values.loanTotalRepayable ?? '');
   const monthlyPayment = parsePositiveAmount(values.loanMonthlyPayment ?? '');
@@ -416,12 +521,22 @@ function buildLoanPayloadFromForm(
     throw new Error('VALIDATION_ERROR');
   }
 
+  if (
+    !Number.isFinite(borrowedAmount) ||
+    !Number.isFinite(totalRepayable) ||
+    !Number.isFinite(monthlyPayment) ||
+    !Number.isFinite(installmentCount) ||
+    !Number.isFinite(paymentDay)
+  ) {
+    throw new Error('VALIDATION_ERROR');
+  }
+
   return {
-    borrowedAmount,
-    totalRepayable,
-    monthlyPayment,
-    installmentCount,
-    paymentDay,
+    borrowedAmount: toFiniteNumber(borrowedAmount, 0),
+    totalRepayable: toFiniteNumber(totalRepayable, 0),
+    monthlyPayment: toFiniteNumber(monthlyPayment, 0),
+    installmentCount: Math.trunc(toFiniteNumber(installmentCount, 0)),
+    paymentDay: Math.trunc(toFiniteNumber(paymentDay, 0)),
     firstPaymentDate,
     paymentAccountId: values.loanPaymentAccountId?.trim() || undefined,
     note: values.loanNote?.trim() || undefined,
@@ -536,6 +651,7 @@ export function AccountsScreen() {
   const createSelectedType = createForm.watch('type');
   const createOpeningBalance = parseSignedAmount(createForm.watch('openingBalance') ?? '') ?? 0;
   const createIsLoan = createSelectedType === 'loan';
+  const createLoanPaymentAccountId = createForm.watch('loanPaymentAccountId');
   const createLooksLiability = createIsLoan || isLiabilityAccountType(createSelectedType) || createOpeningBalance < 0;
 
   const editSelectedType = editForm.watch('type');
@@ -554,6 +670,30 @@ export function AccountsScreen() {
     [accounts, createCurrency],
   );
 
+  useEffect(() => {
+    if (!createIsLoan) {
+      return;
+    }
+
+    const selectedSourceAccountId = createLoanPaymentAccountId?.trim() ?? '';
+    if (!selectedSourceAccountId) {
+      return;
+    }
+
+    const isSourceAccountAvailable = createLoanSourceAccounts.some((account) => account.id === selectedSourceAccountId);
+    if (isSourceAccountAvailable) {
+      return;
+    }
+
+    createForm.setValue('loanPaymentAccountId', '', { shouldValidate: true });
+    logLoanCreateDebug('source_account_reset', {
+      reason: 'source_account_not_available_for_selected_currency',
+      selectedSourceAccountId: maskIdentifierForDebug(selectedSourceAccountId),
+      selectedCurrency: createCurrency,
+      availableSourceCount: createLoanSourceAccounts.length,
+    });
+  }, [createIsLoan, createLoanPaymentAccountId, createLoanSourceAccounts, createCurrency, createForm]);
+
   const createAccountMutation = useMutation({
     mutationFn: (values: CreateAccountFormValues) =>
       withAuth((token) => {
@@ -565,7 +705,20 @@ export function AccountsScreen() {
         };
 
         if (values.type === 'loan') {
-          payload.loan = buildLoanPayloadFromForm(values);
+          const loanPayload = buildLoanPayloadFromForm(values);
+          payload.loan = loanPayload;
+          logLoanCreateDebug('submit_payload', {
+            accountType: values.type,
+            sourceAccountSelected: Boolean(loanPayload.paymentAccountId),
+            sourceAccountId: maskIdentifierForDebug(loanPayload.paymentAccountId ?? null),
+            firstPaymentDate: loanPayload.firstPaymentDate,
+            firstPaymentDateIsIsoDateTime: looksLikeIsoDateTime(loanPayload.firstPaymentDate),
+            borrowedAmountValid: Number.isFinite(loanPayload.borrowedAmount) && loanPayload.borrowedAmount > 0,
+            totalRepayableValid: Number.isFinite(loanPayload.totalRepayable) && loanPayload.totalRepayable > 0,
+            monthlyPaymentValid: Number.isFinite(loanPayload.monthlyPayment) && loanPayload.monthlyPayment > 0,
+            installmentCount: loanPayload.installmentCount,
+            paymentDay: loanPayload.paymentDay,
+          });
         }
 
         return apiClient.createAccount(payload, token);
@@ -591,13 +744,33 @@ export function AccountsScreen() {
         loanPaymentAccountId: '',
         loanNote: '',
       });
+      logLoanCreateDebug('submit_success', {
+        accountType: createSelectedType,
+      });
       setFeedback({ tone: 'success', message: t('accounts.create.success') });
     },
     onError: (error) => {
+      const errorRecord = error as {
+        code?: unknown;
+        message?: unknown;
+        status?: unknown;
+        details?: unknown;
+      };
+      logLoanCreateDebug('submit_failed', {
+        code: typeof errorRecord.code === 'string' ? errorRecord.code : 'unknown',
+        message: typeof errorRecord.message === 'string' ? errorRecord.message : 'unknown',
+        status: typeof errorRecord.status === 'number' ? errorRecord.status : null,
+        hasDetails: Boolean(errorRecord.details),
+      });
+
       if (error instanceof Error && error.message === 'VALIDATION_ERROR') {
         showAlert(t('common.error'), t('errors.validation.invalidIsoDateTime'));
       } else {
-        showAlert(t('errors.account.createFailedTitle'), apiErrorText(error));
+        const backendValidationMessage = extractValidationErrorMessage(error, t);
+        showAlert(
+          t('errors.account.createFailedTitle'),
+          backendValidationMessage ?? apiErrorText(error),
+        );
       }
       setFeedback({ tone: 'error', message: t('accounts.create.error') });
     },
@@ -744,7 +917,9 @@ export function AccountsScreen() {
         accountId: account.id,
         mode,
         fromAccountId: defaultSource,
-        amount: suggestedAmount > 0 ? String(Math.round(suggestedAmount * 100) / 100) : '',
+        amount: toFiniteNumber(suggestedAmount, 0) > 0
+          ? String(Math.round(toFiniteNumber(suggestedAmount, 0) * 100) / 100)
+          : '',
         occurredAt: new Date().toISOString(),
         note: '',
       });
@@ -878,7 +1053,9 @@ export function AccountsScreen() {
               )}
             />
             {createForm.formState.errors.name ? (
-              <Text style={styles.errorText}>{t(createForm.formState.errors.name.message ?? '')}</Text>
+              <Text style={styles.errorText}>
+                {resolveFormErrorText(createForm.formState.errors.name.message, t)}
+              </Text>
             ) : null}
 
             <Text style={styles.fieldLabel}>{t('accounts.form.typeLabel')}</Text>
@@ -891,13 +1068,13 @@ export function AccountsScreen() {
             />
 
             <Text style={styles.fieldLabel}>{t('accounts.form.currencyLabel')}</Text>
-            {baseCurrency ? (
-              <Chip label={baseCurrency} tone="primary" />
-            ) : (
-              <Controller
-                control={createForm.control}
-                name="currency"
-                render={({ field: { onChange, onBlur, value } }) => (
+            <Controller
+              control={createForm.control}
+              name="currency"
+              render={({ field: { onChange, onBlur, value } }) =>
+                baseCurrency ? (
+                  <Chip label={baseCurrency} tone="primary" />
+                ) : (
                   <TextInput
                     style={styles.input}
                     value={value}
@@ -909,11 +1086,13 @@ export function AccountsScreen() {
                     maxLength={3}
                     placeholderTextColor={colors.textMuted}
                   />
-                )}
-              />
-            )}
+                )
+              }
+            />
             {createForm.formState.errors.currency ? (
-              <Text style={styles.errorText}>{t(createForm.formState.errors.currency.message ?? '')}</Text>
+              <Text style={styles.errorText}>
+                {resolveFormErrorText(createForm.formState.errors.currency.message, t)}
+              </Text>
             ) : null}
 
             {createIsLoan ? (
@@ -936,7 +1115,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.loanBorrowedAmount ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanBorrowedAmount.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.loanBorrowedAmount.message, t)}
+                  </Text>
                 ) : null}
 
                 <Text style={styles.fieldLabel}>{t('accounts.form.loanTotalRepayableLabel')}</Text>
@@ -957,7 +1138,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.loanTotalRepayable ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanTotalRepayable.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.loanTotalRepayable.message, t)}
+                  </Text>
                 ) : null}
 
                 <Text style={styles.fieldLabel}>{t('accounts.form.loanMonthlyPaymentLabel')}</Text>
@@ -978,7 +1161,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.loanMonthlyPayment ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanMonthlyPayment.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.loanMonthlyPayment.message, t)}
+                  </Text>
                 ) : null}
 
                 <Text style={styles.fieldLabel}>{t('accounts.form.loanInstallmentCountLabel')}</Text>
@@ -999,7 +1184,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.loanInstallmentCount ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanInstallmentCount.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.loanInstallmentCount.message, t)}
+                  </Text>
                 ) : null}
 
                 <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentDayLabel')}</Text>
@@ -1020,7 +1207,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.loanPaymentDay ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanPaymentDay.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.loanPaymentDay.message, t)}
+                  </Text>
                 ) : null}
 
                 <Text style={styles.fieldLabel}>{t('accounts.form.loanFirstPaymentDateLabel')}</Text>
@@ -1041,7 +1230,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.loanFirstPaymentDate ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.loanFirstPaymentDate.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.loanFirstPaymentDate.message, t)}
+                  </Text>
                 ) : null}
 
                 <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentAccountLabel')}</Text>
@@ -1102,7 +1293,9 @@ export function AccountsScreen() {
                   )}
                 />
                 {createForm.formState.errors.openingBalance ? (
-                  <Text style={styles.errorText}>{t(createForm.formState.errors.openingBalance.message ?? '')}</Text>
+                  <Text style={styles.errorText}>
+                    {resolveFormErrorText(createForm.formState.errors.openingBalance.message, t)}
+                  </Text>
                 ) : null}
               </>
             )}
@@ -1133,15 +1326,27 @@ export function AccountsScreen() {
           ) : null}
 
           {accounts.map((account) => {
-            const accountBalance = balanceByAccountId.get(account.id) ?? account.openingBalance ?? 0;
+            const accountBalance = toFiniteNumber(
+              balanceByAccountId.get(account.id) ?? account.openingBalance ?? 0,
+              0,
+            );
             const loanStats = account.loanStats ?? null;
             const isLoan = account.type === 'loan';
-            const remainingLoanBalance = isLoan ? loanStats?.remainingBalance ?? accountBalance : accountBalance;
-            const paidInstallments = loanStats?.paidInstallments ?? 0;
-            const totalInstallments = loanStats?.totalInstallments ?? account.loan?.installmentCount ?? 0;
-            const remainingInstallments =
-              loanStats?.remainingInstallments ??
-              Math.max(totalInstallments - paidInstallments, 0);
+            const remainingLoanBalance = isLoan
+              ? toFiniteNumber(loanStats?.remainingBalance ?? accountBalance, accountBalance)
+              : accountBalance;
+            const paidInstallments = Math.max(0, Math.trunc(toFiniteNumber(loanStats?.paidInstallments ?? 0, 0)));
+            const totalInstallments = Math.max(
+              0,
+              Math.trunc(toFiniteNumber(loanStats?.totalInstallments ?? account.loan?.installmentCount ?? 0, 0)),
+            );
+            const rawRemainingInstallments = toFiniteNumber(
+              loanStats?.remainingInstallments ?? Number.NaN,
+              Number.NaN,
+            );
+            const remainingInstallments = Number.isFinite(rawRemainingInstallments)
+              ? Math.max(0, Math.trunc(rawRemainingInstallments))
+              : Math.max(totalInstallments - paidInstallments, 0);
             const accountRoleLabel = isLiabilityAccountType(account.type)
               ? t('accounts.balance.liabilityTag')
               : account.type === 'debt_lent'
@@ -1456,7 +1661,9 @@ export function AccountsScreen() {
                       )}
                     />
                     {editForm.formState.errors.name ? (
-                      <Text style={styles.errorText}>{t(editForm.formState.errors.name.message ?? '')}</Text>
+                      <Text style={styles.errorText}>
+                        {resolveFormErrorText(editForm.formState.errors.name.message, t)}
+                      </Text>
                     ) : null}
 
                     <Text style={styles.fieldLabel}>{t('accounts.form.typeLabel')}</Text>
@@ -1499,7 +1706,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.loanBorrowedAmount ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanBorrowedAmount.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.loanBorrowedAmount.message, t)}
+                          </Text>
                         ) : null}
 
                         <Text style={styles.fieldLabel}>{t('accounts.form.loanTotalRepayableLabel')}</Text>
@@ -1520,7 +1729,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.loanTotalRepayable ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanTotalRepayable.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.loanTotalRepayable.message, t)}
+                          </Text>
                         ) : null}
 
                         <Text style={styles.fieldLabel}>{t('accounts.form.loanMonthlyPaymentLabel')}</Text>
@@ -1541,7 +1752,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.loanMonthlyPayment ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanMonthlyPayment.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.loanMonthlyPayment.message, t)}
+                          </Text>
                         ) : null}
 
                         <Text style={styles.fieldLabel}>{t('accounts.form.loanInstallmentCountLabel')}</Text>
@@ -1562,7 +1775,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.loanInstallmentCount ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanInstallmentCount.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.loanInstallmentCount.message, t)}
+                          </Text>
                         ) : null}
 
                         <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentDayLabel')}</Text>
@@ -1583,7 +1798,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.loanPaymentDay ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanPaymentDay.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.loanPaymentDay.message, t)}
+                          </Text>
                         ) : null}
 
                         <Text style={styles.fieldLabel}>{t('accounts.form.loanFirstPaymentDateLabel')}</Text>
@@ -1604,7 +1821,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.loanFirstPaymentDate ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.loanFirstPaymentDate.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.loanFirstPaymentDate.message, t)}
+                          </Text>
                         ) : null}
 
                         <Text style={styles.fieldLabel}>{t('accounts.form.loanPaymentAccountLabel')}</Text>
@@ -1678,7 +1897,9 @@ export function AccountsScreen() {
                           )}
                         />
                         {editForm.formState.errors.openingBalance ? (
-                          <Text style={styles.errorText}>{t(editForm.formState.errors.openingBalance.message ?? '')}</Text>
+                          <Text style={styles.errorText}>
+                            {resolveFormErrorText(editForm.formState.errors.openingBalance.message, t)}
+                          </Text>
                         ) : null}
                       </>
                     )}

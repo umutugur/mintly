@@ -544,6 +544,7 @@
     },
     "title": "Bütçe Planlama"
   },
+  "Invalid input": "Geçersiz giriş.",
   "common": {
     "appInitials": "M",
     "appName": "Montly",
@@ -892,8 +893,13 @@
       "RATE_LIMITED": "Çok fazla istek gönderildi. Lütfen bekleyip tekrar deneyin.",
       "REQUEST_TIMEOUT": "Sunucu zamanında yanıt vermedi.",
       "SERVER_UNREACHABLE": "Sunucuya şu anda ulaşılamıyor.",
+      "TRANSFER_ACCOUNT_CONFLICT": "Transfer hesapları aynı olamaz.",
+      "TRANSFER_CURRENCY_MISMATCH": "Kredi ve ödeme hesabının para birimi aynı olmalıdır.",
       "UNAUTHORIZED": "Oturumunuz artık geçerli değil.",
       "UPCOMING_PAYMENT_NOT_FOUND": "Yaklaşan ödeme kaydı bulunamadı.",
+      "VALIDATION_ERROR": "Bazı alanlar geçersiz. Lütfen bilgileri kontrol edin.",
+      "ACCOUNT_CREATE_FAILED": "Hesap oluşturulurken beklenmeyen bir hata oluştu.",
+      "LOAN_SCHEDULE_CREATE_FAILED": "Kredi planı oluşturulurken bir hata oluştu.",
       "UNKNOWN_ERROR": "Beklenmeyen bir hata oluştu.",
       "ADVISOR_REGENERATE_COOLDOWN": "İçgörüleri tekrar üretmeden önce birkaç saniye bekleyin.",
       "ADVISOR_PROVIDER_RATE_LIMIT": "AI sağlayıcı kotası doldu. Lütfen daha sonra tekrar deneyin.",

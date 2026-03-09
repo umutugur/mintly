@@ -544,6 +544,7 @@
     },
     "title": "Budget Planning"
   },
+  "Invalid input": "Invalid input.",
   "common": {
     "appInitials": "M",
     "appName": "Montly",
@@ -892,8 +893,13 @@
       "RATE_LIMITED": "Too many requests. Please wait and try again.",
       "REQUEST_TIMEOUT": "The server took too long to respond.",
       "SERVER_UNREACHABLE": "Server is unreachable right now.",
+      "TRANSFER_ACCOUNT_CONFLICT": "Transfer accounts must be different.",
+      "TRANSFER_CURRENCY_MISMATCH": "Loan and payment account currencies must match.",
       "UNAUTHORIZED": "Your session is no longer valid.",
       "UPCOMING_PAYMENT_NOT_FOUND": "Upcoming payment record was not found.",
+      "VALIDATION_ERROR": "Some fields are invalid. Please check your input.",
+      "ACCOUNT_CREATE_FAILED": "Unexpected error while creating account.",
+      "LOAN_SCHEDULE_CREATE_FAILED": "Failed to create loan repayment schedule.",
       "UNKNOWN_ERROR": "An unexpected error occurred.",
       "ADVISOR_REGENERATE_COOLDOWN": "Please wait a few seconds before regenerating insights again.",
       "ADVISOR_PROVIDER_RATE_LIMIT": "AI provider rate limit reached. Please try again later.",

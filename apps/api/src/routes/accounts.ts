@@ -49,6 +49,39 @@ function toIsoDate(value: Date | null | undefined): string | null {
   return value.toISOString();
 }
 
+function maskObjectId(value: Types.ObjectId | string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const raw = typeof value === 'string' ? value : value.toString();
+  if (raw.length <= 10) {
+    return `${raw.slice(0, 4)}...`;
+  }
+
+  return `${raw.slice(0, 6)}...${raw.slice(-4)}`;
+}
+
+function summarizeLoanCreatePayload(input: AccountCreateInput['loan'] | undefined): Record<string, unknown> | null {
+  if (!input) {
+    return null;
+  }
+
+  return {
+    borrowedAmount: input.borrowedAmount,
+    totalRepayable: input.totalRepayable,
+    monthlyPayment: input.monthlyPayment,
+    installmentCount: input.installmentCount,
+    paymentDay: input.paymentDay,
+    firstPaymentDate: input.firstPaymentDate,
+    firstPaymentDateLooksIsoDateTime: /^\d{4}-\d{2}-\d{2}T/.test(input.firstPaymentDate),
+    firstPaymentDateParsable: !Number.isNaN(Date.parse(input.firstPaymentDate)),
+    hasPaymentAccountId: Boolean(input.paymentAccountId),
+    paymentAccountId: maskObjectId(input.paymentAccountId ?? null),
+    hasNote: Boolean(input.note?.trim()),
+  };
+}
+
 function extractLoanFromAccount(account: AccountDocument): Account['loan'] {
   const raw = (account as AccountDocument & {
     loan?: {
@@ -226,7 +259,7 @@ async function createLoanInstallmentSchedule(params: {
     totalRepayable: number;
     paymentAccountId: Types.ObjectId | null;
   };
-}): Promise<void> {
+}): Promise<{ recurringCreated: number; upcomingCreated: number }> {
   const recurringDocs = Array.from({ length: params.loan.installmentCount }, (_, index) => {
     const installmentIndex = index + 1;
     const dueDate = toMonthlyInstallmentDate(
@@ -269,36 +302,58 @@ async function createLoanInstallmentSchedule(params: {
     };
   });
 
-  const createdRules = await RecurringRuleModel.insertMany(recurringDocs, { ordered: true });
-  if (createdRules.length === 0) {
-    return;
-  }
+  let stage: 'recurring' | 'upcoming' = 'recurring';
+  try {
+    const createdRules = await RecurringRuleModel.insertMany(recurringDocs, { ordered: true });
+    if (createdRules.length === 0) {
+      return { recurringCreated: 0, upcomingCreated: 0 };
+    }
 
-  await UpcomingPaymentModel.insertMany(
-    createdRules.map((rule) => ({
-      userId: params.userId,
-      title: params.account.name,
-      type: 'debt' as const,
-      amount: rule.amount,
-      currency: params.account.currency,
-      dueDate: rule.nextRunAt,
-      status: 'upcoming' as const,
-      source: 'template' as const,
-      linkedTransactionId: null,
-      recurringTemplateId: rule._id,
-      meta: {
-        relatedLoanAccountId: params.account._id,
-        installmentIndex: rule.installmentIndex,
-        installmentCount: rule.installmentCount,
-        remainingInstallments:
-          (rule.installmentCount ?? params.loan.installmentCount) -
-          (rule.installmentIndex ?? 1) +
-          1,
-        paymentDay: rule.paymentDay,
+    stage = 'upcoming';
+    const createdUpcoming = await UpcomingPaymentModel.insertMany(
+      createdRules.map((rule) => ({
+        userId: params.userId,
+        title: params.account.name,
+        type: 'debt' as const,
+        amount: rule.amount,
+        currency: params.account.currency,
+        dueDate: rule.nextRunAt,
+        status: 'upcoming' as const,
+        source: 'template' as const,
+        linkedTransactionId: null,
+        recurringTemplateId: rule._id,
+        meta: {
+          relatedLoanAccountId: params.account._id,
+          installmentIndex: rule.installmentIndex,
+          installmentCount: rule.installmentCount,
+          remainingInstallments:
+            (rule.installmentCount ?? params.loan.installmentCount) -
+            (rule.installmentIndex ?? 1) +
+            1,
+          paymentDay: rule.paymentDay,
+        },
+      })),
+      { ordered: true },
+    );
+
+    return {
+      recurringCreated: createdRules.length,
+      upcomingCreated: createdUpcoming.length,
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new ApiError({
+      code: 'LOAN_SCHEDULE_CREATE_FAILED',
+      message: `Loan schedule creation failed at ${stage} stage`,
+      statusCode: 500,
+      details: {
+        stage,
       },
-    })),
-    { ordered: true },
-  );
+    });
+  }
 }
 
 async function refreshLoanUpcomingRemainingInstallments(params: {
@@ -596,74 +651,169 @@ export function registerAccountRoutes(app: FastifyInstance): void {
   app.post('/accounts', { preHandler: authenticate }, async (request, reply) => {
     const user = requireUser(request);
     const userId = parseObjectId(user.id, 'userId');
-    const input = parseBody<AccountCreateInput>(accountCreateInputSchema, request.body);
-
-    await enforceBaseCurrency(userId, input.currency);
-
-    const loanInput = input.loan ? normalizeLoanCreateInput(input.loan) : null;
-    const paymentAccountId = loanInput
-      ? await ensurePaymentAccount({
-          userId,
-          paymentAccountId: loanInput.paymentAccountId,
+    let input: AccountCreateInput;
+    try {
+      input = parseBody<AccountCreateInput>(accountCreateInputSchema, request.body);
+      request.log.info(
+        {
+          accountType: input.type,
           currency: input.currency,
-        })
-      : null;
+          hasLoanPayload: Boolean(input.loan),
+          loanPayload: summarizeLoanCreatePayload(input.loan),
+        },
+        'accounts.create.validation.success',
+      );
+    } catch (error) {
+      request.log.warn(
+        {
+          hasBody: request.body !== undefined,
+          reason: error instanceof Error ? error.message : 'unknown_error',
+        },
+        'accounts.create.validation.failed',
+      );
+      throw error;
+    }
 
-    const openingBalance = input.type === 'loan' && loanInput
-      ? (paymentAccountId ? (loanInput.borrowedAmount - loanInput.totalRepayable) : -loanInput.totalRepayable)
-      : (input.openingBalance ?? 0);
+    let creationStage:
+      | 'enforce_base_currency'
+      | 'normalize_loan_input'
+      | 'resolve_payment_account'
+      | 'create_account'
+      | 'create_loan_schedule'
+      | 'create_loan_disbursement_transfer'
+      | 'build_response' = 'enforce_base_currency';
+    let createdAccountId: Types.ObjectId | null = null;
 
-    const account = await AccountModel.create({
-      userId,
-      name: input.name,
-      type: input.type,
-      currency: input.currency,
-      openingBalance,
-      loan: input.type === 'loan' && loanInput
-        ? {
-            borrowedAmount: loanInput.borrowedAmount,
-            totalRepayable: loanInput.totalRepayable,
-            monthlyPayment: loanInput.monthlyPayment,
+    try {
+      await enforceBaseCurrency(userId, input.currency);
+
+      creationStage = 'normalize_loan_input';
+      const loanInput = input.loan ? normalizeLoanCreateInput(input.loan) : null;
+
+      creationStage = 'resolve_payment_account';
+      const paymentAccountId = loanInput
+        ? await ensurePaymentAccount({
+            userId,
+            paymentAccountId: loanInput.paymentAccountId,
+            currency: input.currency,
+          })
+        : null;
+
+      const openingBalance = input.type === 'loan' && loanInput
+        ? (paymentAccountId ? (loanInput.borrowedAmount - loanInput.totalRepayable) : -loanInput.totalRepayable)
+        : (input.openingBalance ?? 0);
+
+      creationStage = 'create_account';
+      const account = await AccountModel.create({
+        userId,
+        name: input.name,
+        type: input.type,
+        currency: input.currency,
+        openingBalance,
+        loan: input.type === 'loan' && loanInput
+          ? {
+              borrowedAmount: loanInput.borrowedAmount,
+              totalRepayable: loanInput.totalRepayable,
+              monthlyPayment: loanInput.monthlyPayment,
+              installmentCount: loanInput.installmentCount,
+              paymentDay: loanInput.paymentDay,
+              firstPaymentDate: loanInput.firstPaymentDate,
+              paymentAccountId: paymentAccountId ?? null,
+              note: loanInput.note,
+              status: 'active',
+              closedAt: null,
+            }
+          : null,
+        deletedAt: null,
+      });
+      createdAccountId = account._id;
+
+      request.log.info(
+        {
+          accountId: maskObjectId(account._id),
+          accountType: account.type,
+          hasLoan: Boolean(account.loan),
+        },
+        'accounts.create.account.created',
+      );
+
+      if (account.type === 'loan' && loanInput) {
+        creationStage = 'create_loan_schedule';
+        const scheduleResult = await createLoanInstallmentSchedule({
+          userId,
+          account,
+          loan: {
             installmentCount: loanInput.installmentCount,
             paymentDay: loanInput.paymentDay,
             firstPaymentDate: loanInput.firstPaymentDate,
+            monthlyPayment: loanInput.monthlyPayment,
+            totalRepayable: loanInput.totalRepayable,
             paymentAccountId: paymentAccountId ?? null,
-            note: loanInput.note,
-            status: 'active',
-            closedAt: null,
-          }
-        : null,
-      deletedAt: null,
-    });
+          },
+        });
+        request.log.info(
+          {
+            accountId: maskObjectId(account._id),
+            recurringCreated: scheduleResult.recurringCreated,
+          },
+          'accounts.create.loan.recurring.created',
+        );
+        request.log.info(
+          {
+            accountId: maskObjectId(account._id),
+            upcomingCreated: scheduleResult.upcomingCreated,
+          },
+          'accounts.create.loan.upcoming.created',
+        );
 
-    if (account.type === 'loan' && loanInput) {
-      await createLoanInstallmentSchedule({
-        userId,
-        account,
-        loan: {
-          installmentCount: loanInput.installmentCount,
-          paymentDay: loanInput.paymentDay,
-          firstPaymentDate: loanInput.firstPaymentDate,
-          monthlyPayment: loanInput.monthlyPayment,
-          totalRepayable: loanInput.totalRepayable,
-          paymentAccountId: paymentAccountId ?? null,
+        if (paymentAccountId) {
+          creationStage = 'create_loan_disbursement_transfer';
+          await createTransferPair({
+            userId,
+            fromAccountId: account._id,
+            toAccountId: paymentAccountId,
+            amount: loanInput.borrowedAmount,
+            occurredAt: new Date(),
+            description: `Loan disbursement: ${account.name}`,
+          });
+          request.log.info(
+            {
+              accountId: maskObjectId(account._id),
+              toAccountId: maskObjectId(paymentAccountId),
+              amount: loanInput.borrowedAmount,
+            },
+            'accounts.create.loan.disbursement.created',
+          );
+        }
+      }
+
+      creationStage = 'build_response';
+      reply.status(201);
+      return accountSchema.parse(toAccountDto(account));
+    } catch (error) {
+      request.log.error(
+        {
+          stage: creationStage,
+          accountType: input.type,
+          accountId: maskObjectId(createdAccountId),
+          error: error instanceof Error ? { name: error.name, message: error.message } : error,
+        },
+        'accounts.create.failed',
+      );
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      throw new ApiError({
+        code: 'ACCOUNT_CREATE_FAILED',
+        message: `Account create failed at stage: ${creationStage}`,
+        statusCode: 500,
+        details: {
+          stage: creationStage,
         },
       });
-
-      if (paymentAccountId) {
-        await createTransferPair({
-          userId,
-          fromAccountId: account._id,
-          toAccountId: paymentAccountId,
-          amount: loanInput.borrowedAmount,
-          occurredAt: new Date(),
-          description: `Loan disbursement: ${account.name}`,
-        });
-      }
     }
-
-    reply.status(201);
-    return accountSchema.parse(toAccountDto(account));
   });
 
   app.patch('/accounts/:id', { preHandler: authenticate }, async (request) => {
