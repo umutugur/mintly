@@ -274,12 +274,6 @@ function extractValidationErrorMessage(
   return t('errors.api.VALIDATION_ERROR');
 }
 
-const signedAmountInputSchema = z
-  .string()
-  .trim()
-  .min(1, 'errors.validation.amountRequired')
-  .refine((value) => parseSignedAmount(value) !== null, 'errors.validation.invalidSignedAmount');
-
 const optionalShortTextSchema = z.string().trim().max(500).optional();
 
 const createAccountFormSchema = z
@@ -287,7 +281,7 @@ const createAccountFormSchema = z
     name: accountCreateInputSchema.shape.name,
     type: accountCreateInputSchema.shape.type,
     currency: accountCreateInputSchema.shape.currency,
-    openingBalance: signedAmountInputSchema,
+    openingBalance: z.string().trim().optional(),
     loanBorrowedAmount: z.string().trim().optional(),
     loanTotalRepayable: z.string().trim().optional(),
     loanMonthlyPayment: z.string().trim().optional(),
@@ -299,6 +293,20 @@ const createAccountFormSchema = z
   })
   .superRefine((value, ctx) => {
     if (value.type !== 'loan') {
+      const openingBalance = value.openingBalance ?? '';
+      if (!openingBalance.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['openingBalance'],
+          message: 'errors.validation.amountRequired',
+        });
+      } else if (parseSignedAmount(openingBalance) === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['openingBalance'],
+          message: 'errors.validation.invalidSignedAmount',
+        });
+      }
       return;
     }
 
@@ -370,7 +378,7 @@ const editAccountFormSchema = z
   .object({
     name: z.string().trim().min(1, 'errors.validation.nameRequired').max(120),
     type: accountTypeSchema,
-    openingBalance: signedAmountInputSchema,
+    openingBalance: z.string().trim().optional(),
     loanBorrowedAmount: z.string().trim().optional(),
     loanTotalRepayable: z.string().trim().optional(),
     loanMonthlyPayment: z.string().trim().optional(),
@@ -382,6 +390,20 @@ const editAccountFormSchema = z
   })
   .superRefine((value, ctx) => {
     if (value.type !== 'loan') {
+      const openingBalance = value.openingBalance ?? '';
+      if (!openingBalance.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['openingBalance'],
+          message: 'errors.validation.amountRequired',
+        });
+      } else if (parseSignedAmount(openingBalance) === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['openingBalance'],
+          message: 'errors.validation.invalidSignedAmount',
+        });
+      }
       return;
     }
 
@@ -714,7 +736,7 @@ export function AccountsScreen() {
           name: values.name.trim(),
           type: values.type,
           currency: (baseCurrency ?? values.currency).toUpperCase(),
-          openingBalance: values.type === 'loan' ? 0 : parseSignedAmount(values.openingBalance) ?? 0,
+          openingBalance: values.type === 'loan' ? 0 : parseSignedAmount(values.openingBalance ?? '') ?? 0,
         };
 
         if (values.type === 'loan') {
@@ -800,7 +822,7 @@ export function AccountsScreen() {
         if (params.values.type === 'loan') {
           payload.loan = buildLoanPayloadFromForm(params.values);
         } else {
-          payload.openingBalance = parseSignedAmount(params.values.openingBalance) ?? 0;
+          payload.openingBalance = parseSignedAmount(params.values.openingBalance ?? '') ?? 0;
         }
 
         return apiClient.updateAccount(params.id, payload, token);
