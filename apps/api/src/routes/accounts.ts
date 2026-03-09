@@ -82,6 +82,10 @@ function summarizeLoanCreatePayload(input: AccountCreateInput['loan'] | undefine
   };
 }
 
+function logLoanCreateStage(stage: string, details: Record<string, unknown>): void {
+  console.log(`[accounts][loan-create] ${stage}`, details);
+}
+
 function extractLoanFromAccount(account: AccountDocument): Account['loan'] {
   const raw = (account as AccountDocument & {
     loan?: {
@@ -654,6 +658,12 @@ export function registerAccountRoutes(app: FastifyInstance): void {
     let input: AccountCreateInput;
     try {
       input = parseBody<AccountCreateInput>(accountCreateInputSchema, request.body);
+      logLoanCreateStage('validation.success', {
+        accountType: input.type,
+        currency: input.currency,
+        hasLoanPayload: Boolean(input.loan),
+        loanPayload: summarizeLoanCreatePayload(input.loan),
+      });
       request.log.info(
         {
           accountType: input.type,
@@ -664,6 +674,10 @@ export function registerAccountRoutes(app: FastifyInstance): void {
         'accounts.create.validation.success',
       );
     } catch (error) {
+      logLoanCreateStage('validation.failed', {
+        hasBody: request.body !== undefined,
+        reason: error instanceof Error ? error.message : 'unknown_error',
+      });
       request.log.warn(
         {
           hasBody: request.body !== undefined,
@@ -727,6 +741,11 @@ export function registerAccountRoutes(app: FastifyInstance): void {
         deletedAt: null,
       });
       createdAccountId = account._id;
+      logLoanCreateStage('account.created', {
+        accountId: maskObjectId(account._id),
+        accountType: account.type,
+        hasLoan: Boolean(account.loan),
+      });
 
       request.log.info(
         {
@@ -750,6 +769,14 @@ export function registerAccountRoutes(app: FastifyInstance): void {
             totalRepayable: loanInput.totalRepayable,
             paymentAccountId: paymentAccountId ?? null,
           },
+        });
+        logLoanCreateStage('loan.recurring.created', {
+          accountId: maskObjectId(account._id),
+          recurringCreated: scheduleResult.recurringCreated,
+        });
+        logLoanCreateStage('loan.upcoming.created', {
+          accountId: maskObjectId(account._id),
+          upcomingCreated: scheduleResult.upcomingCreated,
         });
         request.log.info(
           {
@@ -776,6 +803,11 @@ export function registerAccountRoutes(app: FastifyInstance): void {
             occurredAt: new Date(),
             description: `Loan disbursement: ${account.name}`,
           });
+          logLoanCreateStage('loan.disbursement.created', {
+            accountId: maskObjectId(account._id),
+            toAccountId: maskObjectId(paymentAccountId),
+            amount: loanInput.borrowedAmount,
+          });
           request.log.info(
             {
               accountId: maskObjectId(account._id),
@@ -791,6 +823,12 @@ export function registerAccountRoutes(app: FastifyInstance): void {
       reply.status(201);
       return accountSchema.parse(toAccountDto(account));
     } catch (error) {
+      logLoanCreateStage('failed', {
+        stage: creationStage,
+        accountType: input.type,
+        accountId: maskObjectId(createdAccountId),
+        reason: error instanceof Error ? error.message : 'unknown_error',
+      });
       request.log.error(
         {
           stage: creationStage,

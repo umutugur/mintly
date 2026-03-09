@@ -99,7 +99,20 @@ function looksLikeIsoDateTime(value: string | null | undefined): boolean {
 }
 
 function logLoanCreateDebug(stage: string, details: Record<string, unknown>): void {
-  console.info(`[accounts][loan-create] ${stage}`, details);
+  console.log(`[accounts][loan-create] ${stage}`, details);
+}
+
+function summarizeFormErrorsForDebug(
+  errors: Partial<Record<keyof CreateAccountFormValues, { message?: unknown }>>,
+): Record<string, string> {
+  const summary: Record<string, string> = {};
+
+  for (const [field, error] of Object.entries(errors)) {
+    const message = typeof error?.message === 'string' ? error.message : 'validation_error';
+    summary[field] = message;
+  }
+
+  return summary;
 }
 
 function parsePositiveAmount(value: string): number | null {
@@ -1308,9 +1321,24 @@ export function AccountsScreen() {
               label={createAccountMutation.isPending ? t('accounts.form.creating') : t('accounts.form.create')}
               loading={createAccountMutation.isPending}
               disabled={createAccountMutation.isPending}
-              onPress={createForm.handleSubmit((values) => {
-                createAccountMutation.mutate(values);
-              })}
+              onPress={createForm.handleSubmit(
+                (values) => {
+                  logLoanCreateDebug('submit_valid', {
+                    accountType: values.type,
+                    hasLoanSource: Boolean(values.loanPaymentAccountId?.trim()),
+                    firstPaymentDateRaw: values.loanFirstPaymentDate ?? null,
+                  });
+                  createAccountMutation.mutate(values);
+                },
+                (errors) => {
+                  logLoanCreateDebug('submit_invalid', {
+                    accountType: createForm.getValues('type'),
+                    fields: summarizeFormErrorsForDebug(
+                      errors as Partial<Record<keyof CreateAccountFormValues, { message?: unknown }>>,
+                    ),
+                  });
+                },
+              )}
             />
           </Card>
         </Section>
