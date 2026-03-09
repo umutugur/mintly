@@ -27,12 +27,13 @@ function toAccountBalance(
   account: AccountDocument,
   balanceByAccountId: Map<string, number>,
 ): DashboardRecentResponse['balances'][number] {
+  const openingBalance = typeof account.openingBalance === 'number' ? account.openingBalance : 0;
   return {
     accountId: account.id,
     name: account.name,
     type: account.type,
     currency: account.currency,
-    balance: balanceByAccountId.get(account.id) ?? 0,
+    balance: (balanceByAccountId.get(account.id) ?? 0) + openingBalance,
   };
 }
 

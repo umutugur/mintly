@@ -31,6 +31,7 @@ function toAccountDto(account: AccountDocument): Account {
     name: account.name,
     type: account.type,
     currency: account.currency,
+    openingBalance: typeof account.openingBalance === 'number' ? account.openingBalance : 0,
     createdAt: stamped.createdAt.toISOString(),
     updatedAt: stamped.updatedAt.toISOString(),
   };
@@ -87,6 +88,7 @@ export function registerAccountRoutes(app: FastifyInstance): void {
       name: input.name,
       type: input.type,
       currency: input.currency,
+      openingBalance: input.openingBalance ?? 0,
       deletedAt: null,
     });
 
@@ -118,6 +120,9 @@ export function registerAccountRoutes(app: FastifyInstance): void {
     if (input.currency !== undefined) {
       await enforceBaseCurrency(userId, input.currency);
       account.currency = input.currency;
+    }
+    if (input.openingBalance !== undefined) {
+      account.openingBalance = input.openingBalance;
     }
 
     await account.save();

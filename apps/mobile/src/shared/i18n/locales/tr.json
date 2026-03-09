@@ -7,7 +7,16 @@
       "cashWallet": "Nakit Cüzdanı",
       "credit": "Kredi",
       "creditCard": "Kredi Kartı",
+      "debtLent": "Verilen Borç",
+      "debtBorrowed": "Alınan Borç",
+      "debt_lent": "Verilen Borç",
+      "debt_borrowed": "Alınan Borç",
       "savings": "Birikim Hesabı"
+    },
+    "balance": {
+      "value": "Bakiye: {{value}}",
+      "assetTag": "Varlık",
+      "liabilityTag": "Yükümlülük"
     },
     "baseCurrency": {
       "empty": "Henüz ana para birimi yok. İlk hesabınız için birini seçin.",
@@ -32,7 +41,11 @@
       "currencyPlaceholder": "TRY",
       "nameLabel": "Hesap adı",
       "namePlaceholder": "Örn. Ana Banka",
-      "typeLabel": "Tür"
+      "typeLabel": "Tür",
+      "openingBalanceLabel": "Başlangıç Bakiyesi",
+      "openingBalancePlaceholder": "0,00",
+      "assetHint": "Pozitif bakiye varlık tarafında görünür.",
+      "liabilityHint": "Bu hesap borç/yükümlülük olarak takip edilir."
     },
     "sections": {
       "baseCurrency": {
@@ -675,7 +688,9 @@
     "accountTypes": {
       "bank": "Banka",
       "cash": "Nakit",
-      "credit": "Kredi"
+      "credit": "Kredi",
+      "debt_lent": "Verilen Borç",
+      "debt_borrowed": "Alınan Borç"
     },
     "accounts": "Hesaplar",
     "addExpense": "Gider Ekle",
@@ -789,6 +804,7 @@
       "dayOfMonthRange": "Ayın günü 1 ile 28 arasında olmalıdır.",
       "dayOfWeekRange": "Haftanın günü 0 ile 6 arasında olmalıdır.",
       "invalidIsoDateTime": "Geçerli ISO tarih/saat girin.",
+      "invalidSignedAmount": "Geçerli bir başlangıç bakiyesi girin.",
       "limitAmountPositive": "Limit tutarı sıfırdan büyük olmalıdır.",
       "limitAmountRequired": "Limit tutarı zorunludur.",
       "nameRequired": "Ad zorunludur.",

@@ -18,7 +18,7 @@ const accountSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ['cash', 'bank', 'credit'],
+      enum: ['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed'],
       required: true,
     },
     currency: {
@@ -28,6 +28,11 @@ const accountSchema = new Schema(
       uppercase: true,
       minlength: 3,
       maxlength: 3,
+    },
+    openingBalance: {
+      type: Number,
+      required: true,
+      default: 0,
     },
     deletedAt: {
       type: Date,

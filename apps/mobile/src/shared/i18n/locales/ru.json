@@ -7,7 +7,16 @@
       "cashWallet": "Наличный кошелек",
       "credit": "Кредит",
       "creditCard": "Кредитная карта",
+      "debtLent": "Выданный долг",
+      "debtBorrowed": "Полученный долг",
+      "debt_lent": "Выданный долг",
+      "debt_borrowed": "Полученный долг",
       "savings": "Сберегательный счет"
+    },
+    "balance": {
+      "value": "Баланс: {{value}}",
+      "assetTag": "Актив",
+      "liabilityTag": "Обязательство"
     },
     "baseCurrency": {
       "empty": "Базовая валюта еще не выбрана. Выберите ее для первого счета.",
@@ -32,7 +41,11 @@
       "currencyPlaceholder": "TRY",
       "nameLabel": "Название счета",
       "namePlaceholder": "Например, Основной банк",
-      "typeLabel": "Тип"
+      "typeLabel": "Тип",
+      "openingBalanceLabel": "Начальный баланс",
+      "openingBalancePlaceholder": "0.00",
+      "assetHint": "Положительный баланс учитывается как актив.",
+      "liabilityHint": "Этот счет учитывается как обязательство."
     },
     "sections": {
       "baseCurrency": {
@@ -675,7 +688,9 @@
     "accountTypes": {
       "bank": "Банк",
       "cash": "Наличные",
-      "credit": "Кредит"
+      "credit": "Кредит",
+      "debt_lent": "Выданный долг",
+      "debt_borrowed": "Полученный долг"
     },
     "accounts": "Счета",
     "addExpense": "Добавить расход",
@@ -789,6 +804,7 @@
       "dayOfMonthRange": "День месяца должен быть от 1 до 28.",
       "dayOfWeekRange": "День недели должен быть от 0 до 6.",
       "invalidIsoDateTime": "Введите корректную дату/время в ISO формате.",
+      "invalidSignedAmount": "Введите корректный начальный баланс.",
       "limitAmountPositive": "Лимит должен быть больше нуля.",
       "limitAmountRequired": "Лимит обязателен.",
       "nameRequired": "Имя обязательно.",

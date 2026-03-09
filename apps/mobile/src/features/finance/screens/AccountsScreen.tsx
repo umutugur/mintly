@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  accountTypeSchema, accountCreateInputSchema, type AccountType, type AccountUpdateInput, type DashboardRecentResponse, } from '@mintly/shared';
+  accountTypeSchema, accountCreateInputSchema, type AccountType, type AccountUpdateInput, } from '@mintly/shared';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -22,17 +22,62 @@ import { useI18n } from '@shared/i18n';
 import { colors, radius, spacing, typography } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
 
-const accountTypes: AccountType[] = ['cash', 'bank', 'credit'];
+const accountTypes: AccountType[] = ['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed'];
+const LIABILITY_ACCOUNT_TYPES: AccountType[] = ['credit', 'debt_borrowed'];
+
+function isLiabilityAccountType(type: AccountType): boolean {
+  return LIABILITY_ACCOUNT_TYPES.includes(type);
+}
+
+function parseSignedAmount(value: string): number | null {
+  const normalized = value.trim().replace(/,/g, '.');
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function formatSignedBalance(amount: number, currency: string, locale: string): string {
+  const formatted = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(amount));
+
+  if (amount > 0) {
+    return `+${formatted}`;
+  }
+
+  if (amount < 0) {
+    return `-${formatted}`;
+  }
+
+  return formatted;
+}
+
+const signedAmountInputSchema = z
+  .string()
+  .trim()
+  .min(1, 'errors.validation.amountRequired')
+  .refine((value) => parseSignedAmount(value) !== null, 'errors.validation.invalidSignedAmount');
 
 const createAccountFormSchema = z.object({
   name: accountCreateInputSchema.shape.name,
   type: accountCreateInputSchema.shape.type,
   currency: accountCreateInputSchema.shape.currency,
+  openingBalance: signedAmountInputSchema,
 });
 
 const editAccountFormSchema = z.object({
   name: z.string().trim().min(1, 'errors.validation.nameRequired').max(120),
   type: accountTypeSchema,
+  openingBalance: signedAmountInputSchema,
 });
 
 type CreateAccountFormValues = z.infer<typeof createAccountFormSchema>;
@@ -68,6 +113,8 @@ function getAccountTypeLabel(
     bank: 'accounts.accountType.bankAccount',
     cash: 'accounts.accountType.cashWallet',
     credit: 'accounts.accountType.creditCard',
+    debt_lent: 'accounts.accountType.debtLent',
+    debt_borrowed: 'accounts.accountType.debtBorrowed',
   };
 
   const rich = t(richKeyByType[type]);
@@ -90,7 +137,7 @@ function getAccountTypeLabel(
 
 export function AccountsScreen() {
   const { withAuth, user, refreshUser, logout } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const queryClient = useQueryClient();
@@ -103,6 +150,10 @@ export function AccountsScreen() {
     queryKey: financeQueryKeys.accounts.list(),
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
+  const dashboardQuery = useQuery({
+    queryKey: financeQueryKeys.dashboard.recent(),
+    queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
+  });
 
   const createForm = useForm<CreateAccountFormValues>({
     resolver: zodResolver(createAccountFormSchema),
@@ -110,6 +161,7 @@ export function AccountsScreen() {
       name: '',
       type: 'bank',
       currency: baseCurrency ?? 'USD',
+      openingBalance: '0',
     },
   });
 
@@ -118,6 +170,7 @@ export function AccountsScreen() {
     defaultValues: {
       name: '',
       type: 'bank',
+      openingBalance: '0',
     },
   });
 
@@ -150,18 +203,33 @@ export function AccountsScreen() {
     ]);
   }, [queryClient]);
 
+  const balanceByAccountId = useMemo(
+    () => new Map((dashboardQuery.data?.balances ?? []).map((balance) => [balance.accountId, balance.balance])),
+    [dashboardQuery.data?.balances],
+  );
+
+  const createSelectedType = createForm.watch('type');
+  const createOpeningBalance = parseSignedAmount(createForm.watch('openingBalance') ?? '') ?? 0;
+  const createLooksLiability = isLiabilityAccountType(createSelectedType) || createOpeningBalance < 0;
+  const editSelectedType = editForm.watch('type');
+  const editOpeningBalance = parseSignedAmount(editForm.watch('openingBalance') ?? '') ?? 0;
+  const editLooksLiability = isLiabilityAccountType(editSelectedType) || editOpeningBalance < 0;
+
   const createAccountMutation = useMutation({
-    mutationFn: (values: CreateAccountFormValues) =>
-      withAuth((token) =>
+    mutationFn: (values: CreateAccountFormValues) => {
+      const openingBalance = parseSignedAmount(values.openingBalance) ?? 0;
+      return withAuth((token) =>
         apiClient.createAccount(
           {
             name: values.name.trim(),
             type: values.type,
             currency: (baseCurrency ?? values.currency).toUpperCase(),
+            openingBalance,
           },
           token,
         ),
-      ),
+      );
+    },
     onSuccess: async () => {
       await invalidateAccountRelatedQueries();
 
@@ -173,6 +241,7 @@ export function AccountsScreen() {
         name: '',
         type: 'bank',
         currency: baseCurrency ?? createForm.getValues('currency'),
+        openingBalance: '0',
       });
       setFeedback({ tone: 'success', message: t('accounts.create.success') });
     },
@@ -183,17 +252,20 @@ export function AccountsScreen() {
   });
 
   const updateAccountMutation = useMutation({
-    mutationFn: (params: { id: string; values: EditAccountFormValues }) =>
-      withAuth((token) =>
+    mutationFn: (params: { id: string; values: EditAccountFormValues }) => {
+      const openingBalance = parseSignedAmount(params.values.openingBalance) ?? 0;
+      return withAuth((token) =>
         apiClient.updateAccount(
           params.id,
           {
             name: params.values.name.trim(),
             type: params.values.type,
+            openingBalance,
           } satisfies AccountUpdateInput,
           token,
         ),
-      ),
+      );
+    },
     onSuccess: async () => {
       setEditingAccountId(null);
       await invalidateAccountRelatedQueries();
@@ -256,10 +328,9 @@ export function AccountsScreen() {
         return;
       }
 
-      const dashboardData = queryClient.getQueryData<DashboardRecentResponse>(financeQueryKeys.dashboard.recent());
-      const accountBalance = dashboardData?.balances.find((b) => b.accountId === accountId)?.balance ?? 0;
+      const accountBalance = balanceByAccountId.get(accountId) ?? 0;
 
-      if (accountBalance > 0) {
+      if (Math.abs(accountBalance) > 0.0001) {
         showAlert(
           t('accounts.delete.hasBalanceTitle', { defaultValue: 'Hesapta Bakiye Var' }),
           t('accounts.delete.hasBalanceBody', { defaultValue: 'Bu hesabı silmeden önce içindeki bakiyeyi başka bir hesaba aktarmanız gerekmektedir.' }),
@@ -294,7 +365,7 @@ export function AccountsScreen() {
         ],
       );
     },
-    [deleteAccountMutation, queryClient, openTransfer, t, updateAccountMutation.isPending],
+    [balanceByAccountId, deleteAccountMutation, openTransfer, t, updateAccountMutation.isPending],
   );
 
   if (accountsQuery.isLoading) {
@@ -420,6 +491,30 @@ export function AccountsScreen() {
             <Text style={styles.errorText}>{t(createForm.formState.errors.currency.message ?? '')}</Text>
           ) : null}
 
+          <Text style={styles.fieldLabel}>{t('accounts.form.openingBalanceLabel')}</Text>
+          <Controller
+            control={createForm.control}
+            name="openingBalance"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                editable={!createAccountMutation.isPending}
+                placeholder={t('accounts.form.openingBalancePlaceholder')}
+                keyboardType="numbers-and-punctuation"
+                placeholderTextColor={colors.textMuted}
+              />
+            )}
+          />
+          {createForm.formState.errors.openingBalance ? (
+            <Text style={styles.errorText}>{t(createForm.formState.errors.openingBalance.message ?? '')}</Text>
+          ) : null}
+          <Text style={styles.helperText}>
+            {createLooksLiability ? t('accounts.form.liabilityHint') : t('accounts.form.assetHint')}
+          </Text>
+
           <PrimaryButton
             label={createAccountMutation.isPending ? t('accounts.form.creating') : t('accounts.form.create')}
             loading={createAccountMutation.isPending}
@@ -438,12 +533,35 @@ export function AccountsScreen() {
             </Card>
           ) : null}
 
-          {accounts.map((account) => (
+          {accounts.map((account) => {
+            const accountBalance = balanceByAccountId.get(account.id) ?? account.openingBalance ?? 0;
+            const accountRoleLabel = isLiabilityAccountType(account.type)
+              ? t('accounts.balance.liabilityTag')
+              : account.type === 'debt_lent'
+                ? t('accounts.balance.assetTag')
+                : null;
+
+            return (
             <Card key={account.id} style={styles.accountCard}>
             <View style={styles.accountHeader}>
               <View style={styles.accountMeta}>
                 <Text style={styles.accountName}>{account.name}</Text>
                 <Text style={styles.accountSub}>{`${getAccountTypeLabel(account.type, t, account.name)} · ${account.currency}`}</Text>
+                <Text
+                  style={[
+                    styles.accountBalance,
+                    accountBalance > 0
+                      ? styles.accountBalancePositive
+                      : accountBalance < 0
+                        ? styles.accountBalanceNegative
+                        : styles.accountBalanceNeutral,
+                  ]}
+                >
+                  {t('accounts.balance.value', {
+                    value: formatSignedBalance(accountBalance, account.currency, locale),
+                  })}
+                </Text>
+                {accountRoleLabel ? <Text style={styles.accountRole}>{accountRoleLabel}</Text> : null}
               </View>
 
               <View style={styles.accountActions}>
@@ -454,6 +572,7 @@ export function AccountsScreen() {
                     editForm.reset({
                       name: account.name,
                       type: account.type,
+                      openingBalance: String(account.openingBalance ?? 0),
                     });
                   }}
                 >
@@ -524,6 +643,30 @@ export function AccountsScreen() {
                   )}
                 />
 
+                <Text style={styles.fieldLabel}>{t('accounts.form.openingBalanceLabel')}</Text>
+                <Controller
+                  control={editForm.control}
+                  name="openingBalance"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={styles.input}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      editable={!updateAccountMutation.isPending && !deleteAccountMutation.isPending}
+                      placeholder={t('accounts.form.openingBalancePlaceholder')}
+                      keyboardType="numbers-and-punctuation"
+                      placeholderTextColor={colors.textMuted}
+                    />
+                  )}
+                />
+                {editForm.formState.errors.openingBalance ? (
+                  <Text style={styles.errorText}>{t(editForm.formState.errors.openingBalance.message ?? '')}</Text>
+                ) : null}
+                <Text style={styles.helperText}>
+                  {editLooksLiability ? t('accounts.form.liabilityHint') : t('accounts.form.assetHint')}
+                </Text>
+
                 <View style={styles.editorActions}>
                   <PrimaryButton
                     label={updateAccountMutation.isPending ? t('common.saving') : t('common.save')}
@@ -556,7 +699,8 @@ export function AccountsScreen() {
               </View>
             ) : null}
             </Card>
-          ))}
+            );
+          })}
         </Section>
       </ScreenContainer>
 
@@ -637,6 +781,11 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
   },
+  helperText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: 0,
+  },
   input: {
     height: 48,
     borderRadius: radius.md,
@@ -674,6 +823,23 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   accountSub: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  accountBalance: {
+    ...typography.subheading,
+    fontSize: 14,
+  },
+  accountBalancePositive: {
+    color: colors.income,
+  },
+  accountBalanceNegative: {
+    color: colors.expense,
+  },
+  accountBalanceNeutral: {
+    color: colors.textMuted,
+  },
+  accountRole: {
     ...typography.caption,
     color: colors.textMuted,
   },

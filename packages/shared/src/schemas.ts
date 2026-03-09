@@ -208,7 +208,7 @@ export const logoutResponseSchema = z.object({
   ok: z.literal(true),
 });
 
-export const accountTypeSchema = z.enum(['cash', 'bank', 'credit']);
+export const accountTypeSchema = z.enum(['cash', 'bank', 'credit', 'debt_lent', 'debt_borrowed']);
 export const categoryTypeSchema = z.enum(['income', 'expense']);
 export const transactionTypeSchema = z.enum(['income', 'expense']);
 export const transactionKindSchema = z.enum(['normal', 'transfer']);
@@ -221,6 +221,7 @@ export const accountSchema = z.object({
   name: z.string().min(1).max(120),
   type: accountTypeSchema,
   currency: currencySchema,
+  openingBalance: z.number().finite(),
   createdAt: dateTimeStringSchema,
   updatedAt: dateTimeStringSchema,
 });
@@ -233,6 +234,7 @@ export const accountCreateInputSchema = z.object({
   name: z.string().trim().min(1).max(120),
   type: accountTypeSchema,
   currency: currencySchema,
+  openingBalance: z.number().finite().default(0),
 });
 
 export const accountUpdateInputSchema = z
@@ -240,6 +242,7 @@ export const accountUpdateInputSchema = z
     name: z.string().trim().min(1).max(120).optional(),
     type: accountTypeSchema.optional(),
     currency: currencySchema.optional(),
+    openingBalance: z.number().finite().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field must be provided',
