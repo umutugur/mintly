@@ -3,7 +3,7 @@
     "name": "Montly",
     "slug": "mintly",
     "scheme": "mintly",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/brand/montly-icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mintly.app",
-      "buildNumber": "7",
+      "buildNumber": "10",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is needed to scan receipts.",
@@ -36,7 +36,7 @@
     },
     "android": {
       "package": "com.mintly.app",
-      "versionCode": 2,
+      "versionCode": 10,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
