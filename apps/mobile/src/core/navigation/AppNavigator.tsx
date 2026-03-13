@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@app/providers/AuthProvider';
@@ -20,6 +20,8 @@ export function AppNavigator() {
   const { theme } = useTheme();
   const { t } = useI18n();
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus>('loading');
+  const previousStatusRef = useRef<string | null>(null);
+  const previousOnboardingRef = useRef<OnboardingStatus | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -35,6 +37,34 @@ export function AppNavigator() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    const statusChanged = previousStatusRef.current !== status;
+    const onboardingChanged = previousOnboardingRef.current !== onboardingStatus;
+    if (!statusChanged && !onboardingChanged) {
+      return;
+    }
+
+    const target =
+      onboardingStatus === 'loading'
+        ? 'onboarding_loading'
+        : onboardingStatus === 'pending'
+          ? 'onboarding'
+          : status === 'loading'
+            ? 'session_loading'
+            : status === 'authenticated'
+              ? 'root_tabs'
+              : 'auth_stack';
+
+    console.info('[app][navigation] root_target', {
+      status,
+      onboardingStatus,
+      target,
+    });
+
+    previousStatusRef.current = status;
+    previousOnboardingRef.current = onboardingStatus;
+  }, [onboardingStatus, status]);
 
   const finishOnboarding = useCallback(() => {
     void (async () => {

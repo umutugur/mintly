@@ -162,6 +162,15 @@ export function LoginScreen({ navigation }: Props) {
     googleWebClientId.length > 0 && !isLiteralEnvPlaceholder(googleWebClientId);
 
   useEffect(() => {
+    console.info('[auth][screen] mounted', {
+      screen: 'login',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      platform: Platform.OS,
+      mode: __DEV__ ? 'dev' : 'release',
+    });
+  }, []);
+
+  useEffect(() => {
     if (!__DEV__) {
       if (!googleConfigured) {
         return;
@@ -195,10 +204,22 @@ export function LoginScreen({ navigation }: Props) {
 
     clearAuthError();
     setRequestError(null);
+    console.info('[auth][screen] submit_pressed', {
+      screen: 'login',
+      flow: 'password',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      hasEmail: email.trim().length > 0,
+      passwordLength: password.length,
+    });
 
     const nextErrors = validateLogin(email, password, t);
     setErrors(nextErrors);
     if (nextErrors.email || nextErrors.password) {
+      console.info('[auth][screen] submit_blocked_validation', {
+        screen: 'login',
+        flow: 'password',
+        fields: Object.keys(nextErrors),
+      });
       return;
     }
 
@@ -212,7 +233,18 @@ export function LoginScreen({ navigation }: Props) {
       if (!ok && !authError) {
         setRequestError(t('auth.login.fallbackError'));
       }
+      console.info('[auth][screen] submit_completed', {
+        screen: 'login',
+        flow: 'password',
+        success: ok,
+      });
     } catch (error) {
+      console.warn('[auth][screen] submit_failed', {
+        screen: 'login',
+        flow: 'password',
+        errorName: error instanceof Error ? error.name : 'unknown',
+        errorMessage: error instanceof Error ? error.message : 'unknown',
+      });
       setRequestError(apiErrorText(error));
     } finally {
       setIsSubmitting(false);
@@ -226,6 +258,13 @@ export function LoginScreen({ navigation }: Props) {
 
     clearAuthError();
     setRequestError(null);
+    console.info('[auth][screen] submit_pressed', {
+      screen: 'login',
+      flow: 'google',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      googleConfigured,
+      platform: Platform.OS,
+    });
 
     if (!googleConfigured) {
       const configErrorMessage =
@@ -367,6 +406,12 @@ export function LoginScreen({ navigation }: Props) {
 
     clearAuthError();
     setRequestError(null);
+    console.info('[auth][screen] submit_pressed', {
+      screen: 'login',
+      flow: 'apple',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      platform: Platform.OS,
+    });
     setActiveOauthProvider('apple');
 
     try {

@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 
 const DEFAULT_API_TIMEOUT_MS = 12_000;
+const DEFAULT_PUBLIC_API_BASE_URL = 'https://mintly-2lbv.onrender.com';
 
 type ExtraMap = Record<string, unknown>;
 
@@ -60,7 +61,7 @@ function readNumberEnv(name: string, fallback: number): number {
 
 export const mobileEnv = {
   sentryEnabledInDev: readBooleanEnv('EXPO_PUBLIC_ENABLE_SENTRY', false),
-  apiBaseUrl: readStringEnv('EXPO_PUBLIC_API_BASE_URL') || 'http://localhost:3000',
+  apiBaseUrl: readStringEnv('EXPO_PUBLIC_API_BASE_URL') || DEFAULT_PUBLIC_API_BASE_URL,
   sentryDsn: readStringEnv('EXPO_PUBLIC_SENTRY_DSN'),
   sentryEnvironment: readStringEnv('EXPO_PUBLIC_SENTRY_ENV'),
   apiTimeoutMs: readNumberEnv('EXPO_PUBLIC_API_TIMEOUT_MS', DEFAULT_API_TIMEOUT_MS),

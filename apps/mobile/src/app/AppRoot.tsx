@@ -1,6 +1,6 @@
 import { DefaultTheme as NavigationDefaultTheme, NavigationContainer, type Theme as NavigationTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppErrorBoundary } from '@app/components/AppErrorBoundary';
@@ -9,6 +9,7 @@ import { NetworkProvider } from '@app/providers/NetworkProvider';
 import { QueryProvider } from '@app/providers/QueryProvider';
 import { ThemeProvider, useTheme } from '@app/providers/ThemeProvider';
 import { AdProvider } from '@core/ads/AdProvider';
+import { resolvedApiBaseUrl } from '@core/api/client';
 import { useAdvisorInsightPrefetch } from '@features/advisor/hooks/useAdvisorInsightPrefetch';
 import { I18nProvider } from '@shared/i18n';
 import { AppNavigator } from '@core/navigation/AppNavigator';
@@ -22,6 +23,13 @@ function AdvisorInsightPrefetchBootstrap() {
 
 function AppShell() {
   const { theme, mode } = useTheme();
+  useEffect(() => {
+    console.info('[app][startup] api_base_resolved', {
+      baseUrl: resolvedApiBaseUrl,
+      mode: __DEV__ ? 'dev' : 'release',
+    });
+  }, []);
+
   const navigationTheme = useMemo<NavigationTheme>(
     () => ({
       ...NavigationDefaultTheme,

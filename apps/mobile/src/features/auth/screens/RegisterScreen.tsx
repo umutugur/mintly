@@ -150,6 +150,15 @@ export function RegisterScreen({ navigation }: Props) {
   const googleConfigured = googleWebClientId.length > 0;
 
   useEffect(() => {
+    console.info('[auth][screen] mounted', {
+      screen: 'register',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      platform: Platform.OS,
+      mode: __DEV__ ? 'dev' : 'release',
+    });
+  }, []);
+
+  useEffect(() => {
     if (!__DEV__) {
       if (!googleConfigured) {
         return;
@@ -183,10 +192,23 @@ export function RegisterScreen({ navigation }: Props) {
 
     clearAuthError();
     setRequestError(null);
+    console.info('[auth][screen] submit_pressed', {
+      screen: 'register',
+      flow: 'password',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      hasName: name.trim().length > 0,
+      hasEmail: email.trim().length > 0,
+      passwordLength: password.length,
+    });
 
     const nextErrors = validateRegister(name, email, password, t);
     setErrors(nextErrors);
     if (nextErrors.name || nextErrors.email || nextErrors.password) {
+      console.info('[auth][screen] submit_blocked_validation', {
+        screen: 'register',
+        flow: 'password',
+        fields: Object.keys(nextErrors),
+      });
       return;
     }
 
@@ -201,7 +223,18 @@ export function RegisterScreen({ navigation }: Props) {
       if (!ok && !authError) {
         setRequestError(t('auth.register.fallbackError'));
       }
+      console.info('[auth][screen] submit_completed', {
+        screen: 'register',
+        flow: 'password',
+        success: ok,
+      });
     } catch (error) {
+      console.warn('[auth][screen] submit_failed', {
+        screen: 'register',
+        flow: 'password',
+        errorName: error instanceof Error ? error.name : 'unknown',
+        errorMessage: error instanceof Error ? error.message : 'unknown',
+      });
       setRequestError(apiErrorText(error));
     } finally {
       setIsSubmitting(false);
@@ -215,6 +248,13 @@ export function RegisterScreen({ navigation }: Props) {
 
     clearAuthError();
     setRequestError(null);
+    console.info('[auth][screen] submit_pressed', {
+      screen: 'register',
+      flow: 'google',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      googleConfigured,
+      platform: Platform.OS,
+    });
 
     if (!googleConfigured) {
       setRequestError(t('auth.login.oauth.googleUnavailable'));
@@ -343,6 +383,12 @@ export function RegisterScreen({ navigation }: Props) {
 
     clearAuthError();
     setRequestError(null);
+    console.info('[auth][screen] submit_pressed', {
+      screen: 'register',
+      flow: 'apple',
+      apiBaseUrl: mobileEnv.apiBaseUrl,
+      platform: Platform.OS,
+    });
     setActiveOauthProvider('apple');
 
     try {

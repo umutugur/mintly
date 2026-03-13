@@ -33,6 +33,10 @@ const ACCESS_TOKEN_KEY = 'finsight.accessToken';
 const REFRESH_TOKEN_KEY = 'finsight.refreshToken';
 const AUTH_ME_QUERY_KEY = ['auth', 'me'] as const;
 
+function logAuthFlow(stage: string, details: Record<string, unknown>): void {
+  console.info(`[auth][flow] ${stage}`, details);
+}
+
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 type SessionUser = MeResponse['user'];
 
@@ -132,7 +136,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRefreshToken(params.refreshToken);
       applySessionUser(params.user);
       await persistTokens(params.accessToken, params.refreshToken);
+      logAuthFlow('session_persisted', {
+        userId: params.user.id,
+      });
       setStatus('authenticated');
+      logAuthFlow('navigation_ready', {
+        status: 'authenticated',
+      });
     },
     [applySessionUser],
   );
@@ -270,6 +280,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const restoreSession = useCallback(async () => {
     setStatus('loading');
+    logAuthFlow('restore_started', {});
 
     const [storedAccessToken, storedRefreshToken] = await Promise.all([
       SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
@@ -277,6 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ]);
 
     if (!storedAccessToken || !storedRefreshToken) {
+      logAuthFlow('restore_missing_tokens', {});
       await clearSession();
       return;
     }
@@ -288,9 +300,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshToken: storedRefreshToken,
         user: me.user,
       });
+      logAuthFlow('restore_success', {
+        mode: 'existing_access_token',
+      });
       return;
     } catch (error) {
       if (!(error instanceof ApiClientError) || error.status !== 401) {
+        logAuthFlow('restore_failed', {
+          reason: 'me_request_failed',
+          errorCode: error instanceof ApiClientError ? error.code : 'unknown',
+        });
         await clearSession();
         return;
       }
@@ -305,7 +324,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshToken: refreshed.refreshToken,
         user: me.user,
       });
+      logAuthFlow('restore_success', {
+        mode: 'refresh_token',
+      });
     } catch {
+      logAuthFlow('restore_failed', {
+        reason: 'refresh_failed',
+      });
       await clearSession();
     }
   }, [clearSession, setSession]);
@@ -323,6 +348,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setAuthError(null);
+      logAuthFlow('request_started', {
+        action: 'login',
+      });
       trackAppEvent('auth.login', {
         category: 'auth',
         data: { stage: 'attempt' },
@@ -330,6 +358,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const response = await apiClient.login(validation.data);
+        logAuthFlow('response_received', {
+          action: 'login',
+          success: true,
+        });
         const me = await apiClient
           .getMe(response.accessToken)
           .then((result) => result.user)
@@ -346,6 +378,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return true;
       } catch (error) {
+        logAuthFlow('response_received', {
+          action: 'login',
+          success: false,
+          errorCode: error instanceof ApiClientError ? error.code : 'unknown',
+          errorMessage: error instanceof Error ? error.message : 'unknown',
+        });
         trackAppEvent('auth.login', {
           category: 'auth',
           level: 'warning',
@@ -367,6 +405,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setAuthError(null);
+      logAuthFlow('request_started', {
+        action: 'register',
+      });
       trackAppEvent('auth.register', {
         category: 'auth',
         data: { stage: 'attempt' },
@@ -374,6 +415,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const response = await apiClient.register(validation.data);
+        logAuthFlow('response_received', {
+          action: 'register',
+          success: true,
+        });
         const me = await apiClient
           .getMe(response.accessToken)
           .then((result) => result.user)
@@ -390,6 +435,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return true;
       } catch (error) {
+        logAuthFlow('response_received', {
+          action: 'register',
+          success: false,
+          errorCode: error instanceof ApiClientError ? error.code : 'unknown',
+          errorMessage: error instanceof Error ? error.message : 'unknown',
+        });
         trackAppEvent('auth.register', {
           category: 'auth',
           level: 'warning',
@@ -412,6 +463,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const provider = validation.data.provider;
       setAuthError(null);
+      logAuthFlow('request_started', {
+        action: 'oauth',
+        provider,
+      });
 
       trackAppEvent('auth.login', {
         category: 'auth',
@@ -420,6 +475,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const response = await apiClient.oauth(validation.data);
+        logAuthFlow('response_received', {
+          action: 'oauth',
+          provider,
+          success: true,
+        });
         const me = await apiClient
           .getMe(response.accessToken)
           .then((result) => result.user)
@@ -437,6 +497,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         return true;
       } catch (error) {
+        logAuthFlow('response_received', {
+          action: 'oauth',
+          provider,
+          success: false,
+          errorCode: error instanceof ApiClientError ? error.code : 'unknown',
+          errorMessage: error instanceof Error ? error.message : 'unknown',
+        });
         trackAppEvent('auth.login', {
           category: 'auth',
           level: 'warning',

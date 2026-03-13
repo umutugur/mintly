@@ -13,7 +13,7 @@ import {
   type RefreshInput,
   type RegisterInput,
 } from '@mintly/shared';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -49,6 +49,33 @@ function parseBody<T>(schema: z.ZodSchema<T>, payload: unknown): T {
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+function extractEmailDomain(email: string): string | null {
+  const normalized = normalizeEmail(email);
+  const atIndex = normalized.lastIndexOf('@');
+  if (atIndex <= 0 || atIndex === normalized.length - 1) {
+    return null;
+  }
+
+  return normalized.slice(atIndex + 1);
+}
+
+function logAuthRouteEvent(
+  request: FastifyRequest,
+  route: string,
+  stage: string,
+  details: Record<string, unknown> = {},
+): void {
+  request.log.info(
+    {
+      route,
+      stage,
+      requestId: request.id,
+      ...details,
+    },
+    'auth route event',
+  );
 }
 
 function providerLinked(user: { providers?: Array<{ provider: string; uid: string }> }, provider: OauthProvider, uid: string): boolean {
@@ -174,21 +201,28 @@ export function registerAuthRoutes(app: FastifyInstance): void {
       },
     },
     async (request, reply) => {
-      const input = parseBody<RegisterInput>(registerInputSchema, request.body);
-      const email = normalizeEmail(input.email);
-
-      const existing = await UserModel.findOne({ email }).lean();
-      if (existing) {
-        throw new ApiError({
-          code: 'EMAIL_ALREADY_EXISTS',
-          message: 'An account with this email already exists',
-          statusCode: 409,
-        });
-      }
-
-      const passwordHash = await hashPassword(input.password);
-
+      let emailDomain: string | null = null;
+      logAuthRouteEvent(request, '/auth/register', 'request_received');
       try {
+        const input = parseBody<RegisterInput>(registerInputSchema, request.body);
+        const email = normalizeEmail(input.email);
+        emailDomain = extractEmailDomain(input.email);
+        logAuthRouteEvent(request, '/auth/register', 'validated', {
+          emailDomain,
+          hasName: Boolean(input.name?.trim()),
+        });
+
+        const existing = await UserModel.findOne({ email }).lean();
+        if (existing) {
+          throw new ApiError({
+            code: 'EMAIL_ALREADY_EXISTS',
+            message: 'An account with this email already exists',
+            statusCode: 409,
+          });
+        }
+
+        const passwordHash = await hashPassword(input.password);
+
         const user = await UserModel.create({
           email,
           name: input.name?.trim() || null,
@@ -196,8 +230,17 @@ export function registerAuthRoutes(app: FastifyInstance): void {
         });
 
         const session = await createSessionForUser(user);
+        logAuthRouteEvent(request, '/auth/register', 'success', {
+          userId: user.id,
+          emailDomain,
+        });
         reply.status(201).send(session);
       } catch (error) {
+        logAuthRouteEvent(request, '/auth/register', 'failed', {
+          emailDomain,
+          errorCode: error instanceof ApiError ? error.code : 'unknown',
+          errorMessage: error instanceof Error ? error.message : 'unknown',
+        });
         if ((error as { code?: number }).code === 11000) {
           throw new ApiError({
             code: 'EMAIL_ALREADY_EXISTS',
@@ -219,28 +262,47 @@ export function registerAuthRoutes(app: FastifyInstance): void {
       },
     },
     async (request) => {
-      const input = parseBody<LoginInput>(loginInputSchema, request.body);
-      const email = normalizeEmail(input.email);
-
-      const user = await UserModel.findOne({ email });
-      if (!user) {
-        throw new ApiError({
-          code: 'INVALID_CREDENTIALS',
-          message: 'Invalid email or password',
-          statusCode: 401,
+      let emailDomain: string | null = null;
+      logAuthRouteEvent(request, '/auth/login', 'request_received');
+      try {
+        const input = parseBody<LoginInput>(loginInputSchema, request.body);
+        const email = normalizeEmail(input.email);
+        emailDomain = extractEmailDomain(input.email);
+        logAuthRouteEvent(request, '/auth/login', 'validated', {
+          emailDomain,
         });
-      }
 
-      const passwordValid = await verifyPassword(user.passwordHash, input.password);
-      if (!passwordValid) {
-        throw new ApiError({
-          code: 'INVALID_CREDENTIALS',
-          message: 'Invalid email or password',
-          statusCode: 401,
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+          throw new ApiError({
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password',
+            statusCode: 401,
+          });
+        }
+
+        const passwordValid = await verifyPassword(user.passwordHash, input.password);
+        if (!passwordValid) {
+          throw new ApiError({
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password',
+            statusCode: 401,
+          });
+        }
+
+        logAuthRouteEvent(request, '/auth/login', 'success', {
+          userId: user.id,
+          emailDomain,
         });
+        return createSessionForUser(user);
+      } catch (error) {
+        logAuthRouteEvent(request, '/auth/login', 'failed', {
+          emailDomain,
+          errorCode: error instanceof ApiError ? error.code : 'unknown',
+          errorMessage: error instanceof Error ? error.message : 'unknown',
+        });
+        throw error;
       }
-
-      return createSessionForUser(user);
     },
   );
 
@@ -252,69 +314,92 @@ export function registerAuthRoutes(app: FastifyInstance): void {
       },
     },
     async (request, reply) => {
-      const input = parseBody<OauthInput>(oauthInputSchema, request.body);
-      const idToken = await resolveOauthIdToken(input);
-      const identity = await verifyOauthIdToken({
-        provider: input.provider,
-        idToken,
-        nonce: input.nonce,
-      });
-
-      let user = await UserModel.findOne({
-        providers: { $elemMatch: { provider: identity.provider, uid: identity.uid } },
-      });
-
-      if (!user && identity.email) {
-        user = await UserModel.findOne({ email: normalizeEmail(identity.email) });
-      }
-
-      if (!user && !identity.email) {
-        throw new ApiError({
-          code: 'OAUTH_EMAIL_REQUIRED',
-          message: 'OAuth account email is required for first sign-in',
-          statusCode: 400,
+      let provider: OauthProvider | null = null;
+      logAuthRouteEvent(request, '/auth/oauth', 'request_received');
+      try {
+        const input = parseBody<OauthInput>(oauthInputSchema, request.body);
+        provider = input.provider;
+        logAuthRouteEvent(request, '/auth/oauth', 'validated', {
+          provider,
+          hasIdToken: typeof input.idToken === 'string' && input.idToken.length > 0,
+          hasAuthorizationCode:
+            typeof input.authorizationCode === 'string' && input.authorizationCode.length > 0,
         });
-      }
 
-      if (!user) {
-        const randomPassword = `oauth-${randomUUID()}-${randomUUID()}`;
-        const passwordHash = await hashPassword(randomPassword);
+        const idToken = await resolveOauthIdToken(input);
+        const identity = await verifyOauthIdToken({
+          provider: input.provider,
+          idToken,
+          nonce: input.nonce,
+        });
 
-        const nameFromToken = identity.name?.trim() || null;
-        const nameFromInput = input.name?.trim() || null;
-        const preferredName = nameFromInput || nameFromToken;
+        let user = await UserModel.findOne({
+          providers: { $elemMatch: { provider: identity.provider, uid: identity.uid } },
+        });
 
-        try {
-          user = await UserModel.create({
-            email: normalizeEmail(identity.email as string),
-            name: preferredName,
-            passwordHash,
-            providers: [{ provider: identity.provider, uid: identity.uid }],
-          });
-        } catch (error) {
-          if ((error as { code?: number }).code !== 11000) {
-            throw error;
-          }
-
-          user = await UserModel.findOne({
-            email: normalizeEmail(identity.email as string),
-          });
-
-          if (!user) {
-            throw error;
-          }
+        if (!user && identity.email) {
+          user = await UserModel.findOne({ email: normalizeEmail(identity.email) });
         }
-      } else {
-        user = await saveUserWithProviderLink({
-          user,
-          provider: identity.provider,
-          uid: identity.uid,
-          preferredName: input.name?.trim() || identity.name || null,
-        });
-      }
 
-      const session = await createSessionForUser(user);
-      reply.status(200).send(session);
+        if (!user && !identity.email) {
+          throw new ApiError({
+            code: 'OAUTH_EMAIL_REQUIRED',
+            message: 'OAuth account email is required for first sign-in',
+            statusCode: 400,
+          });
+        }
+
+        if (!user) {
+          const randomPassword = `oauth-${randomUUID()}-${randomUUID()}`;
+          const passwordHash = await hashPassword(randomPassword);
+
+          const nameFromToken = identity.name?.trim() || null;
+          const nameFromInput = input.name?.trim() || null;
+          const preferredName = nameFromInput || nameFromToken;
+
+          try {
+            user = await UserModel.create({
+              email: normalizeEmail(identity.email as string),
+              name: preferredName,
+              passwordHash,
+              providers: [{ provider: identity.provider, uid: identity.uid }],
+            });
+          } catch (error) {
+            if ((error as { code?: number }).code !== 11000) {
+              throw error;
+            }
+
+            user = await UserModel.findOne({
+              email: normalizeEmail(identity.email as string),
+            });
+
+            if (!user) {
+              throw error;
+            }
+          }
+        } else {
+          user = await saveUserWithProviderLink({
+            user,
+            provider: identity.provider,
+            uid: identity.uid,
+            preferredName: input.name?.trim() || identity.name || null,
+          });
+        }
+
+        const session = await createSessionForUser(user);
+        logAuthRouteEvent(request, '/auth/oauth', 'success', {
+          provider: identity.provider,
+          userId: user.id,
+        });
+        reply.status(200).send(session);
+      } catch (error) {
+        logAuthRouteEvent(request, '/auth/oauth', 'failed', {
+          provider,
+          errorCode: error instanceof ApiError ? error.code : 'unknown',
+          errorMessage: error instanceof Error ? error.message : 'unknown',
+        });
+        throw error;
+      }
     },
   );
 

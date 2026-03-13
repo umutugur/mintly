@@ -8,6 +8,13 @@ import {
   logAdvisorReq,
 } from '@features/advisor/utils/advisorDiagnostics';
 
+const AUTH_REQUEST_PATHS = new Set([
+  '/auth/login',
+  '/auth/register',
+  '/auth/oauth',
+  '/auth/refresh',
+]);
+
 function extractPath(input: string): string {
   return parseUrl(input)?.pathname ?? input;
 }
@@ -37,6 +44,10 @@ function toBooleanQuery(value: string | null): boolean | null {
     return false;
   }
   return null;
+}
+
+function isAuthRequestPath(path: string): boolean {
+  return AUTH_REQUEST_PATHS.has(path);
 }
 
 interface AdvisorInsightsRequestMeta {
@@ -70,6 +81,60 @@ function resolveAdvisorInsightsRequestMeta(input: string, method: string, path: 
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function sanitizeAuthLogPayload(payload: unknown, depth = 0): unknown {
+  if (depth > 4) {
+    return '[truncated]';
+  }
+
+  if (Array.isArray(payload)) {
+    return payload.slice(0, 8).map((item) => sanitizeAuthLogPayload(item, depth + 1));
+  }
+
+  if (!isRecord(payload)) {
+    if (typeof payload === 'string' && payload.length > 220) {
+      return `${payload.slice(0, 220)}...`;
+    }
+    return payload;
+  }
+
+  const redactedKeys = new Set([
+    'accessToken',
+    'refreshToken',
+    'password',
+    'email',
+    'name',
+    'idToken',
+    'authorizationCode',
+    'codeVerifier',
+    'nonce',
+    'token',
+  ]);
+
+  const safe: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (redactedKeys.has(key)) {
+      safe[key] = '[redacted]';
+      continue;
+    }
+    safe[key] = sanitizeAuthLogPayload(value, depth + 1);
+  }
+
+  return safe;
+}
+
+async function readResponsePayloadForLog(response: Response): Promise<unknown> {
+  const text = await response.clone().text().catch(() => '');
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 function safeArrayCount(value: unknown): number {
@@ -182,6 +247,7 @@ function isAnalyticsPath(path: string): boolean {
 async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<Response> {
   const method = (init.method ?? 'GET').toUpperCase();
   const path = extractPath(input);
+  const isAuthRequest = isAuthRequestPath(path);
   const startedAt = Date.now();
   const advisorMeta = resolveAdvisorInsightsRequestMeta(input, method, path);
   const timeoutController = new AbortController();
@@ -202,6 +268,15 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
     timeoutController.abort();
   }, mobileEnv.apiTimeoutMs);
 
+  if (isAuthRequest) {
+    console.info('[api][auth-request] request_start', {
+      method,
+      path,
+      url: input,
+      timeoutMs: mobileEnv.apiTimeoutMs,
+    });
+  }
+
   if (advisorMeta) {
     logAdvisorReq('request_start', {
       requestId: advisorMeta.requestId,
@@ -219,6 +294,19 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
       signal: timeoutController.signal,
     });
     const durationMs = Date.now() - startedAt;
+
+    if (isAuthRequest) {
+      const payloadForLog = await readResponsePayloadForLog(response);
+      console.info('[api][auth-request] response_received', {
+        method,
+        path,
+        url: input,
+        status: response.status,
+        ok: response.ok,
+        durationMs,
+        body: sanitizeAuthLogPayload(payloadForLog),
+      });
+    }
 
     if (advisorMeta) {
       logAdvisorReq('request_end', {
@@ -262,19 +350,43 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
 
     return response;
   } catch (error) {
+    const errorName = error instanceof Error ? error.name : 'unknown';
+    const errorMessage = error instanceof Error ? error.message : 'unknown';
+    const durationMs = Date.now() - startedAt;
+
     if (advisorMeta) {
       logAdvisorReq('request_error', {
         requestId: advisorMeta.requestId,
-        durationMs: Date.now() - startedAt,
-        errorName: error instanceof Error ? error.name : 'unknown',
-        errorMessage: error instanceof Error ? error.message : 'unknown',
+        durationMs,
+        errorName,
+        errorMessage,
       });
     }
 
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (isAuthRequest) {
+      console.warn('[api][auth-request] network_failed', {
+        method,
+        path,
+        url: input,
+        timeoutMs: mobileEnv.apiTimeoutMs,
+        durationMs,
+        errorName,
+        errorMessage,
+      });
+    }
+
+    if (errorName === 'AbortError') {
       throw new ApiClientError({
         code: 'REQUEST_TIMEOUT',
-        message: 'REQUEST_TIMEOUT',
+        message: errorMessage || 'Request timeout',
+        details: {
+          method,
+          path,
+          url: input,
+          timeoutMs: mobileEnv.apiTimeoutMs,
+          errorName,
+          errorMessage,
+        },
         status: 0,
       });
     }
@@ -287,9 +399,18 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
       });
     }
 
+    const networkCode = error instanceof TypeError ? 'NETWORK_ERROR' : 'SERVER_UNREACHABLE';
     throw new ApiClientError({
-      code: 'SERVER_UNREACHABLE',
-      message: 'SERVER_UNREACHABLE',
+      code: networkCode,
+      message: errorMessage || networkCode,
+      details: {
+        method,
+        path,
+        url: input,
+        timeoutMs: mobileEnv.apiTimeoutMs,
+        errorName,
+        errorMessage,
+      },
       status: 0,
     });
   } finally {
@@ -300,7 +421,14 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}): Promise<
   }
 }
 
+export const resolvedApiBaseUrl = mobileEnv.apiBaseUrl.trim();
+
+console.info('[api][config] base_url_resolved', {
+  baseUrl: resolvedApiBaseUrl,
+  timeoutMs: mobileEnv.apiTimeoutMs,
+});
+
 export const apiClient = createApiClient({
-  baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
+  baseUrl: resolvedApiBaseUrl,
   fetchImpl: fetchWithTimeout,
 });
