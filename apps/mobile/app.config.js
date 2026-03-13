@@ -102,7 +102,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.mintly.app',
-      buildNumber: '10',
+      buildNumber: '12',
       usesAppleSignIn: true,
       infoPlist: {
         NSCameraUsageDescription: 'Camera access is needed to scan receipts.',
@@ -123,7 +123,7 @@ module.exports = {
     },
     android: {
       package: 'com.mintly.app',
-      versionCode: 10,
+      versionCode: 12,
       blockedPermissions: ['android.permission.RANGING'],
 
       ...(googleServicesJsonPath
