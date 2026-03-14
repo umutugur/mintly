@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mintly.app",
-      "buildNumber": "13",
+      "buildNumber": "14",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is needed to scan receipts.",
@@ -36,7 +36,7 @@
     },
     "android": {
       "package": "com.mintly.app",
-      "versionCode": 13,
+      "versionCode": 14,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
