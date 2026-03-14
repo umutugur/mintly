@@ -1010,8 +1010,28 @@
     }
   },
   "onboarding": {
+    "back": "Geri",
+    "continue": "Devam et",
     "getStarted": "Başla",
     "next": "İleri",
+    "slides": {
+      "welcome": {
+        "title": "Montly'ye hoş geldiniz",
+        "subtitle": "Harcamaları, gelirleri ve transferleri tek bir finans alanında takip edin."
+      },
+      "dashboard": {
+        "title": "Para paneliniz",
+        "subtitle": "Hesapları, kategorileri ve aylık toplamları tek bakışta görün."
+      },
+      "analysis": {
+        "title": "Harcama düzenini anlayın",
+        "subtitle": "Trendleri erken yakalayın ve net analizle daha akıllı karar verin."
+      },
+      "ai": {
+        "title": "Daha iyi alışkanlıklar için AI içgörüleri",
+        "subtitle": "Daha güçlü ve tutarlı para alışkanlıkları için uygulanabilir öneriler alın."
+      }
+    },
     "skip": "Geç",
     "step1": {
       "subtitle": "Her gideri, geliri ve transferi tek bir zaman akışında takip edin.",

@@ -1010,8 +1010,28 @@
     }
   },
   "onboarding": {
+    "back": "Back",
+    "continue": "Continue",
     "getStarted": "Get started",
     "next": "Next",
+    "slides": {
+      "welcome": {
+        "title": "Welcome to Montly",
+        "subtitle": "Track spending, income, and transfers in one clean financial workspace."
+      },
+      "dashboard": {
+        "title": "Your money dashboard",
+        "subtitle": "See accounts, categories, and monthly totals at a glance."
+      },
+      "analysis": {
+        "title": "Understand spending patterns",
+        "subtitle": "Spot trends early and make smarter decisions with clear analysis."
+      },
+      "ai": {
+        "title": "AI insights for better habits",
+        "subtitle": "Get actionable guidance to build stronger, more consistent money habits."
+      }
+    },
     "skip": "Skip",
     "step1": {
       "subtitle": "Keep every expense, income, and transfer in one clear timeline built for daily finance habits.",
