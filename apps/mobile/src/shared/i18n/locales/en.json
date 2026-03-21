@@ -1219,7 +1219,7 @@
           "title": "Version"
         }
       },
-      "plan": "Premium Plan",
+      "plan": "Free",
       "sections": {
         "application": "Application",
         "privacy": "Privacy",
@@ -1449,7 +1449,7 @@
       "permission": {
         "title": "Camera access required",
         "subtitle": "Allow camera access to scan bills and rent receipts.",
-        "allowCamera": "Allow Camera"
+        "allowCamera": "Continue"
       },
       "actions": {
         "capture": "Capture",
@@ -1940,7 +1940,7 @@
     },
     "user": {
       "title": "Montly User",
-      "plan": "Premium Plan"
+      "plan": "Free"
     },
     "biometric": {
       "title": "Biometric Login",

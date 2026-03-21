@@ -1219,7 +1219,7 @@
           "title": "Sürüm"
         }
       },
-      "plan": "Premium Planı",
+      "plan": "Ücretsiz",
       "sections": {
         "application": "Uygulama",
         "privacy": "Gizlilik",
@@ -1449,7 +1449,7 @@
       "permission": {
         "title": "Kamera erişimi gerekli",
         "subtitle": "Fatura ve kira belgelerini taramak için kamera izni verin.",
-        "allowCamera": "Kameraya İzin Ver"
+        "allowCamera": "Devam Et"
       },
       "actions": {
         "capture": "Çek",
@@ -1940,7 +1940,7 @@
     },
     "user": {
       "title": "Montly Kullanıcısı",
-      "plan": "Premium Planı"
+      "plan": "Ücretsiz"
     },
     "biometric": {
       "title": "Biyometrik Giriş",

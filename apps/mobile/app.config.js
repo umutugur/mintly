@@ -133,7 +133,6 @@ module.exports = {
         : {}),
       permissions: [
         'android.permission.CAMERA',
-        'android.permission.READ_MEDIA_IMAGES',
         'android.permission.POST_NOTIFICATIONS',
         'android.permission.RECORD_AUDIO',
       ],
