@@ -130,6 +130,8 @@ export function ScanReceiptScreen() {
   const [libraryPermission, requestLibraryPermission] = ImagePicker.useMediaLibraryPermissions();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [frameProcessorDisabled, setFrameProcessorDisabled] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
   const cameraRef = useRef<Camera | null>(null);
   const latestDetectedTextRef = useRef<string>('');
 
@@ -162,6 +164,8 @@ export function ScanReceiptScreen() {
       }
     });
   }, [runDetectedTextOnJs]);
+
+  const activeFrameProcessor = frameProcessorDisabled ? undefined : frameProcessor;
 
   async function processImageUri(uri: string, frameText: string | null): Promise<void> {
     setErrorCode(null);
@@ -211,7 +215,11 @@ export function ScanReceiptScreen() {
   }
 
   async function handleCapture(): Promise<void> {
-    if (!cameraRef.current || isProcessing) {
+    if (isProcessing) {
+      return;
+    }
+    if (!cameraRef.current || !cameraReady) {
+      setErrorCode('errors.scan.captureFailed');
       return;
     }
 
@@ -294,10 +302,25 @@ export function ScanReceiptScreen() {
           <Camera
             ref={cameraRef}
             device={device}
-            frameProcessor={frameProcessor}
+            frameProcessor={activeFrameProcessor}
             isActive={!isProcessing}
             photo
             style={StyleSheet.absoluteFill}
+            onInitialized={() => {
+              setCameraReady(true);
+            }}
+            onError={(error) => {
+              if (!frameProcessorDisabled) {
+                // Retry without frame processor — some devices fail when the
+                // text-detector plugin is active (e.g. iPad with certain iOS versions).
+                setFrameProcessorDisabled(true);
+                setCameraReady(false);
+              } else {
+                setErrorCode('errors.scan.captureFailed');
+              }
+              // eslint-disable-next-line no-console
+              console.warn('Camera error:', error.message);
+            }}
           />
 
           <View pointerEvents="none" style={styles.overlayFrameWrap}>
@@ -326,12 +349,17 @@ export function ScanReceiptScreen() {
 
           <Pressable
             accessibilityRole="button"
+            disabled={!cameraReady || isProcessing}
             onPress={() => {
               void handleCapture();
             }}
-            style={[styles.primaryAction, { backgroundColor: theme.colors.primary }]}
+            style={[
+              styles.primaryAction,
+              { backgroundColor: theme.colors.primary },
+              (!cameraReady || isProcessing) && { opacity: 0.6 },
+            ]}
           >
-            {isProcessing ? (
+            {isProcessing || !cameraReady ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
               <Text style={styles.primaryLabel}>{t('scan.receipt.actions.capture')}</Text>

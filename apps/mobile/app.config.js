@@ -144,6 +144,7 @@ module.exports = {
       predictiveBackGestureEnabled: false,
     },
     plugins: [
+      'expo-dev-client',
       'expo-apple-authentication',
       'expo-image-picker',
       'expo-notifications',

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { type MeUpdateInput } from '@mintly/shared';
 import { useMutation } from '@tanstack/react-query';
@@ -126,22 +126,11 @@ export function EditProfileScreen() {
             },
           ]}
         >
-          <View style={styles.avatarWrap}>
-            <View style={[styles.avatar, { backgroundColor: dark ? '#242B42' : '#EAF1FF' }]}> 
-              <Text style={[styles.avatarInitial, { color: theme.colors.primary }]}> 
-                {resolveUserDisplayName(user).charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              style={[styles.cameraBadge, { backgroundColor: theme.colors.primary }]}
-            >
-              <Text style={styles.cameraText}>📷</Text>
-            </Pressable>
+          <View style={[styles.avatar, { backgroundColor: dark ? '#242B42' : '#EAF1FF' }]}>
+            <Text style={[styles.avatarInitial, { color: theme.colors.primary }]}>
+              {resolveUserDisplayName(user).charAt(0).toUpperCase()}
+            </Text>
           </View>
-
-          <Text style={[styles.avatarTitle, { color: theme.colors.text }]}>{t('profile.edit.photoTitle')}</Text>
-          <Text style={[styles.avatarSubtitle, { color: theme.colors.textMuted }]}>{t('profile.edit.photoSubtitle')}</Text>
         </Card>
 
         <Card
@@ -220,11 +209,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xxs,
   },
-  avatarWrap: {
-    marginBottom: spacing.xs,
-    position: 'relative',
-  },
   avatar: {
+    marginBottom: spacing.xs,
     alignItems: 'center',
     borderRadius: radius.full,
     height: 96,
@@ -232,31 +218,9 @@ const styles = StyleSheet.create({
     width: 96,
   },
   avatarInitial: {
-    ...typography.heading,
     fontSize: 34,
     fontWeight: '700',
-  },
-  cameraBadge: {
-    alignItems: 'center',
-    borderRadius: radius.full,
-    bottom: 0,
-    height: 30,
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 0,
-    width: 30,
-  },
-  cameraText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-  },
-  avatarTitle: {
-    ...typography.subheading,
-    fontWeight: '700',
-  },
-  avatarSubtitle: {
-    ...typography.caption,
-    fontSize: 12,
+    lineHeight: 40,
   },
   formCard: {
     gap: spacing.md,

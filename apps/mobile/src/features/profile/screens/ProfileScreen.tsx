@@ -413,9 +413,9 @@ const styles = StyleSheet.create({
     width: 92,
   },
   avatarInitial: {
-    ...typography.heading,
     fontSize: 34,
     fontWeight: '700',
+    lineHeight: 40,
   },
   verifiedChip: {
     alignItems: 'center',

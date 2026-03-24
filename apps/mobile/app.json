@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mintly.app",
-      "buildNumber": "16",
+      "buildNumber": "18",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is needed to scan receipts.",
@@ -36,7 +36,7 @@
     },
     "android": {
       "package": "com.mintly.app",
-      "versionCode": 16,
+      "versionCode": 18,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
@@ -51,6 +51,7 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
+      "expo-dev-client",
       "expo-apple-authentication",
       "expo-image-picker",
       "expo-notifications",
