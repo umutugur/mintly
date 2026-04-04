@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator, InteractionManager, Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
+  ActivityIndicator, InteractionManager, Keyboard, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { transactionCreateInputSchema, type TransactionType } from '@mintly/shared';
@@ -24,7 +24,7 @@ import { monthFromIsoString } from '@shared/utils/month';
 // stitch asset: stitch/export/stitch_ana_ekran_dashboard/grup_harcaması_ekle_(dark)/screen.png
 // no touch/keyboard behavior changed by this PR.
 
-const typeOptions: TransactionType[] = ['expense', 'income'];
+const typeOptions: TransactionType[] = ['income', 'expense'];
 const CURRENCY_SYMBOL_BY_CODE: Record<string, string> = {
   TRY: '₺',
   USD: '$',
@@ -38,6 +38,19 @@ function resolveCurrencySymbol(currencyCode: string): string {
   return CURRENCY_SYMBOL_BY_CODE[normalized] ?? normalized;
 }
 
+function formatOccurredAt(isoString: string, locale: string): string {
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return isoString;
+  const lang = locale === 'tr' ? 'tr-TR' : locale === 'ru' ? 'ru-RU' : 'en-US';
+  return d.toLocaleString(lang, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function dismissKeyboardSafely(): void {
   Keyboard.dismiss();
   InteractionManager.runAfterInteractions(() => {
@@ -46,6 +59,35 @@ function dismissKeyboardSafely(): void {
   setTimeout(() => {
     Keyboard.dismiss();
   }, 0);
+}
+
+function toTimeInput(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function buildIsoFromCal(year: number, month: number, day: number, timePart: string): string | null {
+  const tp = timePart.trim() || '00:00';
+  const tParts = tp.split(':');
+  const hour = Number(tParts[0] ?? 0);
+  const minute = Number(tParts[1] ?? 0);
+  if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  const d = new Date(year, month, day, hour, minute, 0, 0);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7; // 0=Mon
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  const weeks: (number | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return weeks;
 }
 
 const transactionFormSchema = z.object({
@@ -78,6 +120,12 @@ export function AddTransactionScreen() {
   const route = useRoute<RouteProp<AddStackParamList, 'AddTransaction'>>();
   const navigation = useNavigation();
   const lastPrefillSignatureRef = useRef('');
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [calViewYear, setCalViewYear] = useState(() => new Date().getFullYear());
+  const [calViewMonthIdx, setCalViewMonthIdx] = useState(() => new Date().getMonth());
+  const [calSelectedDay, setCalSelectedDay] = useState<number | null>(null);
+  const [modalTimeInput, setModalTimeInput] = useState('');
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const accountsQuery = useQuery({
     queryKey: financeQueryKeys.accounts.list(),
@@ -87,7 +135,7 @@ export function AddTransactionScreen() {
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
-      type: 'expense',
+      type: 'income',
       accountId: '',
       categoryKey: '',
       amount: '',
@@ -256,6 +304,12 @@ export function AddTransactionScreen() {
   const accounts = (accountsQuery.data?.accounts ?? []).filter((account) => account.type !== 'loan');
   const panelBg = dark ? '#121826' : theme.colors.surface;
   const panelBorder = dark ? '#27344F' : theme.colors.border;
+  const localeStr = locale === 'tr' ? 'tr-TR' : locale === 'ru' ? 'ru-RU' : 'en-US';
+  const calDayNames = Array.from({ length: 7 }, (_, i) =>
+    new Intl.DateTimeFormat(localeStr, { weekday: 'short' }).format(new Date(2026, 0, 5 + i)),
+  );
+  const calWeeks = buildCalendarWeeks(calViewYear, calViewMonthIdx);
+  const todayStr = new Date().toDateString();
 
   return (
     <ScreenContainer dark={dark} safeAreaEdges={['left', 'right']} contentStyle={styles.screenContent}>
@@ -393,7 +447,7 @@ export function AddTransactionScreen() {
             control={form.control}
             name="categoryKey"
             render={({ field: { value, onChange } }) => (
-              <View style={styles.choiceWrap}>
+              <View style={styles.categoryGrid}>
                 {categoryOptions.map((category) => {
                   const selected = value === category.key;
 
@@ -403,7 +457,7 @@ export function AddTransactionScreen() {
                       accessibilityRole="button"
                       onPress={() => onChange(category.key)}
                       style={[
-                        styles.choiceChip,
+                        styles.categoryChip,
                         {
                           borderColor: selected ? theme.colors.primary : panelBorder,
                           backgroundColor: selected
@@ -414,23 +468,24 @@ export function AddTransactionScreen() {
                               ? '#0E1523'
                               : '#F8FBFF',
                         },
-                          ]}
-                      >
-                        <AppIcon
-                          name={category.icon}
-                          size="sm"
-                          color={selected ? theme.colors.primary : theme.colors.textMuted}
-                        />
-                        <Text
-                          style={[
-                            styles.choiceChipLabel,
+                      ]}
+                    >
+                      <AppIcon
+                        name={category.icon}
+                        size="md"
+                        color={selected ? theme.colors.primary : theme.colors.textMuted}
+                      />
+                      <Text
+                        numberOfLines={2}
+                        style={[
+                          styles.categoryChipLabel,
                           { color: selected ? theme.colors.primary : theme.colors.textMuted },
-                          ]}
-                        >
-                          {category.label}
-                        </Text>
-                      </Pressable>
-                    );
+                        ]}
+                      >
+                        {category.label}
+                      </Text>
+                    </Pressable>
+                  );
                 })}
               </View>
             )}
@@ -490,14 +545,39 @@ export function AddTransactionScreen() {
           <Controller
             control={form.control}
             name="occurredAt"
-            render={({ field: { value, onChange, onBlur } }) => (
-              <TextField
-                autoCapitalize="none"
-                error={form.formState.errors.occurredAt?.message ? t(form.formState.errors.occurredAt.message) : undefined}
-                label={t('transactions.create.fields.occurredAt')}
-                labelRight={
+            render={({ field: { value, onChange } }) => (
+              <>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    const d = new Date(value);
+                    const validD = isNaN(d.getTime()) ? new Date() : d;
+                    setCalViewYear(validD.getFullYear());
+                    setCalViewMonthIdx(validD.getMonth());
+                    setCalSelectedDay(validD.getDate());
+                    setModalTimeInput(toTimeInput(validD.toISOString()));
+                    setModalError(null);
+                    setDateModalVisible(true);
+                  }}
+                  style={[
+                    styles.datePickerRow,
+                    {
+                      borderColor: form.formState.errors.occurredAt ? theme.colors.expense : panelBorder,
+                      backgroundColor: dark ? '#0E1523' : '#F8FBFF',
+                    },
+                  ]}
+                >
+                  <View style={styles.datePickerLeft}>
+                    <Text style={[styles.datePickerLabel, { color: theme.colors.labelMuted }]}>
+                      {t('transactions.create.fields.occurredAt')}
+                    </Text>
+                    <Text style={[styles.datePickerValue, { color: theme.colors.text }]}>
+                      {formatOccurredAt(value, locale)}
+                    </Text>
+                  </View>
                   <Pressable
                     accessibilityRole="button"
+                    hitSlop={8}
                     onPress={() => onChange(new Date().toISOString())}
                     style={styles.nowButton}
                   >
@@ -505,12 +585,165 @@ export function AddTransactionScreen() {
                       {t('common.now')}
                     </Text>
                   </Pressable>
-                }
-                onBlur={onBlur}
-                onChangeText={onChange}
-                placeholder={t('transactions.create.fields.occurredAtPlaceholder')}
-                value={value}
-              />
+                </Pressable>
+
+                <Modal
+                  animationType="slide"
+                  transparent
+                  visible={dateModalVisible}
+                  onRequestClose={() => setDateModalVisible(false)}
+                >
+                  <Pressable
+                    style={styles.dateModalOverlay}
+                    onPress={() => setDateModalVisible(false)}
+                  >
+                    <Pressable style={[styles.dateModalCard, { backgroundColor: dark ? '#1A1F33' : '#FFFFFF' }]}>
+                      <Text style={[styles.dateModalTitle, { color: theme.colors.text }]}>
+                        {t('transactions.create.fields.occurredAt')}
+                      </Text>
+
+                      {/* Calendar month navigation */}
+                      <View style={styles.calMonthHeader}>
+                        <Pressable
+                          hitSlop={12}
+                          onPress={() => {
+                            if (calViewMonthIdx === 0) { setCalViewYear(y => y - 1); setCalViewMonthIdx(11); }
+                            else setCalViewMonthIdx(m => m - 1);
+                          }}
+                          style={styles.calNavBtn}
+                        >
+                          <Text style={[styles.calNavText, { color: theme.colors.primary }]}>‹</Text>
+                        </Pressable>
+                        <Text style={[styles.calMonthTitle, { color: theme.colors.text }]}>
+                          {new Date(calViewYear, calViewMonthIdx).toLocaleString(localeStr, { month: 'long', year: 'numeric' })}
+                        </Text>
+                        <Pressable
+                          hitSlop={12}
+                          onPress={() => {
+                            if (calViewMonthIdx === 11) { setCalViewYear(y => y + 1); setCalViewMonthIdx(0); }
+                            else setCalViewMonthIdx(m => m + 1);
+                          }}
+                          style={styles.calNavBtn}
+                        >
+                          <Text style={[styles.calNavText, { color: theme.colors.primary }]}>›</Text>
+                        </Pressable>
+                      </View>
+
+                      {/* Day name headers */}
+                      <View style={styles.calDayNamesRow}>
+                        {calDayNames.map((name, i) => (
+                          <Text key={i} style={[styles.calDayName, { color: theme.colors.textMuted }]}>{name}</Text>
+                        ))}
+                      </View>
+
+                      {/* Calendar day grid */}
+                      {calWeeks.map((week, wi) => (
+                        <View key={wi} style={styles.calWeekRow}>
+                          {week.map((day, di) => {
+                            const isSelected = day !== null && day === calSelectedDay;
+                            const isToday = day !== null &&
+                              new Date(calViewYear, calViewMonthIdx, day).toDateString() === todayStr;
+                            return (
+                              <Pressable
+                                key={di}
+                                onPress={() => { if (day !== null) setCalSelectedDay(day); }}
+                                style={[
+                                  styles.calDayCell,
+                                  isSelected && { backgroundColor: theme.colors.primary, borderRadius: 22 },
+                                ]}
+                              >
+                                <Text style={[
+                                  styles.calDayText,
+                                  {
+                                    color: day === null
+                                      ? 'transparent'
+                                      : isSelected
+                                        ? '#FFFFFF'
+                                        : isToday
+                                          ? theme.colors.primary
+                                          : theme.colors.text,
+                                    fontWeight: isToday && !isSelected ? '800' : '400',
+                                  },
+                                ]}>
+                                  {day ?? '.'}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      ))}
+
+                      {/* Divider */}
+                      <View style={[styles.calDivider, { backgroundColor: panelBorder }]} />
+
+                      {/* Time input */}
+                      <View style={styles.calTimeRow}>
+                        <Text style={[styles.dateModalFieldLabel, { color: theme.colors.textMuted }]}>
+                          {t('transactions.create.fields.datePickerTimeLabel')}
+                        </Text>
+                        <TextInput
+                          keyboardType="numbers-and-punctuation"
+                          maxLength={5}
+                          onChangeText={(v) => { setModalTimeInput(v); setModalError(null); }}
+                          placeholder="HH:MM"
+                          placeholderTextColor={theme.colors.textMuted}
+                          style={[styles.calTimeInput, { color: theme.colors.text, borderColor: panelBorder, backgroundColor: dark ? '#0E1523' : '#F4F7FF' }]}
+                          value={modalTimeInput}
+                        />
+                      </View>
+
+                      {modalError ? (
+                        <Text style={[styles.dateModalError, { color: theme.colors.expense }]}>{modalError}</Text>
+                      ) : null}
+
+                      <Pressable
+                        onPress={() => {
+                          const now = new Date();
+                          setCalViewYear(now.getFullYear());
+                          setCalViewMonthIdx(now.getMonth());
+                          setCalSelectedDay(now.getDate());
+                          setModalTimeInput(toTimeInput(now.toISOString()));
+                          setModalError(null);
+                        }}
+                        style={styles.dateModalNowButton}
+                      >
+                        <Text style={[styles.dateModalNowText, { color: theme.colors.primary }]}>
+                          ⚡ {t('common.now')}
+                        </Text>
+                      </Pressable>
+
+                      <View style={styles.dateModalActions}>
+                        <Pressable
+                          onPress={() => setDateModalVisible(false)}
+                          style={[styles.dateModalCancel, { borderColor: panelBorder }]}
+                        >
+                          <Text style={[styles.dateModalCancelText, { color: theme.colors.textMuted }]}>
+                            {t('common.cancel')}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => {
+                            if (calSelectedDay === null) {
+                              setModalError(t('errors.validation.invalidIsoDateTime'));
+                              return;
+                            }
+                            const iso = buildIsoFromCal(calViewYear, calViewMonthIdx, calSelectedDay, modalTimeInput);
+                            if (!iso) {
+                              setModalError(t('errors.validation.invalidIsoDateTime'));
+                              return;
+                            }
+                            onChange(iso);
+                            setDateModalVisible(false);
+                          }}
+                          style={[styles.dateModalConfirm, { backgroundColor: theme.colors.primary }]}
+                        >
+                          <Text style={styles.dateModalConfirmText}>{t('common.confirm')}</Text>
+                        </Pressable>
+                      </View>
+                    </Pressable>
+                  </Pressable>
+                </Modal>
+              </>
             )}
           />
 
@@ -632,6 +865,30 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontWeight: '700',
   },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    justifyContent: 'flex-start',
+  },
+  categoryChip: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'column',
+    gap: spacing.xs,
+    justifyContent: 'center',
+    minHeight: 82,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.sm,
+    width: '30.5%',
+  },
+  categoryChipLabel: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   inlineError: {
     ...typography.caption,
     fontSize: 12,
@@ -694,5 +951,179 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...typography.caption,
+  },
+  datePickerRow: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    minHeight: 56,
+  },
+  datePickerLeft: {
+    flex: 1,
+    gap: 2,
+  },
+  datePickerLabel: {
+    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  datePickerValue: {
+    ...typography.body,
+    fontSize: 15,
+  },
+  dateModalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  dateModalCard: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    gap: spacing.sm,
+    paddingBottom: 36,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+  },
+  dateModalTitle: {
+    ...typography.subheading,
+    fontSize: 17,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  dateModalRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  dateModalField: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  dateModalFieldLabel: {
+    ...typography.caption,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  dateModalInput: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    fontSize: 16,
+    minHeight: 48,
+    paddingHorizontal: spacing.sm,
+    textAlign: 'center',
+  },
+  dateModalError: {
+    ...typography.caption,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  dateModalNowButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  dateModalNowText: {
+    ...typography.body,
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  dateModalActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  dateModalCancel: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  dateModalCancelText: {
+    ...typography.body,
+    fontWeight: '700',
+  },
+  dateModalConfirm: {
+    alignItems: 'center',
+    borderRadius: radius.md,
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  dateModalConfirmText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  calMonthHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+    paddingHorizontal: 4,
+  },
+  calNavBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+  },
+  calNavText: {
+    fontSize: 26,
+    fontWeight: '700',
+    lineHeight: 30,
+  },
+  calMonthTitle: {
+    ...typography.body,
+    fontWeight: '700',
+    fontSize: 15,
+    textTransform: 'capitalize',
+    textAlign: 'center',
+    flex: 1,
+  },
+  calDayNamesRow: {
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  calDayName: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  calWeekRow: {
+    flexDirection: 'row',
+  },
+  calDayCell: {
+    alignItems: 'center',
+    flex: 1,
+    height: 40,
+    justifyContent: 'center',
+  },
+  calDayText: {
+    fontSize: 14,
+  },
+  calDivider: {
+    height: 1,
+    marginVertical: 8,
+  },
+  calTimeRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  calTimeInput: {
+    borderRadius: 10,
+    borderWidth: 1,
+    fontSize: 16,
+    minWidth: 90,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    textAlign: 'center',
   },
 });

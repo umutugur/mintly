@@ -76,13 +76,17 @@ function resetTabStackToRoot(
     return;
   }
 
-  navigation.dispatch({
-    ...CommonActions.reset({
-      index: 0,
-      routes: [{ name: rootRouteName }],
-    }),
-    target: stackState.key,
-  });
+  try {
+    navigation.dispatch({
+      ...CommonActions.reset({
+        index: 0,
+        routes: [{ name: rootRouteName }],
+      }),
+      target: stackState.key,
+    });
+  } catch {
+    // Navigator may have been remounted with a new key; silently ignore.
+  }
 }
 
 export function RootTabs() {
@@ -173,11 +177,6 @@ export function RootTabs() {
         <Tab.Screen
         name="AddTab"
         component={AddStack}
-        listeners={({ navigation, route }) => ({
-          tabPress: () => {
-            resetTabStackToRoot(navigation, route.key, TAB_ROOT_ROUTES.AddTab);
-          },
-        })}
         options={{
           title: t(I18N_KEYS.common.navigation.tabs.add.label),
           tabBarButton: ({ onPress, accessibilityState }) => (

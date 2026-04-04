@@ -18,13 +18,14 @@ import { useAuth } from '@app/providers/AuthProvider';
 import { AdBanner } from '@core/ads/AdBanner';
 import { getCategoryLabel } from '@features/finance/categories/categoryCatalog';
 import { useI18n } from '@shared/i18n';
-import { Card, PrimaryButton, ScreenContainer } from '@shared/ui';
+import { Card, PrimaryButton, PulsingBadge, ScreenContainer } from '@shared/ui';
 import type { AnalyticsStackParamList } from '@core/navigation/stacks/AnalyticsStack';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
 import type { RootTabParamList } from '@core/navigation/types';
 import { radius, spacing, typography, useTheme } from '@shared/theme';
 import type { ThemeMode } from '@shared/theme';
 import { apiErrorText } from '@shared/utils/apiErrorText';
+import { getCurrentMonthString } from '@shared/utils/month';
 import { resolveUserDisplayName } from '@shared/utils/userDisplayName';
 import { MontlyLogo } from '../../../components/brand/MontlyLogo';
 
@@ -243,7 +244,7 @@ function MiniStatCard({
       ]}
     >
       <Text style={[styles.statLabel, { color: mode === 'dark' ? '#96A2B7' : '#6B7280' }]}>{label}</Text>
-      <Text style={[styles.statValue, { color: valueColor }]}>{value}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.55} numberOfLines={1} style={[styles.statValue, { color: valueColor }]}>{value}</Text>
 
       <View style={styles.statBars}>
         {bars.map((bar, index) => (
@@ -402,6 +403,13 @@ export function DashboardScreen() {
   const dashboardQuery = useQuery({
     queryKey: financeQueryKeys.dashboard.recent(),
     queryFn: () => withAuth((token) => apiClient.getDashboardRecent(token)),
+    enabled: !isGuest,
+  });
+
+  const currentMonth = getCurrentMonthString();
+  const monthlySummaryQuery = useQuery({
+    queryKey: financeQueryKeys.analytics.summary(currentMonth),
+    queryFn: () => withAuth((token) => apiClient.getAnalyticsSummary({ month: currentMonth }, token)),
     enabled: !isGuest,
   });
 
@@ -700,13 +708,13 @@ export function DashboardScreen() {
                 label={t('dashboard.income')}
                 mode={mode}
                 tone="income"
-                value={formatCurrency(recentTotals.incomeTotal, currency, locale)}
+                value={formatCurrency(monthlySummaryQuery.data?.incomeTotal ?? recentTotals.incomeTotal, currency, locale)}
               />
               <MiniStatCard
                 label={t('dashboard.expense')}
                 mode={mode}
                 tone="expense"
-                value={formatCurrency(recentTotals.expenseTotal, currency, locale)}
+                value={formatCurrency(monthlySummaryQuery.data?.expenseTotal ?? recentTotals.expenseTotal, currency, locale)}
               />
             </View>
 
@@ -731,6 +739,15 @@ export function DashboardScreen() {
                     />
                   ))}
                 </View>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={goToAccountsScreen}
+                  style={({ pressed }) => [styles.addAccountLink, pressed && { opacity: 0.7 }]}
+                >
+                  <Text style={[styles.addAccountLinkText, { color: theme.colors.primary }]}>
+                    + {t('dashboard.state.createAccount')}
+                  </Text>
+                </Pressable>
               </View>
             ) : (
               <Card style={styles.accountsEmptyCard}>
@@ -762,7 +779,10 @@ export function DashboardScreen() {
               </View>
 
               <View style={styles.insightContent}>
-                <Text style={[styles.insightTitle, { color: theme.colors.primary }]}>{t('dashboard.aiAnalysisTitle')}</Text>
+                <View style={styles.insightTitleRow}>
+                  <Text style={[styles.insightTitle, { color: theme.colors.primary }]}>{t('dashboard.aiAnalysisTitle')}</Text>
+                  <PulsingBadge label={t('dashboard.aiAnalysisTryBadge')} color="#2F6BFF" />
+                </View>
                 <Text style={[styles.insightText, { color: mode === 'dark' ? '#A8B3C7' : '#52607A' }]}>
                   {insight.noHighlightText ? (
                     <>
@@ -807,6 +827,9 @@ export function DashboardScreen() {
                   <Text style={[styles.quickLabel, { color: mode === 'dark' ? '#C0CCDF' : '#4A556D' }]}>
                     {t('dashboard.aiAdvisor')}
                   </Text>
+                  <View style={styles.tileBadgeWrap}>
+                    <PulsingBadge label="✦ AI" color="#5961E9" size="sm" />
+                  </View>
                 </Pressable>
 
                 <Pressable
@@ -862,6 +885,9 @@ export function DashboardScreen() {
                   <Text numberOfLines={2} style={[styles.quickLabel, { color: mode === 'dark' ? '#C0CCDF' : '#4A556D' }]}>
                     {t('dashboard.scanReceipt')}
                   </Text>
+                  <View style={styles.tileBadgeWrap}>
+                    <PulsingBadge label="AI" color="#FF6B35" size="sm" />
+                  </View>
                 </Pressable>
 
                 <Pressable
@@ -1187,8 +1213,8 @@ const styles = StyleSheet.create({
   },
   statValue: {
     ...typography.subheading,
-    fontSize: 33,
-    lineHeight: 38,
+    fontSize: 26,
+    lineHeight: 32,
     marginTop: 2,
   },
   statBars: {
@@ -1339,6 +1365,51 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.15,
     textAlign: 'center',
+  },
+  tileBadge: {
+    borderRadius: radius.full,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    position: 'absolute',
+    right: 6,
+    top: 6,
+  },
+  tileBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  tileBadgeWrap: {
+    position: 'absolute',
+    right: 6,
+    top: 6,
+  },
+  addAccountLink: {
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  addAccountLinkText: {
+    ...typography.caption,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  insightTitleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'space-between',
+  },
+  aiBadge: {
+    backgroundColor: '#2F6BFF',
+    borderRadius: radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  aiBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
   },
   transactionsHeader: {
     alignItems: 'center',

@@ -14,3 +14,4 @@ export { SplitToggle } from './SplitToggle';
 export { AppIcon } from './AppIcon';
 export { AppDialogProvider, showAlert } from './AppDialogProvider';
 export { OfflineBanner } from './OfflineBanner';
+export { PulsingBadge } from './PulsingBadge';

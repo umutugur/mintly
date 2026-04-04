@@ -11,7 +11,7 @@ import { apiClient } from '@core/api/client';
 import { financeQueryKeys } from '@core/api/queryKeys';
 import { useAuth } from '@app/providers/AuthProvider';
 import { getCategoryIcon, getCategoryLabel } from '@features/finance/categories/categoryCatalog';
-import { AppIcon, Card, PrimaryButton, ScreenContainer, TransactionRow, showAlert } from '@shared/ui';
+import { AppIcon, Card, PrimaryButton, PulsingBadge, ScreenContainer, TransactionRow, showAlert } from '@shared/ui';
 import { useI18n } from '@shared/i18n';
 import type { RootTabParamList } from '@core/navigation/types';
 import type { TransactionsStackParamList } from '@core/navigation/stacks/TransactionsStack';
@@ -751,6 +751,9 @@ export function TransactionsScreen() {
                 <Text numberOfLines={2} style={[styles.quickActionSubtitle, { color: theme.colors.textMuted }]}>
                   {t('transactions.quickActions.scanSubtitle')}
                 </Text>
+                <View style={styles.scanBadgeWrap}>
+                  <PulsingBadge label="AI" color="#FF6B35" size="sm" />
+                </View>
               </Pressable>
 
               <Pressable
@@ -904,6 +907,11 @@ const styles = StyleSheet.create({
     minHeight: 76,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
+  },
+  scanBadgeWrap: {
+    position: 'absolute',
+    right: 6,
+    top: 6,
   },
   quickActionTitle: {
     ...typography.subheading,

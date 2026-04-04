@@ -83,8 +83,8 @@
       "earlyPayoffAction": "Досрочно закрыть",
       "actionFromAccount": "Счет списания",
       "actionAmount": "Сумма",
-      "actionDate": "Дата (ISO)",
-      "actionDatePlaceholder": "2026-03-15T10:30:00.000Z",
+      "actionDate": "Дата",
+      "actionDatePlaceholder": "ДД.ММ.ГГГГ ЧЧ:ММ",
       "actionNote": "Заметка",
       "actionNoSourceAccount": "Не найден подходящий счет для оплаты кредита.",
       "actionSubmitPayment": "Подтвердить оплату",
@@ -561,6 +561,7 @@
     "appName": "Montly",
     "cancel": "Отмена",
     "close": "Закрыть",
+    "confirm": "Подтвердить",
     "continue": "Продолжить",
     "delete": "Удалить",
     "deleted": "Удалено",
@@ -759,6 +760,7 @@
     "aiActive": "AI АКТИВЕН",
     "aiAdvisor": "AI Советник",
     "aiAnalysisTitle": "AI Анализ",
+    "aiAnalysisTryBadge": "✦ Попробуй",
     "currentBalance": "Текущий баланс",
     "expense": "Расход",
     "greeting": "Добро пожаловать,",
@@ -1078,6 +1080,7 @@
     "edit": {
       "baseCurrencyLabel": "Базовая валюта",
       "baseCurrencyPlaceholder": "USD",
+      "baseCurrencySearchPlaceholder": "Поиск валют...",
       "currencyInvalid": "Введите корректный 3-буквенный код валюты.",
       "currencyRequired": "После установки базовая валюта не может быть пустой.",
       "emailLabel": "Эл. почта",
@@ -1785,8 +1788,10 @@
         "currency": "Валюта",
         "description": "Описание",
         "descriptionPlaceholder": "Необязательная заметка",
-        "occurredAt": "Дата и время (ISO)",
-        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+        "occurredAt": "Дата и время",
+        "occurredAtPlaceholder": "напр. 17.02.2026 10:30",
+        "datePickerDateLabel": "Дата",
+        "datePickerTimeLabel": "Время"
       },
       "systemCategories": {
         "expense": {

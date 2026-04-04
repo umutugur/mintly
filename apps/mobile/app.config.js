@@ -86,7 +86,7 @@ module.exports = {
     name: 'Montly',
     slug: 'mintly',
     scheme: 'mintly',
-    version: '1.0.2',
+    version: '1.0.3',
     orientation: 'portrait',
     icon: './assets/brand/montly-icon.png',
     userInterfaceStyle: 'light',
@@ -102,7 +102,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.mintly.app',
-      buildNumber: '18',
+      buildNumber: '19',
       usesAppleSignIn: true,
       infoPlist: {
         NSCameraUsageDescription: 'Camera access is needed to scan receipts.',
@@ -123,7 +123,7 @@ module.exports = {
     },
     android: {
       package: 'com.mintly.app',
-      versionCode: 18,
+      versionCode: 19,
       blockedPermissions: ['android.permission.RANGING'],
 
       ...(googleServicesJsonPath

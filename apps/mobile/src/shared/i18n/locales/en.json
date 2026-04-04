@@ -83,8 +83,8 @@
       "earlyPayoffAction": "Early Payoff",
       "actionFromAccount": "Payment Account",
       "actionAmount": "Amount",
-      "actionDate": "Date (ISO)",
-      "actionDatePlaceholder": "2026-03-15T10:30:00.000Z",
+      "actionDate": "Date",
+      "actionDatePlaceholder": "DD.MM.YYYY HH:MM",
       "actionNote": "Note",
       "actionNoSourceAccount": "No eligible payment account found for this loan.",
       "actionSubmitPayment": "Submit Payment",
@@ -561,6 +561,7 @@
     "appName": "Montly",
     "cancel": "Cancel",
     "close": "Close",
+    "confirm": "Confirm",
     "continue": "Continue",
     "delete": "Delete",
     "deleted": "Deleted",
@@ -759,6 +760,7 @@
     "aiActive": "AI ACTIVE",
     "aiAdvisor": "AI Advisor",
     "aiAnalysisTitle": "AI Analysis",
+    "aiAnalysisTryBadge": "✦ Try",
     "currentBalance": "Current Balance",
     "expense": "Expense",
     "greeting": "Welcome,",
@@ -1078,6 +1080,7 @@
     "edit": {
       "baseCurrencyLabel": "Base Currency",
       "baseCurrencyPlaceholder": "USD",
+      "baseCurrencySearchPlaceholder": "Search currencies...",
       "currencyInvalid": "Enter a valid 3-letter currency code.",
       "currencyRequired": "Base currency cannot be empty once it is set.",
       "emailLabel": "Email",
@@ -1785,8 +1788,10 @@
         "currency": "Currency",
         "description": "Description",
         "descriptionPlaceholder": "Optional note",
-        "occurredAt": "Date & Time (ISO)",
-        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+        "occurredAt": "Date & Time",
+        "occurredAtPlaceholder": "e.g. 17.02.2026 10:30",
+        "datePickerDateLabel": "Date",
+        "datePickerTimeLabel": "Time"
       },
       "systemCategories": {
         "expense": {

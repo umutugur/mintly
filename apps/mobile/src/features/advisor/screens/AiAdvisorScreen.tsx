@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -174,6 +174,19 @@ export function AiAdvisorScreen() {
     queryKey: financeQueryKeys.accounts.list(),
     queryFn: () => withAuth((token) => apiClient.getAccounts(token)),
   });
+
+  const regenPulseAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (isRegeneratePending) return;
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(regenPulseAnim, { toValue: 1.02, duration: 1000, useNativeDriver: true }),
+        Animated.timing(regenPulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      ]),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [isRegeneratePending, regenPulseAnim]);
 
   const dark = mode === 'dark';
   const insights = insightsQuery.data ?? null;
@@ -728,12 +741,28 @@ export function AiAdvisorScreen() {
             </View>
           ) : null}
 
-          <PrimaryButton
-            label={t('aiAdvisor.actions.regenerate')}
-            iconName="sparkles-outline"
-            loading={isRegeneratePending}
-            onPress={handleRegenerate}
-          />
+          <View style={styles.regenWrapper}>
+            <Animated.View style={{ transform: [{ scale: regenPulseAnim }] }}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={isRegeneratePending}
+                onPress={handleRegenerate}
+                style={({ pressed }) => [
+                  styles.regenButton,
+                  { backgroundColor: theme.colors.primary },
+                  pressed && styles.regenButtonPressed,
+                ]}
+              >
+                {isRegeneratePending ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <AppIcon name="sparkles-outline" size="sm" tone="inverse" />
+                )}
+                <Text style={styles.regenButtonLabel}>{t('aiAdvisor.actions.regenerate')}</Text>
+                <AppIcon name="film-outline" size="sm" tone="inverse" />
+              </Pressable>
+            </Animated.View>
+          </View>
 
           {regenerateErrorMessage ? (
             <Text style={[styles.errorText, { color: theme.colors.expense }]}>{regenerateErrorMessage}</Text>
@@ -1382,6 +1411,30 @@ const styles = StyleSheet.create({
   },
   container: {
     gap: spacing.md,
+  },
+  regenerateHint: {
+    ...typography.caption,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: -spacing.xs,
+  },
+  regenWrapper: { gap: spacing.xs },
+  regenButton: {
+    alignItems: 'center',
+    borderRadius: radius.lg,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    justifyContent: 'center',
+    minHeight: 52,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xs,
+  },
+  regenButtonPressed: { opacity: 0.8 },
+  regenButtonLabel: {
+    ...typography.subheading,
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
   },
   header: {
     gap: spacing.xxs,

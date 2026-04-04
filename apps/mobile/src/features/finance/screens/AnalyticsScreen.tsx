@@ -21,6 +21,7 @@ import {
   AppIcon,
   Card,
   PrimaryButton,
+  PulsingBadge,
   ScreenContainer,
   Section,
   StatCard,
@@ -539,6 +540,9 @@ export function AnalyticsScreen() {
                 },
               ]}
             >
+              <View style={styles.aiEntryBadgeWrap}>
+                <PulsingBadge label="✦ AI" color="#5961E9" size="sm" />
+              </View>
               <View style={[styles.aiIconWrap, { backgroundColor: dark ? '#2D3D76' : '#E9EFFF' }]}>
                 <AppIcon name="sparkles-outline" size="md" tone="primary" />
               </View>
@@ -874,6 +878,11 @@ const styles = StyleSheet.create({
     minHeight: 96,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
+  },
+  aiEntryBadgeWrap: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
   },
   aiIconWrap: {
     alignItems: 'center',

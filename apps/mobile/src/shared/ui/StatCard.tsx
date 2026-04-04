@@ -36,7 +36,7 @@ export function StatCard({
         {iconName ? <AppIcon name={iconName} size="xs" tone={iconTone} /> : null}
         <Text style={[styles.label, { color: activeTheme.colors.textMuted }]}>{label}</Text>
       </View>
-      <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.5} numberOfLines={1} style={[styles.value, { color: valueColor }]}>{value}</Text>
       {detail ? (
         <Text style={[styles.detail, { color: activeTheme.colors.textMuted }]}>{detail}</Text>
       ) : null}

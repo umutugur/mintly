@@ -83,8 +83,8 @@
       "earlyPayoffAction": "Erken Kapat",
       "actionFromAccount": "Ödeme Hesabı",
       "actionAmount": "Tutar",
-      "actionDate": "Tarih (ISO)",
-      "actionDatePlaceholder": "2026-03-15T10:30:00.000Z",
+      "actionDate": "Tarih",
+      "actionDatePlaceholder": "GG.AA.YYYY SS:DD",
       "actionNote": "Not",
       "actionNoSourceAccount": "Bu kredi için uygun ödeme hesabı bulunamadı.",
       "actionSubmitPayment": "Ödemeyi Kaydet",
@@ -561,6 +561,7 @@
     "appName": "Montly",
     "cancel": "İptal",
     "close": "Kapat",
+    "confirm": "Onayla",
     "continue": "Devam Et",
     "delete": "Sil",
     "deleted": "Silindi",
@@ -759,6 +760,7 @@
     "aiActive": "AI AKTİF",
     "aiAdvisor": "AI Danışman",
     "aiAnalysisTitle": "AI Analizi",
+    "aiAnalysisTryBadge": "✦ Dene",
     "currentBalance": "Mevcut Bakiye",
     "expense": "Gider",
     "greeting": "Hoş geldin,",
@@ -1078,6 +1080,7 @@
     "edit": {
       "baseCurrencyLabel": "Ana Para Birimi",
       "baseCurrencyPlaceholder": "USD",
+      "baseCurrencySearchPlaceholder": "Para birimi ara...",
       "currencyInvalid": "Geçerli 3 harfli para birimi kodu girin.",
       "currencyRequired": "Bir kez ayarlandıktan sonra ana para birimi boş bırakılamaz.",
       "emailLabel": "E-posta",
@@ -1785,8 +1788,10 @@
         "currency": "Para Birimi",
         "description": "Açıklama",
         "descriptionPlaceholder": "Opsiyonel not",
-        "occurredAt": "Tarih ve Saat (ISO)",
-        "occurredAtPlaceholder": "2026-02-17T10:30:00.000Z"
+        "occurredAt": "Tarih ve Saat",
+        "occurredAtPlaceholder": "örn. 17.02.2026 10:30",
+        "datePickerDateLabel": "Tarih",
+        "datePickerTimeLabel": "Saat"
       },
       "systemCategories": {
         "expense": {
