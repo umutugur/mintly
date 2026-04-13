@@ -128,12 +128,8 @@ function parseCsvRows(
 }
 
 export function registerScheduledNotificationRoutes(app: FastifyInstance): void {
-  app.addHook('preHandler', async (request, reply) => {
-    await requireAdmin(request, reply);
-  });
-
   // GET /admin/scheduled-notifications
-  app.get('/admin/scheduled-notifications', async (request) => {
+  app.get('/admin/scheduled-notifications', { preHandler: requireAdmin }, async (request) => {
     const { page, limit } = parseQuery(listQuerySchema, request.query);
     const skip = (page - 1) * limit;
 
@@ -152,7 +148,7 @@ export function registerScheduledNotificationRoutes(app: FastifyInstance): void 
   });
 
   // POST /admin/scheduled-notifications
-  app.post('/admin/scheduled-notifications', async (request, reply) => {
+  app.post('/admin/scheduled-notifications', { preHandler: requireAdmin }, async (request, reply) => {
     const body = parseBody(scheduledNotificationBodySchema, request.body);
     const doc = await ScheduledNotificationModel.create(body);
     reply.status(201);
@@ -160,7 +156,7 @@ export function registerScheduledNotificationRoutes(app: FastifyInstance): void 
   });
 
   // POST /admin/scheduled-notifications/upload (must be before /:id routes)
-  app.post('/admin/scheduled-notifications/upload', async (request) => {
+  app.post('/admin/scheduled-notifications/upload', { preHandler: requireAdmin }, async (request) => {
     const raw = request.body as Record<string, unknown>;
 
     // JSON upload: array in body
@@ -229,7 +225,7 @@ export function registerScheduledNotificationRoutes(app: FastifyInstance): void 
   });
 
   // PATCH /admin/scheduled-notifications/:id
-  app.patch('/admin/scheduled-notifications/:id', async (request) => {
+  app.patch('/admin/scheduled-notifications/:id', { preHandler: requireAdmin }, async (request) => {
     const { id } = request.params as { id: string };
     const objectId = parseObjectId(id, 'id');
     const body = parseBody(scheduledNotificationPatchSchema, request.body);
@@ -252,7 +248,7 @@ export function registerScheduledNotificationRoutes(app: FastifyInstance): void 
   });
 
   // DELETE /admin/scheduled-notifications/:id
-  app.delete('/admin/scheduled-notifications/:id', async (request, reply) => {
+  app.delete('/admin/scheduled-notifications/:id', { preHandler: requireAdmin }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const objectId = parseObjectId(id, 'id');
 
@@ -271,7 +267,7 @@ export function registerScheduledNotificationRoutes(app: FastifyInstance): void 
   });
 
   // GET /admin/scheduled-notifications/:id/logs
-  app.get('/admin/scheduled-notifications/:id/logs', async (request) => {
+  app.get('/admin/scheduled-notifications/:id/logs', { preHandler: requireAdmin }, async (request) => {
     const { id } = request.params as { id: string };
     const objectId = parseObjectId(id, 'id');
     const { page, limit } = parseQuery(listQuerySchema, request.query);
@@ -293,7 +289,7 @@ export function registerScheduledNotificationRoutes(app: FastifyInstance): void 
   });
 
   // GET /admin/notification-logs
-  app.get('/admin/notification-logs', async (request) => {
+  app.get('/admin/notification-logs', { preHandler: requireAdmin }, async (request) => {
     const { page, limit, from, to, category } = parseQuery(logsQuerySchema, request.query);
     const skip = (page - 1) * limit;
 
