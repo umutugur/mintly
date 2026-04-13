@@ -149,7 +149,13 @@ export function registerCronNotificationRoutes(app: FastifyInstance): void {
   // Register within an encapsulated scope so the content-type parser doesn't leak globally.
   // cron-job.org sends POST with no Content-Type header — Fastify returns 415 without this.
   void app.register(async (scope) => {
-    scope.addContentTypeParser('*', { parseAs: 'string' }, (_req, _body, done) => {
+    // Override JSON parser so an empty or missing body doesn't cause a 400.
+    // cron-job.org sends Content-Type: application/json with no body.
+    scope.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, _body, done) => {
+      done(null, {});
+    });
+    // Fallback for any other content type (or no content type).
+    scope.addContentTypeParser('*', (_req, _payload, done) => {
       done(null, {});
     });
 
