@@ -146,17 +146,24 @@ function matchesTrigger(
 }
 
 export function registerCronNotificationRoutes(app: FastifyInstance): void {
-  app.post(
-    '/api/cron/send-notifications',
-    {
-      config: {
-        rateLimit: {
-          max: 10,
-          timeWindow: '1 minute',
+  // Register within an encapsulated scope so the content-type parser doesn't leak globally.
+  // cron-job.org sends POST with no Content-Type header — Fastify returns 415 without this.
+  void app.register(async (scope) => {
+    scope.addContentTypeParser('*', { parseAs: 'string' }, (_req, _body, done) => {
+      done(null, {});
+    });
+
+    scope.post(
+      '/api/cron/send-notifications',
+      {
+        config: {
+          rateLimit: {
+            max: 10,
+            timeWindow: '1 minute',
+          },
         },
       },
-    },
-    async (request) => {
+      async (request) => {
       requireCronAuth(request);
 
       const now = new Date();
@@ -249,6 +256,7 @@ export function registerCronNotificationRoutes(app: FastifyInstance): void {
         skipped: totalSkipped,
         failed: totalFailed,
       };
-    },
-  );
+      },
+    );
+  });
 }

@@ -11,8 +11,9 @@ https://cron-job.org adresine git, hesabına giriş yap.
 - **URL:** https://[RENDER_URL]/api/cron/send-notifications
 - **Request method:** POST
 - **Headers:**
-  - Key: `Authorization`
-  - Value: `Bearer [CRON_SECRET_değerin]`
+  - Key: `Authorization` → Value: `Bearer [CRON_SECRET_değerin]`
+  - Key: `Content-Type` → Value: `application/json`
+- **Request body:** `{}`
 
 ## 4. Zamanlama
 - **Schedule:** Her saat başı

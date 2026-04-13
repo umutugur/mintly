@@ -1,0 +1,1952 @@
+[
+  {
+    "title": {
+      "tr": "Hoş geldin 👋",
+      "en": "Welcome 👋",
+      "ru": "Добро пожаловать 👋"
+    },
+    "body": {
+      "tr": "İlk harcamanı ekle, Montly seni tanımaya başlasın. 2 dakika yeter.",
+      "en": "Add your first expense and let Montly get to know you. Takes 2 minutes.",
+      "ru": "Добавь первый расход — Montly начнёт тебя понимать. Займёт 2 минуты."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 0,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "İlk adım en kolay olanı 🚀",
+      "en": "The first step is the easiest 🚀",
+      "ru": "Первый шаг — самый лёгкий 🚀"
+    },
+    "body": {
+      "tr": "Bugünkü bir harcamanı ekle. Kahve, market, fark etmez. Başlamak yeter.",
+      "en": "Add any expense from today. Coffee, groceries — anything. Just start.",
+      "ru": "Добавь любой расход за сегодня. Кофе, продукты — неважно. Главное начать."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 0,
+    "recurring_hour": 16
+  },
+  {
+    "title": {
+      "tr": "Hesapların seni bekliyor 📊",
+      "en": "Your accounts are waiting 📊",
+      "ru": "Твои счета ждут тебя 📊"
+    },
+    "body": {
+      "tr": "Nakit, banka, kredi kartı — hepsini Montly'e ekle. Net tablo görmeye hazır ol.",
+      "en": "Cash, bank, credit card — add them all to Montly. Get ready to see the full picture.",
+      "ru": "Наличные, банк, кредитная карта — добавь всё в Montly. Будь готов увидеть полную картину."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 1,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Bugün ne harcadın? 🧾",
+      "en": "What did you spend today? 🧾",
+      "ru": "Что потратил сегодня? 🧾"
+    },
+    "body": {
+      "tr": "Günlük harcamanı kaydetmek 30 saniye. Ay sonu sürpriz olmasın.",
+      "en": "Recording your daily expense takes 30 seconds. No surprises at month end.",
+      "ru": "Запись ежедневных расходов занимает 30 секунд. Никаких сюрпризов в конце месяца."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 1,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Fişin var mı? 📷",
+      "en": "Got a receipt? 📷",
+      "ru": "Есть чек? 📷"
+    },
+    "body": {
+      "tr": "Montly'deki fiş tarama özelliğini denedin mi? Tarat, işlem otomatik eklensin.",
+      "en": "Have you tried Montly's receipt scanner? Scan it and the transaction is added automatically.",
+      "ru": "Пробовал сканер чеков в Montly? Отсканируй — транзакция добавится сама."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 2,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "AI Danışmanın hazır 🤖",
+      "en": "Your AI Advisor is ready 🤖",
+      "ru": "Твой ИИ-советник готов 🤖"
+    },
+    "body": {
+      "tr": "İlk ay verisini girdikten sonra AI Danışman sana özel analiz sunuyor. Başla.",
+      "en": "Once you add your first month's data, AI Advisor gives you a personalised analysis. Start now.",
+      "ru": "После первых данных ИИ-советник даст персональный анализ. Начни прямо сейчас."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 2,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "3 gün oldu 🎯",
+      "en": "3 days in 🎯",
+      "ru": "3 дня прошло 🎯"
+    },
+    "body": {
+      "tr": "Montly'de 3 gün geçti. İlk harcamalarını eklemeye başladın mı?",
+      "en": "You've been on Montly for 3 days. Have you started adding your expenses?",
+      "ru": "Ты в Montly уже 3 дня. Начал ли добавлять расходы?"
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 3,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Grubun mu var? 👥",
+      "en": "Got a group? 👥",
+      "ru": "Есть группа? 👥"
+    },
+    "body": {
+      "tr": "Arkadaşlarla ortak harcama bölüşmek için Gruplar özelliğini keşfet.",
+      "en": "Discover the Groups feature to split shared expenses with friends.",
+      "ru": "Открой функцию Групп, чтобы делить расходы с друзьями."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 3,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "Paneline bak 👀",
+      "en": "Check your dashboard 👀",
+      "ru": "Загляни в панель 👀"
+    },
+    "body": {
+      "tr": "Gelir ve giderin yan yana durduğunda tablo netleşiyor. Bir aç, bir bak.",
+      "en": "When income and expenses sit side by side, the picture becomes clear. Open it and look.",
+      "ru": "Когда доходы и расходы рядом — картина проясняется. Открой и посмотри."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 3,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "İlk haftanı kutluyoruz 🎉",
+      "en": "Celebrating your first week 🎉",
+      "ru": "Отмечаем твою первую неделю 🎉"
+    },
+    "body": {
+      "tr": "7 gündür Montly ile birlikteyiz. Harcama alışkanlıkların netleşmeye başladı mı?",
+      "en": "We've been together for 7 days. Are your spending habits becoming clearer?",
+      "ru": "Мы вместе уже 7 дней. Твои привычки расходов начинают проясняться?"
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 7,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Kategori ekledin mi? 🏷️",
+      "en": "Did you add categories? 🏷️",
+      "ru": "Добавил категории? 🏷️"
+    },
+    "body": {
+      "tr": "İşlemlerini kategorilere ayırırsan analiz çok daha anlamlı olur.",
+      "en": "If you categorise your transactions, the analysis becomes much more meaningful.",
+      "ru": "Если разбить транзакции по категориям, анализ станет гораздо полезнее."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 4,
+    "recurring_hour": 13
+  },
+  {
+    "title": {
+      "tr": "Birikim hesabını ekle 💚",
+      "en": "Add your savings account 💚",
+      "ru": "Добавь сберегательный счёт 💚"
+    },
+    "body": {
+      "tr": "Birikim hesabını Montly'e ekle. Ne kadar biriktiğini görmek motive eder.",
+      "en": "Add your savings account to Montly. Seeing how much you've saved is motivating.",
+      "ru": "Добавь сберегательный счёт в Montly. Видеть свои накопления — это мотивирует."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 5,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Analiz sekmesini gördün mü? 📊",
+      "en": "Have you seen the Analysis tab? 📊",
+      "ru": "Видел вкладку Аналитика? 📊"
+    },
+    "body": {
+      "tr": "Hangi kategori en çok harcatıyor? Analiz sekmesinde grafikle gör.",
+      "en": "Which category costs you the most? See it visually in the Analysis tab.",
+      "ru": "Какая категория тратит больше всего? Посмотри графики во вкладке Аналитика."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 6,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "İşlem geçmişini ara 🔍",
+      "en": "Search your transaction history 🔍",
+      "ru": "Поиск по истории транзакций 🔍"
+    },
+    "body": {
+      "tr": "Geçmiş harcamanı mağaza adına göre arayabilirsin. Denedin mi?",
+      "en": "You can search past expenses by store name. Have you tried it?",
+      "ru": "Можно искать расходы по названию магазина. Пробовал?"
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 6,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Kredi kartını ekledin mi? 💳",
+      "en": "Did you add your credit card? 💳",
+      "ru": "Добавил кредитную карту? 💳"
+    },
+    "body": {
+      "tr": "Kredi kartı harcamalarını Montly'e eklediysen borç durumun netleşir.",
+      "en": "If you add your credit card expenses, your debt situation becomes clear.",
+      "ru": "Добавив расходы по кредитке, ты увидишь свою задолженность как на ладони."
+    },
+    "category": "welcome",
+    "trigger_type": "days_after_register",
+    "trigger_value": 4,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Bugünkü harcamanı ekledin mi? 🧾",
+      "en": "Did you log today's expense? 🧾",
+      "ru": "Записал сегодняшние расходы? 🧾"
+    },
+    "body": {
+      "tr": "Her gün 30 saniye. Ay sonu sürpriz olmaz.",
+      "en": "30 seconds a day. No surprises at month end.",
+      "ru": "30 секунд в день. Никаких сюрпризов в конце месяца."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 1,
+    "recurring_hour": 21
+  },
+  {
+    "title": {
+      "tr": "Markete gittiysen fişi tarat 🛒",
+      "en": "Been to the market? Scan the receipt 🛒",
+      "ru": "Был в магазине? Отсканируй чек 🛒"
+    },
+    "body": {
+      "tr": "Alışveriş fişini Montly'e taratmak 5 saniye sürer. Dene.",
+      "en": "Scanning your shopping receipt in Montly takes 5 seconds. Try it.",
+      "ru": "Сканирование чека в Montly занимает 5 секунд. Попробуй."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 2,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Bu hafta kaç {currency} harcadın? 📉",
+      "en": "How much {currency} did you spend this week? 📉",
+      "ru": "Сколько {currency} потратил на этой неделе? 📉"
+    },
+    "body": {
+      "tr": "Montly'i aç, haftalık toplamına bak. Seni şaşırtabilir.",
+      "en": "Open Montly and check your weekly total. It might surprise you.",
+      "ru": "Открой Montly и посмотри на недельную сумму. Может удивить."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 7,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Haftalık raporun hazır 📋",
+      "en": "Your weekly report is ready 📋",
+      "ru": "Еженедельный отчёт готов 📋"
+    },
+    "body": {
+      "tr": "Bu haftaki finansal sağlık skorun hazır. Kaç aldın?",
+      "en": "Your financial health score for this week is ready. What did you score?",
+      "ru": "Твой финансовый балл за эту неделю готов. Какой результат?"
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 7,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Akşam harcaman var mıydı? 🌙",
+      "en": "Any expenses this evening? 🌙",
+      "ru": "Были расходы вечером? 🌙"
+    },
+    "body": {
+      "tr": "Yemek, ulaşım, eğlence — hepsini eklemek 1 dakika.",
+      "en": "Food, transport, entertainment — adding them all takes 1 minute.",
+      "ru": "Еда, транспорт, развлечения — добавить всё займёт 1 минуту."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 4,
+    "recurring_hour": 22
+  },
+  {
+    "title": {
+      "tr": "Sabah rutinine ekle ☀️",
+      "en": "Add it to your morning routine ☀️",
+      "ru": "Добавь в утреннюю рутину ☀️"
+    },
+    "body": {
+      "tr": "Kahvenle birlikte dünkü harcamanı kaydet. 30 saniye.",
+      "en": "Record yesterday's expense with your morning coffee. 30 seconds.",
+      "ru": "Запиши вчерашние расходы за утренним кофе. 30 секунд."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 5,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "2 hafta doldu 🎉",
+      "en": "2 weeks in 🎉",
+      "ru": "2 недели прошло 🎉"
+    },
+    "body": {
+      "tr": "14 gün Montly ile. Harcama alışkanlıkların netleşmeye başladı mı?",
+      "en": "14 days with Montly. Are your spending habits becoming clearer?",
+      "ru": "14 дней с Montly. Твои привычки расходов начинают проясняться?"
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 14,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Bugün bir harcama ekle 💡",
+      "en": "Add an expense today 💡",
+      "ru": "Добавь расход сегодня 💡"
+    },
+    "body": {
+      "tr": "Küçük bile olsa. Veri birikince tablo netleşiyor.",
+      "en": "Even a small one. The picture gets clearer as data builds up.",
+      "ru": "Даже небольшой. Картина проясняется по мере накопления данных."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 10,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Bu ay nasıl gidiyor? 📆",
+      "en": "How is this month going? 📆",
+      "ru": "Как проходит этот месяц? 📆"
+    },
+    "body": {
+      "tr": "Montly'i aç, bu ayki gelir-gider dengesine bak.",
+      "en": "Open Montly and check this month's income-expense balance.",
+      "ru": "Открой Montly и посмотри на баланс доходов и расходов за месяц."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 15,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Ay ortası kontrolü ✅",
+      "en": "Mid-month check ✅",
+      "ru": "Середина месяца: проверка ✅"
+    },
+    "body": {
+      "tr": "Ayın yarısı geçti. Bütçen nerede duruyor?",
+      "en": "Half the month is gone. Where does your budget stand?",
+      "ru": "Половина месяца позади. Как обстоят дела с бюджетом?"
+    },
+    "category": "reminder",
+    "trigger_type": "fixed_date",
+    "trigger_value": 15,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Kredi kartın takipte mi? 💳",
+      "en": "Is your credit card tracked? 💳",
+      "ru": "Отслеживаешь кредитную карту? 💳"
+    },
+    "body": {
+      "tr": "Kredi kartı harcamalarını Montly'e eklediysen borç durumun netleşir.",
+      "en": "If you add your credit card expenses, your debt situation becomes clear.",
+      "ru": "Добавив расходы по кредитке, ты увидишь свой долг как на ладони."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 20,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Bir ay doldu 🏆",
+      "en": "One month done 🏆",
+      "ru": "Один месяц позади 🏆"
+    },
+    "body": {
+      "tr": "Montly'de tam bir ay! Aylık analizini gör, ne değişti?",
+      "en": "A full month on Montly! Check your monthly analysis — what changed?",
+      "ru": "Полный месяц в Montly! Посмотри ежемесячный анализ — что изменилось?"
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 30,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Haftanın özeti 📊",
+      "en": "Week in review 📊",
+      "ru": "Итоги недели 📊"
+    },
+    "body": {
+      "tr": "Bu hafta en çok hangi kategoriye harcadın? Analiz sekmesinde bak.",
+      "en": "Which category did you spend the most on this week? Check the Analysis tab.",
+      "ru": "На какую категорию потратил больше всего на этой неделе? Посмотри в Аналитике."
+    },
+    "category": "reminder",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 5,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Pazartesi temiz başlangıç 📋",
+      "en": "Monday fresh start 📋",
+      "ru": "Понедельник — чистый старт 📋"
+    },
+    "body": {
+      "tr": "Yeni haftaya girerken bu haftanın bütçe hedefini belirle.",
+      "en": "Starting a new week — set your budget goal for this week.",
+      "ru": "Начало новой недели — определи цель бюджета на эту неделю."
+    },
+    "category": "reminder",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 1,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "Cuma değerlendirmesi 🎯",
+      "en": "Friday review 🎯",
+      "ru": "Пятничный обзор 🎯"
+    },
+    "body": {
+      "tr": "Hafta bitmeden harcamalarına bak. Hafta sonu için bütçen var mı?",
+      "en": "Review your expenses before the week ends. Do you have a weekend budget?",
+      "ru": "Проверь расходы до конца недели. Есть ли бюджет на выходные?"
+    },
+    "category": "reminder",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 5,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "45 gündür Montly'desin 💪",
+      "en": "45 days on Montly 💪",
+      "ru": "45 дней в Montly 💪"
+    },
+    "body": {
+      "tr": "Harika gidiyorsun. Analiz sekmesinde 45 günlük tablona bak.",
+      "en": "You're doing great. Check your 45-day overview in the Analysis tab.",
+      "ru": "Отлично держишься. Посмотри свою 45-дневную картину в Аналитике."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 45,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "2 ay tamamlandı 🥈",
+      "en": "2 months complete 🥈",
+      "ru": "2 месяца позади 🥈"
+    },
+    "body": {
+      "tr": "60 gün! Harcama alışkanlıkların değişti mi? AI Danışmana sor.",
+      "en": "60 days! Have your spending habits changed? Ask your AI Advisor.",
+      "ru": "60 дней! Изменились ли твои привычки расходов? Спроси ИИ-советника."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 60,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Aboneliklerini kontrol et 📱",
+      "en": "Check your subscriptions 📱",
+      "ru": "Проверь подписки 📱"
+    },
+    "body": {
+      "tr": "Geçen ay abonelik harcaman kaç {currency} oldu? Montly'de bak.",
+      "en": "How much {currency} did you spend on subscriptions last month? Check Montly.",
+      "ru": "Сколько {currency} ушло на подписки в прошлом месяце? Посмотри в Montly."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 35,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Gece harcaman var mıydı? 🌃",
+      "en": "Any late-night expenses? 🌃",
+      "ru": "Были ночные расходы? 🌃"
+    },
+    "body": {
+      "tr": "Online alışveriş, yemek siparişi — gece harcamaları en sık unutulan.",
+      "en": "Online shopping, food delivery — late-night expenses are the most forgotten.",
+      "ru": "Онлайн-шопинг, доставка еды — ночные расходы чаще всего забываются."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 8,
+    "recurring_hour": 23
+  },
+  {
+    "title": {
+      "tr": "Yakıt & ulaşım bu ay 🚗",
+      "en": "Fuel & transport this month 🚗",
+      "ru": "Топливо и транспорт в этом месяце 🚗"
+    },
+    "body": {
+      "tr": "Ulaşım kategorin bu ay kaç {currency}? Montly'de kontrol et.",
+      "en": "How much {currency} is your transport category this month? Check Montly.",
+      "ru": "Сколько {currency} составила категория транспорта в этом месяце? Проверь в Montly."
+    },
+    "category": "reminder",
+    "trigger_type": "days_after_register",
+    "trigger_value": 25,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "50/30/20 kuralı 💰",
+      "en": "The 50/30/20 rule 💰",
+      "ru": "Правило 50/30/20 💰"
+    },
+    "body": {
+      "tr": "Gelirinin %50 zorunlu, %30 istediklerin, %20 birikim. Montly kategorilerin bu dengeyi gösterir.",
+      "en": "50% needs, 30% wants, 20% savings. Montly's categories show this balance.",
+      "ru": "50% нужды, 30% желания, 20% сбережения. Категории Montly покажут этот баланс."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 3,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Birikim önce gelir 🏦",
+      "en": "Save first 🏦",
+      "ru": "Сначала сбережения 🏦"
+    },
+    "body": {
+      "tr": "Maaş geldiğinde ilk işlem birikim transferi olsun. Kalanıyla yaşa.",
+      "en": "When your salary arrives, make savings your first transaction. Live on what's left.",
+      "ru": "Когда приходит зарплата, первая транзакция — сбережения. Живи на остаток."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 5,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "Küçük harcamalar birikir ☕",
+      "en": "Small expenses add up ☕",
+      "ru": "Мелкие расходы накапливаются ☕"
+    },
+    "body": {
+      "tr": "Günlük 50 {currency} kahve = aylık 1.500 {currency}. Montly'de kategorine bak.",
+      "en": "Daily 50 {currency} coffee = 1,500 {currency} per month. Check your category in Montly.",
+      "ru": "Ежедневный кофе за 50 {currency} = 1 500 {currency} в месяц. Посмотри свою категорию в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 7,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Aboneliklerini say 📱",
+      "en": "Count your subscriptions 📱",
+      "ru": "Посчитай свои подписки 📱"
+    },
+    "body": {
+      "tr": "Netflix, Spotify, YouTube... Kaç aboneliğin var? Montly'de bir hesapla.",
+      "en": "Netflix, Spotify, YouTube... How many subscriptions do you have? Do the maths in Montly.",
+      "ru": "Netflix, Spotify, YouTube... Сколько у тебя подписок? Посчитай в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 10,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Acil fon nerede? 🆘",
+      "en": "Where is your emergency fund? 🆘",
+      "ru": "Где твой аварийный фонд? 🆘"
+    },
+    "body": {
+      "tr": "3 aylık giderini karşılayacak acil fon, finansal güvenliğin temelidir.",
+      "en": "An emergency fund covering 3 months of expenses is the foundation of financial security.",
+      "ru": "Аварийный фонд на 3 месяца расходов — основа финансовой безопасности."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 12,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Dışarıda yemek tuzağı 🍔",
+      "en": "The eating out trap 🍔",
+      "ru": "Ловушка питания вне дома 🍔"
+    },
+    "body": {
+      "tr": "Dışarıda yemek harcaması genelde en sürpriz kategori. Montly'de kontrol et.",
+      "en": "Eating out expenses are usually the most surprising category. Check it in Montly.",
+      "ru": "Расходы на питание вне дома — обычно самая неожиданная категория. Проверь в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 14,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Ulaşım ne kadar tutuyor? 🚌",
+      "en": "How much does transport cost? 🚌",
+      "ru": "Сколько уходит на транспорт? 🚌"
+    },
+    "body": {
+      "tr": "Taksi, toplu taşıma, yakıt — aylık ulaşım giderin kaç {currency}?",
+      "en": "Taxi, public transport, fuel — what is your monthly transport expense in {currency}?",
+      "ru": "Такси, общественный транспорт, топливо — сколько {currency} в месяц на транспорт?"
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 16,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Enflasyona karşı bütçe 📈",
+      "en": "Budget against inflation 📈",
+      "ru": "Бюджет против инфляции 📈"
+    },
+    "body": {
+      "tr": "Fiyatlar artarken bütçeni sabit tutmak zor. Ama görmeden yönetemezsin.",
+      "en": "Keeping your budget stable while prices rise is hard. But you can't manage what you can't see.",
+      "ru": "Удерживать бюджет при росте цен непросто. Но нельзя управлять тем, чего не видишь."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 20,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Gereksiz harcama testi 🧪",
+      "en": "Unnecessary expense test 🧪",
+      "ru": "Тест на лишние расходы 🧪"
+    },
+    "body": {
+      "tr": "Son 30 günlük harcamanı gözden geçir. 'Buna değdi mi?' diye sor.",
+      "en": "Review your last 30 days of spending. Ask yourself: 'Was it worth it?'",
+      "ru": "Просмотри расходы за последние 30 дней. Спроси себя: «Оно того стоило?»"
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 25,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Harcama limiti koy 🚦",
+      "en": "Set a spending limit 🚦",
+      "ru": "Установи лимит расходов 🚦"
+    },
+    "body": {
+      "tr": "Her kategoriye aylık limit belirle. Aştığında kendine sor: gerekli miydi?",
+      "en": "Set a monthly limit for each category. When you exceed it, ask: was it necessary?",
+      "ru": "Установи ежемесячный лимит для каждой категории. При превышении спроси: было ли это необходимо?"
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 30,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Borç önce ödenir 💸",
+      "en": "Pay debt first 💸",
+      "ru": "Сначала погаси долг 💸"
+    },
+    "body": {
+      "tr": "Kredi kartı borcunu minimum ödemede bırakma. Faiz sessizce büyür.",
+      "en": "Don't leave your credit card debt at minimum payment. Interest grows silently.",
+      "ru": "Не оставляй долг по кредитке на минимальном платеже. Проценты растут незаметно."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 35,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Market alışverişi taktiği 🛒",
+      "en": "Supermarket shopping tactic 🛒",
+      "ru": "Тактика похода в магазин 🛒"
+    },
+    "body": {
+      "tr": "Listeyle git, listeyle çık. Montly'de market kategorine bak, fark görürsün.",
+      "en": "Go with a list, leave with a list. Check your supermarket category in Montly — you'll see the difference.",
+      "ru": "Ходи со списком и уходи со списком. Посмотри категорию супермаркета в Montly — увидишь разницу."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 40,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Ay sonu değil ay başı 📅",
+      "en": "Plan at the start, not the end 📅",
+      "ru": "Планируй в начале, а не в конце 📅"
+    },
+    "body": {
+      "tr": "Bütçeyi ay sonunda değil ay başında planla. Montly sana veriyi verir.",
+      "en": "Plan your budget at the start of the month, not the end. Montly gives you the data.",
+      "ru": "Планируй бюджет в начале месяца, а не в конце. Montly даёт тебе данные."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 45,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "İkinci gelir düşündün mü? 💼",
+      "en": "Have you thought about a second income? 💼",
+      "ru": "Думал о втором источнике дохода? 💼"
+    },
+    "body": {
+      "tr": "Freelance, kira, temettü — ek gelir Montly'de ayrı kategori olarak izlenebilir.",
+      "en": "Freelance, rental, dividends — extra income can be tracked as a separate category in Montly.",
+      "ru": "Фриланс, аренда, дивиденды — дополнительный доход можно отслеживать отдельной категорией в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 60,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Yıllık harcama hesabı 🗓️",
+      "en": "Annual expense calculation 🗓️",
+      "ru": "Расчёт годовых расходов 🗓️"
+    },
+    "body": {
+      "tr": "Aylık 3.000 {currency} dışarıda yemek = yılda 36.000 {currency}. Rakamlar büyüyünce netleşir.",
+      "en": "Monthly 3,000 {currency} eating out = 36,000 {currency} a year. Numbers get clearer when they grow.",
+      "ru": "Ежемесячно 3 000 {currency} на питание вне дома = 36 000 {currency} в год. Цифры яснее, когда они растут."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 90,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Hafta sonu harcamaları 🛍️",
+      "en": "Weekend spending 🛍️",
+      "ru": "Расходы в выходные 🛍️"
+    },
+    "body": {
+      "tr": "Hafta sonu alışveriş, yemek, eğlence — bunlar genelde en sürpriz kategori.",
+      "en": "Weekend shopping, food, entertainment — these are usually the most surprising category.",
+      "ru": "Шопинг, еда, развлечения в выходные — обычно самая неожиданная категория."
+    },
+    "category": "tip",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 6,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Giyim harcaması 👗",
+      "en": "Clothing expenses 👗",
+      "ru": "Расходы на одежду 👗"
+    },
+    "body": {
+      "tr": "Son 3 ayda giyime kaç {currency} harcadın? Montly'de kategorine bak.",
+      "en": "How much {currency} did you spend on clothing in the last 3 months? Check your category in Montly.",
+      "ru": "Сколько {currency} потратил на одежду за последние 3 месяца? Посмотри категорию в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 50,
+    "recurring_hour": 11
+  },
+  {
+    "title": {
+      "tr": "Eğlence bütçesi 🎬",
+      "en": "Entertainment budget 🎬",
+      "ru": "Бюджет на развлечения 🎬"
+    },
+    "body": {
+      "tr": "Sinema, konser, oyun — eğlence harcamaların aylık kaç {currency}?",
+      "en": "Cinema, concerts, games — how much {currency} do you spend on entertainment monthly?",
+      "ru": "Кино, концерты, игры — сколько {currency} в месяц уходит на развлечения?"
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 55,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Sağlık harcaması 💊",
+      "en": "Health expenses 💊",
+      "ru": "Расходы на здоровье 💊"
+    },
+    "body": {
+      "tr": "İlaç, doktor, spor salonu — sağlık kategorin aylık kaç {currency}?",
+      "en": "Medicine, doctor, gym — how much {currency} is your health category monthly?",
+      "ru": "Лекарства, врач, спортзал — сколько {currency} в месяц составляет категория здоровья?"
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 65,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Kira & faturalar 🏠",
+      "en": "Rent & bills 🏠",
+      "ru": "Аренда и счета 🏠"
+    },
+    "body": {
+      "tr": "Sabit giderlerin ne kadarını kaplıyor? Montly'de zorunlu kategorine bak.",
+      "en": "What percentage of your income do fixed expenses take up? Check your essentials category in Montly.",
+      "ru": "Какую долю дохода занимают фиксированные расходы? Посмотри категорию обязательных в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 70,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Yemek teslimatı maliyeti 🛵",
+      "en": "Food delivery cost 🛵",
+      "ru": "Стоимость доставки еды 🛵"
+    },
+    "body": {
+      "tr": "Yemek siparişi servis bedelleri aylık kaç {currency} tutuyor? Montly'de kontrol et.",
+      "en": "How much {currency} do food delivery fees cost you monthly? Check in Montly.",
+      "ru": "Сколько {currency} в месяц составляют комиссии за доставку еды? Проверь в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 80,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Tatil bütçesi 🏖️",
+      "en": "Holiday budget 🏖️",
+      "ru": "Бюджет на отпуск 🏖️"
+    },
+    "body": {
+      "tr": "Tatil planı var mı? Aylık küçük birikim büyük tatil yapar. Montly'de takip et.",
+      "en": "Planning a holiday? Small monthly savings make a big holiday. Track it in Montly.",
+      "ru": "Планируешь отпуск? Небольшие ежемесячные накопления складываются в большой отдых. Отслеживай в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 50,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "3 ay sonra neredeydin? 📊",
+      "en": "Where were you 3 months ago? 📊",
+      "ru": "Где ты был 3 месяца назад? 📊"
+    },
+    "body": {
+      "tr": "Montly'deki geçmiş verilere bak. Harcama alışkanlıkların değişti mi?",
+      "en": "Look at your historical data in Montly. Have your spending habits changed?",
+      "ru": "Посмотри на исторические данные в Montly. Изменились ли твои привычки расходов?"
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 90,
+    "recurring_hour": 11
+  },
+  {
+    "title": {
+      "tr": "Fişi tarat, elle girme 📷",
+      "en": "Scan the receipt, skip the typing 📷",
+      "ru": "Отсканируй чек — не вводи вручную 📷"
+    },
+    "body": {
+      "tr": "Montly'deki OCR özelliği fişini okur, işlemi otomatik ekler. Denedin mi?",
+      "en": "Montly's OCR feature reads your receipt and adds the transaction automatically. Have you tried it?",
+      "ru": "Функция OCR в Montly читает чек и автоматически добавляет транзакцию. Пробовал?"
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 5,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Haftalık rapor açıldı 📋",
+      "en": "Weekly report unlocked 📋",
+      "ru": "Еженедельный отчёт доступен 📋"
+    },
+    "body": {
+      "tr": "Bu haftaki finansal sağlık skorun hazır. Analiz sekmesinden kontrol et.",
+      "en": "Your financial health score for this week is ready. Check it in the Analysis tab.",
+      "ru": "Твой финансовый балл за эту неделю готов. Проверь во вкладке Аналитика."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 7,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "AI Danışmanına sor 🤖",
+      "en": "Ask your AI Advisor 🤖",
+      "ru": "Спроси своего ИИ-советника 🤖"
+    },
+    "body": {
+      "tr": "Harcama verilerini analiz eden AI Danışman bu ay sana ne söylüyor?",
+      "en": "What is your AI Advisor saying about your spending data this month?",
+      "ru": "Что говорит твой ИИ-советник о расходах в этом месяце?"
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 10,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Gruplar özelliği 👥",
+      "en": "Groups feature 👥",
+      "ru": "Функция Групп 👥"
+    },
+    "body": {
+      "tr": "Tatil, ev arkadaşı, çift harcaması — Montly'de grup oluştur, borcu bölüş.",
+      "en": "Holiday, flatmates, couple spending — create a group in Montly and split the bill.",
+      "ru": "Отпуск, сожители, совместные расходы — создай группу в Montly и раздели счёт."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 12,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "Birden fazla hesap 🏦",
+      "en": "Multiple accounts 🏦",
+      "ru": "Несколько счетов 🏦"
+    },
+    "body": {
+      "tr": "Nakit, banka, kredi kartı, birikim — hepsini Montly'de ayrı ayrı takip et.",
+      "en": "Cash, bank, credit card, savings — track them all separately in Montly.",
+      "ru": "Наличные, банк, кредитная карта, сбережения — отслеживай каждый счёт отдельно в Montly."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 15,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Analiz sekmesi 📊",
+      "en": "Analysis tab 📊",
+      "ru": "Вкладка Аналитика 📊"
+    },
+    "body": {
+      "tr": "Hangi kategori en çok harcatıyor? Analiz sekmesinde grafikle gör.",
+      "en": "Which category costs you the most? See it as a chart in the Analysis tab.",
+      "ru": "Какая категория тратит больше всего? Посмотри в виде графика во вкладке Аналитика."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 20,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "İşlem geçmişi ara 🔍",
+      "en": "Search transaction history 🔍",
+      "ru": "Поиск по истории транзакций 🔍"
+    },
+    "body": {
+      "tr": "Geçmiş harcamanı mağaza adına göre arayabilirsin. Denedin mi?",
+      "en": "You can search past expenses by store name. Have you tried it?",
+      "ru": "Можно искать расходы по названию магазина. Пробовал?"
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 25,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Birikim hesabı ekle 💚",
+      "en": "Add a savings account 💚",
+      "ru": "Добавь сберегательный счёт 💚"
+    },
+    "body": {
+      "tr": "Birikim hesabını Montly'e ekle, ne kadar biriktiğini görmek motive eder.",
+      "en": "Add your savings account to Montly. Seeing how much you've saved is motivating.",
+      "ru": "Добавь сберегательный счёт в Montly. Видеть свои накопления — это мотивирует."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 30,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Çoklu dil desteği 🌍",
+      "en": "Multi-language support 🌍",
+      "ru": "Поддержка нескольких языков 🌍"
+    },
+    "body": {
+      "tr": "Montly Türkçe, İngilizce ve Rusça kullanılabilir. Ayarlardan değiştir.",
+      "en": "Montly is available in Turkish, English and Russian. Change it in Settings.",
+      "ru": "Montly доступен на турецком, английском и русском. Измени в Настройках."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 40,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "AI bu ay ne diyor? 🤖",
+      "en": "What does AI say this month? 🤖",
+      "ru": "Что говорит ИИ в этом месяце? 🤖"
+    },
+    "body": {
+      "tr": "Aylık veriler birikinince AI Danışman çok daha detaylı analiz sunuyor. Bak.",
+      "en": "As monthly data builds up, AI Advisor offers much more detailed analysis. Check it out.",
+      "ru": "По мере накопления данных ИИ-советник даёт всё более детальный анализ. Посмотри."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 45,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Gelir ekle 💵",
+      "en": "Add income 💵",
+      "ru": "Добавь доход 💵"
+    },
+    "body": {
+      "tr": "Sadece gider değil, gelirini de ekle. Net tablo çok daha anlamlı olur.",
+      "en": "Not just expenses — add your income too. The full picture becomes much more meaningful.",
+      "ru": "Не только расходы — добавь и доходы. Полная картина станет гораздо понятнее."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 8,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "Gider filtreleme 🔎",
+      "en": "Expense filtering 🔎",
+      "ru": "Фильтрация расходов 🔎"
+    },
+    "body": {
+      "tr": "İşlem geçmişini gelir/gider veya kategoriye göre filtreleyebilirsin.",
+      "en": "You can filter your transaction history by income/expense or category.",
+      "ru": "Историю транзакций можно фильтровать по доходам/расходам или категории."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 18,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Hızlı işlem ekleme ⚡",
+      "en": "Quick expense entry ⚡",
+      "ru": "Быстрое добавление транзакции ⚡"
+    },
+    "body": {
+      "tr": "Ortadaki + butonuna bas, tutar gir, kaydet. 10 saniye.",
+      "en": "Tap the + button in the centre, enter the amount, save. 10 seconds.",
+      "ru": "Нажми кнопку + в центре, введи сумму, сохрани. 10 секунд."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 2,
+    "recurring_hour": 21
+  },
+  {
+    "title": {
+      "tr": "Finansal hedef koy 🎯",
+      "en": "Set a financial goal 🎯",
+      "ru": "Поставь финансовую цель 🎯"
+    },
+    "body": {
+      "tr": "Profil > Finansal Hedefler. Birikim hedefini gir, Montly takip eder.",
+      "en": "Profile > Financial Goals. Enter your savings goal and Montly tracks it.",
+      "ru": "Профиль > Финансовые цели. Введи цель накопления — Montly будет отслеживать."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 14,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Güvenlik ayarları 🔒",
+      "en": "Security settings 🔒",
+      "ru": "Настройки безопасности 🔒"
+    },
+    "body": {
+      "tr": "Montly'de şifre ve oturum koruma ayarlarını Profil > Güvenlik'ten yönet.",
+      "en": "Manage password and session protection in Montly via Profile > Security.",
+      "ru": "Управляй паролем и защитой сессии в Montly через Профиль > Безопасность."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 21,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Aylık özet 📆",
+      "en": "Monthly summary 📆",
+      "ru": "Ежемесячный итог 📆"
+    },
+    "body": {
+      "tr": "Her ay sonunda tam finansal özet. Analiz sekmesinde geçmiş aylara da bakabilirsin.",
+      "en": "Full financial summary at the end of every month. You can also view past months in the Analysis tab.",
+      "ru": "Полный финансовый итог в конце каждого месяца. В Аналитике также можно просматривать прошлые месяцы."
+    },
+    "category": "feature",
+    "trigger_type": "fixed_date",
+    "trigger_value": 28,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Bütçen bir pusula 🧭",
+      "en": "Your budget is a compass 🧭",
+      "ru": "Бюджет — это компас 🧭"
+    },
+    "body": {
+      "tr": "Nereye gittiğini bilmeden seçim yapamazsın. İyi haftalar.",
+      "en": "You can't make choices without knowing where you're going. Good week ahead.",
+      "ru": "Нельзя делать выбор, не зная куда идёшь. Хорошей недели."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 0,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Küçük adımlar büyük sonuç 🏔️",
+      "en": "Small steps, big results 🏔️",
+      "ru": "Маленькие шаги — большой результат 🏔️"
+    },
+    "body": {
+      "tr": "Her gün bir harcama kaydı. Ay sonunda tam tablo.",
+      "en": "One expense log every day. Full picture at month end.",
+      "ru": "Одна запись расходов в день. Полная картина в конце месяца."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 1,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "Finansal farkındalık güçtür 💪",
+      "en": "Financial awareness is power 💪",
+      "ru": "Финансовая осознанность — это сила 💪"
+    },
+    "body": {
+      "tr": "Paranın nereye gittiğini bilen insan, nereye gideceğini de seçebilir.",
+      "en": "Someone who knows where their money goes can also choose where it will go.",
+      "ru": "Тот, кто знает, куда уходят деньги, может выбирать, куда они пойдут."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 0,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Bu hafta bir hedef koy 🎯",
+      "en": "Set a goal this week 🎯",
+      "ru": "Поставь цель на эту неделю 🎯"
+    },
+    "body": {
+      "tr": "Dışarıda yemeği azalt, kahveyi evde iç, bir kategoriyi kıs. Küçük ama etkili.",
+      "en": "Eat out less, make coffee at home, cut one category. Small but effective.",
+      "ru": "Меньше ешь вне дома, готовь кофе дома, сократи одну категорию. Небольшое, но эффективное."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 1,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Görünür olan yönetilebilir 👁️",
+      "en": "Visible is manageable 👁️",
+      "ru": "Видимое — управляемо 👁️"
+    },
+    "body": {
+      "tr": "Montly açık olduğunda harcamalar görünür. Görünür olan kontrol edilir.",
+      "en": "When Montly is open, expenses are visible. What's visible can be controlled.",
+      "ru": "Когда Montly открыт, расходы видны. То, что видно, можно контролировать."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 0,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Geçen haftadan daha iyi 📈",
+      "en": "Better than last week 📈",
+      "ru": "Лучше, чем на прошлой неделе 📈"
+    },
+    "body": {
+      "tr": "Her hafta bir öncekinden biraz daha bilinçli harcamak yeterli.",
+      "en": "Spending a little more consciously each week than the last is enough.",
+      "ru": "Тратить чуть более осознанно каждую неделю, чем предыдущую, — этого достаточно."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 1,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "Para özgürlük verir 🕊️",
+      "en": "Money gives freedom 🕊️",
+      "ru": "Деньги дают свободу 🕊️"
+    },
+    "body": {
+      "tr": "Doğru yönetilen para kısıtlamaz, özgürleştirir. İyi haftalar.",
+      "en": "Money managed well doesn't restrict — it liberates. Good week ahead.",
+      "ru": "Деньги, которыми хорошо управляют, не ограничивают — они освобождают. Хорошей недели."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 0,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Stres değil, kontrol 🧘",
+      "en": "Control, not stress 🧘",
+      "ru": "Контроль, не стресс 🧘"
+    },
+    "body": {
+      "tr": "Finansal stres, bilinmezlikten gelir. Montly bilinmezi görünür yapar.",
+      "en": "Financial stress comes from uncertainty. Montly makes the uncertain visible.",
+      "ru": "Финансовый стресс приходит от неизвестности. Montly делает неизвестное видимым."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 3,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Bugün iyi bir karar ver 💡",
+      "en": "Make a good decision today 💡",
+      "ru": "Прими сегодня правильное решение 💡"
+    },
+    "body": {
+      "tr": "Gereksiz bir harcamadan vazgeç. Küçük karar, büyük alışkanlık.",
+      "en": "Skip an unnecessary expense. Small decision, big habit.",
+      "ru": "Откажись от лишнего расхода. Маленькое решение — большая привычка."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 2,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Birikim hedefe gidiyor 🏁",
+      "en": "Savings heading for the goal 🏁",
+      "ru": "Накопления идут к цели 🏁"
+    },
+    "body": {
+      "tr": "Her biriktirilmiş {currency} hedefe bir adım yaklaştırır. Devam et.",
+      "en": "Every {currency} saved is one step closer to your goal. Keep going.",
+      "ru": "Каждый сэкономленный {currency} — шаг ближе к цели. Продолжай."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 4,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Hafta sonu rahat geç 🌅",
+      "en": "Have a relaxed weekend 🌅",
+      "ru": "Хороших выходных 🌅"
+    },
+    "body": {
+      "tr": "Harcamalarını takip ettin. Haftayı kapattın. Güzel bir hafta sonu.",
+      "en": "You tracked your expenses. You closed the week. Have a great weekend.",
+      "ru": "Ты отслеживал расходы. Неделя завершена. Хороших выходных."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 6,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Finansal hedefin ne? 🎯",
+      "en": "What is your financial goal? 🎯",
+      "ru": "Какова твоя финансовая цель? 🎯"
+    },
+    "body": {
+      "tr": "Tatil mi, araba mı, ev mi? Hedef olmadan birikim olmaz. Montly'e ekle.",
+      "en": "Holiday, car, home? Without a goal there's no saving. Add it to Montly.",
+      "ru": "Отпуск, машина, квартира? Без цели нет накоплений. Добавь в Montly."
+    },
+    "category": "motivation",
+    "trigger_type": "days_after_register",
+    "trigger_value": 21,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "İlerleme var 📊",
+      "en": "Progress is happening 📊",
+      "ru": "Прогресс есть 📊"
+    },
+    "body": {
+      "tr": "Montly'i kullanmaya devam ediyorsun. Bu başlı başına bir başarı.",
+      "en": "You're still using Montly. That in itself is an achievement.",
+      "ru": "Ты продолжаешь пользоваться Montly. Это уже само по себе достижение."
+    },
+    "category": "motivation",
+    "trigger_type": "days_after_register",
+    "trigger_value": 30,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Sen yapabilirsin 💙",
+      "en": "You can do it 💙",
+      "ru": "Ты справишься 💙"
+    },
+    "body": {
+      "tr": "Finansal düzen bir gecede oluşmaz. Ama her gün bir adım atar.",
+      "en": "Financial order isn't built overnight. But every day is one step forward.",
+      "ru": "Финансовый порядок не строится за одну ночь. Но каждый день — это шаг вперёд."
+    },
+    "category": "motivation",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 0,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Bir haftadır görüşmedik 👋",
+      "en": "We haven't seen you in a week 👋",
+      "ru": "Мы не виделись неделю 👋"
+    },
+    "body": {
+      "tr": "Harcamalar senin yokluğunda birikti. Montly'e bir bak, tablo sürpriz olmasın.",
+      "en": "Your expenses piled up while you were away. Open Montly so there are no surprises.",
+      "ru": "Расходы накопились без тебя. Загляни в Montly, чтобы не было сюрпризов."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 7,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Bu ayki giderin kaç {currency}? 📊",
+      "en": "What are this month's expenses in {currency}? 📊",
+      "ru": "Каковы расходы этого месяца в {currency}? 📊"
+    },
+    "body": {
+      "tr": "Bilmiyorsan öğrenmek için iyi zaman. Montly'i aç.",
+      "en": "If you don't know, now is a good time to find out. Open Montly.",
+      "ru": "Если не знаешь — сейчас хорошее время узнать. Открой Montly."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 10,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "2 haftadır bekliyoruz ⏳",
+      "en": "We've been waiting 2 weeks ⏳",
+      "ru": "Ждём тебя 2 недели ⏳"
+    },
+    "body": {
+      "tr": "Harcamalarını takip etmeyi bıraktın mı? 1 dakika yeter, topla kendini.",
+      "en": "Did you stop tracking your expenses? 1 minute is enough — get back on track.",
+      "ru": "Перестал отслеживать расходы? 1 минуты достаточно — возвращайся."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 14,
+    "recurring_hour": 11
+  },
+  {
+    "title": {
+      "tr": "Ay bitmeden bir bak 📅",
+      "en": "Check before the month ends 📅",
+      "ru": "Загляни до конца месяца 📅"
+    },
+    "body": {
+      "tr": "Bu ay ne harcadın, ne kazandın? Montly'de 30 saniyede özeti gör.",
+      "en": "What did you spend and earn this month? See the summary in Montly in 30 seconds.",
+      "ru": "Что потратил и заработал в этом месяце? Посмотри итог в Montly за 30 секунд."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 21,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Seni kaçırdık 💙",
+      "en": "We missed you 💙",
+      "ru": "Мы скучали по тебе 💙"
+    },
+    "body": {
+      "tr": "Montly hâlâ burada. Harcamalarını takip etmeye devam etmek için bir aç.",
+      "en": "Montly is still here. Open it to continue tracking your expenses.",
+      "ru": "Montly всё ещё здесь. Открой его и продолжай отслеживать расходы."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 30,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Küçük bir adım at 🚶",
+      "en": "Take a small step 🚶",
+      "ru": "Сделай небольшой шаг 🚶"
+    },
+    "body": {
+      "tr": "Sadece bir işlem ekle. Bir tane. Sonrası kendiliğinden gelir.",
+      "en": "Just add one transaction. One. The rest will follow by itself.",
+      "ru": "Просто добавь одну транзакцию. Одну. Остальное придёт само."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 10,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Ne değişti? 🔄",
+      "en": "What changed? 🔄",
+      "ru": "Что изменилось? 🔄"
+    },
+    "body": {
+      "tr": "Bir süredir Montly'i açmadın. Bir şey mi eksikti? Geri dön, birlikte bakalım.",
+      "en": "You haven't opened Montly for a while. Was something missing? Come back, let's look together.",
+      "ru": "Ты давно не открывал Montly. Чего-то не хватало? Возвращайся — разберёмся вместе."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 20,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Ay sonu geliyor ⏰",
+      "en": "Month end is coming ⏰",
+      "ru": "Конец месяца приближается ⏰"
+    },
+    "body": {
+      "tr": "Montly'i açmadan ay kapanmasın. Son duruma bir bak.",
+      "en": "Don't let the month close without opening Montly. Check where things stand.",
+      "ru": "Не позволяй месяцу закрыться без Montly. Посмотри, где дела стоят."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 15,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Finansal tablo bulanıklaşıyor 🌫️",
+      "en": "Financial picture is getting blurry 🌫️",
+      "ru": "Финансовая картина затуманивается 🌫️"
+    },
+    "body": {
+      "tr": "Kaydetmediğin her harcama tablonu bozuyor. 1 dakika yeter.",
+      "en": "Every expense you don't log distorts your picture. 1 minute is enough.",
+      "ru": "Каждый незаписанный расход искажает картину. 1 минуты достаточно."
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 7,
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Tekrar merhaba 👋",
+      "en": "Hello again 👋",
+      "ru": "Снова привет 👋"
+    },
+    "body": {
+      "tr": "Uzun zaman oldu. Montly hâlâ bekliyor. Nerede kaldın?",
+      "en": "It's been a while. Montly is still waiting. Where did you get to?",
+      "ru": "Прошло много времени. Montly всё ещё ждёт. Где ты пропадал?"
+    },
+    "category": "winback",
+    "trigger_type": "days_inactive",
+    "trigger_value": 30,
+    "recurring_hour": 11
+  },
+  {
+    "title": {
+      "tr": "Yeni ay, temiz sayfa 📅",
+      "en": "New month, fresh start 📅",
+      "ru": "Новый месяц, чистый лист 📅"
+    },
+    "body": {
+      "tr": "Ay başladı. Bu ay bütçeni nasıl planlıyorsun? Montly'de yeni aya hazır ol.",
+      "en": "The month has started. How are you planning your budget this month? Get ready in Montly.",
+      "ru": "Месяц начался. Как планируешь бюджет на этот месяц? Приготовься в Montly."
+    },
+    "category": "seasonal",
+    "trigger_type": "fixed_date",
+    "trigger_value": 1,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Ay bitiyor, son kontrol ⏰",
+      "en": "Month ending, final check ⏰",
+      "ru": "Месяц заканчивается, последняя проверка ⏰"
+    },
+    "body": {
+      "tr": "Bu ay nasıl geçti? Montly'i aç, özeti gör. Ay sonu sürpriz olmasın.",
+      "en": "How did this month go? Open Montly and see the summary. No surprises at month end.",
+      "ru": "Как прошёл этот месяц? Открой Montly и посмотри итоги. Никаких сюрпризов в конце месяца."
+    },
+    "category": "seasonal",
+    "trigger_type": "fixed_date",
+    "trigger_value": 28,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Maaş günü geldi 💰",
+      "en": "Payday is here 💰",
+      "ru": "День зарплаты пришёл 💰"
+    },
+    "body": {
+      "tr": "Gelirini Montly'e ekle, bu ayın bütçesini belirle. İlk adım en önemli.",
+      "en": "Add your income to Montly and set this month's budget. The first step is the most important.",
+      "ru": "Добавь доход в Montly и определи бюджет на месяц. Первый шаг — самый важный."
+    },
+    "category": "seasonal",
+    "trigger_type": "fixed_date",
+    "trigger_value": 15,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Hafta sonu harcamaları 🛍️",
+      "en": "Weekend spending 🛍️",
+      "ru": "Расходы в выходные 🛍️"
+    },
+    "body": {
+      "tr": "Hafta sonu alışveriş, yemek, eğlence — bunlar genelde en sürpriz kategori.",
+      "en": "Weekend shopping, food, entertainment — these are usually the most surprising category.",
+      "ru": "Шопинг, еда, развлечения в выходные — обычно самая неожиданная категория."
+    },
+    "category": "seasonal",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 5,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "Pazartesi bütçe günü 📋",
+      "en": "Monday is budget day 📋",
+      "ru": "Понедельник — день бюджета 📋"
+    },
+    "body": {
+      "tr": "Haftaya temiz başla. Bu haftanın harcama limitini belirle.",
+      "en": "Start the week fresh. Set your spending limit for this week.",
+      "ru": "Начни неделю чисто. Установи лимит расходов на эту неделю."
+    },
+    "category": "seasonal",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 1,
+    "recurring_hour": 8
+  },
+  {
+    "title": {
+      "tr": "3 ay doldu 🎂",
+      "en": "3 months complete 🎂",
+      "ru": "3 месяца позади 🎂"
+    },
+    "body": {
+      "tr": "Montly'de 3 ay! Harcama alışkanlıkların değişti mi? Analiz sekmesine bak.",
+      "en": "3 months on Montly! Have your spending habits changed? Check the Analysis tab.",
+      "ru": "3 месяца в Montly! Изменились ли твои привычки расходов? Посмотри во вкладке Аналитика."
+    },
+    "category": "seasonal",
+    "trigger_type": "days_after_register",
+    "trigger_value": 90,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "6 ay tamamlandı 🥇",
+      "en": "6 months complete 🥇",
+      "ru": "6 месяцев позади 🥇"
+    },
+    "body": {
+      "tr": "Yarım yıl Montly ile! Bu sürede kaç {currency} tasarruf ettin?",
+      "en": "Half a year with Montly! How much {currency} have you saved in this time?",
+      "ru": "Полгода с Montly! Сколько {currency} ты сэкономил за это время?"
+    },
+    "category": "seasonal",
+    "trigger_type": "days_after_register",
+    "trigger_value": 180,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "1 yıl oldu 🎊",
+      "en": "1 year 🎊",
+      "ru": "1 год 🎊"
+    },
+    "body": {
+      "tr": "Tam bir yıl Montly ile! Yıllık harcama özetine bak, neler değişti?",
+      "en": "A full year with Montly! Check your annual spending summary — what has changed?",
+      "ru": "Целый год с Montly! Посмотри годовой итог расходов — что изменилось?"
+    },
+    "category": "seasonal",
+    "trigger_type": "days_after_register",
+    "trigger_value": 365,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Ay başı gelir girişi 💵",
+      "en": "Start of month income entry 💵",
+      "ru": "Внесение дохода в начале месяца 💵"
+    },
+    "body": {
+      "tr": "Maaşın geldiyse Montly'e ekle. Aylık tablo tamamlansın.",
+      "en": "If your salary has arrived, add it to Montly. Complete the monthly picture.",
+      "ru": "Если зарплата пришла, добавь в Montly. Пусть месячная картина будет полной."
+    },
+    "category": "seasonal",
+    "trigger_type": "fixed_date",
+    "trigger_value": 3,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Ay sonu analizi 📊",
+      "en": "End of month analysis 📊",
+      "ru": "Анализ конца месяца 📊"
+    },
+    "body": {
+      "tr": "Bu ay en çok hangi kategoriye harcadın? AI Danışmana sor.",
+      "en": "Which category did you spend the most on this month? Ask your AI Advisor.",
+      "ru": "На какую категорию потратил больше всего в этом месяце? Спроси ИИ-советника."
+    },
+    "category": "seasonal",
+    "trigger_type": "fixed_date",
+    "trigger_value": 29,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 20
+  },
+  {
+    "title": {
+      "tr": "Çarşamba kontrolü ✅",
+      "en": "Wednesday check-in ✅",
+      "ru": "Среда: промежуточная проверка ✅"
+    },
+    "body": {
+      "tr": "Haftanın ortasında harcamana bak. Limit aşıldı mı?",
+      "en": "Mid-week check on your spending. Have you exceeded your limit?",
+      "ru": "Проверка расходов в середине недели. Превысил ли лимит?"
+    },
+    "category": "seasonal",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 3,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Perşembe hatırlatması 📌",
+      "en": "Thursday reminder 📌",
+      "ru": "Напоминание в четверг 📌"
+    },
+    "body": {
+      "tr": "Hafta sonu gelmeden bu haftanın harcamalarını gözden geçir.",
+      "en": "Review this week's expenses before the weekend arrives.",
+      "ru": "Просмотри расходы этой недели до наступления выходных."
+    },
+    "category": "seasonal",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 4,
+    "recurring_hour": 19
+  },
+  {
+    "title": {
+      "tr": "Salı motivasyonu 🌟",
+      "en": "Tuesday motivation 🌟",
+      "ru": "Мотивация во вторник 🌟"
+    },
+    "body": {
+      "tr": "Haftanın ortasındasın. Bu hafta bütçe hedefine gidiyor musun?",
+      "en": "You're mid-week. Are you on track for your budget goal this week?",
+      "ru": "Середина недели. Ты идёшь к своей бюджетной цели на этой неделе?"
+    },
+    "category": "seasonal",
+    "trigger_type": "recurring",
+    "recurring_pattern": "weekly",
+    "recurring_day": 2,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Geçmişe bak, geleceği planla 🔭",
+      "en": "Look back, plan forward 🔭",
+      "ru": "Оглянись назад, планируй вперёд 🔭"
+    },
+    "body": {
+      "tr": "Geçen ay nasıldı? Montly'de bak ve bu ayı daha iyi planla.",
+      "en": "How was last month? Check Montly and plan this month better.",
+      "ru": "Каким был прошлый месяц? Посмотри в Montly и спланируй этот месяц лучше."
+    },
+    "category": "motivation",
+    "trigger_type": "fixed_date",
+    "trigger_value": 1,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Banka masrafları 🏦",
+      "en": "Bank fees 🏦",
+      "ru": "Банковские комиссии 🏦"
+    },
+    "body": {
+      "tr": "Yıllık ücret, işlem masrafı, kart aidatı — bunlar da harcama. Montly'de takip et.",
+      "en": "Annual fees, transaction charges, card fees — these are expenses too. Track them in Montly.",
+      "ru": "Годовые сборы, комиссии за транзакции, карточные взносы — это тоже расходы. Отслеживай в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 85,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Para ve mutluluk 😊",
+      "en": "Money and happiness 😊",
+      "ru": "Деньги и счастье 😊"
+    },
+    "body": {
+      "tr": "Para mutluluk satın almaz ama finansal stres mutluluğu çalar. Kontrol et.",
+      "en": "Money can't buy happiness but financial stress steals it. Stay in control.",
+      "ru": "Деньги не купят счастье, но финансовый стресс его крадёт. Держи под контролем."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 75,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Profil ayarları 👤",
+      "en": "Profile settings 👤",
+      "ru": "Настройки профиля 👤"
+    },
+    "body": {
+      "tr": "Para birimi, dil, finansal hedefler — Profil sekmesinden kişiselleştir.",
+      "en": "Currency, language, financial goals — personalise them in the Profile tab.",
+      "ru": "Валюта, язык, финансовые цели — настрой в разделе Профиль."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 22,
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Grup borç kapatma 🤝",
+      "en": "Group debt settlement 🤝",
+      "ru": "Погашение долга в группе 🤝"
+    },
+    "body": {
+      "tr": "Gruptaki borçları Bölüş özelliğiyle kolayca kapat. Hesap sorulmaz.",
+      "en": "Settle group debts easily with the Split feature. No more asking who owes what.",
+      "ru": "Легко закрывай долги в группе с функцией Разделить. Больше никаких вопросов кто сколько должен."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 35,
+    "recurring_hour": 18
+  },
+  {
+    "title": {
+      "tr": "Mağaza adı kaydet 🏪",
+      "en": "Save a store name 🏪",
+      "ru": "Сохрани название магазина 🏪"
+    },
+    "body": {
+      "tr": "İşleme mağaza adı ekle, geçmişte kolayca ara.",
+      "en": "Add a store name to a transaction and search for it easily later.",
+      "ru": "Добавь название магазина к транзакции и легко найди её позже."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 9,
+    "recurring_hour": 12
+  },
+  {
+    "title": {
+      "tr": "Hesap türleri 🗂️",
+      "en": "Account types 🗂️",
+      "ru": "Типы счетов 🗂️"
+    },
+    "body": {
+      "tr": "Nakit, Banka, Kredi, Birikim — her hesap türü ayrı takip edilir.",
+      "en": "Cash, Bank, Credit, Savings — each account type is tracked separately.",
+      "ru": "Наличные, Банк, Кредит, Сбережения — каждый тип счёта отслеживается отдельно."
+    },
+    "category": "feature",
+    "trigger_type": "days_after_register",
+    "trigger_value": 28,
+    "recurring_hour": 9
+  },
+  {
+    "title": {
+      "tr": "Yılbaşı bütçe planı 🎆",
+      "en": "New Year budget plan 🎆",
+      "ru": "Новогодний план бюджета 🎆"
+    },
+    "body": {
+      "tr": "Yeni yıl için finansal hedefini belirle. Montly seni takipte tutar.",
+      "en": "Set your financial goal for the new year. Montly keeps you on track.",
+      "ru": "Определи финансовую цель на новый год. Montly поможет держать курс."
+    },
+    "category": "seasonal",
+    "trigger_type": "fixed_date",
+    "trigger_value": 1,
+    "recurring_pattern": "monthly",
+    "recurring_hour": 10
+  },
+  {
+    "title": {
+      "tr": "Kira & faturalar 🏠",
+      "en": "Rent & bills 🏠",
+      "ru": "Аренда и счета 🏠"
+    },
+    "body": {
+      "tr": "Sabit giderlerin gelirine oranı nedir? Montly'de zorunlu kategorine bak.",
+      "en": "What is the ratio of your fixed expenses to income? Check your essentials category in Montly.",
+      "ru": "Какова доля фиксированных расходов к доходу? Посмотри категорию обязательных в Montly."
+    },
+    "category": "tip",
+    "trigger_type": "days_after_register",
+    "trigger_value": 70,
+    "recurring_hour": 9
+  }
+]
