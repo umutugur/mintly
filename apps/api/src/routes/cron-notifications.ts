@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { Types } from 'mongoose';
 
 import { getConfig } from '../config.js';
 import { ApiError } from '../errors.js';
@@ -9,8 +10,27 @@ import { UserModel } from '../models/User.js';
 
 type SupportedLanguage = 'tr' | 'en' | 'ru';
 
+interface I18nString {
+  tr: string;
+  en: string;
+  ru: string;
+}
+
+interface NotificationSnapshot {
+  _id: Types.ObjectId;
+  title: I18nString;
+  body: I18nString;
+  category: string;
+  trigger_type: 'days_after_register' | 'days_inactive' | 'fixed_date' | 'recurring';
+  trigger_value: number | null;
+  recurring_pattern: 'daily' | 'weekly' | 'monthly' | null;
+  recurring_day: number | null;
+  recurring_hour: number;
+  is_active: boolean;
+}
+
 interface UserSnapshot {
-  _id: import('mongoose').Types.ObjectId;
+  _id: Types.ObjectId;
   language?: string | null;
   baseCurrency?: string | null;
   notificationsEnabled: boolean;
@@ -60,7 +80,7 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 function matchesTrigger(
-  notification: Awaited<ReturnType<typeof ScheduledNotificationModel.find>>[number],
+  notification: NotificationSnapshot,
   user: UserSnapshot,
   now: Date,
 ): boolean {
@@ -142,7 +162,7 @@ export function registerCronNotificationRoutes(app: FastifyInstance): void {
       const now = new Date();
       const currentHour = now.getUTCHours();
 
-      const notifications = await ScheduledNotificationModel.find({ is_active: true }).lean();
+      const notifications = await ScheduledNotificationModel.find({ is_active: true }).lean<NotificationSnapshot[]>();
 
       let totalSent = 0;
       let totalSkipped = 0;
