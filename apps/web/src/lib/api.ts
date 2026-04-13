@@ -6,11 +6,15 @@ import {
   apiErrorSchema,
   categoryAnalyticsSchema,
   loginResponseSchema,
+  notificationLogsListSchema,
   notificationTokensSchema,
   overviewSchema,
   retentionSchema,
+  scheduledNotificationSchema,
+  scheduledNotificationsListSchema,
   timeseriesSchema,
   transactionsListSchema,
+  uploadResultSchema,
   userDetailSchema,
   usersListSchema,
   type AdminSession,
@@ -19,8 +23,12 @@ import {
   type NotificationTokensResponse,
   type OverviewResponse,
   type RetentionResponse,
+  type ScheduledNotification,
+  type ScheduledNotificationsList,
+  type NotificationLogsList,
   type TimeseriesResponse,
   type TransactionsListResponse,
+  type UploadResult,
   type UserDetailResponse,
   type UsersListResponse,
 } from './schemas';
@@ -507,6 +515,110 @@ export function adminSendNotification(input: {
     schema: adminSendNotificationResponseSchema,
     method: 'POST',
     body: input,
+  });
+}
+
+async function requestMutation<T>(params: {
+  path: string;
+  schema: ZodType<T>;
+  method: 'PATCH' | 'DELETE' | 'POST';
+  body?: unknown;
+}): Promise<T> {
+  const token = readStoredToken();
+  const response = await fetch(buildUrl(params.path), {
+    method: params.method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: params.body !== undefined ? JSON.stringify(params.body) : undefined,
+  });
+  const payload = await readPayload(response);
+
+  if (!response.ok) {
+    throw toApiError(response, payload);
+  }
+
+  if (response.status === 204) {
+    return params.schema.parse(null);
+  }
+
+  return params.schema.parse(payload);
+}
+
+export function getScheduledNotifications(input: {
+  page?: number;
+  limit?: number;
+}): Promise<ScheduledNotificationsList> {
+  return request({
+    path: '/admin/scheduled-notifications',
+    schema: scheduledNotificationsListSchema,
+    query: input,
+  });
+}
+
+export function createScheduledNotification(
+  body: Omit<ScheduledNotification, '_id' | 'created_at' | 'updated_at'>,
+): Promise<ScheduledNotification> {
+  return request({
+    path: '/admin/scheduled-notifications',
+    schema: scheduledNotificationSchema,
+    method: 'POST',
+    body,
+  });
+}
+
+export function updateScheduledNotification(
+  id: string,
+  body: Partial<Omit<ScheduledNotification, '_id' | 'created_at' | 'updated_at'>>,
+): Promise<ScheduledNotification> {
+  return requestMutation({
+    path: `/admin/scheduled-notifications/${id}`,
+    schema: scheduledNotificationSchema,
+    method: 'PATCH',
+    body,
+  });
+}
+
+export function deleteScheduledNotification(id: string): Promise<null> {
+  return requestMutation({
+    path: `/admin/scheduled-notifications/${id}`,
+    schema: z.null(),
+    method: 'DELETE',
+  });
+}
+
+export function getScheduledNotificationLogs(
+  id: string,
+  input: { page?: number; limit?: number },
+): Promise<NotificationLogsList> {
+  return request({
+    path: `/admin/scheduled-notifications/${id}/logs`,
+    schema: notificationLogsListSchema,
+    query: input,
+  });
+}
+
+export function getNotificationLogs(input: {
+  page?: number;
+  limit?: number;
+  from?: string;
+  to?: string;
+  category?: string;
+}): Promise<NotificationLogsList> {
+  return request({
+    path: '/admin/notification-logs',
+    schema: notificationLogsListSchema,
+    query: input,
+  });
+}
+
+export function uploadScheduledNotifications(body: unknown): Promise<UploadResult> {
+  return request({
+    path: '/admin/scheduled-notifications/upload',
+    schema: uploadResultSchema,
+    method: 'POST',
+    body,
   });
 }
 

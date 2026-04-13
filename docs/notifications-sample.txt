@@ -1,0 +1,5 @@
+title_tr	title_en	title_ru	body_tr	body_en	body_ru	category	trigger_type	trigger_value	recurring_pattern	recurring_day	recurring_hour
+Hoş geldin 👋	Welcome 👋	Добро пожаловать 👋	İlk harcamanı ekle, Montly seni tanımaya başlasın.	Add your first expense and let Montly get to know you.	Добавь первый расход — Montly начнёт тебя понимать.	welcome	days_after_register	0		 	10
+Bugün ne harcadın? 🧾	What did you spend today? 🧾	Что потратил сегодня? 🧾	Günlük harcamanı kaydetmek 30 saniye.	Recording your daily expense takes 30 seconds.	Запись расходов занимает 30 секунд.	reminder	days_after_register	1		 	21
+Haftalık özet hazır 📊	Weekly summary ready 📊	Еженедельный отчёт готов 📊	Bu haftaki harcamalarını incele, bütçeni takip et.	Review this week's expenses and track your budget.	Просмотри расходы за неделю и следи за бюджетом.	tip	recurring		weekly	1	9
+Para birimin {currency} — her şey yolunda mı?	Your currency is {currency} — everything on track?	Твоя валюта {currency} — всё в порядке?	Bu ay harcamalarını kontrol etmeyi unutma.	Don't forget to check your spending this month.	Не забудь проверить расходы в этом месяце.	motivation	recurring		monthly	1	10

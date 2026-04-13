@@ -25,7 +25,9 @@ import { registerCategoryRoutes } from './routes/categories.js';
 import { registerDashboardRoutes } from './routes/dashboard.js';
 import { registerExportRoutes } from './routes/export.js';
 import { registerGroupRoutes } from './routes/groups.js';
+import { registerCronNotificationRoutes } from './routes/cron-notifications.js';
 import { registerInternalCronRoutes } from './routes/internal-cron.js';
+import { registerScheduledNotificationRoutes } from './routes/scheduled-notifications.js';
 import { registerMeRoute } from './routes/me.js';
 import { registerNotificationRoutes } from './routes/notifications.js';
 import { registerRecurringRoutes } from './routes/recurring.js';
@@ -287,6 +289,8 @@ export function buildServer(options: BuildServerOptions = {}): FastifyInstance {
   registerBudgetRoutes(app);
   registerGroupRoutes(app);
   registerExportRoutes(app);
+  registerScheduledNotificationRoutes(app);
+  registerCronNotificationRoutes(app);
 
   return app;
 }

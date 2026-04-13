@@ -1,5 +1,6 @@
 import {
   Bell,
+  CalendarClock,
   Gauge,
   LayoutDashboard,
   LogOut,
@@ -403,6 +404,7 @@ const navItems = [
   { to: '/transactions', label: 'İşlemler', icon: Wallet },
   { to: '/analytics', label: 'Analitik', icon: Gauge },
   { to: '/admin/notifications', label: 'Bildirim Gönder', icon: Bell },
+  { to: '/admin/scheduled-notifications', label: 'Zamanlanmış Bildirimler', icon: CalendarClock },
   { to: '/settings', label: 'Ayarlar', icon: Settings },
 ];
 

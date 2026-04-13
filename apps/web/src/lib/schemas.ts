@@ -321,6 +321,80 @@ export const adminSendNotificationResponseSchema = z.object({
   }),
 });
 
+// Scheduled Notifications
+
+const i18nFieldSchema = z.object({
+  tr: z.string(),
+  en: z.string(),
+  ru: z.string(),
+});
+
+export const scheduledNotificationSchema = z.object({
+  _id: z.string(),
+  title: i18nFieldSchema,
+  body: i18nFieldSchema,
+  category: z.enum(['welcome', 'reminder', 'tip', 'feature', 'motivation', 'winback', 'seasonal']),
+  trigger_type: z.enum(['days_after_register', 'days_inactive', 'fixed_date', 'recurring']),
+  trigger_value: z.number().nullable(),
+  recurring_pattern: z.enum(['daily', 'weekly', 'monthly']).nullable(),
+  recurring_day: z.number().nullable(),
+  recurring_hour: z.number(),
+  is_active: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const scheduledNotificationsListSchema = z.object({
+  items: z.array(scheduledNotificationSchema),
+  total: z.number().nonnegative(),
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+  totalPages: z.number().nonnegative(),
+});
+
+export const notificationLogSchema = z.object({
+  _id: z.string(),
+  scheduled_notification_id: z.union([
+    z.string(),
+    z.object({
+      _id: z.string(),
+      title: i18nFieldSchema,
+      category: z.string(),
+    }),
+  ]),
+  sent_at: z.string(),
+  target_count: z.number().nonnegative(),
+  success_count: z.number().nonnegative(),
+  fail_count: z.number().nonnegative(),
+  skipped_count: z.number().nonnegative(),
+  status: z.enum(['sent', 'partial', 'failed']),
+});
+
+export const notificationLogsListSchema = z.object({
+  items: z.array(notificationLogSchema),
+  total: z.number().nonnegative(),
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+  totalPages: z.number().nonnegative(),
+  summary: z.object({
+    monthlySent: z.number().nonnegative(),
+    monthlyAvgSuccessRate: z.number(),
+    monthlyTotalReached: z.number().nonnegative(),
+  }),
+});
+
+export const uploadResultSchema = z.object({
+  created: z.number().nonnegative(),
+  skipped: z.number().nonnegative(),
+  errors: z.array(z.string()),
+});
+
+export type ScheduledNotification = z.infer<typeof scheduledNotificationSchema>;
+export type ScheduledNotificationsList = z.infer<typeof scheduledNotificationsListSchema>;
+export type NotificationLog = z.infer<typeof notificationLogSchema>;
+export type NotificationLogsList = z.infer<typeof notificationLogsListSchema>;
+export type UploadResult = z.infer<typeof uploadResultSchema>;
+
 export type AdminSession = z.infer<typeof adminSessionSchema>;
 export type OverviewResponse = z.infer<typeof overviewSchema>;
 export type TimeseriesResponse = z.infer<typeof timeseriesSchema>;
