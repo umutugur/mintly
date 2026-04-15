@@ -181,23 +181,34 @@ export function registerCronNotificationRoutes(app: FastifyInstance): void {
       let totalSkipped = 0;
       let totalFailed = 0;
 
+      // Track users already notified this run — max 1 notification per user per hour.
+      const notifiedUserIds = new Set<string>();
+
+      // Fetch users once for this cron run (same set for all notifications).
+      const allUsers = await UserModel.find({
+        notificationsEnabled: true,
+        'expoPushTokens.0': { $exists: true },
+      })
+        .select('_id language baseCurrency notificationsEnabled createdAt lastActiveAt expoPushTokens')
+        .lean<UserSnapshot[]>();
+
       for (const notification of notifications) {
         if (notification.recurring_hour !== currentHour) {
           continue;
         }
 
-        // Fetch all active users with push tokens
-        const users = await UserModel.find({
-          notificationsEnabled: true,
-          'expoPushTokens.0': { $exists: true },
-        })
-          .select('_id language baseCurrency notificationsEnabled createdAt lastActiveAt expoPushTokens')
-          .lean<UserSnapshot[]>();
-
         const messages: Array<{ token: string; title: string; body: string; userId: string }> = [];
         let skipped = 0;
 
-        for (const user of users) {
+        for (const user of allUsers) {
+          const userId = user._id.toString();
+
+          // Skip if this user already received a notification this run.
+          if (notifiedUserIds.has(userId)) {
+            skipped += 1;
+            continue;
+          }
+
           if (!matchesTrigger(notification, user, now)) {
             skipped += 1;
             continue;
@@ -218,7 +229,7 @@ export function registerCronNotificationRoutes(app: FastifyInstance): void {
             body = body.replace(/\{currency\}/g, user.baseCurrency);
           }
 
-          messages.push({ token: pushToken, title, body, userId: user._id.toString() });
+          messages.push({ token: pushToken, title, body, userId });
         }
 
         totalSkipped += skipped;
@@ -230,6 +241,11 @@ export function registerCronNotificationRoutes(app: FastifyInstance): void {
         const result = await sendExpoPushNotifications(
           messages.map(({ token, title, body }) => ({ token, title, body })),
         );
+
+        // Mark all targeted users as notified so they don't get another notification this run.
+        for (const { userId } of messages) {
+          notifiedUserIds.add(userId);
+        }
 
         const successCount = result.acceptedCount;
         const failCount = messages.length - successCount;

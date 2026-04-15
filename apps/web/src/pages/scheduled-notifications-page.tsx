@@ -512,6 +512,7 @@ function NotificationsTab() {
   const [showModal, setShowModal] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [editTarget, setEditTarget] = useState<ScheduledNotification | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const listQuery = useQuery({
     queryKey: ['scheduled-notifications', page],
@@ -560,28 +561,81 @@ function NotificationsTab() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => deleteScheduledNotification(id)));
+    },
+    onSuccess: () => {
+      pushToast({ title: 'Silindi', description: `${selected.size} bildirim silindi.`, tone: 'neutral' });
+      setSelected(new Set());
+      void queryClient.invalidateQueries({ queryKey: ['scheduled-notifications'] });
+    },
+    onError: () => {
+      pushToast({ title: 'Hata', description: 'Bazı bildirimler silinemedi.', tone: 'danger' });
+    },
+  });
+
   const items = listQuery.data?.items ?? [];
   const totalPages = listQuery.data?.totalPages ?? 1;
+  const allSelected = items.length > 0 && items.every((item) => selected.has(item._id));
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(items.map((item) => item._id)));
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
 
   return (
     <>
-      <div className="mb-4 flex justify-end gap-3">
-        <Button
-          variant="secondary"
-          onClick={() => setShowUpload(true)}
-        >
-          <UploadCloud className="mr-2 h-4 w-4" />
-          Toplu Yükle
-        </Button>
-        <Button
-          onClick={() => {
-            setEditTarget(null);
-            setShowModal(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Yeni Bildirim
-        </Button>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          {selected.size > 0 && (
+            <Button
+              variant="danger"
+              onClick={() => bulkDeleteMutation.mutate(Array.from(selected))}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              {bulkDeleteMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
+              {selected.size} bildirimi sil
+            </Button>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => setShowUpload(true)}
+          >
+            <UploadCloud className="mr-2 h-4 w-4" />
+            Toplu Yükle
+          </Button>
+          <Button
+            onClick={() => {
+              setEditTarget(null);
+              setShowModal(true);
+            }}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Yeni Bildirim
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -602,6 +656,14 @@ function NotificationsTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/8 text-left">
+                  <th className="py-3 pr-4">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded accent-accent-500 cursor-pointer"
+                    />
+                  </th>
                   <th className="py-3 pr-4 text-xs font-semibold uppercase tracking-widest text-panel-200">
                     Başlık (TR)
                   </th>
@@ -624,7 +686,15 @@ function NotificationsTab() {
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item._id} className="border-b border-white/5 last:border-0">
+                  <tr key={item._id} className={cn('border-b border-white/5 last:border-0', selected.has(item._id) && 'bg-white/[0.03]')}>
+                    <td className="py-3 pr-4">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(item._id)}
+                        onChange={() => toggleOne(item._id)}
+                        className="h-4 w-4 rounded accent-accent-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="py-3 pr-4 font-semibold text-white">
                       {item.title.tr}
                     </td>
